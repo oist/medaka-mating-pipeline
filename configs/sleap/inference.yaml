@@ -1,4 +1,26 @@
 sleap:
+  # Reference (SLEAP 1.5.2): https://docs.sleap.ai/v1.5.2/reference/command-line-interfaces/
+  #
+  # This file documents the knobs we commonly use with `sleap-track`.
+  # The pipeline wrappers in `scripts/sleap/` accept these as CLI flags.
+
+  # Inference
   batch_size: 16
   max_instances: 3
-  output_format: "slp"
+  peak_threshold: 0.2
+
+  # Tracking
+  # Tracker options include: simple, flow, simplemaxtracks, flowmaxtracks, none
+  tracking:
+    tracker: simple
+    max_tracking: false
+    max_tracks: null
+
+  # Runtime
+  # One of: cpu / first-gpu / last-gpu / gpu
+  device: gpu
+  gpu_index: auto
+
+  # Output
+  # Default output naming follows SLEAP conventions: <input>.predictions.slp
+  output_suffix: predictions
