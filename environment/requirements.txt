@@ -8,7 +8,22 @@
 # opencv-python
 # matplotlib
 # pyyaml
-# sleap
+# SLEAP
+#
+# If you install SLEAP as a *tool* (recommended when you mainly want the CLI):
+#   uv tool install "sleap[nn]" --index https://pypi.org/simple
+#   # (optionally add PyTorch CPU/CUDA indexes as needed)
+#
+# then DO NOT add `sleap` here: it is not installed into this project's `.venv`.
+#
+# If you need to `import sleap` from this project's Python environment (e.g., notebooks/scripts):
+#   # Recommended minimal module for reading/writing SLEAP datasets:
+#   uv sync --group sleap
+#
+#   # If you specifically need the full `sleap` Python package (GUI + more deps):
+#   uv add "sleap[nn]"
+#
+# Otherwise, keep SLEAP out of this requirements file.
 
 # Acquisition
 # campy is typically installed via editable install from a local clone:

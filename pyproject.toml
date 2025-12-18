@@ -9,7 +9,7 @@ description = "Pipeline for acquisition, calibration, tracking, and analysis of 
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
-authors = [{ name = "OIST" }]
+authors = [{ name = "makoto hiroi" }]
 
 # Keep this minimal; add runtime deps as they become concrete.
 dependencies = []
@@ -17,6 +17,12 @@ dependencies = []
 [dependency-groups]
 dev = [
   "pytest>=7",
+]
+
+# Optional: install SLEAP-related Python modules into the project venv for
+# analysis scripts/notebooks (separate from `uv tool install ...` for the CLI).
+sleap = [
+  "sleap-io",
 ]
 
 [tool.uv]
