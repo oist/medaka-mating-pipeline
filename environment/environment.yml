@@ -1,0 +1,9 @@
+name: medaka-mating-pipeline
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - pip
+  - pip:
+      # Add pip-only deps here, e.g. sleap, opencv-python, pandas, numpy
+      - -r requirements.txt

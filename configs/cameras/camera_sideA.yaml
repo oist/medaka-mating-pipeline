@@ -1,0 +1,6 @@
+camera:
+  name: sideA
+  role: side
+  device: ""
+  resolution_px: [0, 0]
+  fps: 30

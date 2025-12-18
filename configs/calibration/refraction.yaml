@@ -1,0 +1,7 @@
+# Placeholder for refraction parameters
+
+refraction:
+  enabled: true
+  refractive_index:
+    air: 1.0003
+    water: 1.333

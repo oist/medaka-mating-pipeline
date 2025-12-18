@@ -1,0 +1,36 @@
+# Template campy configuration
+#
+# This is a minimal starting point. Please refer to campy upstream docs for the full
+# parameter list:
+# https://github.com/ksseverson57/campy
+#
+# Tip: run `campy-acquire --help` for parameter documentation.
+
+# --- Output ---
+# Choose a per-trial output directory.
+# Recommended convention:
+#   data/raw/<trial_id>/videos
+outputDir: "data/raw/TRIAL_ID/videos"
+
+# --- Cameras ---
+# Define camera(s) and per-camera settings.
+# For Basler cameras, you may want to reference a .pfs settings file.
+# Example keys below are illustrative; adjust to your hardware.
+cameras:
+  - name: "top"
+    cameraType: "basler"  # or "flir"
+    serialNumber: ""
+  - name: "sideA"
+    cameraType: "basler"
+    serialNumber: ""
+  - name: "sideB"
+    cameraType: "basler"
+    serialNumber: ""
+
+# --- Timing ---
+fps: 30
+recTimeInSeconds: 60
+
+# --- Triggering (optional) ---
+# See campy docs for Arduino/Teensy/external triggering.
+startArduino: false

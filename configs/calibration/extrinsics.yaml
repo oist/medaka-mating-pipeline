@@ -1,0 +1,4 @@
+# Placeholder for camera extrinsics
+# Populate with per-camera extrinsics once calibrated.
+
+extrinsics: {}

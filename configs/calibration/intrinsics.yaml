@@ -1,0 +1,4 @@
+# Placeholder for camera intrinsics
+# Populate with per-camera intrinsics once calibrated.
+
+intrinsics: {}

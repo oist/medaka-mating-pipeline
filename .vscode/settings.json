@@ -1,0 +1,12 @@
+{
+    // VS Code should auto-detect .venv, but these settings improve the out-of-box experience.
+    "python.terminal.activateEnvironment": true,
+    "python.analysis.extraPaths": [
+        "./src"
+    ],
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestArgs": [
+        "tests"
+    ]
+}

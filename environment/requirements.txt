@@ -1,0 +1,16 @@
+# Python dependencies for medaka-mating-pipeline
+# Pin versions once the stack is finalized.
+
+# Example (uncomment as needed):
+# numpy
+# pandas
+# scipy
+# opencv-python
+# matplotlib
+# pyyaml
+# sleap
+
+# Acquisition
+# campy is typically installed via editable install from a local clone:
+#   git clone https://github.com/ksseverson57/campy.git
+#   cd campy && pip install -e .

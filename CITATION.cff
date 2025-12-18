@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Medaka Mating Pipeline"
+type: software
+authors:
+  - family-names: ""
+    given-names: ""
+repository-code: "https://github.com/oist/medaka-mating-pipeline"
+license: ""
+version: "0.1.0"
+date-released: "2025-12-18"

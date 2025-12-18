@@ -1,0 +1,6 @@
+camera:
+  name: top
+  role: overhead
+  device: ""
+  resolution_px: [0, 0]
+  fps: 30

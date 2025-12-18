@@ -1,0 +1,4 @@
+sleap:
+  batch_size: 16
+  max_instances: 3
+  output_format: "slp"

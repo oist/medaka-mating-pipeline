@@ -1,0 +1,36 @@
+project:
+  name: medaka_mating
+  timezone: Asia/Tokyo
+
+setup:
+  tank:
+    size_cm: [20, 20, 20]
+  cameras: [top, sideA, sideB]
+  fps: 166
+
+subjects:
+  ids: [F, M1, M2]
+
+sleap:
+  model_centroid: /path/to/centroid_model
+  model_instance: /path/to/instance_model
+  batch_size: 16
+  max_instances: 3
+
+calibration:
+  use_refraction: true
+  refractive_index:
+    air: 1.0003
+    water: 1.333
+    glass: 1.52
+  outputs_dir: calibration_outputs
+
+analysis:
+  preference:
+    zone_radius_cm: 3.0
+    window_s: 10
+  aggression:
+    chase_speed_thresh_cm_s: 5.0
+    approach_angle_deg: 45
+  courtship:
+    orientation_thresh_deg: 30
