@@ -24,72 +24,72 @@ See `docs/data_layout.md`.
 
 ## Quick start
 
-### Environment setup (uv)
+### Environment setup
 
-This project uses `uv` for fast, reproducible Python environments.
+**One-step install with uv (recommended)** — from the project root:
 
-#### Install `uv`
-
-If you don’t have `uv` yet, install it using the official installer:
-
-- **Windows (PowerShell):**
-
-```powershell
+# 未装 uv 时先装（执行一次即可）
 irm https://astral.sh/uv/install.ps1 | iex
-```
+# 关掉并重新打开终端后再执行下面
 
-- **macOS/Linux (bash/zsh):**
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-Then restart your terminal (or open a new one) so `uv` is on your `PATH`.
-
-More options (package managers, manual install): https://docs.astral.sh/uv/
-
-1) Create/sync the local virtual environment (recommended Python: 3.11):
+cd D:\medaka-mating-pipeline
+uv sync --python 3.11
 
 ```bash
 uv sync --python 3.11
 ```
 
-This will create `.venv/` (if missing), install the project, and install the default dev tools.
+This creates `.venv`, installs dependencies (including PyTorch CUDA 13.0 on Windows/Linux when configured for your GPU), and dev tools. See `environment/requirements.txt` for details and CPU-only options.
 
-2) (Optional) Activate the environment
+**Alternative: pip + venv** — from the project root:
 
-VS Code can usually use `.venv` automatically without manual activation.
-
-Activation commands by platform/shell:
+1) Create and activate a virtual environment (example):
 
 **Windows (PowerShell):**
 
 ```powershell
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-```
-
-**Windows (cmd.exe):**
-
-```bat
-.venv\Scripts\activate.bat
 ```
 
 **macOS/Linux (bash/zsh):**
 
 ```bash
+python3 -m venv .venv
 source .venv/bin/activate
+```
+
+2) Install the project in editable mode:
+
+```bash
+pip install -e ".[dev]"
 ```
 
 3) Run tests:
 
 ```powershell
-uv run pytest
+pytest
 ```
 
 Notes:
-- The intended Python version is pinned in `.python-version`.
-- `uv.lock` is checked in for reproducible dependency resolution.
-- `environment/requirements.txt` is kept for reference/migration, but is currently mostly placeholders.
+- The intended Python version is in `.python-version`.
+- `environment/requirements.txt` is kept for reference/migration.
+
+### FFmpeg（视频处理，按需安装）
+
+若流程中需要导出视频或使用 ffmpeg 做转码/剪辑，可在项目根目录执行：
+
+```powershell
+.\scripts\install-ffmpeg.ps1
+```
+
+脚本会下载 [Gyan FFmpeg](https://github.com/GyanD/codexffmpeg/releases) 到 `tools/` 并将 `bin` 加入当前用户 PATH。若遇执行策略限制，先运行：
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+也可用系统包管理器安装（需自行加入 PATH）：`winget install Gyan.FFmpeg`。
 
 ### VS Code / IDE setup
 

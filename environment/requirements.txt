@@ -1,31 +1,62 @@
-# Python dependencies for medaka-mating-pipeline
-# Pin versions once the stack is finalized.
+# Medaka Mating Pipeline — 依赖列表
+# 用途：校准、SLEAP 追踪、3D 重建、行为分析与 Notebooks
+# 本机：Python 3.11，NVIDIA RTX 4060，CUDA 13.0 → PyTorch 使用 cu130（见 pyproject.toml）
+#
+# ========== 一步安装（推荐） ==========
+# 1) 若尚未安装 uv，PowerShell 执行：
+#      irm https://astral.sh/uv/install.ps1 | iex
+#    然后关闭并重新打开终端。
+#
+# 2) 在项目根目录执行（创建 .venv 并安装，含 PyTorch CUDA 13.0 + SLEAP）：
+#
+#      uv sync --python 3.11
+#
+# 3) 若只想装 SLEAP 命令行（不建项目 venv），可用官方方式：
+#
+#      uv tool install sleap-nn[torch] --torch-backend auto
+#
+#     （auto 会按本机 GPU/CUDA 自动选 PyTorch 后端，适合 RTX 4060 + CUDA 13.0）
+#
+# 仅 CPU（不用 GPU）时可选：
+#   uv sync --python 3.11
+#   uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+#   uv pip install -e ".[dev,sleap]"
+#
+# 或使用 pip（需先创建并激活 venv）：
+#   pip install -e ".[dev,sleap]"
+# 本机 GPU：pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu130
+# 再：pip install -e ".[dev,sleap]"
+#
+# ========== 下面为 pip 可用的平铺依赖（供参考 / 非 uv 时用） ==========
 
-# Example (uncomment as needed):
-# numpy
-# pandas
-# scipy
-# opencv-python
-# matplotlib
-# pyyaml
-# SLEAP
-#
-# If you install SLEAP as a *tool* (recommended when you mainly want the CLI):
-#   uv tool install "sleap[nn]" --index https://pypi.org/simple
-#   # (optionally add PyTorch CPU/CUDA indexes as needed)
-#
-# then DO NOT add `sleap` here: it is not installed into this project's `.venv`.
-#
-# If you need to `import sleap` from this project's Python environment (e.g., notebooks/scripts):
-#   # Recommended minimal module for reading/writing SLEAP datasets:
-#   uv sync --group sleap
-#
-#   # If you specifically need the full `sleap` Python package (GUI + more deps):
-#   uv add "sleap[nn]"
-#
-# Otherwise, keep SLEAP out of this requirements file.
+# 核心科学栈
+numpy>=2.3.5
+scipy>=1.14.1
+pandas>=2.3.3
+matplotlib>=3.10.8
+seaborn>=0.13.0
+scikit-learn>=1.8.0
+joblib>=1.5.3
+tqdm>=4.66.0
 
-# Acquisition
-# campy is typically installed via editable install from a local clone:
-#   git clone https://github.com/ksseverson57/campy.git
-#   cd campy && pip install -e .
+# 图像 / 视频
+opencv-python>=4.11.0.86
+pillow>=10.0.0
+imageio-ffmpeg>=0.5.0
+
+# SLEAP 追踪（含 NN）
+sleap[nn]>=1.5.2
+
+# PyTorch（本机 CUDA 13.0：cu130；或 CPU）
+# Windows/Linux CUDA 13.0：--index-url https://download.pytorch.org/whl/cu130
+# CPU：--index-url https://download.pytorch.org/whl/cpu
+torch>=2.6.0
+torchvision>=0.21.0
+torchaudio>=2.6.0
+
+# 开发与 Notebook
+ipykernel>=7.1.0
+pytest>=7
+
+# 可选：仅需读写 SLEAP 数据集时可加
+# sleap-io
