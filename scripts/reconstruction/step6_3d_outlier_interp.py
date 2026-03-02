@@ -80,15 +80,28 @@ def _check_remaining_outliers_3d(
     return False
 
 
-def _interpolate_xyz(df: pd.DataFrame) -> pd.DataFrame:
-    """对 frame, X, Y, Z 做线性插值补全 NaN。"""
+def _interpolate_xyz(df: pd.DataFrame, method: str = "cubic") -> pd.DataFrame:
+    """对 frame, X, Y, Z 做插值补全 NaN。method: 'cubic'（三次样条，默认）或 'linear'。"""
     df = df.copy().sort_values("frame")
     for col in ["X", "Y", "Z"]:
         if col not in df.columns:
             continue
-        vals = df[col].values
+        vals = df[col].values.astype(float)
         if np.any(~np.isnan(vals)):
-            df[col] = pd.Series(vals).interpolate(method="linear", limit_direction="both").values
+            if method == "cubic" and np.sum(~np.isnan(vals)) >= 4:
+                try:
+                    from scipy.interpolate import CubicSpline
+                    valid = ~np.isnan(vals)
+                    x = np.arange(len(vals))[valid]
+                    y = vals[valid]
+                    cs = CubicSpline(x, y)
+                    nan_idx = np.where(np.isnan(vals))[0]
+                    vals[nan_idx] = cs(nan_idx)
+                    df[col] = vals
+                except Exception:
+                    df[col] = pd.Series(vals).interpolate(method="linear", limit_direction="both").values
+            else:
+                df[col] = pd.Series(vals).interpolate(method="linear", limit_direction="both").values
     return df
 
 
@@ -117,6 +130,7 @@ def process_set(
     max_iterations: int = 10,
     tail_fraction: float = 0.15,
     tail_relax_factor: float = 2.0,
+    interp_method: str = "cubic",
 ) -> List[Path]:
     """
     处理单个 set_key 的 3D CSV：**循环**异常值去除 + 插值，直到无异常或达到 max_iterations。
@@ -165,7 +179,7 @@ def process_set(
                 outlier_in_full = np.zeros(len(df), dtype=bool)
                 outlier_in_full[valid] = mask_valid
                 df.loc[outlier_in_full, ["X", "Y", "Z"]] = np.nan
-            df = _interpolate_xyz(df)
+            df = _interpolate_xyz(df, method=interp_method)
             has_outliers = _check_remaining_outliers_3d(
                 df, max_mm_per_frame,
                 tail_fraction=tail_fraction, tail_relax_factor=tail_relax_factor,
@@ -185,6 +199,70 @@ def process_set(
     return written
 
 
+def process_set_single_csv(
+    output_dir: Path,
+    set_key: str,
+    max_mm_per_frame: float = 10.0,
+    in_place: bool = True,
+    max_iterations: int = 10,
+    tail_fraction: float = 0.15,
+    tail_relax_factor: float = 2.0,
+    interp_method: str = "cubic",
+) -> List[Path]:
+    """
+    读单 CSV {set_key}_3d.csv（列 frame, fish_id, X, Y, Z），按 fish_id 拆开做异常值+插值，再合并写回单 CSV。
+    """
+    single_path = output_dir / f"{set_key}_3d.csv"
+    if not single_path.exists():
+        raise FileNotFoundError(f"未找到: {single_path}")
+    full_df = pd.read_csv(single_path)
+    if "fish_id" not in full_df.columns:
+        raise ValueError(f"{single_path} 缺少列 fish_id")
+    labels = full_df["fish_id"].unique().tolist()
+    dfs = {g: full_df[full_df["fish_id"] == g][["frame", "X", "Y", "Z"]].copy() for g in labels}
+    all_frames = np.unique(np.concatenate([df["frame"].astype(int).values for df in dfs.values()]))
+    all_frames = np.sort(all_frames)
+
+    out_suffix = "" if in_place else "_cleaned"
+    for g in labels:
+        df = dfs[g].copy()
+        df = _ensure_complete_frames(df, all_frames)
+        df = df.sort_values("frame").reset_index(drop=True)
+        iteration = 0
+        has_outliers = True
+        while has_outliers and iteration < max_iterations:
+            iteration += 1
+            pos = df[["X", "Y", "Z"]].values
+            frames = df["frame"].values
+            valid = ~(np.isnan(pos[:, 0]) | np.isnan(pos[:, 1]) | np.isnan(pos[:, 2]))
+            if np.sum(valid) >= 2:
+                pos_valid = pos[valid]
+                frame_valid = frames[valid]
+                mask_valid = _detect_outliers_frame_gap_scaled(
+                    pos_valid, frame_valid, max_mm_per_frame,
+                    tail_fraction=tail_fraction, tail_relax_factor=tail_relax_factor,
+                )
+                outlier_in_full = np.zeros(len(df), dtype=bool)
+                outlier_in_full[valid] = mask_valid
+                df.loc[outlier_in_full, ["X", "Y", "Z"]] = np.nan
+            df = _interpolate_xyz(df, method=interp_method)
+            has_outliers = _check_remaining_outliers_3d(
+                df, max_mm_per_frame,
+                tail_fraction=tail_fraction, tail_relax_factor=tail_relax_factor,
+            )
+        if iteration >= max_iterations and has_outliers:
+            print(f"    警告: {set_key} {g} 达到最大迭代次数 ({max_iterations})，仍有 3D 异常点")
+        dfs[g] = df
+
+    out_path = output_dir / f"{set_key}_3d{out_suffix}.csv"
+    rows = []
+    for fid, df in dfs.items():
+        for _, r in df.iterrows():
+            rows.append({"frame": int(r["frame"]), "fish_id": fid, "X": float(r["X"]), "Y": float(r["Y"]), "Z": float(r["Z"])})
+    pd.DataFrame(rows).sort_values(["frame", "fish_id"]).to_csv(out_path, index=False)
+    return [out_path]
+
+
 def run(
     output_dir: str,
     set_keys: List[str] | None = None,
@@ -194,21 +272,36 @@ def run(
     max_iterations: int = 10,
     tail_fraction: float = 0.15,
     tail_relax_factor: float = 2.0,
+    interp_method: str = "cubic",
 ) -> List[Path]:
     """
-    对 output_dir 下多组 3D CSV 做**循环**异常值去除与插值补全（一帧 > 10mm，两帧 > 20mm…）。
-    set_keys 为 None 时自动扫描 *_a_3d.csv 或 *_ID_1_3d.csv。
+    对 output_dir 下多组 3D CSV 做**循环**异常值去除与插值补全。
+    set_keys 为 None 时：优先扫描单 CSV {set_key}_3d.csv，否则扫描 *_a_3d.csv / *_ID_1_3d.csv。
     """
     out_dir = Path(output_dir)
     if set_keys is None:
+        single_files = list(out_dir.glob("*_3d.csv"))
+        single_files = [
+            f for f in single_files
+            if f.stem.endswith("_3d") and "_3d_cleaned" not in f.stem and "_3d_interp" not in f.stem
+            and not any(x in f.stem for x in ["_a_3d", "_b_3d", "_c_3d", "_ID_1_3d", "_ID_2_3d", "_ID_3_3d"])
+        ]
         a_files = list(out_dir.glob("*_a_3d.csv"))
         id_files = list(out_dir.glob("*_ID_1_3d.csv"))
-        if id_files:
+        if single_files:
+            set_keys = sorted({f.stem.replace("_3d", "") for f in single_files})
+            use_single_csv = True
+        elif id_files:
             set_keys = sorted({f.stem.replace("_ID_1_3d", "") for f in id_files})
             use_id_labels = True
+            use_single_csv = False
         else:
             set_keys = sorted({f.stem.replace("_a_3d", "") for f in a_files})
             use_id_labels = False
+            use_single_csv = False
+    else:
+        use_single_csv = None
+
     if not set_keys:
         print("未找到 3D CSV，跳过 step6。")
         return []
@@ -216,15 +309,27 @@ def run(
     all_written = []
     for set_key in set_keys:
         try:
-            written = process_set(
-                out_dir, set_key,
-                max_mm_per_frame=max_mm_per_frame,
-                use_id_labels=use_id_labels,
-                in_place=in_place,
-                max_iterations=max_iterations,
-                tail_fraction=tail_fraction,
-                tail_relax_factor=tail_relax_factor,
-            )
+            if use_single_csv is True or (use_single_csv is None and (out_dir / f"{set_key}_3d.csv").exists()):
+                written = process_set_single_csv(
+                    out_dir, set_key,
+                    max_mm_per_frame=max_mm_per_frame,
+                    in_place=in_place,
+                    max_iterations=max_iterations,
+                    tail_fraction=tail_fraction,
+                    tail_relax_factor=tail_relax_factor,
+                    interp_method=interp_method,
+                )
+            else:
+                written = process_set(
+                    out_dir, set_key,
+                    max_mm_per_frame=max_mm_per_frame,
+                    use_id_labels=use_id_labels,
+                    in_place=in_place,
+                    max_iterations=max_iterations,
+                    tail_fraction=tail_fraction,
+                    tail_relax_factor=tail_relax_factor,
+                    interp_method=interp_method,
+                )
             all_written.extend(written)
             print(f"  已处理 {set_key}")
         except FileNotFoundError as e:
@@ -242,6 +347,7 @@ def main():
     ap.add_argument("--no-in-place", action="store_true", help="输出 _3d_cleaned.csv 不覆盖")
     ap.add_argument("--tail-fraction", type=float, default=0.15, help="轨迹末尾比例，该段内放宽阈值，默认 0.15")
     ap.add_argument("--tail-relax-factor", type=float, default=2.0, help="末尾段阈值放宽倍数，默认 2.0")
+    ap.add_argument("--interp-method", choices=("cubic", "linear"), default="cubic", help="补全 NaN 的插值方法，默认 cubic")
     args = ap.parse_args()
     run(
         args.output_dir, args.set_keys, args.max_mm_per_frame,
@@ -249,6 +355,7 @@ def main():
         max_iterations=args.max_iterations,
         tail_fraction=args.tail_fraction,
         tail_relax_factor=args.tail_relax_factor,
+        interp_method=args.interp_method,
     )
 
 

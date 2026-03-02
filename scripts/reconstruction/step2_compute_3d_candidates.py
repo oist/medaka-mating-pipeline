@@ -30,65 +30,100 @@ from tqdm import tqdm
 from .calibration import Calibration
 
 
+def _triplets_with_filled_view(
+    cal: Calibration,
+    cam0: list,
+    cam1: list,
+    cam2: list,
+    missing_view: str,
+) -> List[tuple]:
+    """
+    当某一视角无点时，用另两视角预测该视角 2D，生成 (i0, i1, i2, p0, p1, p2) 列表。
+    missing_view 为 "cam0" | "cam1" | "cam2"。
+    """
+    out: List[tuple] = []
+    if missing_view == "cam2":
+        # 缺 cam2(YZ)：用 cam0(XY) + cam1(XZ) 预测 YZ
+        for i0 in range(len(cam0)):
+            for i1 in range(len(cam1)):
+                p0 = np.array(cam0[i0], dtype=float)
+                p1 = np.array(cam1[i1], dtype=float)
+                p2 = cal.compute_YZ_imcoords_from_XZ_XY(p1, p0)
+                out.append((i0, i1, 0, p0, p1, p2))
+    elif missing_view == "cam1":
+        # 缺 cam1(XZ)：用 cam0(XY) + cam2(YZ) 预测 XZ
+        for i0 in range(len(cam0)):
+            for i2 in range(len(cam2)):
+                p0 = np.array(cam0[i0], dtype=float)
+                p2 = np.array(cam2[i2], dtype=float)
+                p1 = cal.compute_XZ_imcoords_from_XY_YZ(p0, p2)
+                out.append((i0, 0, i2, p0, p1, p2))
+    else:
+        # 缺 cam0(XY)：用 cam1(XZ) + cam2(YZ) 预测 XY
+        for i1 in range(len(cam1)):
+            for i2 in range(len(cam2)):
+                p1 = np.array(cam1[i1], dtype=float)
+                p2 = np.array(cam2[i2], dtype=float)
+                p0 = cal.compute_XY_imcoords_from_XZ_YZ(p1, p2)
+                out.append((0, i1, i2, p0, p1, p2))
+    return out
+
+
 def compute_candidates_for_frame(
     cal: Calibration,
     points: Dict[str, List[Tuple[float, float]]],
     xyz_bounds: Tuple[float, float] | None = None,
+    fill_missing_view: bool = True,
 ) -> List[Dict]:
     """
     对单帧计算所有 cam0×cam1×cam2 组合的 3D 候选及配准误差。
 
-    points:
-        {"cam0": [(x,y),...], "cam1": [...], "cam2":[...]}
-    xyz_bounds:
-        若给定 (low, high)，则 X/Y/Z 任一超出 [low, high] 的候选视为无效（cost=inf）。
-        例如 (0, 200) 或 (0, 1200)，与校准/水槽物理范围一致。
-
-    返回:
-        [
-          {"cam0_idx": i0, "cam1_idx": i1, "cam2_idx": i2, "xyz": [X,Y,Z], "cost": float},
-          ...
-        ]
+    若某视角无点且 fill_missing_view=True，则用另两视角预测该视角 2D 再算 3D（最多补一个视角）。
     """
-    cam0 = points.get("cam0", [])
-    cam1 = points.get("cam1", [])
-    cam2 = points.get("cam2", [])
+    cam0 = list(points.get("cam0", []))
+    cam1 = list(points.get("cam1", []))
+    cam2 = list(points.get("cam2", []))
     n0, n1, n2 = len(cam0), len(cam1), len(cam2)
-    if n0 == 0 or n1 == 0 or n2 == 0:
-        return []
+
+    triplets: List[tuple] = []  # (i0, i1, i2, p0, p1, p2)
+    if n0 > 0 and n1 > 0 and n2 > 0:
+        for i0 in range(n0):
+            for i1 in range(n1):
+                for i2 in range(n2):
+                    triplets.append((i0, i1, i2, np.array(cam0[i0]), np.array(cam1[i1]), np.array(cam2[i2])))
+    elif fill_missing_view:
+        if n0 == 0 and n1 > 0 and n2 > 0:
+            triplets = _triplets_with_filled_view(cal, cam0, cam1, cam2, "cam0")
+        elif n1 == 0 and n0 > 0 and n2 > 0:
+            triplets = _triplets_with_filled_view(cal, cam0, cam1, cam2, "cam1")
+        elif n2 == 0 and n0 > 0 and n1 > 0:
+            triplets = _triplets_with_filled_view(cal, cam0, cam1, cam2, "cam2")
 
     out: List[Dict] = []
-    for i0 in range(n0):
-        for i1 in range(n1):
-            for i2 in range(n2):
-                p0 = cam0[i0]
-                p1 = cam1[i1]
-                p2 = cam2[i2]
-
-                imCoords = np.array([
-                    [p0[0], p0[1]],
-                    [p1[0], p1[1]],
-                    [p2[0], p2[1]],
-                ], dtype=float)
-
-                xyz = cal.compute_XYZ_from_imageCoord_triplet(imCoords)
-                # 负坐标或 NaN 表示错误对应；若设了 xyz_bounds，超出范围也视为无效
-                invalid = np.any(xyz < 0) or np.any(np.isnan(xyz))
-                if not invalid and xyz_bounds is not None:
-                    low, high = xyz_bounds
-                    invalid = np.any(xyz < low) or np.any(xyz > high)
-                if invalid:
-                    cost = np.inf
-                else:
-                    cost = cal.compute_triplet_registration_error(imCoords)
-
-                out.append({
-                    "cam0_idx": int(i0),
-                    "cam1_idx": int(i1),
-                    "cam2_idx": int(i2),
-                    "xyz": [float(xyz[0]), float(xyz[1]), float(xyz[2])],
-                    "cost": float(cost) if not np.isnan(cost) else None,
-                })
+    for i0, i1, i2, p0, p1, p2 in triplets:
+        imCoords = np.array(
+            [
+                [float(p0[0]), float(p0[1])],
+                [float(p1[0]), float(p1[1])],
+                [float(p2[0]), float(p2[1])],
+            ],
+            dtype=float,
+        )
+        xyz = cal.compute_XYZ_from_imageCoord_triplet(imCoords)
+        # 与 Dynamics_of_dominance 一致：只在坐标为 NaN 时视为无效；
+        # 不再用 xyz_bounds 直接丢弃候选，而是保留由配准误差决定优劣。
+        invalid = np.any(np.isnan(xyz))
+        if invalid:
+            cost = np.inf
+        else:
+            cost = cal.compute_triplet_registration_error(imCoords)
+        out.append({
+            "cam0_idx": int(i0),
+            "cam1_idx": int(i1),
+            "cam2_idx": int(i2),
+            "xyz": [float(xyz[0]), float(xyz[1]), float(xyz[2])],
+            "cost": float(cost) if not np.isnan(cost) else None,
+        })
     return out
 
 
@@ -96,11 +131,12 @@ def compute_candidates(
     cal: Calibration,
     points_by_frame: Dict[int, Dict[str, List[Tuple[float, float]]]],
     xyz_bounds: Tuple[float, float] | None = None,
+    fill_missing_view: bool = True,
 ) -> Dict[int, List[Dict]]:
-    """对每帧计算 3D 候选及配准误差。xyz_bounds 超出范围的候选 cost=inf。"""
+    """对每帧计算 3D 候选及配准误差；缺一视角时用两视角预测该视角再算 3D。"""
     items = sorted(points_by_frame.items())
     return {
-        frame: compute_candidates_for_frame(cal, pts, xyz_bounds)
+        frame: compute_candidates_for_frame(cal, pts, xyz_bounds, fill_missing_view=fill_missing_view)
         for frame, pts in tqdm(items, desc="Step2 3D候选", unit="frame")
     }
 

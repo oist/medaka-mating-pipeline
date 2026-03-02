@@ -23,6 +23,10 @@ Manual Annotation Tool for Calibration Points
 import argparse
 import os
 import sys
+
+# 最先输出，确认脚本已被执行（在可能失败的 import 之前）
+print("detect_board.py: starting", flush=True)
+
 import glob
 import re
 import numpy as np
@@ -31,8 +35,24 @@ from matplotlib.patches import Circle
 from typing import List, Dict, Tuple
 from datetime import datetime
 
+# 立即输出，便于在终端确认脚本已启动（避免“无任何反应”）
+def _log(msg: str) -> None:
+    print(msg, flush=True)
+
+_log("detect_board.py: loading...")
+
 # 导入模板解析函数（供 Step 2 使用）
-from .lib.visualize_coords_from_template import parse_template
+# 支持两种运行方式：python -m scripts.calibration.detect_board（相对导入）
+# 或 python path/to/detect_board.py（直接运行，需回退为绝对导入）
+try:
+    from .lib.visualize_coords_from_template import parse_template
+except ImportError:
+    _script_dir = os.path.dirname(os.path.abspath(__file__))
+    if _script_dir not in sys.path:
+        sys.path.insert(0, _script_dir)
+    from lib.visualize_coords_from_template import parse_template
+
+_log("detect_board.py: imports OK")
 
 
 class ManualAnnotator:
@@ -525,6 +545,7 @@ def batch_annotate(calibration_folder: str, output_root: str | None = None):
 
 
 def main():
+    _log("detect_board.py: main() started")
     parser = argparse.ArgumentParser(
         description="手动标注校准点，每次处理一个 way 的 3 张图片（cam0/cam1/cam2）"
     )
@@ -538,7 +559,12 @@ def main():
     )
     
     args = parser.parse_args()
-    batch_annotate(args.folder, output_root=args.output)
+    try:
+        batch_annotate(args.folder, output_root=args.output)
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc(), flush=True)
+        sys.exit(1)
 
 
 if __name__ == '__main__':

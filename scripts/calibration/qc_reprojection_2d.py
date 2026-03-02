@@ -25,6 +25,7 @@ from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 from sklearn.linear_model import Ridge
 from sklearn.pipeline import Pipeline
 from sklearn.multioutput import MultiOutputRegressor
+from joblib import dump
 
 # First 4 points = corners (vertices); rest = beads (7 per column)
 N_CORNERS = 4
@@ -62,6 +63,27 @@ def train_xyz_to_uv(xyz: np.ndarray, uv: np.ndarray, degree: int = 2, alpha: flo
         ("reg", MultiOutputRegressor(Ridge(alpha=alpha))),
     ])
     pipe.fit(xyz, uv)
+    return pipe
+
+
+def train_xyz_to_imcoords(
+    df: pd.DataFrame,
+    degree: int = 2,
+    alpha: float = 1e-3,
+) -> Pipeline:
+    """
+    训练单模型 3D→三相机 2D：(N,3) XYZ -> (N,6) [cam0_x, cam0_y, cam1_x, cam1_y, cam2_x, cam2_y]。
+    用于保存为 XYZ_to_imCoords.joblib，供 Calibration.compute_imCoords_from_XYZ 与 2D 叠加使用。
+    """
+    xyz = df[["X", "Y", "Z"]].to_numpy(float)
+    cols = ["cam0_x", "cam0_y", "cam1_x", "cam1_y", "cam2_x", "cam2_y"]
+    imcoords = df[cols].to_numpy(float)
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("poly", PolynomialFeatures(degree=degree, include_bias=True)),
+        ("reg", MultiOutputRegressor(Ridge(alpha=alpha))),
+    ])
+    pipe.fit(xyz, imcoords)
     return pipe
 
 
@@ -311,6 +333,17 @@ def main() -> int:
         action="store_true",
         help="Do not draw segments between manual and reprojected points in the views figure.",
     )
+    parser.add_argument(
+        "--save_models",
+        action="store_true",
+        help="Train and save XYZ_to_imCoords.joblib to calibration folder (use with --calibration_folder).",
+    )
+    parser.add_argument(
+        "--calibration_folder",
+        type=str,
+        default=None,
+        help="Calibration folder (python_calibration_models or parent). Used with --save_models to write XYZ_to_imCoords.joblib.",
+    )
     args = parser.parse_args()
 
     mapping_csv = os.path.normpath(args.mapping_csv)
@@ -318,6 +351,17 @@ def main() -> int:
         raise FileNotFoundError(mapping_csv)
 
     df = load_mapping_csv(mapping_csv)
+
+    if args.save_models and args.calibration_folder:
+        cal_dir = os.path.normpath(args.calibration_folder)
+        out_dir = os.path.join(cal_dir, "python_calibration_models")
+        if not os.path.isdir(out_dir):
+            out_dir = cal_dir
+        os.makedirs(out_dir, exist_ok=True)
+        pipe = train_xyz_to_imcoords(df, degree=args.poly_degree, alpha=args.alpha)
+        path = os.path.join(out_dir, "XYZ_to_imCoords.joblib")
+        dump(pipe, path)
+        print(f"Saved XYZ_to_imCoords.joblib to {path}")
     models, errors, reproj_uv = reprojection_errors_per_camera(
         df, degree=args.poly_degree, alpha=args.alpha
     )

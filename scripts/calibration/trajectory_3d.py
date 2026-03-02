@@ -59,7 +59,13 @@ DEFAULT_XYZ_LIM = (0, 200)
 
 
 def _apply_calibration_view(ax, xyz_lim: tuple[float, float] | None = DEFAULT_XYZ_LIM) -> None:
-    """与 02_calibration 一致的 3D 视角：Y 轴反向，轴名保持 X/Y/Z；可选固定坐标轴范围。"""
+    """
+    与相机校准 02_calibration / qc_3d_template 一致的 3D 坐标系：
+    - Y 轴反向（invert_yaxis）
+    - 轴标签 X/Y/Z (mm)，原点与校准一致
+    - 等比例显示（set_box_aspect [1,1,1]）保证坐标轴方向不畸变
+    - 可选固定范围 xyz_lim
+    """
     ax.invert_yaxis()
     ax.set_xlabel("X (mm)")
     ax.set_ylabel("Y (mm)")
@@ -69,6 +75,10 @@ def _apply_calibration_view(ax, xyz_lim: tuple[float, float] | None = DEFAULT_XY
         ax.set_xlim(low, high)
         ax.set_ylim(low, high)
         ax.set_zlim(low, high)
+    try:
+        ax.set_box_aspect([1, 1, 1])
+    except Exception:
+        pass
 
 
 def plot_3d_trajectories(
@@ -178,3 +188,97 @@ def plot_3d_trajectories_video(
         ret = subprocess.run(cmd, capture_output=True, text=True)
         if ret.returncode != 0:
             raise RuntimeError(f"ffmpeg 失败: {ret.stderr or ret.stdout}")
+
+
+# 单色 3D 轨迹视频（不区分 ID，三条轨迹同一颜色，轨迹尾迹 0.5 秒）
+SINGLE_COLOR = "#00b4d8"  # 同一颜色
+
+
+def render_3d_trajectory_video_single_color(
+    csv_3d_path: str | Path,
+    out_path: str | Path,
+    *,
+    fps: float = 30,
+    trail_seconds: float = 0.5,
+    data_fps: float = 166,
+    subsample: int = 1,
+    xyz_lim: tuple[float, float] | None = DEFAULT_XYZ_LIM,
+) -> Path:
+    """
+    从 3D CSV 生成 3D 轨迹视频：不区分 ID，三个点用同一颜色，轨迹显示最近 trail_seconds 秒。
+    """
+    csv_3d_path = Path(csv_3d_path)
+    out_path = Path(out_path)
+    if not csv_3d_path.exists():
+        raise FileNotFoundError(f"3D CSV 不存在: {csv_3d_path}")
+
+    df = pd.read_csv(csv_3d_path)
+    if "frame" not in df.columns:
+        raise ValueError(f"3D CSV 需含 frame 列，当前: {list(df.columns)}")
+    if "X" not in df.columns and "x" in df.columns:
+        df = df.rename(columns={"x": "X", "y": "Y", "z": "Z"})
+    if "X" not in df.columns or "Y" not in df.columns or "Z" not in df.columns:
+        raise ValueError(f"3D CSV 需含 X,Y,Z 列，当前: {list(df.columns)}")
+
+    trajectories = {}
+    id_col = "fish_id" if "fish_id" in df.columns else "individual"
+    if id_col not in df.columns:
+        trajectories["all"] = df[["frame", "X", "Y", "Z"]].copy()
+    else:
+        for fid in df[id_col].unique():
+            trajectories[str(fid)] = df[df[id_col] == fid][["frame", "X", "Y", "Z"]].copy()
+
+    data = _sorted_xyz_per_label(trajectories)
+    if not data:
+        raise ValueError("3D CSV 无有效轨迹数据")
+
+    all_frames = set()
+    for frames, *_ in data.values():
+        all_frames.update(frames.tolist())
+    frames_sorted = sorted(all_frames)
+    if subsample > 1:
+        frames_sorted = frames_sorted[::subsample]
+    if not frames_sorted:
+        raise ValueError("没有有效帧")
+
+    trail_frames = max(1, int(data_fps * trail_seconds))
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory(prefix="traj3d_") as tmpdir:
+        tmpdir = Path(tmpdir)
+        for idx, t in enumerate(frames_sorted):
+            fig = plt.figure(figsize=(10, 8))
+            ax = fig.add_subplot(111, projection="3d")
+            t_start = max(frames_sorted[0], t - trail_frames)
+
+            for _label, (frames, xs, ys, zs) in data.items():
+                mask = (frames >= t_start) & (frames <= t)
+                valid = np.isfinite(xs) & np.isfinite(ys) & np.isfinite(zs)
+                mask = mask & valid
+                if np.any(mask):
+                    ax.plot(xs[mask], ys[mask], zs[mask], color=SINGLE_COLOR, linewidth=1.2, alpha=0.9)
+                idx_last = np.where((frames <= t) & valid)[0]
+                if len(idx_last) > 0:
+                    last = idx_last[-1]
+                    ax.scatter(xs[last], ys[last], zs[last], color=SINGLE_COLOR, s=80, marker="o")
+
+            _apply_calibration_view(ax, xyz_lim=xyz_lim)
+            ax.set_title(f"3D trajectory (frame {int(t)}, trail {trail_seconds}s)")
+            fig.tight_layout()
+            fig.savefig(tmpdir / f"frame_{idx:05d}.png", dpi=120, bbox_inches="tight")
+            plt.close(fig)
+
+        pattern = str(tmpdir / "frame_%05d.png")
+        cmd = [
+            _FFMPEG_EXE, "-y",
+            "-framerate", str(fps),
+            "-i", pattern,
+            "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            str(out_path),
+        ]
+        ret = subprocess.run(cmd, capture_output=True, text=True)
+        if ret.returncode != 0:
+            raise RuntimeError(f"ffmpeg 失败: {ret.stderr or ret.stdout}")
+
+    return out_path

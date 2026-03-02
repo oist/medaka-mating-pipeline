@@ -193,7 +193,8 @@ def _normalize_exp_id(s: str) -> str:
 
 def find_view_csvs(input_dir: Path, experiment_id: str) -> Dict[str, Path]:
     """在 input_dir 下递归找 CSV，按实验 ID 和 PLAYER 匹配，返回 {top|side1|side2: path}。
-    同视角有多份 CSV 时优先选用：*_processed > *_id_assigned > 原始 SLEAP 导出。"""
+    注意：这里只会使用 *_processed.csv 文件；若目标实验没有对应的 processed 文件，
+    会报错提醒，而不会回退到 `_id_assigned` 或原始 SLEAP 导出。"""
     by_view: Dict[str, List[Path]] = {}
     seen_eids: set[str] = set()
     want_norm = _normalize_exp_id(experiment_id)
@@ -203,19 +204,19 @@ def find_view_csvs(input_dir: Path, experiment_id: str) -> Dict[str, Path]:
             continue
         eid = extract_experiment_id_from_filename(p.name)
         seen_eids.add(eid)
-        if eid == experiment_id or _normalize_exp_id(eid) == want_norm:
+        # 仅匹配实验 ID 一致且文件名中包含 "processed" 的 CSV
+        if (eid == experiment_id or _normalize_exp_id(eid) == want_norm) and "processed" in p.name.lower():
             by_view.setdefault(view, []).append(p)
     if by_view:
-        # 画轨迹视频时优先用已处理坐标：*_processed > *_id_assigned > 原始 SLEAP 导出
-        def _prefer_processed(path: Path) -> tuple:
-            n = path.name.lower()
-            return (1 if "processed" in n else 0, 1 if "id_assigned" in n else 0, path.name)
-        return {v: max(fs, key=_prefer_processed) for v, fs in by_view.items() if fs}
+        # 多个 processed 文件时，按文件名排序后取最后一个（通常为最新版本）
+        return {v: sorted(fs, key=lambda x: x.name)[-1] for v, fs in by_view.items() if fs}
     # 未匹配时给出提示
     sample = sorted(seen_eids)[:8]
     raise FileNotFoundError(
-        f"未找到实验 ID 对应的 CSV: {experiment_id!r}\n"
-        f"当前 --input-dir 下出现的实验 ID 示例（请任选其一作 --experiment-id）：\n  " + "\n  ".join(sample)
+        f"未在 {input_dir} 下找到 processed CSV 对应实验 ID: {experiment_id!r}\n"
+        f"提示：2D 轨迹视频现在强制只使用 *_processed.csv 文件，"
+        f"请确认已通过 scripts.tracking.process_tracking 生成处理结果并放在该目录。\n"
+        f"当前目录下检测到的实验 ID 示例（不一定都有 processed 文件，请仅作参考）：\n  " + "\n  ".join(sample)
     )
 
 
@@ -228,23 +229,26 @@ def draw_one_frame(
     individuals_df: pd.DataFrame,
     frame_idx: int,
     colors: List[Tuple[int, int, int]],
+    simple_dots: bool = False,
 ) -> np.ndarray:
-    """在 img 上按 individuals_df 中该帧的 (x,y) 画圆和「个体k」文字。"""
+    """在 img 上按 individuals_df 中该帧的 (x,y) 画圆；simple_dots 时仅纯色圆、不画 ID 文字。"""
     out = img.copy()
     h, w = out.shape[:2]
     sub = individuals_df[individuals_df["frame"] == frame_idx].dropna(subset=["x", "y"])
+    dot_color = (255, 255, 255) if simple_dots else None
     for _, row in sub.iterrows():
         k = int(row["individual"])
         x, y = int(round(float(row["x"]))), int(round(float(row["y"])))
         if not (0 <= x < w and 0 <= y < h):
             continue
-        color = colors[k % len(colors)]
+        color = dot_color if simple_dots else colors[k % len(colors)]
         cv2.circle(out, (x, y), 8, color, 2)
-        label = f"Ind {k}"
-        cv2.putText(
-            out, label, (x + 10, y - 10),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 1, cv2.LINE_AA,
-        )
+        if not simple_dots:
+            label = f"Ind {k}"
+            cv2.putText(
+                out, label, (x + 10, y - 10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 1, cv2.LINE_AA,
+            )
     return out
 
 
@@ -256,10 +260,10 @@ def draw_trail_panel(
     height: int,
     colors: List[Tuple[int, int, int]],
     ref_wh: Tuple[int, int] | None,
+    simple_dots: bool = False,
 ) -> np.ndarray:
     """
-    绘制纯轨迹面板：空白画布 + 过去 trail_frames 帧的轨迹线 + 当前点与 ID。
-    individuals_df 的 (x,y) 是原始分辨率；若 ref_wh 给出参考宽高，则按 width/height 缩放后绘制。
+    绘制纯轨迹面板：空白画布 + 过去 trail_frames 帧的轨迹线 + 当前点；simple_dots 时仅纯色、不画 ID。
     """
     out = np.zeros((height, width, 3), dtype=np.uint8)
     out[:] = (40, 40, 40)  # 深灰底
@@ -268,6 +272,7 @@ def draw_trail_panel(
     ref_w, ref_h = (ref_wh if ref_wh else (width, height))
     scale_x = width / max(ref_w, 1)
     scale_y = height / max(ref_h, 1)
+    line_color = (200, 200, 200) if simple_dots else None
 
     start_frame = max(0, frame_idx - trail_frames)
     for ind_id in sorted(individuals_df["individual"].unique()):
@@ -277,22 +282,23 @@ def draw_trail_panel(
             & (individuals_df["frame"] <= frame_idx)
         ].sort_values("frame")
         seg = seg.dropna(subset=["x", "y"])
+        c = line_color if simple_dots else colors[ind_id % len(colors)]
         if len(seg) < 2:
             pt = seg[["x", "y"]].values
             if len(pt) == 1:
                 x, y = int(round(pt[0, 0] * scale_x)), int(round(pt[0, 1] * scale_y))
-                c = colors[ind_id % len(colors)]
                 cv2.circle(out, (x, y), 6, c, 2)
-                cv2.putText(out, f"Ind {ind_id}", (x + 8, y - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.55, c, 1, cv2.LINE_AA)
+                if not simple_dots:
+                    cv2.putText(out, f"Ind {ind_id}", (x + 8, y - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.55, c, 1, cv2.LINE_AA)
             continue
         pts = seg[["x", "y"]].values
         pts_scaled = (pts * np.array([scale_x, scale_y])).astype(np.int32)
         pts_scaled = np.clip(pts_scaled, (0, 0), (width - 1, height - 1))
-        c = colors[ind_id % len(colors)]
         cv2.polylines(out, [pts_scaled], False, c, 2, cv2.LINE_AA)
         x, y = int(pts_scaled[-1, 0]), int(pts_scaled[-1, 1])
         cv2.circle(out, (x, y), 6, c, 2)
-        cv2.putText(out, f"Ind {ind_id}", (x + 8, y - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.55, c, 1, cv2.LINE_AA)
+        if not simple_dots:
+            cv2.putText(out, f"Ind {ind_id}", (x + 8, y - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.55, c, 1, cv2.LINE_AA)
     return out
 
 
@@ -302,12 +308,20 @@ def render_three_view_video(
     output_path: Path,
     fps: float,
     trail_duration_s: float = 1.0,
+    show_trail_row: bool = True,
+    simple_dots: bool = False,
 ) -> None:
     """
-    上方：三视角视频 + ID 叠加；下方：三视角纯轨迹（保留最近 trail_duration_s 秒）。
+    上方：三视角视频 + 点叠加；可选下方：三视角纯轨迹。
+    simple_dots=True 时仅画纯色圆点、不画颜色区分与 Ind_0 等文字。
     """
     if cv2 is None:
         raise SystemExit("需要 opencv-python：pip install opencv-python")
+
+    try:
+        from tqdm import tqdm
+    except ImportError:
+        tqdm = lambda x, **kw: x
 
     order = ["top", "side1", "side2"]
     caps = {}
@@ -333,8 +347,9 @@ def render_three_view_video(
     out_w = sum(s[0] for s in scales)
     out_h_row = target_h
     trail_frames = max(1, int(round(trail_duration_s * fps)))
-    # 上下一行：上为视频+ID，下为纯轨迹
-    total_h = out_h_row * 2
+    extra_margin_h = 50
+    n_rows = 2 if show_trail_row else 1
+    total_h = out_h_row * n_rows + extra_margin_h
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     writer = cv2.VideoWriter(str(output_path), fourcc, fps, (out_w, total_h))
     if not writer.isOpened():
@@ -342,9 +357,8 @@ def render_three_view_video(
 
     colors = [(0, 255, 0), (0, 165, 255), (255, 0, 0)]  # BGR
 
-    for idx in range(n_frames):
+    for idx in tqdm(range(n_frames), desc="写入视频", unit="frame", ncols=80):
         row_video = []
-        row_trail = []
         for i, v in enumerate(order):
             cap = caps[v]
             cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
@@ -354,27 +368,41 @@ def render_three_view_video(
             elif len(frame.shape) == 2:
                 frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
             if v in view_data and not view_data[v].empty:
-                frame = draw_one_frame(frame, view_data[v], idx, colors)
+                frame = draw_one_frame(frame, view_data[v], idx, colors, simple_dots=simple_dots)
             frame = cv2.resize(frame, (scales[i][0], scales[i][1]))
             cv2.putText(frame, v, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1, cv2.LINE_AA)
             row_video.append(frame)
 
-            rw, rh = ref_wh_per_view[i]
-            trail_img = draw_trail_panel(
-                view_data.get(v, pd.DataFrame()),
-                idx,
-                trail_frames,
-                scales[i][0],
-                scales[i][1],
-                colors,
-                (rw, rh),
-            )
-            cv2.putText(trail_img, f"{v} (trail)", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 200, 200), 1, cv2.LINE_AA)
-            row_trail.append(trail_img)
-
         top_row = np.hstack(row_video)
-        bottom_row = np.hstack(row_trail)
-        combined = np.vstack([top_row, bottom_row])
+        if show_trail_row:
+            row_trail = []
+            for i, v in enumerate(order):
+                rw, rh = ref_wh_per_view[i]
+                trail_img = draw_trail_panel(
+                    view_data.get(v, pd.DataFrame()),
+                    idx,
+                    trail_frames,
+                    scales[i][0],
+                    scales[i][1],
+                    colors,
+                    (rw, rh),
+                    simple_dots=simple_dots,
+                )
+                cv2.putText(trail_img, f"{v} (trail)", (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (200, 200, 200), 1, cv2.LINE_AA)
+                row_trail.append(trail_img)
+            bottom_row = np.hstack(row_trail)
+            body = np.vstack([top_row, bottom_row])
+            frame_label_y = out_h_row * 2 + int(extra_margin_h * 0.7)
+        else:
+            body = top_row
+            frame_label_y = out_h_row + int(extra_margin_h * 0.7)
+        margin_band = np.zeros((extra_margin_h, out_w, 3), dtype=np.uint8)
+        combined = np.vstack([body, margin_band])
+        cv2.putText(
+            combined, f"Frame: {idx}",
+            (10, frame_label_y),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2, cv2.LINE_AA,
+        )
         writer.write(combined)
 
     for cap in caps.values():
@@ -430,10 +458,10 @@ def resolve_video_paths(
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        description="把配好 ID 并补全后的轨迹叠到 clip 视频上，输出三视角合成 mp4",
+        description="把配好 ID 且已处理后的 2D 轨迹叠到 clip 视频上，输出三视角合成 mp4（仅使用 *_processed.csv）",
     )
-    ap.add_argument("--input-dir", type=Path, required=True, help="SLEAP CSV 所在目录（会递归查找）。同目录下多份时已优先 *_processed > *_id_assigned > raw")
-    ap.add_argument("--processed-dir", type=Path, default=None, help="可选。带 _processed/_id_assigned 的 CSV 所在目录；若指定且存在匹配文件，则优先生效于 --input-dir")
+    ap.add_argument("--input-dir", type=Path, required=True, help="处理后 CSV 所在目录（会递归查找 *_processed.csv，仅使用这些文件）")
+    ap.add_argument("--processed-dir", type=Path, default=None, help="可选。另一个 processed 目录；若指定且存在匹配文件，则优先生效于 --input-dir")
     ap.add_argument("--experiment-id", type=str, required=True, help="实验 ID，与 analyze_tracking_patterns 中一致")
     ap.add_argument("--video-dir", type=Path, default=None, help="视频根目录（下含与 CSV 同名的 mp4 或同结构子目录）")
     ap.add_argument("--video-top", type=Path, default=None, help="top 视角视频路径")
@@ -443,6 +471,8 @@ def main() -> None:
     ap.add_argument("--output", type=Path, default=None, help="输出 mp4 路径（默认在 --output-dir 下）")
     ap.add_argument("--output-dir", type=Path, default=Path("D:/sleap_output"), help="输出目录，默认 D:\\sleap_output")
     ap.add_argument("--trail-duration-s", type=float, default=1.0, help="下方纯轨迹保留时长（秒），默认 1")
+    ap.add_argument("--no-trail-row", action="store_true", help="不显示下方纯轨迹行，仅保留上方三视角视频+点")
+    ap.add_argument("--simple-dots", action="store_true", help="仅画纯色圆点，不画颜色区分与 Ind_0 等文字")
     args = ap.parse_args()
 
     input_dir = args.input_dir
@@ -454,14 +484,12 @@ def main() -> None:
     except FileNotFoundError as e:
         raise SystemExit(e) from e
 
-    # 若指定了 --processed-dir，优先用该目录下的 _processed / _id_assigned 覆盖同视角
+    # 若指定了 --processed-dir，优先用该目录下的 *_processed.csv 覆盖同视角
     if args.processed_dir and args.processed_dir.exists():
         try:
             from_processed = find_view_csvs(args.processed_dir, args.experiment_id)
             for v, path in from_processed.items():
-                n = path.name.lower()
-                if "processed" in n or "id_assigned" in n:
-                    view_csvs[v] = path
+                view_csvs[v] = path
         except FileNotFoundError:
             pass
 
@@ -512,6 +540,8 @@ def main() -> None:
     render_three_view_video(
         view_data, vp, out_path, args.fps,
         trail_duration_s=args.trail_duration_s,
+        show_trail_row=not args.no_trail_row,
+        simple_dots=args.simple_dots,
     )
 
 

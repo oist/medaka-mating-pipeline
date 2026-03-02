@@ -5,6 +5,9 @@ Step 1: 点の取得
 从各相机 processed CSV 中，按帧提取 2D 点（像素坐标）。
 默认 use_fish_id=False：不按 2D 身份排序，按 score 或 x 排序，3D 身份由 Step3 几何对应 + Step4 跨帧追踪决定，避免 2D ID 交换。use_fish_id=True 时按 a/b/c 顺序取点，使 3D 与 2D 一致。
 
+可选：fill_missing_2d_from_two_views 用校准模型在「某一帧某个体仅缺 1 个视角」时，
+用另两视角预测该视角 2D 并补全；两视角缺失则该帧该个体不补，留待 3D 插值。
+
 用法:
     python -m scripts.reconstruction.step1_get_points --processed_dir H:\\sleap_output\\processed --set_key xxx --output points.json
 """
@@ -12,12 +15,101 @@ Step 1: 点の取得
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
+import numpy as np
 import pandas as pd
 
 PLAYER_TO_CAM = {"player1": "cam0", "player2": "cam1", "player3": "cam2"}
 FISH_ID_ORDER = ["a", "b", "c"]
+CAM_VIEW = {"player1": "XY", "player2": "XZ", "player3": "YZ"}  # 用于 2D 补全
+
+
+def _normalize_fish_id(fid: Any) -> str:
+    """将 fish_id 统一为 'a'/'b'/'c' 便于比较。"""
+    if fid is None or (isinstance(fid, float) and np.isnan(fid)):
+        return ""
+    s = str(fid).strip().lower()
+    if s in ("a", "b", "c"):
+        return s
+    if s in ("0", "1", "2"):
+        return FISH_ID_ORDER[int(s)]
+    return s
+
+
+def fill_missing_2d_from_two_views(
+    cal: Any,
+    dfs: Dict[str, pd.DataFrame],
+) -> Dict[str, pd.DataFrame]:
+    """
+    当某一帧某个体仅缺 1 个视角时，用另两视角预测该视角 2D 并写回 DataFrame。
+    两视角缺失则该帧该个体不补（留待 3D 阶段插值）；保证 ID 一致。
+
+    cal: 校准对象，需有 compute_XY_imcoords_from_XZ_YZ, compute_XZ_imcoords_from_XY_YZ,
+         compute_YZ_imcoords_from_XZ_XY 方法。
+    dfs: { "player1": df, "player2": df, "player3": df }，每 df 含 frame, fish_id, x, y。
+    返回新的 dfs（不修改入参），补全后的坐标写回对应行列。
+    """
+    players = ["player1", "player2", "player3"]
+    out = {p: dfs[p].copy() for p in players}
+    all_frames = set()
+    for df in out.values():
+        all_frames.update(df["frame"].astype(int).unique())
+    frames = sorted(all_frames)
+
+    for frame in frames:
+        for pid, df in out.items():
+            sub = df[(df["frame"] == frame)]
+            if sub.empty:
+                continue
+            for _, row in sub.iterrows():
+                fid = row.get("fish_id")
+                key = _normalize_fish_id(fid)
+                if key not in ("a", "b", "c"):
+                    continue
+                pts: Dict[str, Tuple[float, float]] = {}
+                for p in players:
+                    s = out[p][
+                        (out[p]["frame"] == frame)
+                        & (out[p]["fish_id"].apply(_normalize_fish_id) == key)
+                    ]
+                    if not s.empty and pd.notna(s.iloc[0]["x"]) and pd.notna(s.iloc[0]["y"]):
+                        pts[p] = (float(s.iloc[0]["x"]), float(s.iloc[0]["y"]))
+                    else:
+                        pts[p] = None  # type: ignore
+                valid = [p for p in players if pts.get(p) is not None]
+                if len(valid) != 2:
+                    continue
+                missing = [p for p in players if p not in valid][0]
+                if pid != missing:
+                    continue  # 只在该缺失视角的当前行上写回补全结果
+                try:
+                    if missing == "player1":
+                        # XY 由 XZ + YZ 预测 → player2, player3
+                        filled = cal.compute_XY_imcoords_from_XZ_YZ(
+                            np.array(pts["player2"]), np.array(pts["player3"])
+                        )
+                    elif missing == "player2":
+                        # XZ 由 XY + YZ 预测 → player1, player3
+                        filled = cal.compute_XZ_imcoords_from_XY_YZ(
+                            np.array(pts["player1"]), np.array(pts["player3"])
+                        )
+                    else:
+                        # YZ 由 XZ + XY 预测 → player2, player1
+                        filled = cal.compute_YZ_imcoords_from_XZ_XY(
+                            np.array(pts["player2"]), np.array(pts["player1"])
+                        )
+                except Exception:
+                    continue
+                mask = (
+                    (out[missing]["frame"] == frame)
+                    & (out[missing]["fish_id"].apply(_normalize_fish_id) == key)
+                )
+                if mask.any():
+                    idx = out[missing].index[mask].tolist()[0]
+                    out[missing].loc[idx, "x"] = float(filled[0])
+                    out[missing].loc[idx, "y"] = float(filled[1])
+    return out
 
 
 def load_processed_dfs(processed_dir: str, set_key: str) -> Dict[str, pd.DataFrame]:

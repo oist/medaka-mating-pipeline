@@ -90,7 +90,7 @@ def extract_video_and_model_info(slp_path: Path):
 
 
 def load_slp_data_all_tracks(slp_path: Path):
-    """Load all tracks data from .slp file"""
+    """从 .slp 导出所有轨迹，track 使用与 overlay 视频一致的稳定 ID（Track_0/1/2 或 track name）。"""
     if sleap is None:
         raise SystemExit(
             "Cannot import sleap package. Please install SLEAP first, e.g.:\n"
@@ -133,84 +133,105 @@ def load_slp_data_all_tracks(slp_path: Path):
         )
         raise SystemExit(error_msg)
 
+    # 与 overlay 视频一致的稳定 track 列表（sleap-convert / 视频渲染用同一套）
+    label_tracks = getattr(labels, "tracks", None) or []
+    try:
+        label_tracks = list(label_tracks)
+    except Exception:
+        label_tracks = []
+
+    # 与 03_sleap.ipynb 里的 _instance_points 保持同一逻辑（只是在这里顺便保留 score）
+    def _instance_points_with_score(inst, lf, score_thresh: float = 0.01) -> dict[str, tuple[float, float, float]]:
+        """
+        返回: node_name -> (x, y, score)
+        - 坐标提取方式与 Notebook 中生成 overlay 的 `_instance_points` 完全一致；
+        - 仅在 score >= score_thresh 时保留该点。
+        """
+        pts = getattr(inst, "points", None)
+        if pts is None:
+            return {}
+
+        out: dict[str, tuple[float, float, float]] = {}
+
+        # 情况 1：老版本，points 是 dict-like（value 有 x/y/score 属性）
+        if hasattr(pts, "items"):
+            for node, p in pts.items():
+                score = float(getattr(p, "score", 1.0))
+                if score < score_thresh:
+                    continue
+                x = float(getattr(p, "x", p[0] if hasattr(p, "__getitem__") else 0.0))
+                y = float(getattr(p, "y", p[1] if hasattr(p, "__getitem__") else 0.0))
+                out[str(node)] = (x, y, score)
+            return out
+
+        # 情况 2：新版本，points 为 numpy 数组，需结合 skeleton 解析节点名
+        try:
+            import numpy as np  # 局部导入，避免环境里没装 numpy 时整个脚本直接 ImportError
+        except ImportError as e:  # noqa: BLE001
+            raise SystemExit(
+                "numpy is required to export all tracks. "
+                "Please install it, e.g.:\n  pip install numpy"
+            ) from e
+        sk = getattr(labels, "skeleton", None)
+        if sk is None and hasattr(lf, "video"):
+            sk = getattr(lf.video, "skeleton", None)
+
+        node_names: list[str] = []
+        if sk is not None:
+            node_names = getattr(sk, "node_names", None) or getattr(sk, "nodes", [])
+            node_names = [str(n) for n in node_names]
+
+        points_array = getattr(inst, "numpy", lambda: None)() if hasattr(inst, "numpy") else pts
+        if isinstance(points_array, np.ndarray) and len(points_array.shape) >= 2:
+            for i in range(points_array.shape[0]):
+                name = node_names[i] if i < len(node_names) else f"node_{i}"
+                x = float(points_array[i, 0])
+                y = float(points_array[i, 1])
+                score = float(points_array[i, 2]) if points_array.shape[1] > 2 else 1.0
+                if score < score_thresh:
+                    continue
+                out[name] = (x, y, score)
+
+        return out
+
     rows: list[dict] = []
 
-    # Iterate over all labeled frames
+    # 遍历所有帧与 instance，使用与 overlay 一致的点解析与置信度阈值
     for lf in labels.labeled_frames:  # type: ignore[attr-defined]
-        frame_idx = lf.frame_idx
+        frame_idx = int(getattr(lf, "frame_idx", 0))
 
-        for inst in lf.instances:
-            # Get track name
+        for inst_idx, inst in enumerate(getattr(lf, "instances", [])):
+            # 使用与 overlay 一致的稳定 track 身份（不用 id(inst)，否则每帧都是新 ID）
             track_name = None
             if getattr(inst, "track", None) is not None:
                 track_name = getattr(inst.track, "name", None) or getattr(
                     inst.track, "track_id", None
                 )
+                if track_name is None and label_tracks:
+                    try:
+                        idx = label_tracks.index(inst.track)
+                        track_name = f"Track_{idx}"
+                    except (ValueError, TypeError):
+                        pass
             if track_name is None:
-                track_name = f"untracked_{id(inst)}"
+                # 无 track 时用「帧号 + 帧内序号」，保证至少同帧内顺序稳定
+                track_name = f"untracked_f{frame_idx}_{inst_idx}"
 
-            # Collect all keypoints for this instance
-            points_data = inst.points
-            
-            # Method 1: If dict (old SLEAP version)
-            if isinstance(points_data, dict) or (hasattr(points_data, 'items') and callable(getattr(points_data, 'items'))):
-                try:
-                    for node, point in points_data.items():
-                        score = float(getattr(point, "score", 1.0))
-                        rows.append({
-                            "frame": int(frame_idx),
-                            "track": str(track_name),
-                            "node": str(node),
-                            "x": float(point.x),
-                            "y": float(point.y),
-                            "score": score,
-                        })
-                except (AttributeError, TypeError):
-                    pass
-            
-            # Method 2: Try numpy array (new SLEAP version)
-            else:
-                try:
-                    import numpy as np
-                    if hasattr(inst, "numpy") or isinstance(points_data, np.ndarray):
-                        # Get node names
-                        skeleton = getattr(labels, "skeleton", None)
-                        if skeleton is None and hasattr(lf, "video"):
-                            video = lf.video
-                            if hasattr(video, "skeleton"):
-                                skeleton = video.skeleton
-                        
-                        node_names = []
-                        if skeleton is not None:
-                            if hasattr(skeleton, "nodes"):
-                                node_names = [str(node) for node in skeleton.nodes]
-                            elif hasattr(skeleton, "node_names"):
-                                node_names = [str(name) for name in skeleton.node_names]
-                        
-                        # Get point data
-                        if hasattr(inst, "numpy"):
-                            points_array = inst.numpy()  # type: ignore[attr-defined]
-                        else:
-                            points_array = points_data
-                        
-                        if isinstance(points_array, np.ndarray) and len(points_array.shape) >= 2:
-                            num_nodes = points_array.shape[0]
-                            for i in range(num_nodes):
-                                node_name = node_names[i] if i < len(node_names) else f"node_{i}"
-                                x = float(points_array[i, 0])
-                                y = float(points_array[i, 1])
-                                score = float(points_array[i, 2]) if points_array.shape[1] > 2 else 1.0
-                                
-                                rows.append({
-                                    "frame": int(frame_idx),
-                                    "track": str(track_name),
-                                    "node": str(node_name),
-                                    "x": x,
-                                    "y": y,
-                                    "score": score,
-                                })
-                except (ImportError, AttributeError, TypeError, IndexError):
-                    pass
+            pts = _instance_points_with_score(inst, lf)
+            if not pts:
+                continue
+
+            for node_name, (x, y, score) in pts.items():
+                rows.append(
+                    {
+                        "frame": frame_idx,
+                        "track": str(track_name),
+                        "node": str(node_name),
+                        "x": float(x),
+                        "y": float(y),
+                        "score": float(score),
+                    }
+                )
 
     if not rows:
         raise SystemExit("Error: No tracking data found in .slp file.")
@@ -220,12 +241,155 @@ def load_slp_data_all_tracks(slp_path: Path):
     return df
 
 
+def load_analysis_h5_all_tracks(h5_path: Path) -> pd.DataFrame:
+    """
+    从官方 sleap-convert 导出的 analysis HDF5 中读取所有轨迹，展开为长表 CSV：
+    列为 frame, track, node, x, y, score。
+    """
+    try:
+        import h5py  # type: ignore[import]
+        import numpy as np  # type: ignore[import]
+    except ImportError as e:  # noqa: BLE001
+        raise SystemExit(
+            "h5py and numpy are required to read analysis HDF5.\n"
+            "Please install them, e.g.:\n"
+            "  pip install h5py numpy"
+        ) from e
+
+    if not h5_path.exists():
+        raise SystemExit(f"Analysis HDF5 not found: {h5_path}")
+
+    with h5py.File(h5_path, "r") as f:
+        if "tracks" not in f:
+            raise SystemExit(f"'tracks' dataset not found in analysis HDF5: {h5_path}")
+        tracks_ds = f["tracks"]
+        tracks = tracks_ds[()]  # 4D array
+
+        # 轨迹与节点名称
+        track_names_ds = f.get("track_names")
+        if track_names_ds is not None:
+            raw = track_names_ds[()]
+            track_names = [
+                (name.decode("utf-8") if isinstance(name, (bytes, bytearray)) else str(name))
+                for name in raw
+            ]
+        else:
+            track_names = []
+
+        node_names_ds = f.get("node_names")
+        if node_names_ds is not None:
+            raw_nodes = node_names_ds[()]
+            node_names = [
+                (name.decode("utf-8") if isinstance(name, (bytes, bytearray)) else str(name))
+                for name in raw_nodes
+            ]
+        else:
+            node_names = []
+
+        point_scores_ds = f.get("point_scores")
+        point_scores = point_scores_ds[()] if point_scores_ds is not None else None
+
+    if tracks.ndim != 4:
+        raise SystemExit(f"Unsupported tracks ndim={tracks.ndim} in analysis HDF5 (expected 4).")
+
+    # 推断维度顺序：
+    # - 默认 sleap-convert 使用 MATLAB preset：tracks: (n_tracks, 2, n_nodes, n_frames)
+    # - 若最后一维为 2，则视为标准 preset：tracks: (n_frames, n_tracks, n_nodes, 2)
+    use_matlab_order = False
+    if tracks.shape[1] == 2:
+        use_matlab_order = True
+    elif tracks.shape[-1] == 2:
+        use_matlab_order = False
+    else:
+        # 回退：优先按 MATLAB 解释
+        use_matlab_order = True
+
+    rows: list[dict] = []
+
+    if use_matlab_order:
+        # (n_tracks, 2, n_nodes, n_frames)
+        n_tracks, _, n_nodes, n_frames = tracks.shape
+        if not track_names:
+            track_names = [f"Track_{i}" for i in range(n_tracks)]
+        if not node_names:
+            node_names = [f"node_{i}" for i in range(n_nodes)]
+
+        if point_scores is not None and point_scores.shape != (n_tracks, n_nodes, n_frames):
+            point_scores = None
+
+        for t in range(n_tracks):
+            tname = track_names[t] if t < len(track_names) else f"Track_{t}"
+            for n in range(n_nodes):
+                nname = node_names[n] if n < len(node_names) else f"node_{n}"
+                for fi in range(n_frames):
+                    x = float(tracks[t, 0, n, fi])
+                    y = float(tracks[t, 1, n, fi])
+                    if not (np.isfinite(x) and np.isfinite(y)):
+                        continue
+                    score = 1.0
+                    if point_scores is not None:
+                        score = float(point_scores[t, n, fi])
+                    rows.append(
+                        {
+                            "frame": int(fi),
+                            "track": str(tname),
+                            "node": str(nname),
+                            "x": x,
+                            "y": y,
+                            "score": score,
+                        }
+                    )
+    else:
+        # 标准 preset：tracks: (n_frames, n_tracks, n_nodes, 2)
+        n_frames, n_tracks, n_nodes, _ = tracks.shape
+        if not track_names:
+            track_names = [f"Track_{i}" for i in range(n_tracks)]
+        if not node_names:
+            node_names = [f"node_{i}" for i in range(n_nodes)]
+
+        if point_scores is not None and point_scores.shape != (n_frames, n_tracks, n_nodes):
+            point_scores = None
+
+        for fi in range(n_frames):
+            for t in range(n_tracks):
+                tname = track_names[t] if t < len(track_names) else f"Track_{t}"
+                for n in range(n_nodes):
+                    nname = node_names[n] if n < len(node_names) else f"node_{n}"
+                    x = float(tracks[fi, t, n, 0])
+                    y = float(tracks[fi, t, n, 1])
+                    if not (np.isfinite(x) and np.isfinite(y)):
+                        continue
+                    score = 1.0
+                    if point_scores is not None:
+                        score = float(point_scores[fi, t, n])
+                    rows.append(
+                        {
+                            "frame": int(fi),
+                            "track": str(tname),
+                            "node": str(nname),
+                            "x": x,
+                            "y": y,
+                            "score": score,
+                        }
+                    )
+
+    if not rows:
+        raise SystemExit(f"No valid tracking data found in analysis HDF5: {h5_path}")
+
+    df = pd.DataFrame.from_records(rows)
+    print(
+        f"Loaded {len(df)} data points from analysis HDF5, "
+        f"{df['track'].nunique()} tracks, {df['node'].nunique()} nodes"
+    )
+    return df
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Export SLEAP predictions (.slp) to analysis-friendly formats via `sleap-convert`. "
             "(SLEAP 1.5.x uses `sleap-convert`; `sleap-export` is legacy.)\n"
-            "For CSV format, use --all-tracks to export all tracks (not just the first one)."
+            "For CSV with same track identity as overlay video: use --all-tracks (uses stable Track_0/1/2 from .slp)."
         )
     )
     parser.add_argument(
@@ -262,11 +426,11 @@ def main() -> None:
     if not input_path.exists():
         raise SystemExit(f"Input not found: {input_path}")
 
-    # If CSV format and need all tracks, use direct loading
+    # If CSV format and need all tracks, use direct loading from .slp
     if args.format == "analysis.csv" and args.all_tracks:
-        print("Exporting all tracks to CSV using direct loading...")
+        print("Exporting all tracks to CSV using direct loading from .slp (all instances per frame)...")
         df = load_slp_data_all_tracks(input_path)
-        
+
         # 提取视频名和模型名
         video_name, model_name = extract_video_and_model_info(input_path)
         

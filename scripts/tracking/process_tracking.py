@@ -10,7 +10,7 @@ from pathlib import Path
 from .file_set_generator import generate_file_sets, save_file_sets
 from .data_loader import load_set_files, parse_sleap_data
 from .id_assignment import assign_ids_temporal
-from .outlier_detection import process_all_fish_outliers
+from .outlier_detection import process_all_fish_outliers, process_mirror_filter
 from .missing_value_filling import process_all_fish_missing_values, extract_time_from_filename
 from .visualization import plot_trajectories_three_views
 
@@ -20,7 +20,7 @@ def process_single_set(file_set_info, sleap_output_dir, output_dir=None,
                        interp_method='linear', interp_limit=None, smooth=True,
                        visualize=True, max_iterations=10,
                        use_frame_gap_scaling=True, max_jump_per_frame=100,
-                       flow_weight=0, **kwargs):
+                       flow_weight=0, skip_2d_interpolation=False, **kwargs):
     """
     处理单个set的数据
     
@@ -85,30 +85,49 @@ def process_single_set(file_set_info, sleap_output_dir, output_dir=None,
         id_viz_path = os.path.join(output_dir, f"{set_key}_after_id_assignment.png") if output_dir else None
         plot_trajectories_three_views(tracked_dfs, title_suffix="After ID Assignment", save_path=id_viz_path)
     
-    # 步骤3: 异常值处理（可选：1帧>100px, 2帧>200px... 或固定阈值）
-    print("步骤3: 处理异常值（迭代直到没有异常值）...")
+    # 步骤3: 异常值处理（按帧间隔缩放阈值：1帧>max_jump_per_frame, 2帧>2*max_jump_per_frame...）
+    print("步骤3: 处理异常值（按帧间隔缩放阈值单次扫描）...")
+    set_key = file_set_info.get('key', 'unknown')
     cleaned_dfs = process_all_fish_outliers(
         tracked_dfs,
         max_jump_distance=max_jump_distance,
-        iterative=True,
+        iterative=True,  # 为兼容旧接口保留，但内部已忽略迭代逻辑
         max_iterations=kwargs.get('max_iterations', max_iterations),
         use_frame_gap_scaling=use_frame_gap_scaling,
         max_jump_per_frame=max_jump_per_frame,
+        log_dir=output_dir or sleap_output_dir,
+        set_key=set_key,
     )
-    
-    # 步骤4: 缺失值填充
-    print("步骤4: 填充缺失值...")
-    # 逻辑：用上下两帧的数据进行插值补齐，确保每一帧都有3个个体的数据
-    final_dfs = process_all_fish_missing_values(
-        cleaned_dfs,
-        file_set_info=file_set_info,  # 传递文件信息以提取时间范围
-        fps=fps,  # 166fps
-        method=interp_method, 
-        interp_limit=interp_limit, 
-        smooth=smooth,
-        smooth_window=9,
-        smooth_order=2
-    )
+
+    # 步骤3b: 镜像过滤（同一帧内个体+镜像成对时，将镜像点置为 NaN）
+    mirror_y_tol = kwargs.get('mirror_y_tol', 20.0)
+    mirror_sym_tol = kwargs.get('mirror_sym_tol', 25.0)
+    if kwargs.get('apply_mirror_filter', True):
+        print("步骤3b: 镜像过滤（个体与镜像成对检测）...")
+        cleaned_dfs = process_mirror_filter(
+            cleaned_dfs,
+            y_tol=mirror_y_tol,
+            sym_tol=mirror_sym_tol,
+            log_dir=output_dir or sleap_output_dir,
+            set_key=set_key,
+        )
+
+    # 步骤4: 缺失值填充（可选跳过：缺的留到 3D 再插值）
+    if skip_2d_interpolation:
+        print("步骤4: 跳过 2D 插值（缺帧留到 3D 轨迹插值阶段处理）")
+        final_dfs = cleaned_dfs
+    else:
+        print("步骤4: 填充缺失值...")
+        final_dfs = process_all_fish_missing_values(
+            cleaned_dfs,
+            file_set_info=file_set_info,
+            fps=fps,
+            method=interp_method,
+            interp_limit=interp_limit,
+            smooth=smooth,
+            smooth_window=9,
+            smooth_order=2
+        )
     
     # 可视化最终结果
     if visualize:

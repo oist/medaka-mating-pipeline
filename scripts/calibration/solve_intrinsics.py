@@ -156,6 +156,12 @@ def main() -> None:
         help="Disable auto-detection of ways; treat the given folders as a single calibration set"
     )
     parser.add_argument(
+        "--way_name", type=str, default=None,
+        help="When using --no_auto_detect, specify which way (e.g. way1, way2, way3, way4). "
+             "Script will look for cali_<way>_cam*_image_coords.txt in image_coords_folder. "
+             "Required when --no_auto_detect is set and folder name does not imply the way."
+    )
+    parser.add_argument(
         "--way_names", type=str, nargs="+", default=None,
         help="When --merge_ways is used, specify way names to merge (e.g., way1 way2 way3 way4). "
              "If not specified, will auto-detect from image_coords_folder"
@@ -403,12 +409,15 @@ def main() -> None:
         if output_folder:
             print(f"Output folder: {output_folder}")
         
-        # 如果使用了自动检测，提取way名称作为filename_keyword
+        # 如果使用了自动检测，提取 way 名称；否则可用 --way_name 指定
         filename_keyword = None
         if way_configs is not None:
             way_name = way_configs[i][2]
             filename_keyword = way_name
             print(f"Using filename keyword: {filename_keyword}")
+        elif args.way_name:
+            filename_keyword = args.way_name
+            print(f"Using filename keyword (--way_name): {filename_keyword}")
         
         try:
             results_root = results_roots[i] if results_roots else None

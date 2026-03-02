@@ -38,29 +38,35 @@ import numpy as np
 GROUP_LABELS = ["a", "b", "c"]
 
 
+def _infer_dimensions(candidates: List[Dict]) -> Tuple[int, int, int]:
+    """从候选中推断 cam0/cam1/cam2 索引范围 (n0, n1, n2)。"""
+    n0 = n1 = n2 = 0
+    for c in candidates:
+        n0 = max(n0, c.get("cam0_idx", 0) + 1)
+        n1 = max(n1, c.get("cam1_idx", 0) + 1)
+        n2 = max(n2, c.get("cam2_idx", 0) + 1)
+    return n0, n1, n2
+
+
 def _build_cost_matrix(
     candidates: List[Dict],
+    n0: int,
+    n1: int,
+    n2: int,
     xyz_bounds: Tuple[float, float] | None = None,
-) -> np.ndarray | None:
+) -> np.ndarray:
     """
-    构建 cost[i0, i1, i2] 矩阵。
-    若某组合不存在、cost 为 None、或 xyz 超出 xyz_bounds，则视为 inf。
+    构建 cost[i0, i1, i2] 矩阵，形状 (n0, n1, n2)。
+    若某组合不存在或 cost 为 None，则视为 inf。
     """
-    cost_mat = np.full((3, 3, 3), np.inf, dtype=float)
+    cost_mat = np.full((n0, n1, n2), np.inf, dtype=float)
     for c in candidates:
         i0 = c.get("cam0_idx", 0)
         i1 = c.get("cam1_idx", 0)
         i2 = c.get("cam2_idx", 0)
-        cost = c.get("cost")
-        xyz = c.get("xyz", [])
-        # 负坐标候选视为无效
-        if xyz and any(v < 0 for v in xyz):
+        if i0 >= n0 or i1 >= n1 or i2 >= n2:
             continue
-        # 若指定了物理范围，超出范围的候选也视为无效
-        if xyz and xyz_bounds is not None:
-            low, high = xyz_bounds
-            if any(v < low or v > high for v in xyz):
-                continue
+        cost = c.get("cost")
         if cost is not None and not (isinstance(cost, float) and np.isnan(cost)):
             cost_mat[i0, i1, i2] = float(cost)
     return cost_mat
@@ -71,19 +77,25 @@ def _select_best_assignment(
     xyz_bounds: Tuple[float, float] | None = None,
 ) -> tuple[Dict[str, List[float]] | None, List[int] | None, List[int] | None]:
     """
-    从 27 个候选中选择 3 个 triplets，使总 cost 最小。
-    xyz_bounds 超出范围的候选在 _build_cost_matrix 中已排除。
+    从候选中选择 k 个 triplets（k=min(3,n0,n1,n2)），使总 cost 最小。
+    支持每帧 1 或 2 条鱼（k=1 或 k=2）。
     """
-    if len(candidates) < 3:
+    if not candidates:
         return None, None, None
 
-    cost_mat = _build_cost_matrix(candidates, xyz_bounds)
+    n0, n1, n2 = _infer_dimensions(candidates)
+    k = min(3, n0, n1, n2)
+    if k == 0:
+        return None, None, None
+
+    cost_mat = _build_cost_matrix(candidates, n0, n1, n2, xyz_bounds)
     cand_by_idx: Dict[Tuple[int, int, int], Dict] = {}
     for c in candidates:
         key = (c["cam0_idx"], c["cam1_idx"], c["cam2_idx"])
         cand_by_idx[key] = c
 
-    perms = list(permutations([0, 1, 2]))
+    indices = list(range(k))
+    perms = list(permutations(indices))
     best_total = np.inf
     best_assign: List[Tuple[int, int, int]] = []
 
@@ -91,8 +103,11 @@ def _select_best_assignment(
         for q in perms:
             total = 0.0
             assign = []
-            for i in range(3):
+            for i in range(k):
                 i0, i1, i2 = i, p[i], q[i]
+                if i0 >= n0 or i1 >= n1 or i2 >= n2:
+                    total = np.inf
+                    break
                 c = cost_mat[i0, i1, i2]
                 if np.isinf(c):
                     total = np.inf
@@ -109,15 +124,14 @@ def _select_best_assignment(
     groups: Dict[str, List[float]] = {}
     perm_cam1: List[int] = []
     perm_cam2: List[int] = []
-    for idx, (i0, i1, i2) in enumerate(best_assign):
+    for idx in range(k):
+        label = GROUP_LABELS[idx]
+        i0, i1, i2 = best_assign[idx]
         key = (i0, i1, i2)
         if key in cand_by_idx:
-            label = GROUP_LABELS[idx]
             groups[label] = cand_by_idx[key]["xyz"]
             perm_cam1.append(i1)
             perm_cam2.append(i2)
-    if len(groups) != 3:
-        return None, None, None
     return groups, perm_cam1, perm_cam2
 
 

@@ -25,25 +25,30 @@ FALLBACK_GROUP = ("a", "b", "c")
 
 
 def load_trajectories_from_csv(output_dir: str, set_key: str) -> Dict[str, pd.DataFrame]:
-    """从 output_dir 读取 {set_key}_*_3d.csv，构建 trajectories 字典。只加载一组（ID_1/2/3 或 a/b/c），避免重复 6 条线。"""
+    """从 output_dir 读取 3D 轨迹。优先单 CSV {set_key}_3d.csv（frame, fish_id, X, Y, Z），否则回退到 {set_key}_a_3d.csv 等。"""
     out = Path(output_dir)
-    # 优先使用跨视频 ID（Step 5 输出）
+    single = out / f"{set_key}_3d.csv"
+    if single.exists():
+        df = pd.read_csv(single)
+        if "fish_id" not in df.columns:
+            raise ValueError(f"{single} 缺少列 fish_id")
+        return {fid: gr[["frame", "X", "Y", "Z"]].copy() for fid, gr in df.groupby("fish_id")}
+    # 兼容：分文件 a/b/c 或 ID_1/2/3
     for name in PREFERRED_GROUP:
         p = out / f"{set_key}_{name}_3d.csv"
         if p.exists():
             return {
-                name: pd.read_csv(out / f"{set_key}_{name}_3d.csv")
-                for name in PREFERRED_GROUP
-                if (out / f"{set_key}_{name}_3d.csv").exists()
+                n: pd.read_csv(out / f"{set_key}_{n}_3d.csv")
+                for n in PREFERRED_GROUP
+                if (out / f"{set_key}_{n}_3d.csv").exists()
             }
-    # 否则使用 a/b/c（Step 4 导出）
     result = {}
     for name in FALLBACK_GROUP:
         p = out / f"{set_key}_{name}_3d.csv"
         if p.exists():
             result[name] = pd.read_csv(p)
     if not result:
-        raise FileNotFoundError(f"未找到 3D CSV: {out}/{set_key}_*_3d.csv（需要 a/b/c 或 ID_1/2/3）")
+        raise FileNotFoundError(f"未找到 3D CSV: {out}/{set_key}_3d.csv 或 {set_key}_*_3d.csv")
     return result
 
 

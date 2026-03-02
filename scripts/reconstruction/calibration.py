@@ -38,6 +38,32 @@ class Calibration:
         self.xz_getter = load(self.python_calibration_folder / "xy_yz_to_xz.joblib")
         self.xy_getter = load(self.python_calibration_folder / "xz_yz_to_xy.joblib")
         self.yz_getter = load(self.python_calibration_folder / "xz_xy_to_yz.joblib")
+        # 可选：3D→2D 重投影（用于 2D 叠加由 3D 投影得到）
+        xyz_to_im_path = self.python_calibration_folder / "XYZ_to_imCoords.joblib"
+        self._imcoords_getter = load(xyz_to_im_path) if xyz_to_im_path.exists() else None
+
+    def has_imcoords_from_XYZ(self) -> bool:
+        """是否已加载 3D→2D 模型（XYZ_to_imCoords.joblib），可用于将 3D 投影到三相机 2D。"""
+        return self._imcoords_getter is not None
+
+    def compute_imCoords_from_XYZ(self, XYZ: np.ndarray) -> np.ndarray:
+        """
+        从 3D 坐标预测三相机 2D 图像坐标（重投影）。
+
+        Args:
+            XYZ: shape (3,) 或 (N, 3)
+
+        Returns:
+            shape (3, 2) 或 (N, 3, 2)，顺序 [cam0(top/XY), cam1(side1/XZ), cam2(side2/YZ)]，每行 (x, y) 像素
+        """
+        if self._imcoords_getter is None:
+            raise RuntimeError("未找到 XYZ_to_imCoords.joblib，无法从 3D 投影到 2D")
+        single = XYZ.ndim == 1
+        if single:
+            XYZ = XYZ.reshape(1, 3)
+        flat = self._imcoords_getter.predict(XYZ)  # (N, 6)
+        out = flat.reshape(-1, 3, 2)
+        return out[0] if single else out
 
     def compute_XYZ_from_imageCoord_triplet(self, imCoords: np.ndarray) -> np.ndarray:
         """
@@ -135,5 +161,11 @@ class Calibration:
         """
         if np.any(np.isnan(imCoords)):
             return np.nan
+        # 参考 Dynamics_of_dominance: 对 3 个相机的所有成对组合计算配准误差，并累加。
         err_01 = self.compute_point_correspondence_error([0, 1], imCoords[0], imCoords[1])
-        return err_01
+        err_02 = self.compute_point_correspondence_error([0, 2], imCoords[0], imCoords[2])
+        err_12 = self.compute_point_correspondence_error([1, 2], imCoords[1], imCoords[2])
+        errs = [e for e in (err_01, err_02, err_12) if not np.isnan(e)]
+        if not errs:
+            return np.nan
+        return float(sum(errs))

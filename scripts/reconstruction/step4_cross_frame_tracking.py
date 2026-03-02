@@ -1,16 +1,13 @@
 """
-Step 4: 跨帧个体追踪（匈牙利算法 + 运动方向 flow）
-==================================================
+Step 4: 跨帧个体追踪（完全对照 Dynamics_of_dominance 的 track_segment_in_3D_if_possible）
+===============================================================================
 
-对 Step 3 输出的每帧 a/b/c 3D 坐标进行跨帧关联，保证同一物理个体在时间上保持同一标签。
+Reference: Dynamics_of_dominance-main/tracking_code/lib/tracking.py
+  - 用上一帧每条鱼的 3D 位置 last_known_positions 与当前帧 3 个 3D 观测做匈牙利匹配；
+  - 代价 = 3D 欧氏距离（reference 里是 compute_distance_between_3D_fish，我们单点即欧氏距离）；
+  - 无 flow 惩罚，无首帧按 X 排序（首帧直接用 Step3 的 a/b/c 顺序，作为初始 last_known）。
 
-使用匈牙利算法最小化匹配代价，代价 = 3D 距离 + flow 惩罚（运动方向不一致时增加代价）。
-
-输入: best.json（Step 3 输出）
-输出: best_tracked.json（跨帧追踪后的 best.json，结构相同）
-
-用法:
-    python -m scripts.reconstruction.step4_cross_frame_tracking --best_json best.json --output best_tracked.json
+与 reference 一致：仅用「上一帧身份→当前观测」的 3D 距离最小化确定身份。
 """
 
 import argparse
@@ -23,102 +20,111 @@ from scipy.optimize import linear_sum_assignment
 
 GROUP_LABELS = ["a", "b", "c"]
 
+# 用大有限数代替 np.inf，避免 linear_sum_assignment 报 "cost matrix is infeasible"
+UNMATCHABLE_COST = 1e10
 
-def _compute_cost_matrix(
-    groups_t: Dict[str, List[float]],
-    groups_t1_raw: Dict[str, List[float]],
-    groups_t_prev: Dict[str, List[float]] | None,
-    flow_weight: float,
-) -> np.ndarray:
-    """
-    构建 3x3 代价矩阵：cost[i,j] = 将 t 帧的 canonical 标签 i 匹配到 t+1 帧的 raw 标签 j 的代价。
 
-    代价 = 3D 欧氏距离 + flow 惩罚（运动方向不一致时增加）
-    """
-    cost_mat = np.zeros((3, 3))
-    for i, la in enumerate(GROUP_LABELS):
-        pos_i = np.array(groups_t[la], dtype=float)
-        for j, lb in enumerate(GROUP_LABELS):
-            pos_j = np.array(groups_t1_raw[lb], dtype=float)
-            dist = float(np.linalg.norm(pos_i - pos_j))
-
-            flow_penalty = 0.0
-            if groups_t_prev is not None and flow_weight > 0:
-                pos_prev = np.array(groups_t_prev[la], dtype=float)
-                v_prev = pos_i - pos_prev
-                v_new = pos_j - pos_i
-                n_prev = np.linalg.norm(v_prev)
-                n_new = np.linalg.norm(v_new)
-                if n_prev > 1e-6 and n_new > 1e-6:
-                    cos_angle = np.dot(v_prev, v_new) / (n_prev * n_new)
-                    cos_angle = np.clip(cos_angle, -1.0, 1.0)
-                    flow_penalty = (1.0 - cos_angle) * flow_weight
-
-            cost_mat[i, j] = dist + flow_penalty
-    return cost_mat
+def _distance_3d(p: List[float], q: List[float]) -> float:
+    """单点 3D 欧氏距离（reference 的 compute_distance_between_3D_fish 在单 bodypoint 时即此）。"""
+    return float(np.linalg.norm(np.array(p, dtype=float) - np.array(q, dtype=float)))
 
 
 def apply_cross_frame_tracking(
     best_by_frame: Dict[int, Dict],
-    flow_weight: float = 10.0,
+    flow_weight: float = 0.0,
 ) -> Dict[int, Dict]:
     """
-    对 best.json 进行跨帧追踪，使同一物理个体在时间上保持同一标签。
-
-    Args:
-        best_by_frame: {frame: {"groups": {...}, "perm_cam1": [...], "perm_cam2": [...]}}
-        flow_weight: flow 方向惩罚权重（mm），运动方向相反时约增加 2*flow_weight 代价
-
-    Returns:
-        结构同 best_by_frame，但 a/b/c 已按跨帧一致性重排
+    跨帧追踪：与 Dynamics_of_dominance 的 track_segment 一致。
+    - 第一帧：用 Step3 结果作为初始 last_known（不重排）。
+    - 后续帧：cost[i,j] = distance(last_known[i], curr_obs[j])，匈牙利后更新 last_known。
+    flow_weight 保留参数兼容，此处不使用（reference 无 flow）。
     """
     frames = sorted(best_by_frame.keys())
-    if len(frames) < 2:
+    if len(frames) == 0:
         return best_by_frame
 
     result: Dict[int, Dict] = {}
+    # 第一帧：直接采用 Step3 结果，作为 last_known 的初值
     result[frames[0]] = dict(best_by_frame[frames[0]])
+    groups0 = result[frames[0]].get("groups", {})
+    last_known: List[List[float] | None] = [
+        list(groups0[la]) if la in groups0 else None
+        for la in GROUP_LABELS
+    ]
 
-    for idx in range(len(frames) - 1):
-        t, t1 = frames[idx], frames[idx + 1]
-        groups_t = result[t]["groups"]
+    for idx in range(1, len(frames)):
+        t1 = frames[idx]
         raw_t1 = best_by_frame[t1]
         groups_t1_raw = raw_t1.get("groups", {})
-        groups_t_prev = result[frames[idx - 1]]["groups"] if idx > 0 else None
+        curr_obs = [groups_t1_raw[la] for la in GROUP_LABELS if la in groups_t1_raw]
+        n_curr = len(curr_obs)
 
-        if len(groups_t) != 3 or len(groups_t1_raw) != 3:
+        if n_curr == 0:
             result[t1] = dict(raw_t1)
             continue
 
-        cost_mat = _compute_cost_matrix(
-            groups_t, groups_t1_raw, groups_t_prev, flow_weight
-        )
+        # 代价矩阵：cost[i,j] = distance(last_known[i], curr_obs[j])
+        # i = 身份(0,1,2)，j = 当前观测索引（与 reference 一致）
+        # 用大有限数代替 inf，否则 linear_sum_assignment 会报 "cost matrix is infeasible"
+        cost = np.full((len(GROUP_LABELS), n_curr), UNMATCHABLE_COST, dtype=float)
+        for i in range(len(GROUP_LABELS)):
+            if last_known[i] is None:
+                continue
+            for j in range(n_curr):
+                d = _distance_3d(last_known[i], curr_obs[j])
+                cost[i, j] = d if np.isfinite(d) else UNMATCHABLE_COST
 
-        row_ind, col_ind = linear_sum_assignment(cost_mat)
+        row_ind, col_ind = linear_sum_assignment(cost)
 
+        # (row_ind[k], col_ind[k]) 表示 身份 row_ind[k] 匹配 观测 col_ind[k]
         new_groups: Dict[str, List[float]] = {}
-        new_perm_cam1: List[int] = []
-        new_perm_cam2: List[int] = []
+        for k in range(len(row_ind)):
+            i = int(row_ind[k])
+            j = int(col_ind[k])
+            if i >= len(GROUP_LABELS) or j >= n_curr or cost[i, j] >= UNMATCHABLE_COST:
+                continue
+            new_groups[GROUP_LABELS[i]] = list(curr_obs[j])
+
+        # 未匹配的身份保留上一帧位置（与 reference 一致）
+        for i, la in enumerate(GROUP_LABELS):
+            if la not in new_groups and last_known[i] is not None:
+                new_groups[la] = list(last_known[i])
+
+        # perm_cam1/cam2：按 a,b,c 顺序取观测下标
         perm1_raw = raw_t1.get("perm_cam1")
         perm2_raw = raw_t1.get("perm_cam2")
-
-        for i, la in enumerate(GROUP_LABELS):
-            raw_label = GROUP_LABELS[col_ind[i]]
-            new_groups[la] = list(groups_t1_raw[raw_label])
-            if perm1_raw is not None and perm2_raw is not None:
-                raw_idx = col_ind[i]
-                new_perm_cam1.append(int(perm1_raw[raw_idx]))
-                new_perm_cam2.append(int(perm2_raw[raw_idx]))
+        new_perm_cam1 = []
+        new_perm_cam2 = []
+        if perm1_raw is not None and perm2_raw is not None and n_curr <= len(perm1_raw):
+            for i in range(len(GROUP_LABELS)):
+                idx = np.where(row_ind == i)[0]
+                if len(idx) > 0:
+                    j = int(col_ind[idx[0]])
+                    if j < len(perm1_raw):
+                        new_perm_cam1.append(perm1_raw[j])
+                        new_perm_cam2.append(perm2_raw[j])
+            if len(new_perm_cam1) != len(new_groups) and len(perm1_raw) == 3:
+                new_perm_cam1 = list(perm1_raw)
+                new_perm_cam2 = list(perm2_raw)
 
         result[t1] = {"groups": new_groups}
         if new_perm_cam1 and new_perm_cam2:
             result[t1]["perm_cam1"] = new_perm_cam1
             result[t1]["perm_cam2"] = new_perm_cam2
+        elif raw_t1.get("perm_cam1") is not None and raw_t1.get("perm_cam2") is not None:
+            result[t1]["perm_cam1"] = raw_t1["perm_cam1"]
+            result[t1]["perm_cam2"] = raw_t1["perm_cam2"]
+
+        # 更新 last_known（与 reference 一致）
+        for i, la in enumerate(GROUP_LABELS):
+            if la in new_groups:
+                last_known[i] = new_groups[la]
+            # 否则 last_known[i] 保持不变
 
     return result
 
 
-def run(best_json_path: str, output_path: str | None = None, flow_weight: float = 10.0) -> Dict:
+def run(best_json_path: str, output_path: str | None = None, flow_weight: float = 0.0) -> Dict:
     """执行 Step 4。"""
     with open(best_json_path, encoding="utf-8") as f:
         raw = json.load(f)
@@ -135,10 +141,10 @@ def run(best_json_path: str, output_path: str | None = None, flow_weight: float 
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Step 4: cross-frame tracking (Hungarian + flow)")
-    ap.add_argument("--best_json", required=True, help="best.json from Step 3")
-    ap.add_argument("--output", default=None, help="output JSON path (default: overwrite input)")
-    ap.add_argument("--flow_weight", type=float, default=10.0, help="flow direction penalty weight (mm)")
+    ap = argparse.ArgumentParser(description="Step 4: 跨帧追踪（对照 Dynamics_of_dominance，3D 距离匈牙利）")
+    ap.add_argument("--best_json", required=True, help="Step 3 的 best.json")
+    ap.add_argument("--output", default=None, help="输出 JSON 路径（默认覆盖输入）")
+    ap.add_argument("--flow_weight", type=float, default=0.0, help="未使用，保留兼容")
     args = ap.parse_args()
     output = args.output or args.best_json
     run(args.best_json, output, args.flow_weight)
