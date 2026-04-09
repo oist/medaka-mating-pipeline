@@ -1,6 +1,4 @@
-"""
-每帧在 3D 候选中选择代价最小且 3D 在有效范围内的 a/b/c 对应。
-"""
+"""Choose the best 3D candidate per frame."""
 
 from typing import Dict, List, Tuple
 
@@ -27,9 +25,9 @@ def select_best_all_frames(
     xyz_bounds: Tuple[float, float] | None = (0.0, 200.0),
 ) -> Dict[int, Dict]:
     """
-    对每一帧选择 cost 最小且 groups 内所有点均在 xyz_bounds 内的候选；
-    若无则选 cost 最小的候选。
-    返回 {frame: {"groups": {a:[X,Y,Z], b:[...], c:[...]}, "perm_cam1": [...], "perm_cam2": [...]}}
+    For each frame, pick the minimum-cost candidate whose points stay inside
+    `xyz_bounds`. If none satisfy the bounds, choose the minimum-cost candidate
+    regardless of bounds.
     """
     low, high = (xyz_bounds or (None, None))[0], (xyz_bounds or (None, None))[1]
     best_by_frame: Dict[int, Dict] = {}

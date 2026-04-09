@@ -1,10 +1,4 @@
-"""
-3D 轨迹缺失帧插值
-=================
-
-对 a/b/c 三条 3D 轨迹（每条约 frame, X, Y, Z），在缺失帧上做 3D 空间线性插值，
-输出插值后的 DataFrame 或写入 *_3d_interp.csv。
-"""
+"""Interpolate missing frames in 3D trajectories."""
 
 from pathlib import Path
 from typing import Dict, Tuple
@@ -19,17 +13,7 @@ def interpolate_3d_trajectories(
     frame_range: Tuple[int, int] | None = None,
     method: str = "linear",
 ) -> Dict[str, pd.DataFrame]:
-    """
-    对每条 3D 轨迹（列 frame, X, Y, Z）在缺失帧上插值。
-
-    Args:
-        dfs: {"a": df_a, "b": df_b, "c": df_c}，每个 df 含 frame, X, Y, Z
-        frame_range: 若给定 (min_f, max_f)，则在该范围内插值；否则用所有 df 的 frame 并集
-        method: 插值方法，如 "linear"（默认）、"cubic" 等（见 pandas interpolate）
-
-    Returns:
-        插值后的 {label: df}，每个 df 在完整帧序列上有 X,Y,Z（缺失首尾用外推或留 NaN 取决于 method）
-    """
+    """Interpolate missing frames in one or more 3D trajectories."""
     if not dfs:
         return {}
 
@@ -71,14 +55,12 @@ def interpolate_and_save(
     method: str = "linear",
     suffix: str = "_3d_interp",
 ) -> Dict[str, pd.DataFrame]:
-    """
-    插值并写入 {set_key}_a_3d_interp.csv 等；列 frame, X, Y, Z。
-    """
+    """Interpolate trajectories and write `{set_key}_a_3d_interp.csv`, etc."""
     interp = interpolate_3d_trajectories(dfs, frame_range=frame_range, method=method)
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     for label, df in interp.items():
         path = out_dir / f"{set_key}_{label}{suffix}.csv"
         df.to_csv(path, index=False)
-        print(f"已保存: {path}")
+        print(f"Saved: {path}")
     return interp

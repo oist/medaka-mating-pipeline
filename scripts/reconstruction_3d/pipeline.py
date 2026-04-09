@@ -1,7 +1,4 @@
-"""
-三视角 2D → 3D 重建 → 跨帧 ID 追踪 → 导出 3D CSV。
-不做缺失填充、不做插值，只输出重建得到的 3D 坐标。
-"""
+"""Three-view 2D -> 3D reconstruction -> cross-frame identity tracking."""
 
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -37,17 +34,8 @@ def run_pipeline(
     first_frame_id_only: bool = False,
 ) -> Dict:
     """
-    跨视角重建 + 跨帧追踪 ID，得到一个 3D CSV。
-
-    1. 加载三视角 2D CSV
-    2. 每帧用校准模型重建 3D，选最优几何对应
-    3. ID 分配：first_frame_id_only=True 时仅用第一帧（或首个有效帧）按 X 定 a→ID_1,b→ID_2,c→ID_3，全片沿用；
-       否则第一帧按 X 赋 ID，后续帧用匈牙利按距离匹配
-    4. 导出 CSV：frame, fish_id, X, Y, Z
-       - fill_missing_3d=False：仅写有重建结果的帧
-       - fill_missing_3d=True：扩展到全部帧，缺失帧用三次样条插值
-
-    output_dir 若给出则写入 {set_key}_3d.csv，可选画轨迹图。
+    Reconstruct 3D points across views, track identities across frames, and
+    optionally export the result as CSV plus a trajectory plot.
     """
     cal = Calibration(model_folder)
     points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=use_fish_id)
@@ -71,7 +59,7 @@ def run_pipeline(
         dfs_3d = best_by_frame_to_dfs(
             best_tracked,
             shift_to_positive=shift_to_positive,
-            ensure_non_negative=False,  # 空缺用 NaN，不 clip 成 0
+            ensure_non_negative=False,  # Leave missing points as NaN.
         )
         if dfs_3d:
             if fill_missing_3d and points_by_frame:
@@ -90,7 +78,7 @@ def run_pipeline(
 
 
 def discover_sets(processed_dir: str) -> List[str]:
-    """扫描目录下 *_player1_processed.csv，返回有 player2/3 配对的 set_key 列表。"""
+    """Return set keys that have all three processed CSV files present."""
     root = Path(processed_dir)
     if not root.is_dir():
         return []

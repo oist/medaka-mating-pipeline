@@ -1,6 +1,8 @@
 """
-从三视角 *_processed.csv 加载每帧 2D 点，组织为 points_by_frame。
-支持单视角少量缺失（该帧该视角用 NaN 表示）。
+Load per-frame 2D points from the three `*_processed.csv` files and organize
+them into `points_by_frame`.
+
+Small per-view gaps are allowed and represented as `NaN`.
 """
 
 from pathlib import Path
@@ -9,7 +11,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import pandas as pd
 
-# 文件约定：player1=top=cam0, player2=side1=cam1, player3=side2=cam2
+# File convention: player1=top=cam0, player2=side1=cam1, player3=side2=cam2
 PLAYER_TO_CAM = {"player1": "cam0", "player2": "cam1", "player3": "cam2"}
 CAM_ORDER = ["cam0", "cam1", "cam2"]
 LABELS_ORDER = ["a", "b", "c"]
@@ -20,20 +22,19 @@ def load_processed_dfs(
     processed_dir: str, set_key: str
 ) -> Dict[str, pd.DataFrame]:
     """
-    加载三视角 processed CSV。
-    返回 {player1: df, player2: df, player3: df}。
+    Load the three processed CSV files for one clip.
     """
     root = Path(processed_dir)
     out = {}
     for player in ["player1", "player2", "player3"]:
         path = root / f"{set_key}_{player}_processed.csv"
         if not path.exists():
-            raise FileNotFoundError(f"未找到: {path}")
+            raise FileNotFoundError(f"File not found: {path}")
         df = pd.read_csv(path)
         if "x" not in df.columns and "X" in df.columns:
             df = df.rename(columns={"X": "x", "Y": "y"})
         if "x" not in df.columns:
-            raise ValueError(f"{path} 需含 x,y 或 X,Y 列")
+            raise ValueError(f"{path} must contain x,y or X,Y columns")
         out[player] = df
     return out
 
@@ -44,8 +45,10 @@ def _get_one_cam_points_for_frame(
     use_fish_id: bool,
 ) -> List[Tuple[float, float]]:
     """
-    从单相机 df 取该帧最多 3 个点，返回 [(x,y), ...]。
-    use_fish_id 时按 fish_id a,b,c 顺序；否则按 score 降序、x 升序。
+    Get up to three 2D points for one frame from one camera DataFrame.
+
+    If `use_fish_id=True`, points are returned in `a,b,c` fish-id order.
+    Otherwise they are sorted by score descending, then x ascending.
     """
     sub = df[df["frame"] == frame].copy()
     if sub.empty:
@@ -83,8 +86,7 @@ def get_points_per_frame(
     use_fish_id: bool = False,
 ) -> Dict[int, Dict[str, List[Tuple[float, float]]]]:
     """
-    从三视角 DataFrame 组织成每帧、每相机的点列表。
-    返回 {frame: {cam0: [(x,y), ...], cam1: [...], cam2: [...]}}
+    Convert the three view-specific DataFrames into per-frame point lists.
     """
     all_frames = set()
     for df in dfs.values():
@@ -113,7 +115,7 @@ def run_load_2d(
     use_fish_id: bool = False,
 ) -> Dict[int, Dict[str, List[Tuple[float, float]]]]:
     """
-    执行加载：读三视角 CSV，返回 points_by_frame。
+    Load the processed CSV files and return `points_by_frame`.
     """
     dfs = load_processed_dfs(processed_dir, set_key)
     return get_points_per_frame(dfs, use_fish_id=use_fish_id)

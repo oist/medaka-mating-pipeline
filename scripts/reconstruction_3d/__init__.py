@@ -1,7 +1,8 @@
 """
-三视角 2D 坐标 → 3D 重建、跨帧 ID 统一、轨迹可视化。
+Three-view 2D coordinates -> 3D reconstruction -> cross-frame identity tracking
+-> trajectory visualization.
 
-使用方式：
+Usage:
   from scripts.reconstruction_3d import run_pipeline, discover_sets
 
   sets = discover_sets(r"D:\\sleap_output\\processed")

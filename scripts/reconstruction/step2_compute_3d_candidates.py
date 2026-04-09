@@ -1,22 +1,10 @@
 """
-Step 2: 3次元候補の計算（参考 Dynamics_of_dominance 逻辑）
-========================================================
+Step 2: compute 3D candidates using the calibration model.
 
-对每帧的 9 个 2D 点（3 相机 × 最多 3 点），
-枚举所有 cam0×cam1×cam2 组合，用 imCoords_to_XYZ 计算 3D 候选点，
-并计算每个候选的配准误差（registration cost）。
+For each frame, enumerate all cam0/cam1/cam2 combinations, compute 3D
+candidates with `imCoords_to_XYZ`, and score them with registration error.
 
-配准误差用于 Step 3 选择最优对应，而非 KMeans 聚类。
-
-为何会出现超过物理范围（如 >200mm）的 3D 坐标？
-- 三视角 2D 点对应错误时：错误的 (cam0_i, cam1_j, cam2_k) 组合会喂给校准模型，
-  模型仍会输出一个 XYZ，但该点往往在有效水槽外（或负或很大）。
-- 校准模型是回归器，在「异常输入」下会外推，不保证落在标定物范围内。
-- 当前仅排除了负坐标；未排除「正值但超出物理上界」的候选。
-可通过 xyz_bounds=(0, 200) 或 (0, 1200) 等限定有效范围，超出范围的候选视为无效。
-
-用法:
-    python -m scripts.reconstruction.step2_compute_3d_candidates --model_folder H:\\calibration_output\\cali_way1 --points points.json --output candidates.json [--xyz_bounds 0 200]
+Registration cost is used in Step 3 to choose the best correspondence.
 """
 
 import argparse
@@ -38,12 +26,11 @@ def _triplets_with_filled_view(
     missing_view: str,
 ) -> List[tuple]:
     """
-    当某一视角无点时，用另两视角预测该视角 2D，生成 (i0, i1, i2, p0, p1, p2) 列表。
-    missing_view 为 "cam0" | "cam1" | "cam2"。
+    If one view is completely missing, predict it from the other two and return
+    `(i0, i1, i2, p0, p1, p2)` tuples.
     """
     out: List[tuple] = []
     if missing_view == "cam2":
-        # 缺 cam2(YZ)：用 cam0(XY) + cam1(XZ) 预测 YZ
         for i0 in range(len(cam0)):
             for i1 in range(len(cam1)):
                 p0 = np.array(cam0[i0], dtype=float)
@@ -51,7 +38,6 @@ def _triplets_with_filled_view(
                 p2 = cal.compute_YZ_imcoords_from_XZ_XY(p1, p0)
                 out.append((i0, i1, 0, p0, p1, p2))
     elif missing_view == "cam1":
-        # 缺 cam1(XZ)：用 cam0(XY) + cam2(YZ) 预测 XZ
         for i0 in range(len(cam0)):
             for i2 in range(len(cam2)):
                 p0 = np.array(cam0[i0], dtype=float)
@@ -59,7 +45,6 @@ def _triplets_with_filled_view(
                 p1 = cal.compute_XZ_imcoords_from_XY_YZ(p0, p2)
                 out.append((i0, 0, i2, p0, p1, p2))
     else:
-        # 缺 cam0(XY)：用 cam1(XZ) + cam2(YZ) 预测 XY
         for i1 in range(len(cam1)):
             for i2 in range(len(cam2)):
                 p1 = np.array(cam1[i1], dtype=float)
@@ -76,16 +61,17 @@ def compute_candidates_for_frame(
     fill_missing_view: bool = True,
 ) -> List[Dict]:
     """
-    对单帧计算所有 cam0×cam1×cam2 组合的 3D 候选及配准误差。
+    Compute all 3D candidates and registration costs for one frame.
 
-    若某视角无点且 fill_missing_view=True，则用另两视角预测该视角 2D 再算 3D（最多补一个视角）。
+    If one view is missing and `fill_missing_view=True`, infer the missing
+    2D points from the other two views first.
     """
     cam0 = list(points.get("cam0", []))
     cam1 = list(points.get("cam1", []))
     cam2 = list(points.get("cam2", []))
     n0, n1, n2 = len(cam0), len(cam1), len(cam2)
 
-    triplets: List[tuple] = []  # (i0, i1, i2, p0, p1, p2)
+    triplets: List[tuple] = []
     if n0 > 0 and n1 > 0 and n2 > 0:
         for i0 in range(n0):
             for i1 in range(n1):
@@ -110,8 +96,6 @@ def compute_candidates_for_frame(
             dtype=float,
         )
         xyz = cal.compute_XYZ_from_imageCoord_triplet(imCoords)
-        # 与 Dynamics_of_dominance 一致：只在坐标为 NaN 时视为无效；
-        # 不再用 xyz_bounds 直接丢弃候选，而是保留由配准误差决定优劣。
         invalid = np.any(np.isnan(xyz))
         if invalid:
             cost = np.inf
@@ -133,11 +117,11 @@ def compute_candidates(
     xyz_bounds: Tuple[float, float] | None = None,
     fill_missing_view: bool = True,
 ) -> Dict[int, List[Dict]]:
-    """对每帧计算 3D 候选及配准误差；缺一视角时用两视角预测该视角再算 3D。"""
+    """Compute 3D candidates for all frames."""
     items = sorted(points_by_frame.items())
     return {
         frame: compute_candidates_for_frame(cal, pts, xyz_bounds, fill_missing_view=fill_missing_view)
-        for frame, pts in tqdm(items, desc="Step2 3D候选", unit="frame")
+        for frame, pts in tqdm(items, desc="Step 2 - 3D candidates", unit="frame")
     }
 
 
@@ -147,39 +131,35 @@ def run(
     output_path: str | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
 ) -> Dict:
-    """
-    执行 Step 2。
-    xyz_bounds: 例如 (0, 200) 或 (0, 1200)，与校准/水槽物理范围一致；超出范围的候选视为无效。
-    """
+    """Run Step 2."""
     cal = Calibration(model_folder)
 
     with open(points_path, encoding="utf-8") as f:
         raw = json.load(f)
     points_by_frame = {int(k): v for k, v in raw.items()}
-    n_frames = len(points_by_frame)
-    print(f"共 {n_frames} 帧待处理")
+    print(f"Processing {len(points_by_frame)} frame(s)")
 
     candidates = compute_candidates(cal, points_by_frame, xyz_bounds)
     if output_path:
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump({str(k): v for k, v in candidates.items()}, f, indent=2, ensure_ascii=False)
-        print(f"已保存: {output_path}")
+        print(f"Saved: {output_path}")
     return candidates
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Step 2: 计算 3D 候选及配准误差（参考 Dynamics_of_dominance）")
-    ap.add_argument("--model_folder", required=True, help="校准模型目录")
-    ap.add_argument("--points", required=True, help="Step 1 输出的 JSON")
-    ap.add_argument("--output", default=None, help="输出 JSON 路径")
+    ap = argparse.ArgumentParser(description="Step 2: compute 3D candidates and registration cost")
+    ap.add_argument("--model_folder", required=True, help="Calibration model directory")
+    ap.add_argument("--points", required=True, help="JSON output from Step 1")
+    ap.add_argument("--output", default=None, help="Output JSON path")
     ap.add_argument(
         "--xyz_bounds",
         type=float,
         nargs=2,
         metavar=("LOW", "HIGH"),
         default=None,
-        help="3D 有效范围 [LOW, HIGH]（X/Y/Z 任一超出则候选无效），例如 --xyz_bounds 0 200 或 0 1200",
+        help="Valid 3D range [LOW, HIGH], for example --xyz_bounds 0 200",
     )
     args = ap.parse_args()
     bounds = tuple(args.xyz_bounds) if args.xyz_bounds is not None else None

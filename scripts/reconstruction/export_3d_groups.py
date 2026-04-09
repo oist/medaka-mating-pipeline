@@ -1,10 +1,10 @@
 """
-从 best 导出 3D 轨迹为 CSV（单文件 long 格式，与 2D processed 一致）
-==========================================
+Export 3D trajectories from `best` results.
 
-支持两种输出：
-- 单 CSV：{set_key}_3d.csv，列 frame, fish_id, X, Y, Z（每帧 3 行，与 2D 一致）
-- 原三文件：{set_key}_a_3d.csv 等（保留兼容）
+Supported outputs:
+
+- single long-format CSV: `{set_key}_3d.csv`
+- legacy per-group CSVs: `{set_key}_a_3d.csv`, etc.
 """
 
 import json
@@ -22,10 +22,7 @@ def best_by_frame_to_dfs(
     *,
     shift_to_positive: bool = False,
 ) -> Dict[str, pd.DataFrame]:
-    """
-    从 best_by_frame 构建 per-label 的 DataFrame（不写文件）。
-    与 export_groups_to_csv 内部逻辑一致。
-    """
+    """Build per-label DataFrames from `best_by_frame` without writing files."""
     data_per_group: Dict[str, List[Dict]] = {g: [] for g in GROUP_LABELS}
     for frame in sorted(best_by_frame.keys()):
         info = best_by_frame[frame]
@@ -63,11 +60,7 @@ def dfs_to_single_csv(
     set_key: str,
     output_dir: str,
 ) -> str:
-    """
-    将 a/b/c 三个 DataFrame 合并为一张 long 表并写入单 CSV。
-    列: frame, fish_id, X, Y, Z（与 2D processed 的 frame + fish_id 一致）。
-    返回写入路径。
-    """
+    """Merge `a/b/c` DataFrames into one long-format CSV and return the path."""
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     rows: List[Dict] = []
@@ -85,7 +78,7 @@ def dfs_to_single_csv(
     out_df = pd.DataFrame(rows).sort_values(["frame", "fish_id"]).reset_index(drop=True)
     path = out_dir / f"{set_key}_3d.csv"
     out_df.to_csv(path, index=False)
-    print(f"已保存: {path}")
+    print(f"Saved: {path}")
     return str(path)
 
 
@@ -98,11 +91,12 @@ def export_groups_to_csv(
 ) -> Dict[str, pd.DataFrame]:
     """
     Args:
-        shift_to_positive: 若为 True，将所有坐标平移使最小值为 0（保持相对几何不变）
+        shift_to_positive: If True, shift all coordinates so the minimum value
+            becomes zero while preserving relative geometry.
     """
     best_path = Path(best_json_path)
     if not best_path.exists():
-        raise FileNotFoundError(f"未找到 best.json: {best_path}")
+        raise FileNotFoundError(f"best.json not found: {best_path}")
 
     with open(best_path, encoding="utf-8") as f:
         raw = json.load(f)
@@ -111,7 +105,6 @@ def export_groups_to_csv(
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # 为每个分组 label 累积所有帧
     data_per_group: Dict[str, List[Dict]] = {g: [] for g in GROUP_LABELS}
 
     for frame in sorted(best_by_frame.keys()):
@@ -147,7 +140,7 @@ def export_groups_to_csv(
         df = pd.DataFrame(rows)
         csv_path = out_dir / f"{set_key}_{g}_3d.csv"
         df.to_csv(csv_path, index=False)
-        print(f"已保存: {csv_path}")
+        print(f"Saved: {csv_path}")
         result[g] = df
 
     return result
@@ -156,11 +149,11 @@ def export_groups_to_csv(
 def main():
     import argparse
 
-    ap = argparse.ArgumentParser(description="从 best.json 导出 a/b/c 三条 3D 轨迹为 CSV")
-    ap.add_argument("--best_json", required=True, help="best.json 路径")
-    ap.add_argument("--set_key", required=True, help="set key")
-    ap.add_argument("--output_dir", required=True, help="输出 CSV 目录")
-    ap.add_argument("--shift_to_positive", action="store_true", help="将坐标平移使最小值为 0")
+    ap = argparse.ArgumentParser(description="Export a/b/c 3D trajectories from best.json")
+    ap.add_argument("--best_json", required=True, help="Path to best.json")
+    ap.add_argument("--set_key", required=True, help="Set key")
+    ap.add_argument("--output_dir", required=True, help="Directory for the output CSV files")
+    ap.add_argument("--shift_to_positive", action="store_true", help="Shift coordinates so the minimum value becomes zero")
     args = ap.parse_args()
 
     export_groups_to_csv(
@@ -171,4 +164,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

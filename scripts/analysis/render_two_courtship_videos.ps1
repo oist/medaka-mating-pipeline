@@ -1,7 +1,7 @@
-# 批量渲染两个 Courtship clip 的轨迹叠加视频
-# 用法：在项目根目录下执行
+# Batch-render trajectory overlay videos for two courtship clips.
+# Usage: run from the project root
 #   .\scripts\analysis\render_two_courtship_videos.ps1
-# 或指定路径后：
+# Or override paths first:
 #   $env:INPUT_DIR="C:\...\data\sleap_output"; $env:PROCESSED_DIR="D:\sleap_output"; .\scripts\analysis\render_two_courtship_videos.ps1
 
 $ErrorActionPreference = "Stop"
@@ -21,7 +21,8 @@ $Clips = @(
 
 foreach ($ExpId in $Clips) {
     $OutFile = Join-Path $OutputDir "${ExpId}_tracking.mp4"
-    # 视频名：20251220_E_1_2_FCMC_PLAYER1_male1_Courtship_1464.337-1472.705.mp4
+    # Example source video name:
+    # 20251220_E_1_2_FCMC_PLAYER1_male1_Courtship_1464.337-1472.705.mp4
     $ClipSuffix = $ExpId -replace "^20251220_E_1_2_FCMC_", ""
     $VTop   = Join-Path $VideoDir "20251220_E_1_2_FCMC_PLAYER1_$ClipSuffix.mp4"
     $VSide1 = Join-Path $VideoDir "20251220_E_1_2_FCMC_PLAYER2_$ClipSuffix.mp4"

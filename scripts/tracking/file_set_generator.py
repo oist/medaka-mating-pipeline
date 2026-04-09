@@ -1,6 +1,4 @@
-"""
-自动生成file_sets.json文件，将同一实验的3个视角文件分组
-"""
+"""Build `file_sets.json` by grouping the three camera views for each clip."""
 import os
 import json
 import re
@@ -10,10 +8,16 @@ from collections import defaultdict
 
 def extract_set_key_from_filename(filename):
     """
-    从文件名中提取 set key，保证同一 clip 的 PLAYER1/2/3 得到相同 key。
-    支持重复前缀（如 20251225_K_1_2_clips_20251225_K_1_2_FCMC_...）：取「最后一个」日期段作为前缀，避免 key 不一致。
-    例: 20251225_K_1_2_clips_20251225_K_1_2_FCMC_PLAYER1_m1tf_Courtship_290.729-296.331.csv
-     -> 20251225_K_1_2_FCMC_m1tf_Courtship_290.729-296.331
+    Extract a stable set key from a filename so PLAYER1/2/3 from the same clip
+    collapse to the same key.
+
+    Repeated prefixes are supported. For names like
+    `20251225_K_1_2_clips_20251225_K_1_2_FCMC_...`, the final date block is
+    used as the prefix to avoid mismatched keys.
+
+    Example:
+      20251225_K_1_2_clips_20251225_K_1_2_FCMC_PLAYER1_m1tf_Courtship_290.729-296.331.csv
+      -> 20251225_K_1_2_FCMC_m1tf_Courtship_290.729-296.331
     """
     basename = os.path.basename(filename)
     basename = basename.replace(".csv", "")
@@ -26,12 +30,13 @@ def extract_set_key_from_filename(filename):
     before_player = basename[: match.start()]
     after_player = basename[match.end() :]
 
-    # 找「最后一个」8位日期（YYYYMMDD）开头的一段，避免 20251225_K_1_2_clips_20251225_K_1_2_FCMC 取到整段
+    # Use the final 8-digit date prefix to avoid keeping the duplicated
+    # `..._clips_...` prefix in the key.
     date_parts = list(re.finditer(r"\d{8}(?:_[^_]+)*", before_player))
     if date_parts:
-        prefix = date_parts[-1].group(0)  # 最后一段，如 20251225_K_1_2_FCMC
+        prefix = date_parts[-1].group(0)
         return f"{prefix}_{after_player}"
-    # 兼容：整段里没有明显日期段时，用「最后一个」8位数字到结尾
+    # Fallback: if there is no obvious date block, use the final 8-digit number.
     last_8 = list(re.finditer(r"\d{8}", before_player))
     if last_8:
         start = last_8[-1].start()
@@ -42,34 +47,34 @@ def extract_set_key_from_filename(filename):
 
 def generate_file_sets(sleap_output_dir):
     """
-    自动扫描sleap_output目录，生成file_sets.json
-    
+    Scan the SLEAP export root and build the `file_sets` mapping.
+
     Args:
-        sleap_output_dir: sleap输出目录路径
-        
+        sleap_output_dir: Root path containing the exported CSV files.
+
     Returns:
-        dict: file_sets字典
+        Dictionary ready to be written to `file_sets.json`.
     """
     sleap_output_path = Path(sleap_output_dir)
     
-    # 查找所有CSV文件
+    # Locate the expected top and side export directories.
     top_dir = sleap_output_path / "top_mouth_180"
     side_dir = sleap_output_path / "side_mouth_593"
     
     if not top_dir.exists() or not side_dir.exists():
-        raise ValueError(f"目录不存在: {top_dir} 或 {side_dir}")
+        raise ValueError(f"Directory does not exist: {top_dir} or {side_dir}")
     
-    # 按set key分组
+    # Group files by the inferred set key.
     sets_dict = defaultdict(dict)
     
-    # 扫描 top_mouth_180 目录及子目录 (PLAYER1)，支持 top_mouth_180/xxx_clips/*.csv
+    # Scan PLAYER1 files under the top-view export directory.
     for csv_file in top_dir.rglob("*.csv"):
         set_key = extract_set_key_from_filename(str(csv_file))
         if set_key:
             sets_dict[set_key]["key"] = set_key
             sets_dict[set_key]["player1_file"] = str(csv_file.resolve())
     
-    # 扫描 side_mouth_593 目录及子目录 (PLAYER2和PLAYER3)
+    # Scan PLAYER2 and PLAYER3 files under the side-view export directory.
     for csv_file in side_dir.rglob("*.csv"):
         set_key = extract_set_key_from_filename(str(csv_file))
         if set_key:
@@ -78,7 +83,7 @@ def generate_file_sets(sleap_output_dir):
             elif "PLAYER3" in csv_file.name:
                 sets_dict[set_key]["player3_file"] = str(csv_file.resolve())
     
-    # 只保留有3个文件的set
+    # Keep only complete sets with all three views present.
     complete_sets = {}
     for key, files in sets_dict.items():
         if "player1_file" in files and "player2_file" in files and "player3_file" in files:
@@ -88,16 +93,16 @@ def generate_file_sets(sleap_output_dir):
 
 
 def save_file_sets(file_sets, output_path):
-    """保存file_sets到JSON文件"""
+    """Write `file_sets` to a JSON file."""
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(file_sets, f, indent=2, ensure_ascii=False)
-    print(f"已保存 {len(file_sets)} 个set到 {output_path}")
+    print(f"Saved {len(file_sets)} set(s) to {output_path}")
 
 
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
-        print("用法: python file_set_generator.py <sleap_output_dir> [output_json_path]")
+        print("Usage: python file_set_generator.py <sleap_output_dir> [output_json_path]")
         sys.exit(1)
     
     sleap_dir = sys.argv[1]

@@ -1,7 +1,9 @@
 """
-将每条轨迹扩展到全部帧，缺失帧用线性插值补全。
-个体 ID 为 ID_1, ID_2, ID_3。
-约定：空缺一律用 NaN 表示，不填 0；插值前不把负值 clip 成 0，避免把无效/缺失变成 (0,0,0)。
+Expand each 3D trajectory to all frames and fill missing points with linear
+interpolation when requested.
+
+IDs are `ID_1`, `ID_2`, and `ID_3`.
+Missing values stay as `NaN`; they are never silently converted to zero.
 """
 
 from typing import Dict, List
@@ -9,7 +11,7 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
-# 与 cross_frame_tracking 一致，导出与插值均用 ID_1, ID_2, ID_3
+# Keep ID labels aligned with `cross_frame_tracking.py`.
 ID_LABELS = ["ID_1", "ID_2", "ID_3"]
 
 
@@ -20,11 +22,10 @@ def best_by_frame_to_dfs(
     ensure_non_negative: bool = False,
 ) -> Dict[str, pd.DataFrame]:
     """
-    从 best_by_frame 转为 {label: DataFrame 含 frame, X, Y, Z}。
-    label 为 ID_1, ID_2, ID_3（由 cross_frame_tracking 输出）。
-    只写入有效点（非 nan/inf）；空缺不写行，留待后续统一插值。
-    shift_to_positive: 整体平移使最小坐标为 0（仅用有效点算 min）。
-    ensure_non_negative: 若 True 则将 X,Y,Z 与 0 取 max（易把无效变成 0，默认关闭）。
+    Convert `best_by_frame` into `{label: DataFrame(frame, X, Y, Z)}`.
+
+    Only valid points are written immediately. Missing points are left for the
+    later fill stage.
     """
     dfs: Dict[str, pd.DataFrame] = {lb: [] for lb in ID_LABELS}
     for frame, info in sorted(best_by_frame.items()):
@@ -59,7 +60,7 @@ def best_by_frame_to_dfs(
             if not out[lb].empty:
                 out[lb] = out[lb].copy()
                 out[lb][["X", "Y", "Z"]] = out[lb][["X", "Y", "Z"]].clip(lower=0)
-    return out  # 默认不 clip，避免把负值/无效变成 0
+    return out  # Do not clip by default; keep invalid values away from 0.
 
 
 def ensure_all_frames_and_fill_spline(
@@ -67,7 +68,8 @@ def ensure_all_frames_and_fill_spline(
     all_frames: List[int],
 ) -> Dict[str, pd.DataFrame]:
     """
-    对每条轨迹扩展到 all_frames；缺失帧用普通线性插值，超出观测范围的帧填 NaN。
+    Expand each trajectory to `all_frames` and linearly interpolate internal
+    gaps. Frames outside the observed range remain `NaN`.
     """
     if not all_frames:
         return dfs_3d
@@ -97,7 +99,7 @@ def ensure_all_frames_and_fill_spline(
             result[lb] = df.copy()
             continue
         f_min, f_max = float(frames.min()), float(frames.max())
-        # 线性插值：仅对 [f_min, f_max] 内插值，之外保持 NaN
+        # Interpolate only inside the observed frame range.
         interp_x = np.interp(all_frames_arr, frames, xyz[:, 0])
         interp_y = np.interp(all_frames_arr, frames, xyz[:, 1])
         interp_z = np.interp(all_frames_arr, frames, xyz[:, 2])
@@ -109,7 +111,7 @@ def ensure_all_frames_and_fill_spline(
             "frame": all_frames,
             "X": interp_x, "Y": interp_y, "Z": interp_z,
         })
-        # 仅对有限值 clip 到 0，保留 NaN 不变
+        # Clip finite values to zero or above while preserving NaNs.
         for col in ["X", "Y", "Z"]:
             out_df[col] = out_df[col].where(~np.isfinite(out_df[col]), out_df[col].clip(lower=0))
         result[lb] = out_df.sort_values("frame").reset_index(drop=True)
@@ -123,7 +125,7 @@ def dfs_to_single_csv(
     *,
     ensure_non_negative: bool = False,
 ) -> str:
-    """将 {ID_1: df, ID_2: df, ID_3: df} 合并为单 CSV：frame, fish_id, X, Y, Z。空缺为 NaN，不填 0。"""
+    """Merge the per-ID DataFrames into one CSV with frame, fish_id, X, Y, Z."""
     from pathlib import Path
     rows = []
     for fish_id, df in dfs_3d.items():

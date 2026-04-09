@@ -1,6 +1,4 @@
-"""
-加载SLEAP输出的CSV文件
-"""
+"""Load CSV files exported from SLEAP."""
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -8,13 +6,13 @@ from pathlib import Path
 
 def load_sleap_csv(csv_path):
     """
-    加载SLEAP CSV文件
-    
+    Load a SLEAP CSV export.
+
     Args:
-        csv_path: CSV文件路径
-        
+        csv_path: Path to the CSV file.
+
     Returns:
-        DataFrame: 包含frame, track, node, x, y, score列
+        DataFrame with frame, track, node, x, y, and score columns.
     """
     df = pd.read_csv(csv_path)
     return df
@@ -22,16 +20,15 @@ def load_sleap_csv(csv_path):
 
 def parse_sleap_data(df):
     """
-    解析SLEAP数据，转换为按帧组织的格式
-    
+    Convert a SLEAP DataFrame into a frame-indexed structure.
+
     Args:
-        df: SLEAP DataFrame
-        
+        df: SLEAP DataFrame.
+
     Returns:
-        dict: {
-            'frames': array of frame numbers,
-            'positions': dict of {frame: {track_id: (x, y, score)}}
-        }
+        Dictionary with:
+        - `frames`: sorted frame numbers
+        - `positions`: `{frame: {track_id: (x, y, score)}}`
     """
     frames = df['frame'].unique()
     frames = np.sort(frames)
@@ -54,17 +51,14 @@ def parse_sleap_data(df):
 
 def load_set_files(file_set_info):
     """
-    加载一个set的三个视角文件
-    
+    Load the three view-specific CSV files for one set.
+
     Args:
-        file_set_info: dict包含player1_file, player2_file, player3_file
-        
+        file_set_info: Dictionary containing `player1_file`, `player2_file`,
+            and `player3_file`.
+
     Returns:
-        dict: {
-            'player1': DataFrame,
-            'player2': DataFrame,
-            'player3': DataFrame
-        }
+        Dictionary with DataFrames for player1/player2/player3.
     """
     data = {}
     for player in ['player1', 'player2', 'player3']:
@@ -73,20 +67,20 @@ def load_set_files(file_set_info):
             csv_path = file_set_info[file_key]
             data[player] = load_sleap_csv(csv_path)
         else:
-            raise ValueError(f"缺少 {file_key}")
+            raise ValueError(f"Missing required file entry: {file_key}")
     
     return data
 
 
 def get_common_frames(data_dict):
     """
-    获取三个视角共同的帧
-    
+    Get the frames shared by all three views.
+
     Args:
-        data_dict: {'player1': DataFrame, 'player2': DataFrame, 'player3': DataFrame}
-        
+        data_dict: `{'player1': DataFrame, 'player2': DataFrame, 'player3': DataFrame}`
+
     Returns:
-        array: 共同的帧号数组
+        Sorted NumPy array of shared frame numbers.
     """
     frames_sets = [set(df['frame'].unique()) for df in data_dict.values()]
     common_frames = set.intersection(*frames_sets)

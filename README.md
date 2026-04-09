@@ -35,9 +35,9 @@ tracking post-processing and 3D reconstruction.
 
 **One-step install with uv (recommended)** — from the project root:
 
-# 未装 uv 时先装（执行一次即可）
+# Install uv first if it is not already available (one-time setup).
 irm https://astral.sh/uv/install.ps1 | iex
-# 关掉并重新打开终端后再执行下面
+# Close and reopen the terminal before running the next command.
 
 cd D:\medaka-mating-pipeline
 uv sync --python 3.11
@@ -82,21 +82,24 @@ Notes:
 - The intended Python version is in `.python-version`.
 - `environment/requirements.txt` is kept for reference/migration.
 
-### FFmpeg（视频处理，按需安装）
+### FFmpeg (optional video processing)
 
-若流程中需要导出视频或使用 ffmpeg 做转码/剪辑，可在项目根目录执行：
+If your workflow needs video export, transcoding, or clipping with FFmpeg, run:
 
 ```powershell
 .\scripts\install-ffmpeg.ps1
 ```
 
-脚本会下载 [Gyan FFmpeg](https://github.com/GyanD/codexffmpeg/releases) 到 `tools/` 并将 `bin` 加入当前用户 PATH。若遇执行策略限制，先运行：
+The script downloads [Gyan FFmpeg](https://github.com/GyanD/codexffmpeg/releases)
+into `tools/` and adds its `bin` directory to the current user's PATH. If
+PowerShell blocks the script because of execution policy, run:
 
 ```powershell
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
 ```
 
-也可用系统包管理器安装（需自行加入 PATH）：`winget install Gyan.FFmpeg`。
+You can also install it with a system package manager and add it to PATH
+yourself: `winget install Gyan.FFmpeg`.
 
 ### VS Code / IDE setup
 

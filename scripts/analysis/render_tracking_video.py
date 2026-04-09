@@ -1,31 +1,14 @@
 """
-把「配好 ID + 补全后的轨迹」叠到 clip 视频上，生成带标注的合成视频
-========================================================================
+Overlay processed 2D trajectories on the three synchronized clip videos and
+write a combined MP4.
 
-流程与 analyze_tracking_patterns 一致：先按 SLEAP CSV 做 ID 分配与帧级补全，
-再把个体 0/1/2 的 (x,y) 画到对应视角的每一帧上，输出三视角并排的 mp4。
+The workflow mirrors the old `analyze_tracking_patterns` behavior:
 
-依赖：opencv-python, numpy, pandas
-
-用法示例：
-
-  # 指定实验 ID、SLEAP CSV 目录、视频目录、fps 与输出路径
-  python scripts/analysis/render_tracking_video.py ^
-    --input-dir data/sleap_output ^
-    --experiment-id "20251220_E_1_2_FCMC__male1_Courtship_1464.337-1472.705" ^
-    --video-dir "D:/clips" ^
-    --fps 166 ^
-    --output out_tracking_id.mp4
-
-  # 也可分别指定三个视角的视频路径
-  python scripts/analysis/render_tracking_video.py ^
-    --input-dir data/sleap_output ^
-    --experiment-id "20251220_E_1_2_FCMC__male1_Courtship_1464.337-1472.705" ^
-    --video-top "D:/clips/top.mp4" ^
-    --video-side1 "D:/clips/side1.mp4" ^
-    --video-side2 "D:/clips/side2.mp4" ^
-    --fps 166 ^
-    --output out_tracking_id.mp4
+1. load processed SLEAP CSV files
+2. normalize identity labels per frame
+3. optionally fill frame-level gaps across the clip range
+4. draw the points on each synchronized camera view
+5. export a three-view composite video
 """
 
 from __future__ import annotations
@@ -45,12 +28,8 @@ except ImportError:
     cv2 = None
 
 
-# -----------------------------------------------------------------------------
-# 与 analyze_tracking_patterns 一致的辅助函数（逻辑保持同步）
-# -----------------------------------------------------------------------------
-
 def normalise_individual_to_int(val) -> int:
-    """把 individual 列统一成整数：支持 0/1/2、'a'/'b'/'c'、'fish_0'/'fish_1'、'0'/'1' 等。"""
+    """Normalize the `individual` column to integer IDs."""
     if pd.isna(val):
         return -1
     if isinstance(val, (int, np.integer)) and not isinstance(val, bool):
@@ -68,7 +47,7 @@ def normalise_individual_to_int(val) -> int:
 
 
 def extract_clip_time_range(path: str | Path) -> Tuple[float, float] | None:
-    """从文件名解析 clip 时间范围（秒），例如 ..._1464.337-1472.705... -> (1464.337, 1472.705)。"""
+    """Extract the clip time range in seconds from a filename."""
     s = str(path)
     m = re.search(r"(\d+\.\d+)-(\d+\.\d+)", s)
     if m:
@@ -77,18 +56,18 @@ def extract_clip_time_range(path: str | Path) -> Tuple[float, float] | None:
 
 
 def load_tracking_data(csv_path: Path) -> pd.DataFrame:
-    """加载 SLEAP 导出 CSV，需含 frame, x, y。"""
+    """Load a SLEAP-exported CSV file that must contain `frame`, `x`, and `y`."""
     df = pd.read_csv(csv_path)
     for c in ["frame", "x", "y"]:
         if c not in df.columns:
-            raise ValueError(f"CSV 缺少列: {c}")
+            raise ValueError(f"CSV is missing required column: {c}")
     return df
 
 
 def extract_centroid_per_frame(df: pd.DataFrame) -> pd.DataFrame:
     """
-    按帧提取质心并分配临时个体 ID（0,1,2）。
-    首帧按 score 取前 3 个；后续帧用上一帧位置做最近邻匹配。
+    Extract centroids frame by frame and assign temporary individual IDs
+    (`0/1/2`).
     """
     frames = sorted(df["frame"].unique())
     required = ["frame", "x", "y"]
@@ -117,7 +96,6 @@ def extract_centroid_per_frame(df: pd.DataFrame) -> pd.DataFrame:
 
         prev_pts = np.array([prev[i] for i in sorted(prev)])
         dist = cdist(pts, prev_pts)
-        used_j = set()
         for _ in range(min(len(pts), len(prev_pts))):
             i, j = np.unravel_index(np.argmin(dist), dist.shape)
             d = dist[i, j]
@@ -129,7 +107,6 @@ def extract_centroid_per_frame(df: pd.DataFrame) -> pd.DataFrame:
             x, y = float(sub.iloc[i]["x"]), float(sub.iloc[i]["y"])
             prev[ind_id] = np.array([x, y])
             out.append({"frame": fi, "individual": ind_id, "x": x, "y": y})
-            used_j.add(j)
     return pd.DataFrame(out)
 
 
@@ -138,7 +115,7 @@ def complete_tracks_with_interpolation(
     fps: float,
     clip_range: Tuple[float, float],
 ) -> pd.DataFrame:
-    """按 clip 时长补全帧，缺失位置线性插值；新增 is_interpolated 列。"""
+    """Fill missing frames over the clip duration with linear interpolation."""
     if individuals_df.empty or fps <= 0:
         return individuals_df
     t0, t1 = clip_range
@@ -174,10 +151,7 @@ def identify_view_from_path(csv_path: Path) -> str | None:
 
 def extract_experiment_id_from_filename(name: str) -> str:
     """
-    去掉扩展名、视角/PLAYER 等后缀，得到可对比的实验 ID。
-    支持两种命名：
-    - top_mouth_180_..._PLAYER1_...csv / side_mouth_593_..._PLAYER2/3_...csv
-    - 20251220_E_1_2_FCMC_male1_Courtship_2082.090-2090.072_player1_id_assigned.csv
+    Remove extension and view/PLAYER suffixes to get a comparable experiment ID.
     """
     s = name.replace(".csv", "").replace(".predictions.csv", "")
     s = re.sub(r"_player[123]_(?:id_assigned|processed)$", "", s, flags=re.I)
@@ -187,14 +161,18 @@ def extract_experiment_id_from_filename(name: str) -> str:
 
 
 def _normalize_exp_id(s: str) -> str:
-    """实验 ID 标准化：连续下划线视为同一分隔，便于兼容 FCMC_male1 与 FCMC__male1。"""
+    """Normalize experiment IDs so repeated underscores do not matter."""
     return re.sub(r"_+", "_", s).strip("_")
 
 
 def find_view_csvs(input_dir: Path, experiment_id: str) -> Dict[str, Path]:
-    """在 input_dir 下递归找 CSV，按实验 ID 和 PLAYER 匹配，返回 {top|side1|side2: path}。
-    注意：这里只会使用 *_processed.csv 文件；若目标实验没有对应的 processed 文件，
-    会报错提醒，而不会回退到 `_id_assigned` 或原始 SLEAP 导出。"""
+    """
+    Recursively find processed CSV files matching one experiment ID and return
+    `{top|side1|side2: path}`.
+
+    Only `*_processed.csv` files are used. The function does not fall back to
+    raw SLEAP exports or `_id_assigned` files.
+    """
     by_view: Dict[str, List[Path]] = {}
     seen_eids: set[str] = set()
     want_norm = _normalize_exp_id(experiment_id)
@@ -204,25 +182,18 @@ def find_view_csvs(input_dir: Path, experiment_id: str) -> Dict[str, Path]:
             continue
         eid = extract_experiment_id_from_filename(p.name)
         seen_eids.add(eid)
-        # 仅匹配实验 ID 一致且文件名中包含 "processed" 的 CSV
         if (eid == experiment_id or _normalize_exp_id(eid) == want_norm) and "processed" in p.name.lower():
             by_view.setdefault(view, []).append(p)
     if by_view:
-        # 多个 processed 文件时，按文件名排序后取最后一个（通常为最新版本）
         return {v: sorted(fs, key=lambda x: x.name)[-1] for v, fs in by_view.items() if fs}
-    # 未匹配时给出提示
     sample = sorted(seen_eids)[:8]
     raise FileNotFoundError(
-        f"未在 {input_dir} 下找到 processed CSV 对应实验 ID: {experiment_id!r}\n"
-        f"提示：2D 轨迹视频现在强制只使用 *_processed.csv 文件，"
-        f"请确认已通过 scripts.tracking.process_tracking 生成处理结果并放在该目录。\n"
-        f"当前目录下检测到的实验 ID 示例（不一定都有 processed 文件，请仅作参考）：\n  " + "\n  ".join(sample)
+        f"Could not find processed CSV files for experiment ID {experiment_id!r} under {input_dir}\n"
+        f"This renderer now uses only *_processed.csv files.\n"
+        f"Please confirm that scripts.tracking.process_tracking has already produced them.\n"
+        f"Example experiment IDs detected in the directory (for reference only):\n  " + "\n  ".join(sample)
     )
 
-
-# -----------------------------------------------------------------------------
-# 视频叠加与写出
-# -----------------------------------------------------------------------------
 
 def draw_one_frame(
     img: np.ndarray,
@@ -231,7 +202,7 @@ def draw_one_frame(
     colors: List[Tuple[int, int, int]],
     simple_dots: bool = False,
 ) -> np.ndarray:
-    """在 img 上按 individuals_df 中该帧的 (x,y) 画圆；simple_dots 时仅纯色圆、不画 ID 文字。"""
+    """Draw points for one frame on one image."""
     out = img.copy()
     h, w = out.shape[:2]
     sub = individuals_df[individuals_df["frame"] == frame_idx].dropna(subset=["x", "y"])
@@ -262,11 +233,9 @@ def draw_trail_panel(
     ref_wh: Tuple[int, int] | None,
     simple_dots: bool = False,
 ) -> np.ndarray:
-    """
-    绘制纯轨迹面板：空白画布 + 过去 trail_frames 帧的轨迹线 + 当前点；simple_dots 时仅纯色、不画 ID。
-    """
+    """Draw a trail-only panel showing the recent trajectory history."""
     out = np.zeros((height, width, 3), dtype=np.uint8)
-    out[:] = (40, 40, 40)  # 深灰底
+    out[:] = (40, 40, 40)
     if individuals_df.empty or trail_frames <= 0:
         return out
     ref_w, ref_h = (ref_wh if ref_wh else (width, height))
@@ -312,11 +281,11 @@ def render_three_view_video(
     simple_dots: bool = False,
 ) -> None:
     """
-    上方：三视角视频 + 点叠加；可选下方：三视角纯轨迹。
-    simple_dots=True 时仅画纯色圆点、不画颜色区分与 Ind_0 等文字。
+    Top row: three synchronized videos with point overlays.
+    Optional bottom row: three trail-only panels.
     """
     if cv2 is None:
-        raise SystemExit("需要 opencv-python：pip install opencv-python")
+        raise SystemExit("opencv-python is required: pip install opencv-python")
 
     try:
         from tqdm import tqdm
@@ -327,10 +296,10 @@ def render_three_view_video(
     caps = {}
     for v in order:
         if v not in video_paths or not video_paths[v].exists():
-            raise FileNotFoundError(f"缺少视角视频: {v} -> {video_paths.get(v)}")
+            raise FileNotFoundError(f"Missing view video: {v} -> {video_paths.get(v)}")
         cap = cv2.VideoCapture(str(video_paths[v]))
         if not cap.isOpened():
-            raise RuntimeError(f"无法打开视频: {video_paths[v]}")
+            raise RuntimeError(f"Could not open video: {video_paths[v]}")
         caps[v] = cap
 
     n_frames = int(min(caps[v].get(cv2.CAP_PROP_FRAME_COUNT) for v in order))
@@ -353,11 +322,11 @@ def render_three_view_video(
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     writer = cv2.VideoWriter(str(output_path), fourcc, fps, (out_w, total_h))
     if not writer.isOpened():
-        raise RuntimeError(f"无法创建输出视频: {output_path}")
+        raise RuntimeError(f"Could not create output video: {output_path}")
 
     colors = [(0, 255, 0), (0, 165, 255), (255, 0, 0)]  # BGR
 
-    for idx in tqdm(range(n_frames), desc="写入视频", unit="frame", ncols=80):
+    for idx in tqdm(range(n_frames), desc="Writing video", unit="frame", ncols=80):
         row_video = []
         for i, v in enumerate(order):
             cap = caps[v]
@@ -408,7 +377,7 @@ def render_three_view_video(
     for cap in caps.values():
         cap.release()
     writer.release()
-    print(f"已写出: {output_path}")
+    print(f"Wrote: {output_path}")
 
 
 def resolve_video_paths(
@@ -418,7 +387,7 @@ def resolve_video_paths(
     video_side1: Path | None,
     video_side2: Path | None,
 ) -> Dict[str, Path]:
-    """确定每个视角使用的视频路径。多种目录结构都尝试匹配。"""
+    """Resolve the video path for each view from explicit arguments or a root directory."""
     explicit = {"top": video_top, "side1": video_side1, "side2": video_side2}
     out: Dict[str, Path] = {}
     for v, csv_path in view_csvs.items():
@@ -427,13 +396,13 @@ def resolve_video_paths(
             continue
         if video_dir is None or not video_dir.exists():
             raise FileNotFoundError(
-                f"未找到视角 {v} 的视频。请指定 --video-dir 或 --video-{v}。"
+                f"Could not find the video for view {v}. Pass --video-dir or --video-{v}."
             )
         stem = csv_path.stem
         parent_name = csv_path.parent.name
         candidates = [
-            video_dir / (stem + ".mp4"),                          # 扁平方格：video_dir/同名.mp4
-            video_dir / parent_name / (stem + ".mp4"),            # 与 CSV 同结构：video_dir/top_mouth_180/xxx.mp4
+            video_dir / (stem + ".mp4"),
+            video_dir / parent_name / (stem + ".mp4"),
             video_dir / parent_name / (csv_path.name.replace(".csv", ".mp4")),
         ]
         for cand in candidates:
@@ -442,7 +411,6 @@ def resolve_video_paths(
                 break
         if v in out:
             continue
-        # 递归按 stem 匹配（含子目录）
         for f in video_dir.rglob("*.mp4"):
             if stem in f.stem or f.stem in stem:
                 out[v] = f
@@ -450,41 +418,41 @@ def resolve_video_paths(
         if v in out:
             continue
         raise FileNotFoundError(
-            f"未找到视角 {v} 的视频。已尝试在 {video_dir} 下匹配 stem={stem!r}、目录 {parent_name}。"
-            f"可指定 --video-{v} <路径> 或把该视角 mp4 放到上述目录中。"
+            f"Could not find the video for view {v}. Tried matching stem={stem!r} "
+            f"and directory {parent_name} under {video_dir}. "
+            f"You can also pass --video-{v} <path>."
         )
     return out
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        description="把配好 ID 且已处理后的 2D 轨迹叠到 clip 视频上，输出三视角合成 mp4（仅使用 *_processed.csv）",
+        description="Overlay processed 2D trajectories on clip videos and export a three-view MP4 (uses only *_processed.csv)",
     )
-    ap.add_argument("--input-dir", type=Path, required=True, help="处理后 CSV 所在目录（会递归查找 *_processed.csv，仅使用这些文件）")
-    ap.add_argument("--processed-dir", type=Path, default=None, help="可选。另一个 processed 目录；若指定且存在匹配文件，则优先生效于 --input-dir")
-    ap.add_argument("--experiment-id", type=str, required=True, help="实验 ID，与 analyze_tracking_patterns 中一致")
-    ap.add_argument("--video-dir", type=Path, default=None, help="视频根目录（下含与 CSV 同名的 mp4 或同结构子目录）")
-    ap.add_argument("--video-top", type=Path, default=None, help="top 视角视频路径")
-    ap.add_argument("--video-side1", type=Path, default=None, help="side1 视角视频路径")
-    ap.add_argument("--video-side2", type=Path, default=None, help="side2 视角视频路径")
-    ap.add_argument("--fps", type=float, required=True, help="视频帧率，用于补全帧数")
-    ap.add_argument("--output", type=Path, default=None, help="输出 mp4 路径（默认在 --output-dir 下）")
-    ap.add_argument("--output-dir", type=Path, default=Path("D:/sleap_output"), help="输出目录，默认 D:\\sleap_output")
-    ap.add_argument("--trail-duration-s", type=float, default=1.0, help="下方纯轨迹保留时长（秒），默认 1")
-    ap.add_argument("--no-trail-row", action="store_true", help="不显示下方纯轨迹行，仅保留上方三视角视频+点")
-    ap.add_argument("--simple-dots", action="store_true", help="仅画纯色圆点，不画颜色区分与 Ind_0 等文字")
+    ap.add_argument("--input-dir", type=Path, required=True, help="Directory containing processed CSV files (searched recursively)")
+    ap.add_argument("--processed-dir", type=Path, default=None, help="Optional second processed directory; if provided it overrides matches from --input-dir")
+    ap.add_argument("--experiment-id", type=str, required=True, help="Experiment ID")
+    ap.add_argument("--video-dir", type=Path, default=None, help="Video root directory")
+    ap.add_argument("--video-top", type=Path, default=None, help="Top-view video path")
+    ap.add_argument("--video-side1", type=Path, default=None, help="Side1 video path")
+    ap.add_argument("--video-side2", type=Path, default=None, help="Side2 video path")
+    ap.add_argument("--fps", type=float, required=True, help="Video frame rate, used when filling frames")
+    ap.add_argument("--output", type=Path, default=None, help="Output MP4 path (defaults under --output-dir)")
+    ap.add_argument("--output-dir", type=Path, default=Path("D:/sleap_output"), help="Output directory")
+    ap.add_argument("--trail-duration-s", type=float, default=1.0, help="Trail duration in seconds for the lower row")
+    ap.add_argument("--no-trail-row", action="store_true", help="Hide the lower trail row")
+    ap.add_argument("--simple-dots", action="store_true", help="Draw plain dots only, without identity labels")
     args = ap.parse_args()
 
     input_dir = args.input_dir
     if not input_dir.exists():
-        raise SystemExit(f"输入目录不存在: {input_dir}")
+        raise SystemExit(f"Input directory does not exist: {input_dir}")
 
     try:
         view_csvs = find_view_csvs(input_dir, args.experiment_id)
     except FileNotFoundError as e:
         raise SystemExit(e) from e
 
-    # 若指定了 --processed-dir，优先用该目录下的 *_processed.csv 覆盖同视角
     if args.processed_dir and args.processed_dir.exists():
         try:
             from_processed = find_view_csvs(args.processed_dir, args.experiment_id)
@@ -511,11 +479,10 @@ def main() -> None:
             ind = ind.rename(columns={"fish_id": "individual"})
         else:
             ind = extract_centroid_per_frame(df)
-        # _processed 等可能用 "a"/"b"/"c" 或 "fish_0"/"fish_1" 等字符串，统一为整数
         ind["individual"] = ind["individual"].apply(normalise_individual_to_int)
         ind = ind[ind["individual"] >= 0]
         if ind.empty:
-            print(f"  警告: {v} 未得到有效轨迹，跳过该视角")
+            print(f"  Warning: {v} did not produce valid trajectories; skipping this view")
             continue
         clip_range = extract_clip_time_range(csv_path)
         if clip_range and args.fps > 0:
@@ -523,15 +490,15 @@ def main() -> None:
         view_data[v] = ind
         n = csv_path.name.lower()
         src = "processed" if "processed" in n else ("id_assigned" if "id_assigned" in n else "raw")
-        print(f"  {v}: {len(ind)} 行, {ind['frame'].nunique()} 帧 ({src})")
+        print(f"  {v}: {len(ind)} rows, {ind['frame'].nunique()} frames ({src})")
 
     if not view_data:
-        raise SystemExit("没有任何视角得到有效轨迹，无法生成视频")
+        raise SystemExit("No view produced valid trajectories; cannot render a video")
 
     vp = {v: video_paths[v] for v in view_data if v in video_paths}
     if len(vp) != len(view_data):
         missing = set(view_data) - set(vp)
-        raise SystemExit(f"缺少视角视频: {missing}")
+        raise SystemExit(f"Missing view video(s): {missing}")
 
     out_dir = args.output_dir
     out_path = args.output if args.output is not None else (out_dir / "tracking_id_video.mp4")

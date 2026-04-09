@@ -1,15 +1,9 @@
 """
-Step 1: 点の取得
-================
+Step 1: load 2D points from processed CSV files.
 
-从各相机 processed CSV 中，按帧提取 2D 点（像素坐标）。
-默认 use_fish_id=False：不按 2D 身份排序，按 score 或 x 排序，3D 身份由 Step3 几何对应 + Step4 跨帧追踪决定，避免 2D ID 交换。use_fish_id=True 时按 a/b/c 顺序取点，使 3D 与 2D 一致。
-
-可选：fill_missing_2d_from_two_views 用校准模型在「某一帧某个体仅缺 1 个视角」时，
-用另两视角预测该视角 2D 并补全；两视角缺失则该帧该个体不补，留待 3D 插值。
-
-用法:
-    python -m scripts.reconstruction.step1_get_points --processed_dir H:\\sleap_output\\processed --set_key xxx --output points.json
+By default, `use_fish_id=False`, so the points are ordered by score or x
+instead of by 2D identity. 3D identity is then decided by geometry in later
+steps, which helps prevent 2D ID swaps from leaking into 3D.
 """
 
 import argparse
@@ -22,11 +16,11 @@ import pandas as pd
 
 PLAYER_TO_CAM = {"player1": "cam0", "player2": "cam1", "player3": "cam2"}
 FISH_ID_ORDER = ["a", "b", "c"]
-CAM_VIEW = {"player1": "XY", "player2": "XZ", "player3": "YZ"}  # 用于 2D 补全
+CAM_VIEW = {"player1": "XY", "player2": "XZ", "player3": "YZ"}
 
 
 def _normalize_fish_id(fid: Any) -> str:
-    """将 fish_id 统一为 'a'/'b'/'c' 便于比较。"""
+    """Normalize fish IDs to 'a'/'b'/'c' for comparisons."""
     if fid is None or (isinstance(fid, float) and np.isnan(fid)):
         return ""
     s = str(fid).strip().lower()
@@ -41,15 +35,7 @@ def fill_missing_2d_from_two_views(
     cal: Any,
     dfs: Dict[str, pd.DataFrame],
 ) -> Dict[str, pd.DataFrame]:
-    """
-    当某一帧某个体仅缺 1 个视角时，用另两视角预测该视角 2D 并写回 DataFrame。
-    两视角缺失则该帧该个体不补（留待 3D 阶段插值）；保证 ID 一致。
-
-    cal: 校准对象，需有 compute_XY_imcoords_from_XZ_YZ, compute_XZ_imcoords_from_XY_YZ,
-         compute_YZ_imcoords_from_XZ_XY 方法。
-    dfs: { "player1": df, "player2": df, "player3": df }，每 df 含 frame, fish_id, x, y。
-    返回新的 dfs（不修改入参），补全后的坐标写回对应行列。
-    """
+    """Fill exactly one missing view from the other two for the same fish/frame."""
     players = ["player1", "player2", "player3"]
     out = {p: dfs[p].copy() for p in players}
     all_frames = set()
@@ -82,20 +68,17 @@ def fill_missing_2d_from_two_views(
                     continue
                 missing = [p for p in players if p not in valid][0]
                 if pid != missing:
-                    continue  # 只在该缺失视角的当前行上写回补全结果
+                    continue
                 try:
                     if missing == "player1":
-                        # XY 由 XZ + YZ 预测 → player2, player3
                         filled = cal.compute_XY_imcoords_from_XZ_YZ(
                             np.array(pts["player2"]), np.array(pts["player3"])
                         )
                     elif missing == "player2":
-                        # XZ 由 XY + YZ 预测 → player1, player3
                         filled = cal.compute_XZ_imcoords_from_XY_YZ(
                             np.array(pts["player1"]), np.array(pts["player3"])
                         )
                     else:
-                        # YZ 由 XZ + XY 预测 → player2, player1
                         filled = cal.compute_YZ_imcoords_from_XZ_XY(
                             np.array(pts["player2"]), np.array(pts["player1"])
                         )
@@ -113,16 +96,16 @@ def fill_missing_2d_from_two_views(
 
 
 def load_processed_dfs(processed_dir: str, set_key: str) -> Dict[str, pd.DataFrame]:
-    """加载 player1/2/3 的 processed CSV。"""
+    """Load processed CSV files for player1/player2/player3."""
     dfs: Dict[str, pd.DataFrame] = {}
     for player in ["player1", "player2", "player3"]:
         path = Path(processed_dir) / f"{set_key}_{player}_processed.csv"
         if not path.exists():
-            raise FileNotFoundError(f"未找到: {path}")
+            raise FileNotFoundError(f"File not found: {path}")
         df = pd.read_csv(path)
         for col in ["frame", "x", "y"]:
             if col not in df.columns:
-                raise ValueError(f"{path} 缺少列: {col}")
+                raise ValueError(f"{path} is missing required column: {col}")
         dfs[player] = df
     return dfs
 
@@ -132,15 +115,7 @@ def get_points_per_frame(
     max_points_per_cam: int = 3,
     use_fish_id: bool = False,
 ) -> Dict[int, Dict[str, List[Tuple[float, float]]]]:
-    """
-    按帧组织 2D 点。
-
-    use_fish_id=True：有 fish_id 时按 a, b, c 顺序取点（3D 与 2D 身份一致）。
-    use_fish_id=False：不使用 2D 身份，只按几何排序（score 或 x），3D 身份由 Step3 几何对应 + Step4 跨帧 3D 追踪决定，避免 2D ID 交换传播到 3D。
-
-    Returns:
-        {frame: {cam: [(x,y), ...]}}  每相机最多 max_points_per_cam 个点。
-    """
+    """Organize 2D points by frame and camera."""
     all_frames = set()
     for df in dfs.values():
         all_frames.update(df["frame"].astype(int).unique())
@@ -155,7 +130,6 @@ def get_points_per_frame(
             if sub.empty:
                 result[frame][cam] = []
                 continue
-            # 仅当 use_fish_id=True 且存在 fish_id 时才按 a/b/c 顺序取点
             if use_fish_id and "fish_id" in sub.columns:
                 order_map = {fid: i for i, fid in enumerate(FISH_ID_ORDER)}
                 sub = sub.copy()
@@ -179,31 +153,26 @@ def run(
     output_path: str | None = None,
     use_fish_id: bool = False,
 ) -> Dict:
-    """
-    执行 Step 1，返回点数据。
-
-    use_fish_id=False（推荐）：不按 2D a/b/c 排序，3D 身份由几何+跨帧追踪决定，无 ID 交换。
-    use_fish_id=True：按 2D 身份顺序取点，3D 与 2D 个体一致（2D 若有 ID 交换会传到 3D）。
-    """
+    """Run Step 1 and optionally write the result to JSON."""
     dfs = load_processed_dfs(processed_dir, set_key)
     points = get_points_per_frame(dfs, use_fish_id=use_fish_id)
     if output_path:
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump({str(k): v for k, v in points.items()}, f, indent=2, ensure_ascii=False)
-        print(f"已保存: {output_path}")
+        print(f"Saved: {output_path}")
     return points
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Step 1: 从 processed CSV 获取每帧 2D 点")
-    ap.add_argument("--processed_dir", required=True, help="processed CSV 目录")
-    ap.add_argument("--set_key", required=True, help="set key")
-    ap.add_argument("--output", default=None, help="输出 JSON 路径（可选）")
+    ap = argparse.ArgumentParser(description="Step 1: load per-frame 2D points from processed CSV files")
+    ap.add_argument("--processed_dir", required=True, help="Directory containing processed CSV files")
+    ap.add_argument("--set_key", required=True, help="Set key")
+    ap.add_argument("--output", default=None, help="Optional output JSON path")
     ap.add_argument(
         "--use_fish_id",
         action="store_true",
-        help="按 a/b/c 顺序取点（3D 与 2D 一致）；默认不启用，3D 身份由几何+跨帧追踪决定",
+        help="Use a/b/c fish_id ordering so 3D IDs stay aligned with 2D IDs",
     )
     args = ap.parse_args()
     run(args.processed_dir, args.set_key, args.output, use_fish_id=args.use_fish_id)
