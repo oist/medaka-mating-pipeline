@@ -342,24 +342,26 @@ python scripts/tracking/main.py <input> [options]
 - `--sleap-output-dir`: SLEAP输出目录（默认: d:\\sleap_output）
 - `--output-dir`: 输出目录（默认: sleap_output_dir/processed）
 - `--max-distance`: ID分配最大距离阈值（默认: 100）
-- `--outlier-method`: 异常值检测方法（velocity/jump/iqr/zscore，默认: velocity）
-- `--interp-method`: 插值方法（linear/polynomial/cubic，默认: linear）
+- `--max-jump-distance`: 异常跳变距离阈值（默认: 200）
+- `--max-jump-per-frame`: 按帧间隔缩放的异常值阈值（默认: 100）
+- `--interp-method`: 插值方法（linear/cubic，默认: linear）
 - `--interp-limit`: 最大连续缺失值数量（默认: 5）
 - `--no-smooth`: 禁用平滑处理
 - `--no-viz`: 禁用可视化
-- `--generate-file-sets`: 生成file_sets.json文件
+- `--skip-2d-interpolation`: 跳过 2D 插值
+- `--simple`: 使用不做异常值处理的轻量流程
 
 ### 示例
 
 ```bash
 # 处理单个CSV文件
-python scripts/tracking/main.py "d:\sleap_output\top_mouth_180\top_mouth_180_20251220_E_1_2_FCMC_PLAYER1_male1_Courtship_1905.506-1913.422.csv"
+python -m scripts.tracking.main "d:\sleap_output\top_mouth_180\top_mouth_180_20251220_E_1_2_FCMC_PLAYER1_male1_Courtship_1905.506-1913.422.csv"
 
 # 使用自定义参数
-python scripts/tracking/main.py "d:\sleap_output\top_mouth_180\top_mouth_180_20251220_E_1_2_FCMC_PLAYER1_male1_Courtship_1905.506-1913.422.csv" --max-distance 150 --outlier-method jump --interp-method cubic
+python -m scripts.tracking.main "d:\sleap_output\top_mouth_180\top_mouth_180_20251220_E_1_2_FCMC_PLAYER1_male1_Courtship_1905.506-1913.422.csv" --max-distance 150 --max-jump-per-frame 120 --interp-method cubic
 
 # 处理整个set
-python scripts/tracking/main.py "20251220_E_1_2_FCMC_male1_Courtship_1905.506-1913.422"
+python -m scripts.tracking.main "20251220_E_1_2_FCMC_male1_Courtship_1905.506-1913.422"
 ```
 
 ## 算法特点

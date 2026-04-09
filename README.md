@@ -22,6 +22,13 @@ Through video recording and quantitative behavioral analysis before mating event
 ## Data layout (expected)
 See `docs/data_layout.md`.
 
+## Script-first workflow
+
+If you prefer terminal-driven development over notebooks, start with
+`docs/script_workflow.md`. It documents the recommended directory layout,
+gitignored local path config, and the preferred CLI entry points for 2D
+tracking post-processing and 3D reconstruction.
+
 ## Quick start
 
 ### Environment setup
@@ -102,6 +109,9 @@ Most team members can simply open the repository folder in VS Code.
 ### Configure experiment
 
 - Configure experiment: edit `configs/project.yaml`
+- Configure local machine/data paths: copy `configs/paths.example.toml` to
+  `configs/paths.local.toml` and update it for your machine. The local file is
+  gitignored.
 
 ### Acquisition (campy)
 
@@ -117,7 +127,9 @@ campy-acquire ./configs/acquisition/campy_config.yaml
 ### Tracking / analysis
 
 - Run inference (HPC): `scripts/sleap/run_inference_slurm.sh`
-- Compute metrics: `scripts/analysis/compute_preference_metrics.py`
+- Run 2D tracking post-processing: `python -m scripts.tracking.main ...`
+- Run 3D reconstruction: `python -m scripts.reconstruction_3d.run_3d_reconstruction ...`
+- Compute metrics: `scripts/analysis/compute_courtship_metrics.py` and `scripts/analysis/compute_aggression_metrics.py`
 
 ## Reproducibility
 - All parameters should live in `configs/`.

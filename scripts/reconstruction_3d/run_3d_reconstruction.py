@@ -7,9 +7,14 @@
 输出：{set_key}_3d.csv、{set_key}_3d_trajectories.png
 """
 
+import sys
 from pathlib import Path
 from typing import Dict, Optional, Tuple
 
+if __package__ in {None, ""}:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from scripts.common.local_paths import choose_path, load_local_paths
 from scripts.reconstruction_3d.pipeline import run_pipeline
 
 
@@ -65,9 +70,14 @@ def run_3d_reconstruction(
 def main():
     import argparse
     p = argparse.ArgumentParser(description="三视角 3D 重建 + ID 分配 + 轨迹图")
-    p.add_argument("--processed_dir", required=True, help="*_processed.csv 所在目录")
+    p.add_argument(
+        "--paths-config",
+        default=None,
+        help="Optional local TOML path config. Defaults to configs/paths.local.toml if present.",
+    )
+    p.add_argument("--processed_dir", default=None, help="*_processed.csv 所在目录")
     p.add_argument("--set_key", required=True, help="片段 set key")
-    p.add_argument("--model_folder", required=True, help="校准模型目录")
+    p.add_argument("--model_folder", default=None, help="校准模型目录")
     p.add_argument("--output_dir", default=None, help="输出目录，默认同 processed_dir")
     p.add_argument("--xyz_bounds", type=float, nargs=2, default=[0.0, 200.0], metavar=("LOW", "HIGH"))
     p.add_argument("--no_fill_missing", action="store_true", help="不补全缺失帧")
@@ -75,11 +85,37 @@ def main():
     p.add_argument("--first_frame_id_only", action="store_true", help="仅用第一帧定 ID 映射，全片 a→ID_1,b→ID_2,c→ID_3")
     args = p.parse_args()
 
+    local_paths = load_local_paths(args.paths_config)
+    processed_dir = choose_path(
+        args.processed_dir,
+        local_paths.processed_dir if local_paths else None,
+    )
+    model_folder = choose_path(
+        args.model_folder,
+        local_paths.calibration_model_dir if local_paths else None,
+    )
+    output_dir = choose_path(
+        args.output_dir,
+        local_paths.reconstruction_output_dir if local_paths else None,
+        processed_dir,
+    )
+
+    if processed_dir is None:
+        p.error(
+            "processed_dir is required. Pass --processed_dir or define processed_dir "
+            "in configs/paths.local.toml."
+        )
+    if model_folder is None:
+        p.error(
+            "model_folder is required. Pass --model_folder or define "
+            "calibration_model_dir in configs/paths.local.toml."
+        )
+
     res = run_3d_reconstruction(
-        processed_dir=args.processed_dir,
+        processed_dir=processed_dir,
         set_key=args.set_key,
-        model_folder=args.model_folder,
-        output_dir=args.output_dir,
+        model_folder=model_folder,
+        output_dir=output_dir,
         xyz_bounds=(args.xyz_bounds[0], args.xyz_bounds[1]),
         fill_missing_3d=not args.no_fill_missing,
         plot=not args.no_plot,

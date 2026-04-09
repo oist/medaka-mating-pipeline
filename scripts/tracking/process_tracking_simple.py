@@ -211,6 +211,31 @@ def process_from_csv_path_simple(
     )
 
 
+def process_from_file_set_key_simple(
+    file_set_key,
+    file_sets_json_path,
+    sleap_output_dir,
+    output_dir=None,
+    **kwargs,
+):
+    """
+    根据 file_set_key 处理数据（简化版）。
+    """
+    with open(file_sets_json_path, "r", encoding="utf-8") as f:
+        file_sets = json.load(f)
+
+    if file_set_key not in file_sets:
+        raise ValueError(f"未找到 set key: {file_set_key}")
+
+    file_set_info = file_sets[file_set_key]
+    return process_single_set_simple(
+        file_set_info,
+        sleap_output_dir,
+        output_dir=output_dir,
+        **kwargs,
+    )
+
+
 def _infer_sleap_output_dir_from_csv(csv_path):
     """从 CSV 路径向上查找包含 top_mouth_* 与 side_mouth_* 的目录。"""
     p = Path(csv_path).resolve()

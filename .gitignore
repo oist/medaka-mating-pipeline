@@ -206,6 +206,7 @@ __marimo__/
 # Project outputs / large artifacts
 runs/
 calibration_outputs/
+configs/paths.local.toml
 
 # Data (keep data/README.md tracked)
 data/raw/
