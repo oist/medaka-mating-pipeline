@@ -7,7 +7,7 @@ name = "medaka-mating-pipeline"
 version = "0.1.0"
 description = "Pipeline for acquisition, calibration, tracking, and analysis of medaka mating behavior."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.14"
 license = { file = "LICENSE" }
 authors = [{ name = "makoto hiroi" }]
 
