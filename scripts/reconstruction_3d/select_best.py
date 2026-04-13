@@ -22,7 +22,7 @@ def _point_in_bounds(
 def select_best_all_frames(
     candidates_by_frame: Dict[int, List[Dict]],
     *,
-    xyz_bounds: Tuple[float, float] | None = (0.0, 200.0),
+    xyz_bounds: Tuple[float, float] | None = None,
 ) -> Dict[int, Dict]:
     """
     For each frame, pick the minimum-cost candidate whose points stay inside

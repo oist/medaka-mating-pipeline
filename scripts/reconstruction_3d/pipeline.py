@@ -25,8 +25,9 @@ def run_pipeline(
     model_folder: str,
     *,
     output_dir: str | None = None,
-    xyz_bounds: Tuple[float, float] | None = (0.0, 200.0),
-    use_fish_id: bool = False,
+    xyz_bounds: Tuple[float, float] | None = None,
+    use_fish_id: bool | None = None,
+    allow_permutations: bool | None = None,
     shift_to_positive: bool = True,
     save_best_json: bool = False,
     plot: bool = True,
@@ -38,8 +39,15 @@ def run_pipeline(
     optionally export the result as CSV plus a trajectory plot.
     """
     cal = Calibration(model_folder)
+    if allow_permutations is None:
+        allow_permutations = bool(cal.has_geometric_scoring)
     points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=use_fish_id)
-    candidates_by_frame = compute_candidates(cal, points_by_frame, xyz_bounds=xyz_bounds)
+    candidates_by_frame = compute_candidates(
+        cal,
+        points_by_frame,
+        xyz_bounds=xyz_bounds,
+        allow_permutations=allow_permutations,
+    )
     best = select_best_all_frames(candidates_by_frame, xyz_bounds=xyz_bounds)
     if first_frame_id_only:
         best_tracked = apply_first_frame_id_only(best)

@@ -18,6 +18,33 @@ def load_sleap_csv(csv_path):
     return df
 
 
+def _aggregate_track_rows(track_rows):
+    """
+    Collapse one `(frame, track)` group into a single tracking point.
+
+    SLEAP exports can contain multiple node rows per tracked instance. We use
+    the centroid of the finite node coordinates so downstream identity
+    assignment sees one point per fish instead of whichever node happened to be
+    iterated last.
+    """
+    xy = track_rows[["x", "y"]].apply(pd.to_numeric, errors="coerce")
+    valid_xy = xy.notna().all(axis=1)
+    if valid_xy.any():
+        x = float(xy.loc[valid_xy, "x"].mean())
+        y = float(xy.loc[valid_xy, "y"].mean())
+    else:
+        x = np.nan
+        y = np.nan
+
+    if "score" in track_rows.columns:
+        score_series = pd.to_numeric(track_rows["score"], errors="coerce").dropna()
+        score = float(score_series.mean()) if not score_series.empty else np.nan
+    else:
+        score = np.nan
+
+    return x, y, score
+
+
 def parse_sleap_data(df):
     """
     Convert a SLEAP DataFrame into a frame-indexed structure.
@@ -29,18 +56,30 @@ def parse_sleap_data(df):
         Dictionary with:
         - `frames`: sorted frame numbers
         - `positions`: `{frame: {track_id: (x, y, score)}}`
+
+    When multiple node rows exist for the same `(frame, track)`, they are
+    aggregated into one centroid point instead of silently overwriting each
+    other.
     """
-    frames = df['frame'].unique()
-    frames = np.sort(frames)
+    if df.empty:
+        return {
+            'frames': np.array([], dtype=int),
+            'positions': {}
+        }
+
+    work_df = df.copy()
+    work_df['frame'] = pd.to_numeric(work_df['frame'], errors='coerce')
+    work_df = work_df.dropna(subset=['frame'])
+    work_df['frame'] = work_df['frame'].astype(int)
+
+    frames = np.sort(work_df['frame'].unique())
     
     positions = {}
     for frame in frames:
-        frame_data = df[df['frame'] == frame]
+        frame_data = work_df[work_df['frame'] == frame]
         positions[frame] = {}
-        for _, row in frame_data.iterrows():
-            track_id = row['track']
-            x, y = row['x'], row['y']
-            score = row['score']
+        for track_id, track_rows in frame_data.groupby('track', sort=True, dropna=False):
+            x, y, score = _aggregate_track_rows(track_rows)
             positions[frame][track_id] = (x, y, score)
     
     return {

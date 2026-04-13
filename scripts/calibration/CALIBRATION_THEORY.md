@@ -73,6 +73,14 @@ Main calibration artifacts:
 - additional helper models for estimating one view from the other two in the
   legacy reconstruction path
 
+The active `scripts/reconstruction_3d` path can also use those helper models
+when they are present. In practice that means:
+
+- triplet scoring can still be geometry-informed even if `XYZ_to_imCoords.joblib`
+  is missing
+- exactly one missing view in a triplet can be inferred from the other two
+  views before 3D prediction
+
 Main quality-control scripts:
 
 - `qc_3d_error.py`

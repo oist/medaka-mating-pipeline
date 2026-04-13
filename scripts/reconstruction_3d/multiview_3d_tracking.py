@@ -155,7 +155,9 @@ def run_full_pipeline(
     *,
     model_folder: Optional[str] = None,
     output_dir: Optional[str] = None,
-    xyz_bounds: Optional[Tuple[float, float]] = (0.0, 200.0),
+    xyz_bounds: Optional[Tuple[float, float]] = None,
+    use_fish_id: bool | None = None,
+    allow_permutations: bool | None = None,
     fill_missing_3d: bool = True,
     motion_weight: float = 10.0,
     plot: bool = True,
@@ -164,12 +166,25 @@ def run_full_pipeline(
     Full pipeline:
     2D -> 3D reconstruction -> 3D tracking -> optional interpolation -> export.
     """
-    points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=False)
+    points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=use_fish_id)
     if model_folder:
         cal = Calibration(model_folder)
-        candidates_by_frame = compute_candidates(cal, points_by_frame, xyz_bounds=xyz_bounds)
+        if allow_permutations is None:
+            allow_permutations = bool(cal.has_geometric_scoring)
+        candidates_by_frame = compute_candidates(
+            cal,
+            points_by_frame,
+            xyz_bounds=xyz_bounds,
+            allow_permutations=allow_permutations,
+        )
     else:
-        candidates_by_frame = compute_candidates_no_calib(points_by_frame, xyz_bounds=xyz_bounds)
+        if allow_permutations is None:
+            allow_permutations = False
+        candidates_by_frame = compute_candidates_no_calib(
+            points_by_frame,
+            xyz_bounds=xyz_bounds,
+            allow_permutations=allow_permutations,
+        )
     best = select_best_all_frames(candidates_by_frame, xyz_bounds=xyz_bounds)
     best_tracked = assign_3d_tracks(best, motion_weight=motion_weight)
 
@@ -232,7 +247,28 @@ def main():
     p.add_argument("--set_key", required=True, help="Clip set key")
     p.add_argument("--model_folder", default=None, help="Calibration model directory; if omitted use no-calibration mode")
     p.add_argument("--output_dir", default=None)
-    p.add_argument("--xyz_bounds", type=float, nargs=2, default=[0.0, 200.0], metavar=("LOW", "HIGH"))
+    p.add_argument(
+        "--xyz_bounds",
+        type=float,
+        nargs=2,
+        default=None,
+        metavar=("LOW", "HIGH"),
+        help="Optional valid 3D range [LOW, HIGH]. Omit to keep the model output scale unchanged.",
+    )
+    fish_id_group = p.add_mutually_exclusive_group()
+    fish_id_group.add_argument(
+        "--use_fish_id",
+        dest="use_fish_id",
+        action="store_true",
+        help="Force a/b/c ordering from processed CSV fish_id values when available",
+    )
+    fish_id_group.add_argument(
+        "--ignore_fish_id",
+        dest="use_fish_id",
+        action="store_false",
+        help="Ignore fish_id and order 2D points by score/x instead",
+    )
+    p.set_defaults(use_fish_id=None)
     p.add_argument("--motion_weight", type=float, default=10.0, help="Motion-consistency cost weight")
     p.add_argument("--no_fill", action="store_true", help="Do not interpolate missing 3D frames")
     p.add_argument("--no_plot", action="store_true")
@@ -244,6 +280,7 @@ def main():
         model_folder=args.model_folder,
         output_dir=args.output_dir,
         xyz_bounds=xyz_bounds,
+        use_fish_id=args.use_fish_id,
         fill_missing_3d=not args.no_fill,
         motion_weight=args.motion_weight,
         plot=not args.no_plot,

@@ -69,6 +69,7 @@ def compute_candidates_no_calib(
     points_by_frame: Dict[int, Dict[str, List[Tuple[float, float]]]],
     *,
     xyz_bounds: Tuple[float, float] | None = None,
+    allow_permutations: bool = False,
 ) -> Dict[int, List[Dict]]:
     """
     Enumerate permutations per frame and compute 3D candidates without a
@@ -97,8 +98,13 @@ def compute_candidates_no_calib(
             pts2.append((np.nan, np.nan))
         pts0, pts1, pts2 = pts0[:NUM_INDIVIDUALS], pts1[:NUM_INDIVIDUALS], pts2[:NUM_INDIVIDUALS]
 
-        perms1 = list(permutations(range(NUM_INDIVIDUALS)))
-        perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+        if allow_permutations:
+            perms1 = list(permutations(range(NUM_INDIVIDUALS)))
+            perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+        else:
+            identity_perm = tuple(range(NUM_INDIVIDUALS))
+            perms1 = [identity_perm]
+            perms2 = [identity_perm]
         frame_candidates = []
 
         for perm1 in perms1:
@@ -137,6 +143,8 @@ def run_pipeline_no_calibration(
     *,
     output_dir: str | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
+    use_fish_id: bool | None = None,
+    allow_permutations: bool = False,
     fill_missing_3d: bool = True,
     plot: bool = True,
     first_frame_id_only: bool = True,
@@ -146,9 +154,11 @@ def run_pipeline_no_calibration(
     choose the best permutation, assign IDs from the first valid frame, fill
     missing frames, and export the CSV/plot.
     """
-    points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=False)
+    points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=use_fish_id)
     candidates_by_frame = compute_candidates_no_calib(
-        points_by_frame, xyz_bounds=xyz_bounds
+        points_by_frame,
+        xyz_bounds=xyz_bounds,
+        allow_permutations=allow_permutations,
     )
     best = select_best_all_frames(candidates_by_frame, xyz_bounds=xyz_bounds)
     best_tracked = apply_first_frame_id_only(best)

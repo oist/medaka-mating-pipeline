@@ -28,16 +28,20 @@ Data expectations:
 - `player3` = side2 / `cam2`
 - processed CSVs should include `frame`, `x`, `y`, with optional `fish_id` and `score`
 - calibration model directory must contain `imCoords_to_XYZ.joblib`
+- if available, `XYZ_to_imCoords.joblib` improves reprojection scoring
+- if available, `xy_yz_to_xz.joblib`, `xz_yz_to_xy.joblib`, and `xz_xy_to_yz.joblib`
+  are used for pairwise consistency scoring and one-view recovery
 
 Pipeline summary:
 
 1. Load per-frame 2D points from the processed CSV files.
 2. Enumerate candidate cross-view permutations.
 3. Use the learned calibration model to predict 3D points.
-4. Select the best candidate per frame.
-5. Reassign identities across frames in 3D.
-6. Optionally fill missing 3D frames with spline interpolation.
-7. Export `{set_key}_3d.csv` and an optional trajectory PNG.
+4. Score candidates with reprojection and/or pairwise calibration consistency.
+5. Select the best candidate per frame.
+6. Reassign identities across frames in 3D.
+7. Optionally fill missing 3D frames with spline interpolation.
+8. Export `{set_key}_3d.csv` and an optional trajectory PNG.
 
 Main modules:
 

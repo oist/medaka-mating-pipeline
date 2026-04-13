@@ -25,11 +25,15 @@ def compute_candidates(
     cal: Calibration,
     points_by_frame: Dict[int, Dict[str, List[Tuple[float, float]]]],
     *,
-    xyz_bounds: Tuple[float, float] | None = (0.0, 200.0),
+    xyz_bounds: Tuple[float, float] | None = None,
+    allow_permutations: bool = True,
 ) -> Dict[int, List[Dict]]:
     """
     Enumerate permutations of cam1/cam2 assignments and compute candidate 3D
     groups with registration cost for each frame.
+
+    When `allow_permutations=False`, the function keeps the incoming camera
+    ordering and emits a single candidate per frame.
     """
     low, high = (xyz_bounds or (None, None))[0], (xyz_bounds or (None, None))[1]
     candidates_by_frame: Dict[int, List[Dict]] = {}
@@ -52,8 +56,13 @@ def compute_candidates(
             pts2.append((np.nan, np.nan))
         pts0, pts1, pts2 = pts0[:NUM_INDIVIDUALS], pts1[:NUM_INDIVIDUALS], pts2[:NUM_INDIVIDUALS]
 
-        perms1 = list(permutations(range(NUM_INDIVIDUALS)))
-        perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+        if allow_permutations:
+            perms1 = list(permutations(range(NUM_INDIVIDUALS)))
+            perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+        else:
+            identity_perm = tuple(range(NUM_INDIVIDUALS))
+            perms1 = [identity_perm]
+            perms2 = [identity_perm]
         frame_candidates = []
 
         for perm1 in perms1:
@@ -66,11 +75,11 @@ def compute_candidates(
                     im0 = np.array(pts0[i], dtype=float)
                     im1 = np.array(pts1[j1], dtype=float)
                     im2 = np.array(pts2[j2], dtype=float)
-                    if np.any(np.isnan(im0)) or np.any(np.isnan(im1)) or np.any(np.isnan(im2)):
+                    triplet = cal.complete_triplet(np.vstack([im0, im1, im2]))
+                    if np.any(np.isnan(triplet)):
                         total_cost += np.inf
                         groups[label] = [np.nan, np.nan, np.nan]
                         continue
-                    triplet = np.vstack([im0, im1, im2])
                     xyz = cal.compute_XYZ_from_imageCoord_triplet(triplet)
                     # Invalid or out-of-bounds predictions are left as NaN.
                     if np.any(np.isnan(xyz)) or np.any(np.isinf(xyz)):

@@ -18,6 +18,67 @@ LABELS_ORDER = ["a", "b", "c"]
 NUM_INDIVIDUALS = 3
 
 
+def _normalize_fish_id(fid) -> str:
+    """Normalize expected fish IDs to lowercase labels."""
+    if fid is None or pd.isna(fid):
+        return ""
+    return str(fid).strip().lower()
+
+
+def _aggregate_entity_rows(rows: pd.DataFrame) -> Tuple[float, float, float]:
+    """
+    Collapse multiple node rows for one tracked entity into a single point.
+    """
+    xy = rows[["x", "y"]].apply(pd.to_numeric, errors="coerce")
+    valid_xy = xy.notna().all(axis=1)
+    if valid_xy.any():
+        x = float(xy.loc[valid_xy, "x"].mean())
+        y = float(xy.loc[valid_xy, "y"].mean())
+    else:
+        x = np.nan
+        y = np.nan
+
+    if "score" in rows.columns:
+        score_series = pd.to_numeric(rows["score"], errors="coerce").dropna()
+        score = float(score_series.mean()) if not score_series.empty else np.nan
+    else:
+        score = np.nan
+    return x, y, score
+
+
+def _summarize_entities(
+    sub: pd.DataFrame,
+    group_col: str | None,
+) -> List[Dict[str, object]]:
+    """
+    Summarize one frame into one point per fish/track instead of per node row.
+    """
+    if group_col is None:
+        entities = []
+        for idx, row in sub.iterrows():
+            x = float(row["x"])
+            y = float(row["y"])
+            score = float(row["score"]) if "score" in row and pd.notna(row["score"]) else np.nan
+            entities.append({"entity_id": idx, "x": x, "y": y, "score": score})
+        return entities
+
+    entities = []
+    for entity_id, rows in sub.groupby(group_col, sort=False, dropna=False):
+        x, y, score = _aggregate_entity_rows(rows)
+        entities.append({"entity_id": entity_id, "x": x, "y": y, "score": score})
+    return entities
+
+
+def _resolve_use_fish_id(
+    dfs: Dict[str, pd.DataFrame],
+    use_fish_id: bool | None,
+) -> bool:
+    """Auto-enable fish_id ordering when processed CSVs already contain it."""
+    if use_fish_id is not None:
+        return bool(use_fish_id)
+    return any("fish_id" in df.columns for df in dfs.values())
+
+
 def load_processed_dfs(
     processed_dir: str, set_key: str
 ) -> Dict[str, pd.DataFrame]:
@@ -55,26 +116,47 @@ def _get_one_cam_points_for_frame(
         return []
 
     if "fish_id" in sub.columns and use_fish_id:
-        order_ids = [c for c in LABELS_ORDER if c in sub["fish_id"].values]
-        order_ids += [x for x in sub["fish_id"].unique() if x not in order_ids]
-        points = []
-        for fid in order_ids[:NUM_INDIVIDUALS]:
-            row = sub[sub["fish_id"] == fid]
-            if not row.empty:
-                r = row.iloc[0]
-                x, y = float(r["x"]), float(r["y"])
-                points.append((x, y) if np.isfinite(x) and np.isfinite(y) else (np.nan, np.nan))
+        entities = _summarize_entities(sub, "fish_id")
+        by_label: Dict[str, Dict[str, object]] = {}
+        extras = []
+        for entity in entities:
+            label = _normalize_fish_id(entity["entity_id"])
+            if label in LABELS_ORDER and label not in by_label:
+                by_label[label] = entity
             else:
+                extras.append(entity)
+
+        extras.sort(
+            key=lambda entity: (
+                -(entity["score"] if np.isfinite(entity["score"]) else -np.inf),
+                entity["x"] if np.isfinite(entity["x"]) else np.inf,
+            )
+        )
+        points = []
+        for fid in LABELS_ORDER:
+            entity = by_label.get(fid)
+            if entity is None and extras:
+                entity = extras.pop(0)
+            if entity is None:
                 points.append((np.nan, np.nan))
+                continue
+            x = float(entity["x"])
+            y = float(entity["y"])
+            points.append((x, y) if np.isfinite(x) and np.isfinite(y) else (np.nan, np.nan))
         return points[:NUM_INDIVIDUALS]
 
-    if "score" in sub.columns:
-        sub = sub.sort_values(by=["score"], ascending=[False])
-    else:
-        sub = sub.sort_values(by=["x"])
+    group_col = "track" if "track" in sub.columns else None
+    entities = _summarize_entities(sub, group_col)
+    entities.sort(
+        key=lambda entity: (
+            -(entity["score"] if np.isfinite(entity["score"]) else -np.inf),
+            entity["x"] if np.isfinite(entity["x"]) else np.inf,
+        )
+    )
     points = []
-    for _, r in sub.head(NUM_INDIVIDUALS).iterrows():
-        x, y = float(r["x"]), float(r["y"])
+    for entity in entities[:NUM_INDIVIDUALS]:
+        x = float(entity["x"])
+        y = float(entity["y"])
         points.append((x, y) if np.isfinite(x) and np.isfinite(y) else (np.nan, np.nan))
     while len(points) < NUM_INDIVIDUALS:
         points.append((np.nan, np.nan))
@@ -83,11 +165,12 @@ def _get_one_cam_points_for_frame(
 
 def get_points_per_frame(
     dfs: Dict[str, pd.DataFrame],
-    use_fish_id: bool = False,
+    use_fish_id: bool | None = None,
 ) -> Dict[int, Dict[str, List[Tuple[float, float]]]]:
     """
     Convert the three view-specific DataFrames into per-frame point lists.
     """
+    use_fish_id = _resolve_use_fish_id(dfs, use_fish_id)
     all_frames = set()
     for df in dfs.values():
         if "frame" in df.columns:
@@ -112,7 +195,7 @@ def get_points_per_frame(
 def run_load_2d(
     processed_dir: str,
     set_key: str,
-    use_fish_id: bool = False,
+    use_fish_id: bool | None = None,
 ) -> Dict[int, Dict[str, List[Tuple[float, float]]]]:
     """
     Load the processed CSV files and return `points_by_frame`.

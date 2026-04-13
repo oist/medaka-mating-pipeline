@@ -38,15 +38,15 @@ Current behavior:
 - first frame: assign `a`, `b`, `c` in x-order
 - later frames: use Hungarian assignment on distance plus optional
   motion-direction penalty
+- matches beyond `max_distance` are rejected instead of being force-assigned
 - fish that disappear temporarily keep their last valid position as the anchor
   for the next frame
 - fallback x-order assignment is only used for fish that have never appeared
   before
-
-Important note:
-
-- `max_distance` is currently kept only for backward compatibility and is not
-  used as a hard rejection threshold in the active implementation
+- each camera is tracked on its own frame timeline, so dropped frames in one
+  view do not block identity propagation in the others
+- when SLEAP exports multiple node rows for one `(frame, track)`, the rows are
+  collapsed to one centroid before assignment
 
 ## Outlier handling
 

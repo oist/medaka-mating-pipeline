@@ -18,6 +18,8 @@ downloads/
 eggs/
 .eggs/
 lib/
+!scripts/calibration/lib/
+!scripts/calibration/lib/**
 lib64/
 parts/
 sdist/
@@ -223,3 +225,5 @@ data/derived/
 
 # OMX oh-my-codex files
 .omx/
+# OMC oh-my-codex files
+.omc/

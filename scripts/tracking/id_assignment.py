@@ -21,13 +21,15 @@ FORBIDDEN_COST = 1e9
 
 
 def _compute_cost_matrix(prev_positions, curr_positions,
-                        prev_prev_positions=None, flow_weight=0.0):
+                        prev_prev_positions=None, flow_weight=0.0,
+                        max_distance=None):
     """
     Build the assignment cost matrix.
 
     `cost[i, j] = distance + motion-direction penalty`
 
-    Rows with no previous position stay at `FORBIDDEN_COST`.
+    Rows with no previous position stay at `FORBIDDEN_COST`. Candidates whose
+    Euclidean distance exceeds `max_distance` are also rejected.
     """
     num_fish = len(prev_positions)
     num_det = len(curr_positions)
@@ -45,6 +47,8 @@ def _compute_cost_matrix(prev_positions, curr_positions,
                 continue
             p_curr = np.array(p_curr, dtype=float)
             dist = float(np.linalg.norm(p_prev - p_curr))
+            if max_distance is not None and np.isfinite(max_distance) and dist > float(max_distance):
+                continue
             flow_penalty = 0.0
             if flow_weight > 0 and p_prev_prev is not None:
                 p_prev_prev = np.array(p_prev_prev, dtype=float)
@@ -67,7 +71,7 @@ def assign_ids_frame(prev_positions_dict, curr_positions_dict, fish_ids,
 
     - First frame: assign `a/b/c` by x-order.
     - Later frames: use Hungarian assignment on distance plus motion direction.
-    - `max_distance` is kept only for backward compatibility and is not used.
+    - `max_distance` is a hard rejection threshold for implausible matches.
 
     Returns:
         Mapping `{track_id: fish_id}`.
@@ -96,6 +100,7 @@ def assign_ids_frame(prev_positions_dict, curr_positions_dict, fish_ids,
         prev_positions, curr_positions,
         prev_prev_positions=prev_prev_positions,
         flow_weight=flow_weight,
+        max_distance=max_distance,
     )
     row_ind, col_ind = linear_sum_assignment(cost)
 
@@ -128,23 +133,24 @@ def assign_ids_temporal(data_dict, num_fish=3, max_distance=100, flow_weight=0.0
     Assign IDs over time for all three views.
 
     When `flow_weight > 0`, motion-direction consistency is added to reduce
-    cross-frame ID swaps.
+    cross-frame ID swaps. Each view is tracked on its own frame timeline, so a
+    dropped frame in one camera does not suppress assignment in the others.
     """
-    common_frames = None
-    for player, data in data_dict.items():
-        if common_frames is None:
-            common_frames = data['frames']
-        else:
-            common_frames = np.intersect1d(common_frames, data['frames'])
-
     assignments = {player: {} for player in data_dict.keys()}
     fish_ids = (["a", "b", "c"] + [chr(ord("d") + k) for k in range(max(0, num_fish - 3))])[:num_fish]
     previous_positions = {player: {fid: None for fid in fish_ids} for player in data_dict.keys()}
     prev_prev_positions = {player: {fid: None for fid in fish_ids} for player in data_dict.keys()}
+    previous_frames = {player: None for player in data_dict.keys()}
 
-    for frame in common_frames:
-        for player in data_dict.keys():
+    for player in data_dict.keys():
+        player_frames = np.sort(np.asarray(data_dict[player].get('frames', []), dtype=int))
+        for frame in player_frames:
             current_positions = data_dict[player]['positions'].get(frame, {})
+            prev_frame = previous_frames[player]
+            frame_gap = 1 if prev_frame is None else max(1, int(frame) - int(prev_frame))
+            effective_max_distance = None
+            if max_distance is not None and np.isfinite(max_distance):
+                effective_max_distance = float(max_distance) * float(frame_gap)
 
             assignment = assign_ids_frame(
                 previous_positions[player],
@@ -152,23 +158,21 @@ def assign_ids_temporal(data_dict, num_fish=3, max_distance=100, flow_weight=0.0
                 fish_ids,
                 prev_prev_positions_dict=prev_prev_positions[player] if flow_weight != 0 else None,
                 flow_weight=flow_weight,
-                max_distance=max_distance,
+                max_distance=effective_max_distance,
             )
 
             assignments[player][frame] = assignment
 
             # Update the position history used by the next frame.
             prev_prev_positions[player] = dict(previous_positions[player])
-            matched_fish = {fid for _, fid in assignment.items()}
+            track_by_fish = {fid: tid for tid, fid in assignment.items()}
             for fid in fish_ids:
-                if fid in matched_fish:
-                    tid = next(t for t, f in assignment.items() if f == fid)
-                    if tid in current_positions:
-                        previous_positions[player][fid] = current_positions[tid][:2]
-                    else:
-                        previous_positions[player][fid] = prev_prev_positions[player].get(fid)
+                tid = track_by_fish.get(fid)
+                if tid is not None and tid in current_positions:
+                    previous_positions[player][fid] = current_positions[tid][:2]
                 else:
                     previous_positions[player][fid] = prev_prev_positions[player].get(fid)
+            previous_frames[player] = int(frame)
 
     return assignments
 
