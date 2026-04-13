@@ -20,6 +20,7 @@ eggs/
 lib/
 !scripts/calibration/lib/
 !scripts/calibration/lib/**
+scripts/calibration/lib/__pycache__/
 lib64/
 parts/
 sdist/
