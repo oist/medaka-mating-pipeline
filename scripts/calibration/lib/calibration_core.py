@@ -235,6 +235,29 @@ def load_calibration_data(
             how="inner",
         )
 
+    # Always prefer the annotation-file XYZ (from cam0) over template XYZ.
+    # The annotation files carry the correct per-way coordinates: corners
+    # are in tank frame (assigned by pixel-position matching) and beads are
+    # in the per-way cube frame (from the template's BEADS_WAY* section).
+    cam0_xyz = cam_dfs["cam0"].set_index("index")[["X", "Y", "Z"]]
+    merged_idx = merged.set_index("index")
+    merged_idx.update(cam0_xyz)
+    merged = merged_idx.reset_index()
+
+    # For even ways (way2, way4), bead XYZ is in the rotated cube frame.
+    # Convert beads to tank frame so all points share the same coordinate
+    # system.  Corners are already in tank frame and must be skipped.
+    import re as _re
+    _way_match = _re.search(r"way(\d+)", way_name or "", _re.IGNORECASE)
+    _way_num = int(_way_match.group(1)) if _way_match else 1
+    if _way_num % 2 == 0:
+        for i in range(len(merged)):
+            label = merged.iloc[i].get("label", "")
+            if isinstance(label, str) and label.startswith(("CORNER:", "CORNER_BOTTOM:")):
+                continue  # already in tank frame
+            merged.iloc[i, merged.columns.get_loc("X")] = 190.0 - merged.iloc[i]["X"]
+            merged.iloc[i, merged.columns.get_loc("Y")] = 190.0 - merged.iloc[i]["Y"]
+
     if beads_only:
         if "label" in merged.columns and merged["label"].notna().any():
             merged = merged[merged["label"].str.startswith("BEAD:", na=False)]

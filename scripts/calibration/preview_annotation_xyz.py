@@ -166,18 +166,19 @@ def render_way(raw_root: str, annotation_dir: str, way_name: str, output_dir: st
     annotation_root = Path(annotation_dir)
     output_root = Path(output_dir)
     images = _find_way_images(raw_root_path, way_name)
-    xyz_by_index = _template_xyz_by_index(raw_root_path, way_name)
     outputs: Dict[str, dict] = {}
     for cam_name in ("cam0", "cam1", "cam2"):
         annotation_path = annotation_root / f"cali_{way_name}_{cam_name}_image_coords.txt"
         if not annotation_path.exists():
             raise FileNotFoundError(f"Annotation file not found: {annotation_path}")
         output_path = output_root / f"cali_{way_name}_{cam_name}_xyz_preview.png"
+        # Use the XYZ from the annotation file directly (already set by
+        # reassign_bead_ids_by_rule); do not override with the raw template
+        # which may use a different coordinate convention.
         outputs[cam_name] = render_preview(
             images[cam_name],
             annotation_path,
             output_path,
-            xyz_by_index=xyz_by_index,
         )
     return outputs
 

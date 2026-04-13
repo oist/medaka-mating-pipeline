@@ -205,25 +205,14 @@ def main() -> None:
             all_measured_coords = []
             all_image_coords = []
 
-            # Frame alignment across ways. Empirically the bead-label frame for
-            # way2/way4 is rotated 180 degrees about (95, 95) relative to the
-            # way1/way3 frame (verified by Procrustes on camera-matched beads
-            # and by cross-way polynomial fits). Apply that rotation here so
-            # all ways contribute to a single shared room frame before merging.
-            def _align_to_merge_frame(coords: np.ndarray, way: str) -> np.ndarray:
-                match = re.search(r"way(\d+)", way, re.IGNORECASE)
-                way_num = int(match.group(1)) if match else 1
-                if way_num % 2 == 0:  # way2, way4
-                    out = coords.copy()
-                    out[:, 0] = 190.0 - out[:, 0]
-                    out[:, 1] = 190.0 - out[:, 1]
-                    return out
-                return coords
+            # load_calibration_data now returns all coordinates in the tank
+            # frame (corners via pixel-position matching, beads via 180-degree
+            # alignment for even ways).  No additional alignment needed here.
 
             for way_name in way_names:
                 print(f"  Loading {way_name}...")
                 try:
-                    template_3d_way, image_coords_way, _, _ = load_calibration_data(
+                    template_3d_way, image_coords_way, labels_way, _ = load_calibration_data(
                         calibration_folder=calib_folders[0],
                         image_coords_folder=coords_folders[0],
                         filename_keyword=way_name,
@@ -232,11 +221,9 @@ def main() -> None:
                     )
 
                     num_points = image_coords_way.shape[1]
-                    aligned_xyz = _align_to_merge_frame(
-                        np.asarray(template_3d_way[:num_points], dtype=float),
-                        way_name,
+                    all_measured_coords.extend(
+                        np.asarray(template_3d_way[:num_points], dtype=float)
                     )
-                    all_measured_coords.extend(aligned_xyz)
                     for i in range(num_points):
                         cam_coords = [image_coords_way[j, i, :] for j in range(3)]
                         all_image_coords.append(cam_coords)

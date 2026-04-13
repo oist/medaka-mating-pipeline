@@ -56,20 +56,29 @@ WAY1_CAM0_ORDER = {
 #   TR = x> cx and y<=cy
 #   BR = x> cx and y> cy
 #   BL = x<=cx and y> cy
+# Top-face corners (Z = 194).
 CAM_CORNER_QUADRANT_RANK = {
-    "cam0": {"TL": 0, "TR": 1, "BR": 2, "BL": 3},
-    "cam1": {"TR": 0, "BL": 1, "TL": 2, "BR": 3},
-    "cam2": {"BL": 0, "TR": 1, "TL": 2, "BR": 3},
+    "cam0": {"TR": 0, "BR": 1, "TL": 2, "BL": 3},
+    "cam1": {"TL": 0, "BL": 1, "TR": 2, "BR": 3},
+    "cam2": {"BL": 0, "BR": 1, "TL": 2, "TR": 3},
 }
 
-# Canonical corner XYZ by rank (independent of the per-way template, which
-# historically had the X axis inverted relative to the bead-fit coordinate
-# system and is being replaced here). Frame A is the way1/way3 bead frame;
+# Bottom-face corners (Z = 4).  In side cameras (cam1, cam2) the
+# perspective reversal between Z = 194 and Z = 4 flips the top/bottom
+# quadrant relative to each group's centroid (T <-> B).  cam0 (top view)
+# is unaffected because all Z heights project to the same XY layout.
+_TB_FLIP = {"TL": "BL", "TR": "BR", "BL": "TL", "BR": "TR"}
+CAM_CORNER_QUADRANT_RANK_BOTTOM = {
+    "cam0": CAM_CORNER_QUADRANT_RANK["cam0"],
+    "cam1": {_TB_FLIP[q]: r for q, r in CAM_CORNER_QUADRANT_RANK["cam1"].items()},
+    "cam2": {_TB_FLIP[q]: r for q, r in CAM_CORNER_QUADRANT_RANK["cam2"].items()},
+}
+
+# Canonical corner XYZ by rank.  Frame A is the way1/way3 bead frame;
 # frame B (way2/way4) is Frame A rotated 180 degrees about (95, 95).
 #
-# The rank corresponds to the `CAM_CORNER_QUADRANT_RANK` slot -- e.g. rank 0
-# is the physical corner visible at cam0-TL / cam1-TR / cam2-BL, which lives
-# at room XYZ (182.5, 7.5, 194) for the top face.
+# Corner IDs are ordered so that the (X, Y) pair increases systematically:
+#   0 = (min, min),  1 = (min, max),  2 = (max, min),  3 = (max, max)
 #
 # Physical geometry: the calibration object has a 175x175 mm inner square
 # with corners at x,y in {7.5, 182.5}; the base is 4 mm thick and the inner
@@ -78,9 +87,9 @@ CORNER_TOP_Z = 194.0
 CORNER_BOTTOM_Z = 4.0
 
 CANONICAL_TOP_CORNERS_FRAME_A: Dict[int, tuple] = {
-    0: (182.5,   7.5, CORNER_TOP_Z),
-    1: (  7.5,   7.5, CORNER_TOP_Z),
-    2: (  7.5, 182.5, CORNER_TOP_Z),
+    0: (  7.5,   7.5, CORNER_TOP_Z),
+    1: (  7.5, 182.5, CORNER_TOP_Z),
+    2: (182.5,   7.5, CORNER_TOP_Z),
     3: (182.5, 182.5, CORNER_TOP_Z),
 }
 CANONICAL_BOTTOM_CORNERS_FRAME_A: Dict[int, tuple] = {
@@ -91,19 +100,15 @@ CANONICAL_BOTTOM_CORNERS_FRAME_A: Dict[int, tuple] = {
 
 def _canonical_corner_xyz(rank: int, way_name: str, is_bottom: bool) -> tuple:
     """
-    Return the canonical corner XYZ for a given rank and way.
+    Return the canonical corner XYZ for a given rank.
 
-    Ways 1 and 3 share Frame A; ways 2 and 4 share Frame B which is Frame A
-    rotated 180 degrees about (95, 95). Top (Z=194) and bottom (Z=4)
-    corners share the same (X, Y) pattern.
+    World coordinates are fixed to the tank.  The four corner positions
+    are always the same set of tank locations regardless of cube
+    orientation.  The ``way_name`` parameter is accepted for interface
+    compatibility but does not affect the returned coordinates.
     """
     base = CANONICAL_BOTTOM_CORNERS_FRAME_A if is_bottom else CANONICAL_TOP_CORNERS_FRAME_A
-    x, y, z = base[rank]
-    way_num = int(way_name.replace("way", ""))
-    if way_num % 2 == 0:
-        x = 190.0 - x
-        y = 190.0 - y
-    return (x, y, z)
+    return base[rank]
 
 
 def _find_template_file(raw_root: Path, way_name: str) -> Path:
@@ -233,6 +238,21 @@ def _corner_label(offset: int, is_bottom: bool) -> str:
     return f"CORNER: corner_{offset + 1}"
 
 
+def _corner_quadrant_rank(cam_name: str, way_name: str, is_bottom: bool = False) -> Dict[str, int]:
+    """Return the quadrant-to-rank mapping adjusted for cube rotation.
+
+    ``CAM_CORNER_QUADRANT_RANK`` is calibrated for way1/way3 (Frame A).
+    For way2/way4 the cube is rotated 180 degrees, so a different physical
+    corner occupies each quadrant.  A 180-degree rotation swaps TL↔BR and
+    TR↔BL, which is equivalent to shifting every rank by +2 (mod 4).
+    """
+    base = (CAM_CORNER_QUADRANT_RANK_BOTTOM if is_bottom else CAM_CORNER_QUADRANT_RANK)[cam_name]
+    way_num = int(way_name.replace("way", ""))
+    if way_num % 2 == 0:
+        return {quad: (rank + 2) % 4 for quad, rank in base.items()}
+    return base
+
+
 def _reassign_corner_group(
     rows: List[dict],
     cam_name: str,
@@ -256,7 +276,7 @@ def _reassign_corner_group(
 
     cx = sum(r["x"] for r in rows) / 4.0
     cy = sum(r["y"] for r in rows) / 4.0
-    rank_map = CAM_CORNER_QUADRANT_RANK[cam_name]
+    rank_map = _corner_quadrant_rank(cam_name, way_name, is_bottom)
 
     quadrants = [_quadrant_of(r, cx, cy) for r in rows]
     if len(set(quadrants)) != 4:
