@@ -17,9 +17,25 @@ from typing import List
 
 import numpy as np
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
-
-from lib.calibration_core import run_calibration_pipeline
+try:
+    from .lib.calibration_core import (
+        _ensure_project_paths,
+        _save_training_summary,
+        load_calibration_data,
+        run_calibration_pipeline,
+    )
+    from .lib.model_training import prepare_model_data, save_all_models, train_calibration_model
+except ImportError:
+    _script_dir = os.path.dirname(os.path.abspath(__file__))
+    if _script_dir not in sys.path:
+        sys.path.insert(0, _script_dir)
+    from lib.calibration_core import (  # type: ignore
+        _ensure_project_paths,
+        _save_training_summary,
+        load_calibration_data,
+        run_calibration_pipeline,
+    )
+    from lib.model_training import prepare_model_data, save_all_models, train_calibration_model  # type: ignore
 
 
 def parse_paths(path_str: str) -> List[str]:
@@ -185,24 +201,29 @@ def main() -> None:
             print(f"Using specified ways: {', '.join(way_names)}")
 
         try:
-            from lib.calibration_core import load_calibration_data
-
             print(f"Loading and merging data from {len(way_names)} way(s)...")
             all_measured_coords = []
             all_image_coords = []
 
-            template_3d_first, _, _, _ = load_calibration_data(
-                calibration_folder=calib_folders[0],
-                image_coords_folder=coords_folders[0],
-                filename_keyword=way_names[0],
-                way_name=way_names[0],
-                beads_only=args.beads_only,
-            )
+            # Frame alignment across ways. Empirically the bead-label frame for
+            # way2/way4 is rotated 180 degrees about (95, 95) relative to the
+            # way1/way3 frame (verified by Procrustes on camera-matched beads
+            # and by cross-way polynomial fits). Apply that rotation here so
+            # all ways contribute to a single shared room frame before merging.
+            def _align_to_merge_frame(coords: np.ndarray, way: str) -> np.ndarray:
+                match = re.search(r"way(\d+)", way, re.IGNORECASE)
+                way_num = int(match.group(1)) if match else 1
+                if way_num % 2 == 0:  # way2, way4
+                    out = coords.copy()
+                    out[:, 0] = 190.0 - out[:, 0]
+                    out[:, 1] = 190.0 - out[:, 1]
+                    return out
+                return coords
 
             for way_name in way_names:
                 print(f"  Loading {way_name}...")
                 try:
-                    _, image_coords_way, _, _ = load_calibration_data(
+                    template_3d_way, image_coords_way, _, _ = load_calibration_data(
                         calibration_folder=calib_folders[0],
                         image_coords_folder=coords_folders[0],
                         filename_keyword=way_name,
@@ -211,7 +232,11 @@ def main() -> None:
                     )
 
                     num_points = image_coords_way.shape[1]
-                    all_measured_coords.extend(template_3d_first[:num_points])
+                    aligned_xyz = _align_to_merge_frame(
+                        np.asarray(template_3d_way[:num_points], dtype=float),
+                        way_name,
+                    )
+                    all_measured_coords.extend(aligned_xyz)
                     for i in range(num_points):
                         cam_coords = [image_coords_way[j, i, :] for j in range(3)]
                         all_image_coords.append(cam_coords)
@@ -229,9 +254,6 @@ def main() -> None:
             image_coords = np.transpose(matched_image_coords, (1, 0, 2))
 
             print(f"\nMerged data: {len(measured_coords)} total points from {len(way_names)} way(s)")
-
-            from lib.model_training import train_calibration_model, save_all_models, prepare_model_data
-            from lib.calibration_core import _ensure_project_paths, _save_training_summary
 
             model_data = prepare_model_data(image_coords, measured_coords)
 

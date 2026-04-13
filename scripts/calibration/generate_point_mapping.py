@@ -10,13 +10,21 @@ from typing import Optional
 import numpy as np
 from joblib import load
 
-sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
-
-from lib.calibration_core import (  # type: ignore
-    load_calibration_data,
-    _ensure_project_paths,
-    _save_point_mapping_and_figures,
-)
+try:
+    from .lib.calibration_core import (  # type: ignore
+        load_calibration_data,
+        _ensure_project_paths,
+        _save_point_mapping_and_figures,
+    )
+except ImportError:
+    _script_dir = os.path.dirname(os.path.abspath(__file__))
+    if _script_dir not in sys.path:
+        sys.path.insert(0, _script_dir)
+    from lib.calibration_core import (  # type: ignore
+        load_calibration_data,
+        _ensure_project_paths,
+        _save_point_mapping_and_figures,
+    )
 
 
 def main() -> int:
