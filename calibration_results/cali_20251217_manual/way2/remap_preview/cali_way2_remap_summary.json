@@ -1,0 +1,59 @@
+{
+  "folder": "G:\\.shortcut-targets-by-id\\14OI1k7IaNOdC5yaC9GnYyCi2u-gfGLEs\\OIST 1215-0122\\calibration_raw\\cali_20251217",
+  "way_name": "way2",
+  "input_dir": "calibration_results\\cali_20251217_manual\\way2",
+  "output_dir": "calibration_results\\cali_20251217_manual\\way2\\remap_preview",
+  "cameras": {
+    "cam0": {
+      "input_path": "calibration_results\\cali_20251217_manual\\way2\\cali_way2_cam0_image_coords.txt",
+      "output_path": "calibration_results\\cali_20251217_manual\\way2\\remap_preview\\cali_way2_cam0_image_coords.txt",
+      "preview_path": "calibration_results\\cali_20251217_manual\\way2\\remap_preview\\cali_way2_cam0_remapped_preview.png",
+      "n_points": 53,
+      "changed_indices": 45,
+      "inferred_colors": {
+        "null": 4,
+        "pink": 7,
+        "yellow": 6,
+        "silver": 11,
+        "blue": 7,
+        "black": 4,
+        "orange": 7,
+        "purple": 7
+      }
+    },
+    "cam1": {
+      "input_path": "calibration_results\\cali_20251217_manual\\way2\\cali_way2_cam1_image_coords.txt",
+      "output_path": "calibration_results\\cali_20251217_manual\\way2\\remap_preview\\cali_way2_cam1_image_coords.txt",
+      "preview_path": "calibration_results\\cali_20251217_manual\\way2\\remap_preview\\cali_way2_cam1_remapped_preview.png",
+      "n_points": 53,
+      "changed_indices": 42,
+      "inferred_colors": {
+        "null": 4,
+        "silver": 9,
+        "pink": 6,
+        "yellow": 7,
+        "blue": 7,
+        "black": 5,
+        "purple": 8,
+        "orange": 7
+      }
+    },
+    "cam2": {
+      "input_path": "calibration_results\\cali_20251217_manual\\way2\\cali_way2_cam2_image_coords.txt",
+      "output_path": "calibration_results\\cali_20251217_manual\\way2\\remap_preview\\cali_way2_cam2_image_coords.txt",
+      "preview_path": "calibration_results\\cali_20251217_manual\\way2\\remap_preview\\cali_way2_cam2_remapped_preview.png",
+      "n_points": 53,
+      "changed_indices": 29,
+      "inferred_colors": {
+        "null": 4,
+        "pink": 7,
+        "yellow": 7,
+        "blue": 7,
+        "silver": 11,
+        "orange": 8,
+        "black": 2,
+        "purple": 7
+      }
+    }
+  }
+}

@@ -1,0 +1,147 @@
+from __future__ import annotations
+
+import argparse
+import sys
+from pathlib import Path
+
+if __package__ in {None, ""}:
+    sys.path.append(str(Path(__file__).resolve().parents[2]))
+
+from scripts.common.local_paths import choose_path, load_local_paths
+from scripts.tracking.file_set_generator import generate_file_sets, save_file_sets
+from scripts.tracking.process_tracking import (
+    process_from_csv_path,
+    process_from_file_set_key,
+)
+from scripts.tracking.process_tracking_simple import (
+    process_from_csv_path_simple,
+    process_from_file_set_key_simple,
+)
+
+
+def _looks_like_csv_path(value: str) -> bool:
+    lowered = value.lower()
+    return lowered.endswith(".csv") or "\\" in value or "/" in value
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="2D tracking post-processing from SLEAP CSV exports."
+    )
+    parser.add_argument(
+        "input",
+        help="CSV path or set key. CSV paths auto-resolve the matching PLAYER1/2/3 set.",
+    )
+    parser.add_argument(
+        "--paths-config",
+        default=None,
+        help="Optional local TOML path config. Defaults to configs/paths.local.toml if present.",
+    )
+    parser.add_argument(
+        "--sleap-output-dir",
+        default=None,
+        help="Root directory containing top_mouth_* and side_mouth_* exports.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default=None,
+        help="Directory for processed CSVs, logs, and visualizations.",
+    )
+    parser.add_argument(
+        "--simple",
+        action="store_true",
+        help="Use the simplified pipeline without outlier or mirror filtering.",
+    )
+    parser.add_argument("--max-distance", type=float, default=100.0)
+    parser.add_argument("--flow-weight", type=float, default=0.0)
+    parser.add_argument("--fps", type=int, default=166)
+    parser.add_argument("--interp-method", default="linear", choices=["linear", "cubic"])
+    parser.add_argument("--interp-limit", type=int, default=None)
+    parser.add_argument("--no-smooth", action="store_true", help="Disable trajectory smoothing.")
+    parser.add_argument("--no-viz", action="store_true", help="Disable trajectory visualizations.")
+    parser.add_argument("--max-jump-distance", type=float, default=200.0)
+    parser.add_argument("--max-jump-per-frame", type=float, default=100.0)
+    parser.add_argument(
+        "--skip-2d-interpolation",
+        action="store_true",
+        help="Leave 2D gaps as NaN for later 3D-stage interpolation.",
+    )
+    parser.add_argument(
+        "--no-mirror-filter",
+        action="store_true",
+        help="Disable in-view mirror filtering in the full pipeline.",
+    )
+    return parser
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    local_paths = load_local_paths(args.paths_config)
+    sleap_output_dir = choose_path(
+        args.sleap_output_dir,
+        local_paths.sleap_output_dir if local_paths else None,
+    )
+    output_dir = choose_path(
+        args.output_dir,
+        local_paths.tracking_output_dir if local_paths else None,
+    )
+
+    if sleap_output_dir is None:
+        parser.error(
+            "SLEAP output root is required. Pass --sleap-output-dir or define "
+            "sleap_output_dir in configs/paths.local.toml."
+        )
+
+    common_kwargs = {
+        "output_dir": output_dir,
+        "max_distance": args.max_distance,
+        "flow_weight": args.flow_weight,
+        "fps": args.fps,
+        "interp_method": args.interp_method,
+        "interp_limit": args.interp_limit,
+        "smooth": not args.no_smooth,
+        "visualize": not args.no_viz,
+    }
+
+    if args.simple:
+        runner_csv = process_from_csv_path_simple
+        runner_key = process_from_file_set_key_simple
+        extra_kwargs = {}
+    else:
+        runner_csv = process_from_csv_path
+        runner_key = process_from_file_set_key
+        extra_kwargs = {
+            "max_jump_distance": args.max_jump_distance,
+            "max_jump_per_frame": args.max_jump_per_frame,
+            "skip_2d_interpolation": args.skip_2d_interpolation,
+            "apply_mirror_filter": not args.no_mirror_filter,
+        }
+
+    input_value = args.input
+    if _looks_like_csv_path(input_value):
+        runner_csv(
+            input_value,
+            sleap_output_dir=sleap_output_dir,
+            **common_kwargs,
+            **extra_kwargs,
+        )
+        return
+
+    file_sets_json_path = Path(sleap_output_dir) / "file_sets.json"
+    if not file_sets_json_path.exists():
+        file_sets = generate_file_sets(sleap_output_dir)
+        save_file_sets(file_sets, str(file_sets_json_path))
+
+    runner_key(
+        input_value,
+        file_sets_json_path=str(file_sets_json_path),
+        sleap_output_dir=sleap_output_dir,
+        **common_kwargs,
+        **extra_kwargs,
+    )
+
+
+if __name__ == "__main__":
+    main()

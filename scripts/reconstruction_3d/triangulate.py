@@ -1,11 +1,12 @@
 """
-3D 重建：从三视角 3 个个体的 2D 坐标，每帧做排列组合得到 3D 候选。
+Build 3D candidates from the three-view 2D points.
 
-逻辑（与用户约定一致）：
-- 提取跨三视角的 3 个个体的 2D 坐标，每帧枚举排列组合得到多组「3 个 3D 点」候选。
-- 若某组合中任一视角的 2D 缺失（NaN），则该点不三角化，该 3D 留空（NaN），绝不填 0。
-- 若三角化结果超出 xyz_bounds 或含 nan/inf，同样该点记为 NaN，不写入无效坐标。
-- 得到每帧的 3D 候选后，由 select_best 选最优对应，再在 3D 上做跨帧 ID 匹配，空缺处最后统一插值。
+For each frame, the pipeline enumerates permutations across the three views and
+produces multiple candidate groups of three 3D points.
+
+- Missing 2D values produce `NaN` 3D points.
+- Invalid or out-of-bounds 3D predictions are rejected as `NaN`.
+- Candidate selection happens later in `select_best.py`.
 """
 
 from itertools import permutations
@@ -24,11 +25,15 @@ def compute_candidates(
     cal: Calibration,
     points_by_frame: Dict[int, Dict[str, List[Tuple[float, float]]]],
     *,
-    xyz_bounds: Tuple[float, float] | None = (0.0, 200.0),
+    xyz_bounds: Tuple[float, float] | None = None,
+    allow_permutations: bool = True,
 ) -> Dict[int, List[Dict]]:
     """
-    对每一帧枚举 cam1/cam2 的索引排列，对每种排列计算 3 个 3D 点及三视图配准误差。
-    返回 {frame: [{"groups": {a:[X,Y,Z],...}, "perm_cam1": [...], "perm_cam2": [...], "cost": float}, ...]}
+    Enumerate permutations of cam1/cam2 assignments and compute candidate 3D
+    groups with registration cost for each frame.
+
+    When `allow_permutations=False`, the function keeps the incoming camera
+    ordering and emits a single candidate per frame.
     """
     low, high = (xyz_bounds or (None, None))[0], (xyz_bounds or (None, None))[1]
     candidates_by_frame: Dict[int, List[Dict]] = {}
@@ -38,7 +43,7 @@ def compute_candidates(
     except ImportError:
         tqdm = lambda x, **kw: x
 
-    for frame in tqdm(sorted(points_by_frame.keys()), desc="3D候选", unit="frame"):
+    for frame in tqdm(sorted(points_by_frame.keys()), desc="3D candidates", unit="frame"):
         cams = points_by_frame[frame]
         pts0 = list(cams.get("cam0", []))
         pts1 = list(cams.get("cam1", []))
@@ -51,8 +56,13 @@ def compute_candidates(
             pts2.append((np.nan, np.nan))
         pts0, pts1, pts2 = pts0[:NUM_INDIVIDUALS], pts1[:NUM_INDIVIDUALS], pts2[:NUM_INDIVIDUALS]
 
-        perms1 = list(permutations(range(NUM_INDIVIDUALS)))
-        perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+        if allow_permutations:
+            perms1 = list(permutations(range(NUM_INDIVIDUALS)))
+            perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+        else:
+            identity_perm = tuple(range(NUM_INDIVIDUALS))
+            perms1 = [identity_perm]
+            perms2 = [identity_perm]
         frame_candidates = []
 
         for perm1 in perms1:
@@ -65,13 +75,13 @@ def compute_candidates(
                     im0 = np.array(pts0[i], dtype=float)
                     im1 = np.array(pts1[j1], dtype=float)
                     im2 = np.array(pts2[j2], dtype=float)
-                    if np.any(np.isnan(im0)) or np.any(np.isnan(im1)) or np.any(np.isnan(im2)):
+                    triplet = cal.complete_triplet(np.vstack([im0, im1, im2]))
+                    if np.any(np.isnan(triplet)):
                         total_cost += np.inf
                         groups[label] = [np.nan, np.nan, np.nan]
                         continue
-                    triplet = np.vstack([im0, im1, im2])
                     xyz = cal.compute_XYZ_from_imageCoord_triplet(triplet)
-                    # 无效或超出范围一律留空，不写 0
+                    # Invalid or out-of-bounds predictions are left as NaN.
                     if np.any(np.isnan(xyz)) or np.any(np.isinf(xyz)):
                         total_cost += np.inf
                         groups[label] = [np.nan, np.nan, np.nan]

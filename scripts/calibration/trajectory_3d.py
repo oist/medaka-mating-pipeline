@@ -1,10 +1,12 @@
 """
-3D 轨迹绘图与视频
-=================
+Plot and render 3D trajectories as PNG or MP4.
 
-从 trajectories 字典（label -> DataFrame 含 frame, X, Y, Z）生成 3D 轨迹图 PNG 或 MP4。
-供 scripts.reconstruction.visualize_3d 调用。
-视频使用 ffmpeg 编码（优先使用 imageio-ffmpeg 提供的 ffmpeg，无需系统 PATH）。
+The input is a trajectories dictionary:
+    `label -> DataFrame(frame, X, Y, Z)`
+
+These helpers are used by `scripts.reconstruction.visualize_3d`.
+FFmpeg encoding prefers the executable bundled with imageio-ffmpeg when
+available, so a system PATH entry is not required.
 """
 
 import subprocess
@@ -22,25 +24,25 @@ try:
 except Exception:
     _FFMPEG_EXE = "ffmpeg"
 
-# 3D CSV 列名（兼容大小写）
+# 3D CSV column names (case-insensitive compatibility).
 FRAME_COL = "frame"
 XYZ_COLS = ["X", "Y", "Z"]
 
 
 def _get_xyz(df: pd.DataFrame):
-    """从 DataFrame 取 frame 与 X,Y,Z，列名兼容 X/x 等。"""
+    """Extract frame and X/Y/Z from a DataFrame with case-insensitive column support."""
     if "X" in df.columns and "Y" in df.columns and "Z" in df.columns:
         xyz = df[["X", "Y", "Z"]]
     elif "x" in df.columns and "y" in df.columns and "z" in df.columns:
         xyz = df[["x", "y", "z"]].rename(columns={"x": "X", "y": "Y", "z": "Z"})
     else:
-        raise ValueError(f"DataFrame 需含 X,Y,Z 或 x,y,z 列，当前列: {list(df.columns)}")
+        raise ValueError(f"DataFrame must contain X,Y,Z or x,y,z columns, got: {list(df.columns)}")
     frame = df[FRAME_COL] if FRAME_COL in df.columns else np.arange(len(df))
     return frame.values, xyz["X"].values, xyz["Y"].values, xyz["Z"].values
 
 
 def _sorted_xyz_per_label(trajectories: Dict[str, pd.DataFrame]):
-    """返回 {label: (frames, xs, ys, zs)} 已按 frame 排序。"""
+    """Return `{label: (frames, xs, ys, zs)}` sorted by frame."""
     out = {}
     for label, df in trajectories.items():
         if df.empty:
@@ -51,20 +53,16 @@ def _sorted_xyz_per_label(trajectories: Dict[str, pd.DataFrame]):
     return out
 
 
-# 默认每条轨迹颜色（与 qc 等保持一致风格）
+# Default per-trajectory colors.
 DEFAULT_COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c"]
 
-# 固定 3D 坐标轴范围 (mm)，便于观看时坐标系不动
+# Fixed 3D axis range (mm) for stable visualization.
 DEFAULT_XYZ_LIM = (0, 200)
 
 
 def _apply_calibration_view(ax, xyz_lim: tuple[float, float] | None = DEFAULT_XYZ_LIM) -> None:
     """
-    与相机校准 02_calibration / qc_3d_template 一致的 3D 坐标系：
-    - Y 轴反向（invert_yaxis）
-    - 轴标签 X/Y/Z (mm)，原点与校准一致
-    - 等比例显示（set_box_aspect [1,1,1]）保证坐标轴方向不畸变
-    - 可选固定范围 xyz_lim
+    Apply the same 3D coordinate view used in the calibration QC figures.
     """
     ax.invert_yaxis()
     ax.set_xlabel("X (mm)")
@@ -87,17 +85,12 @@ def plot_3d_trajectories(
     xyz_lim: tuple[float, float] | None = DEFAULT_XYZ_LIM,
 ) -> None:
     """
-    绘制所有个体的 3D 轨迹线图并保存为 PNG。
-    坐标即普通 X,Y,Z；可选固定坐标轴范围（默认 0~200）。
-
-    trajectories: {个体标签: DataFrame 含 frame, X, Y, Z}
-    out_path: 输出 PNG 路径
-    xyz_lim: 固定 X/Y/Z 轴范围 (low, high)，默认 (0, 200)；None 表示自动
+    Plot all 3D trajectories and save the figure as a PNG.
     """
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     data = _sorted_xyz_per_label(trajectories)
     if not data:
-        raise ValueError("trajectories 为空或所有 DataFrame 为空")
+        raise ValueError("trajectories is empty or all DataFrames are empty")
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection="3d")
@@ -126,21 +119,12 @@ def plot_3d_trajectories_video(
     xyz_lim: tuple[float, float] | None = DEFAULT_XYZ_LIM,
 ) -> None:
     """
-    按时间推进绘制 3D 轨迹，轨迹只保留最近 trail_seconds 秒，用 ffmpeg 编码为 MP4。
-    data_fps 用于计算 trail 帧数；fps 为输出视频帧率（越小播放越慢）。
-
-    trajectories: {个体标签: DataFrame 含 frame, X, Y, Z}
-    out_path: 输出 MP4 路径
-    fps: 输出视频帧率（播放速度，建议 24~30 便于观看）
-    subsample: 帧间隔，1=每帧，10=每 10 帧取 1 帧
-    trail_seconds: 轨迹只显示最近多少秒内的点（默认 5 秒）
-    data_fps: 原始数据帧率（用于 trail 计算）；若 None 则用 fps
-    xyz_lim: 固定 X/Y/Z 轴范围，默认 (0, 200)
+    Render a time-progressing 3D trajectory video and encode it as MP4.
     """
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     data = _sorted_xyz_per_label(trajectories)
     if not data:
-        raise ValueError("trajectories 为空或所有 DataFrame 为空")
+        raise ValueError("trajectories is empty or all DataFrames are empty")
 
     all_frames = set()
     for frames, *_ in data.values():
@@ -149,7 +133,7 @@ def plot_3d_trajectories_video(
     if subsample > 1:
         frames_sorted = frames_sorted[::subsample]
     if not frames_sorted:
-        raise ValueError("没有有效帧")
+        raise ValueError("No valid frames were found")
 
     src_fps = data_fps if data_fps is not None else fps
     trail_frames = max(1, int(src_fps * trail_seconds))
@@ -187,11 +171,11 @@ def plot_3d_trajectories_video(
         ]
         ret = subprocess.run(cmd, capture_output=True, text=True)
         if ret.returncode != 0:
-            raise RuntimeError(f"ffmpeg 失败: {ret.stderr or ret.stdout}")
+            raise RuntimeError(f"ffmpeg failed: {ret.stderr or ret.stdout}")
 
 
-# 单色 3D 轨迹视频（不区分 ID，三条轨迹同一颜色，轨迹尾迹 0.5 秒）
-SINGLE_COLOR = "#00b4d8"  # 同一颜色
+# Single-color 3D trajectory video, ignoring identity labels.
+SINGLE_COLOR = "#00b4d8"
 
 
 def render_3d_trajectory_video_single_color(
@@ -205,20 +189,20 @@ def render_3d_trajectory_video_single_color(
     xyz_lim: tuple[float, float] | None = DEFAULT_XYZ_LIM,
 ) -> Path:
     """
-    从 3D CSV 生成 3D 轨迹视频：不区分 ID，三个点用同一颜色，轨迹显示最近 trail_seconds 秒。
+    Render a 3D trajectory video from a 3D CSV without showing IDs.
     """
     csv_3d_path = Path(csv_3d_path)
     out_path = Path(out_path)
     if not csv_3d_path.exists():
-        raise FileNotFoundError(f"3D CSV 不存在: {csv_3d_path}")
+        raise FileNotFoundError(f"3D CSV does not exist: {csv_3d_path}")
 
     df = pd.read_csv(csv_3d_path)
     if "frame" not in df.columns:
-        raise ValueError(f"3D CSV 需含 frame 列，当前: {list(df.columns)}")
+        raise ValueError(f"3D CSV must contain a frame column, got: {list(df.columns)}")
     if "X" not in df.columns and "x" in df.columns:
         df = df.rename(columns={"x": "X", "y": "Y", "z": "Z"})
     if "X" not in df.columns or "Y" not in df.columns or "Z" not in df.columns:
-        raise ValueError(f"3D CSV 需含 X,Y,Z 列，当前: {list(df.columns)}")
+        raise ValueError(f"3D CSV must contain X,Y,Z columns, got: {list(df.columns)}")
 
     trajectories = {}
     id_col = "fish_id" if "fish_id" in df.columns else "individual"
@@ -230,7 +214,7 @@ def render_3d_trajectory_video_single_color(
 
     data = _sorted_xyz_per_label(trajectories)
     if not data:
-        raise ValueError("3D CSV 无有效轨迹数据")
+        raise ValueError("3D CSV does not contain valid trajectory data")
 
     all_frames = set()
     for frames, *_ in data.values():
@@ -239,7 +223,7 @@ def render_3d_trajectory_video_single_color(
     if subsample > 1:
         frames_sorted = frames_sorted[::subsample]
     if not frames_sorted:
-        raise ValueError("没有有效帧")
+        raise ValueError("No valid frames were found")
 
     trail_frames = max(1, int(data_fps * trail_seconds))
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -279,6 +263,6 @@ def render_3d_trajectory_video_single_color(
         ]
         ret = subprocess.run(cmd, capture_output=True, text=True)
         if ret.returncode != 0:
-            raise RuntimeError(f"ffmpeg 失败: {ret.stderr or ret.stdout}")
+            raise RuntimeError(f"ffmpeg failed: {ret.stderr or ret.stdout}")
 
     return out_path

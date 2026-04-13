@@ -1,24 +1,35 @@
 """
-ID 分配算法：严格保证每一帧 ID 一一对应（a, b, c），用 Hungarian 做最优分配。
+Identity assignment for 2D detections.
 
-核心逻辑：
-1. 第一帧：按 x 坐标排序，把 3 个检测依次标为 a, b, c。
-2. 后续帧：构造代价矩阵 cost[i,j] = 距离(i,j) + 运动方向惩罚，上一帧无位置的鱼代价设为无穷；
-   用 Hungarian 算法求总代价最小的分配。不额外指定「最大距离」——谁近、谁运动方向一致，谁总代价小，算法自然选最优配对。
+The algorithm enforces a one-to-one mapping between fish IDs (`a`, `b`, `c`)
+and detections in each frame using Hungarian assignment.
+
+Core logic:
+1. On the first frame, sort detections by x and assign `a`, `b`, `c`.
+2. On later frames, minimize:
+      cost[i, j] = distance + motion-direction penalty
+   Fish with no previous position receive a forbidden cost until they are
+   introduced by the fallback assignment step.
 """
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 import pandas as pd
 
-# 上一帧无位置的鱼：与所有检测的代价设为此值，由后续「补充分配」按 x 顺序处理
+# Fish with no previous position receive this forbidden cost and may be filled
+# in later by the x-ordered fallback assignment.
 FORBIDDEN_COST = 1e9
 
 
 def _compute_cost_matrix(prev_positions, curr_positions,
-                        prev_prev_positions=None, flow_weight=0.0):
+                        prev_prev_positions=None, flow_weight=0.0,
+                        max_distance=None):
     """
-    代价矩阵：cost[i,j] = 距离 + 运动方向惩罚。
-    仅当上一帧鱼 i 无位置时 cost[i,:] = FORBIDDEN_COST；其余一律用实际距离+flow，不设距离上限。
+    Build the assignment cost matrix.
+
+    `cost[i, j] = distance + motion-direction penalty`
+
+    Rows with no previous position stay at `FORBIDDEN_COST`. Candidates whose
+    Euclidean distance exceeds `max_distance` are also rejected.
     """
     num_fish = len(prev_positions)
     num_det = len(curr_positions)
@@ -36,6 +47,8 @@ def _compute_cost_matrix(prev_positions, curr_positions,
                 continue
             p_curr = np.array(p_curr, dtype=float)
             dist = float(np.linalg.norm(p_prev - p_curr))
+            if max_distance is not None and np.isfinite(max_distance) and dist > float(max_distance):
+                continue
             flow_penalty = 0.0
             if flow_weight > 0 and p_prev_prev is not None:
                 p_prev_prev = np.array(p_prev_prev, dtype=float)
@@ -54,10 +67,14 @@ def _compute_cost_matrix(prev_positions, curr_positions,
 def assign_ids_frame(prev_positions_dict, curr_positions_dict, fish_ids,
                      prev_prev_positions_dict=None, flow_weight=0.0, max_distance=100):
     """
-    对单帧做 ID 分配。
-    - 第一帧：按 x 排序分配 a/b/c。
-    - 后续帧：代价 = 距离 + 运动方向，Hungarian 求最小总代价。max_distance 保留为兼容参数，不参与代价计算。
-    返回: {track_id: fish_id}
+    Assign fish IDs for a single frame.
+
+    - First frame: assign `a/b/c` by x-order.
+    - Later frames: use Hungarian assignment on distance plus motion direction.
+    - `max_distance` is a hard rejection threshold for implausible matches.
+
+    Returns:
+        Mapping `{track_id: fish_id}`.
     """
     track_ids = sorted(curr_positions_dict.keys())
     if len(track_ids) == 0:
@@ -69,7 +86,7 @@ def assign_ids_frame(prev_positions_dict, curr_positions_dict, fish_ids,
     if prev_prev_positions_dict is not None and flow_weight > 0:
         prev_prev_positions = [prev_prev_positions_dict.get(fid, None) for fid in fish_ids]
 
-    # 第一帧：无历史位置，按 x 坐标从左到右依次标为 a, b, c
+    # First frame: assign IDs from left to right.
     if all(p is None for p in prev_positions):
         xs = [p[0] for p in curr_positions]
         order = np.argsort(xs)
@@ -83,6 +100,7 @@ def assign_ids_frame(prev_positions_dict, curr_positions_dict, fish_ids,
         prev_positions, curr_positions,
         prev_prev_positions=prev_prev_positions,
         flow_weight=flow_weight,
+        max_distance=max_distance,
     )
     row_ind, col_ind = linear_sum_assignment(cost)
 
@@ -94,10 +112,9 @@ def assign_ids_frame(prev_positions_dict, curr_positions_dict, fish_ids,
             continue
         assignment[track_ids[c]] = fish_ids[r]
 
-    # 补充分配（仅针对「从未出现过」的鱼，与缺失值填充无关）：
-    # 仅当 prev_positions_dict.get(f) is None 时才参与——即该鱼在之前所有帧都没有被分配过位置（例如首帧只有 2 个检测，只给了 a、b，c 从未出现）。
-    # 中途某一帧缺失 2 个个体时，那两条鱼会保留「上一次被匹配时的位置」（见 assign_ids_temporal 里未匹配则 previous_positions[fid]=原位置），
-    # 因此 prev_positions_dict.get(f) 不是 None，不会进这里，不会按 x 硬配；未分配的检测和未分配的鱼本帧就保持未分配，由后续缺失值填充补坐标。
+    # Fallback assignment is only for fish that have never been seen before.
+    # Fish that are temporarily missing keep their previous position and do not
+    # enter this path, so they are not force-assigned by x-order mid-sequence.
     unassigned_tracks = [t for t in track_ids if t not in assignment]
     unassigned_fish = [f for f in fish_ids if f not in assignment.values()]
     unassigned_fish_no_pos = [f for f in unassigned_fish if prev_positions_dict.get(f) is None]
@@ -113,24 +130,27 @@ def assign_ids_frame(prev_positions_dict, curr_positions_dict, fish_ids,
 
 def assign_ids_temporal(data_dict, num_fish=3, max_distance=100, flow_weight=0.0):
     """
-    对三个视角的数据进行时间序列 ID 分配。
-    flow_weight>0 时，代价矩阵加入运动方向一致性惩罚，减少跨帧 ID 交换。
-    """
-    common_frames = None
-    for player, data in data_dict.items():
-        if common_frames is None:
-            common_frames = data['frames']
-        else:
-            common_frames = np.intersect1d(common_frames, data['frames'])
+    Assign IDs over time for all three views.
 
+    When `flow_weight > 0`, motion-direction consistency is added to reduce
+    cross-frame ID swaps. Each view is tracked on its own frame timeline, so a
+    dropped frame in one camera does not suppress assignment in the others.
+    """
     assignments = {player: {} for player in data_dict.keys()}
     fish_ids = (["a", "b", "c"] + [chr(ord("d") + k) for k in range(max(0, num_fish - 3))])[:num_fish]
     previous_positions = {player: {fid: None for fid in fish_ids} for player in data_dict.keys()}
     prev_prev_positions = {player: {fid: None for fid in fish_ids} for player in data_dict.keys()}
+    previous_frames = {player: None for player in data_dict.keys()}
 
-    for frame in common_frames:
-        for player in data_dict.keys():
+    for player in data_dict.keys():
+        player_frames = np.sort(np.asarray(data_dict[player].get('frames', []), dtype=int))
+        for frame in player_frames:
             current_positions = data_dict[player]['positions'].get(frame, {})
+            prev_frame = previous_frames[player]
+            frame_gap = 1 if prev_frame is None else max(1, int(frame) - int(prev_frame))
+            effective_max_distance = None
+            if max_distance is not None and np.isfinite(max_distance):
+                effective_max_distance = float(max_distance) * float(frame_gap)
 
             assignment = assign_ids_frame(
                 previous_positions[player],
@@ -138,44 +158,35 @@ def assign_ids_temporal(data_dict, num_fish=3, max_distance=100, flow_weight=0.0
                 fish_ids,
                 prev_prev_positions_dict=prev_prev_positions[player] if flow_weight != 0 else None,
                 flow_weight=flow_weight,
-                max_distance=max_distance,
+                max_distance=effective_max_distance,
             )
 
             assignments[player][frame] = assignment
 
-            # 更新下一帧的「上一帧」位置：被匹配到的 fish 用本帧检测位置；未匹配的保留原位置，供下一帧继续匹配
+            # Update the position history used by the next frame.
             prev_prev_positions[player] = dict(previous_positions[player])
-            matched_fish = {fid for _, fid in assignment.items()}
+            track_by_fish = {fid: tid for tid, fid in assignment.items()}
             for fid in fish_ids:
-                if fid in matched_fish:
-                    tid = next(t for t, f in assignment.items() if f == fid)
-                    if tid in current_positions:
-                        previous_positions[player][fid] = current_positions[tid][:2]
-                    else:
-                        previous_positions[player][fid] = prev_prev_positions[player].get(fid)
+                tid = track_by_fish.get(fid)
+                if tid is not None and tid in current_positions:
+                    previous_positions[player][fid] = current_positions[tid][:2]
                 else:
                     previous_positions[player][fid] = prev_prev_positions[player].get(fid)
+            previous_frames[player] = int(frame)
 
     return assignments
 
 
 def create_tracked_dataframe(data_dict, assignments):
     """
-    创建带ID的DataFrame
-    
-    Args:
-        data_dict: 原始数据字典
-        assignments: ID分配结果
-        
-    Returns:
-        dict: {player: DataFrame with 'fish_id' column}
+    Build DataFrames with a `fish_id` column from the assignment results.
     """
     tracked_dfs = {}
     
     for player in data_dict.keys():
         df = data_dict[player]['df'] if 'df' in data_dict[player] else None
         if df is None:
-            # 需要从positions重建DataFrame
+            # Rebuild the DataFrame from the positions structure if needed.
             rows = []
             for frame, positions in data_dict[player]['positions'].items():
                 for track_id, (x, y, score) in positions.items():
@@ -190,7 +201,7 @@ def create_tracked_dataframe(data_dict, assignments):
                     })
             df = pd.DataFrame(rows)
         
-        # 添加fish_id列
+        # Add the `fish_id` column if it does not exist yet.
         if 'fish_id' not in df.columns:
             df['fish_id'] = df.apply(
                 lambda row: assignments[player].get(row['frame'], {}).get(row['track'], 'unassigned'),

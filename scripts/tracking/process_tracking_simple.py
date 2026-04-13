@@ -1,13 +1,8 @@
 """
-简化版 2D 跟踪：仅跨帧个体稳定 + 每帧 3 个个体，不做异常值检测与删除。
+Simplified 2D tracking pipeline.
 
-流程：
-1. 加载三视角 SLEAP CSV
-2. 跨帧 ID 分配（Hungarian 最小距离匹配，可选运动方向代价）
-3. 缺失值填充（确保每帧都有 a / b / c 的坐标，缺的用插值补全）
-4. 可选平滑与可视化
-
-不包含：异常值检测、迭代剔除、跳帧缩放阈值等。适合只需要「身份稳定、每帧三人」的轻量流程。
+This path keeps cross-frame identities stable and ensures three individuals per
+frame, but it skips outlier removal and mirror filtering.
 """
 import os
 import json
@@ -40,17 +35,12 @@ def process_single_set_simple(
     smooth_order=2,
     visualize=True,
 ):
-    """
-    简化版：仅 ID 分配 + 缺失值填充，无异常值处理。
-
-    Returns:
-        dict: tracked_dfs (ID 分配后), final_dfs (填充后), assignments
-    """
+    """Run the lightweight pipeline: ID assignment plus missing-value filling."""
     set_key = file_set_info.get("key", "unknown")
-    print(f"\n处理 set (简化版，无异常值): {set_key}")
+    print(f"\nProcessing set (simple pipeline, no outlier removal): {set_key}")
 
-    # 1. 加载数据
-    print("步骤1: 加载数据...")
+    # 1. Load input data.
+    print("Step 1: loading data...")
     data_dict = load_set_files(file_set_info)
     parsed_data = {}
     for player, df in data_dict.items():
@@ -58,8 +48,8 @@ def process_single_set_simple(
         parsed["df"] = df
         parsed_data[player] = parsed
 
-    # 2. 跨帧 ID 分配（Hungarian，保证身份稳定）
-    print("步骤2: 分配 ID（跨帧稳定）...")
+    # 2. Assign stable identities across frames.
+    print("Step 2: assigning stable IDs across frames...")
     fish_ids = [f"fish_{i}" for i in range(num_fish)]
     assignments = assign_ids_temporal(
         parsed_data,
@@ -81,16 +71,16 @@ def process_single_set_simple(
 
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-        print("保存 ID 分配后的 CSV（原始坐标）...")
+        print("Saving ID-assigned CSV files (raw coordinates)...")
         for player, df in tracked_dfs.items():
             path = os.path.join(
                 output_dir, f"{set_key}_{player}_simple_id_assigned.csv"
             )
             df.to_csv(path, index=False)
-            print(f"  已保存: {path}")
+            print(f"  Saved: {path}")
 
     if visualize:
-        print("生成 ID 分配后的可视化...")
+        print("Rendering visualization after ID assignment...")
         viz_path = (
             os.path.join(output_dir, f"{set_key}_simple_after_id.png")
             if output_dir
@@ -102,8 +92,8 @@ def process_single_set_simple(
             save_path=viz_path,
         )
 
-    # 3. 缺失值填充（每帧 3 个个体，缺的插值）
-    print("步骤3: 填充缺失值（每帧 3 个个体）...")
+    # 3. Interpolate missing values.
+    print("Step 3: filling missing values (ensure three individuals per frame)...")
     final_dfs = process_all_fish_missing_values(
         tracked_dfs,
         file_set_info=file_set_info,
@@ -116,7 +106,7 @@ def process_single_set_simple(
     )
 
     if visualize:
-        print("生成最终可视化...")
+        print("Rendering final visualization...")
         final_viz_path = (
             os.path.join(output_dir, f"{set_key}_simple_final.png")
             if output_dir
@@ -132,7 +122,7 @@ def process_single_set_simple(
         for player, df in final_dfs.items():
             path = os.path.join(output_dir, f"{set_key}_{player}_simple_processed.csv")
             df.to_csv(path, index=False)
-            print(f"已保存: {path}")
+            print(f"Saved: {path}")
 
     return {
         "tracked_dfs": tracked_dfs,
@@ -155,14 +145,12 @@ def process_from_csv_path_simple(
     visualize=True,
     **kwargs,
 ):
-    """
-    从一条 PLAYER1 的 CSV 路径出发，自动找同 set 的 PLAYER2/3，执行简化版跟踪。
-    """
+    """Run the simple pipeline starting from a PLAYER1 CSV path."""
     from .file_set_generator import extract_set_key_from_filename, save_file_sets
 
     set_key = extract_set_key_from_filename(csv_path)
     if not set_key:
-        raise ValueError(f"无法从文件名提取 set key: {csv_path}")
+        raise ValueError(f"Could not extract a set key from filename: {csv_path}")
 
     sleap_output_path = Path(sleap_output_dir)
     top_dir = sleap_output_path / "top_mouth_180"
@@ -176,8 +164,8 @@ def process_from_csv_path_simple(
             side_dir = sleap_output_path / "side_mouth_593"
         if not top_dir.exists() or not side_dir.exists():
             raise ValueError(
-                f"目录不存在: {top_dir} 或 {side_dir}。"
-                "请确认 SLEAP_OUTPUT_DIR 并先运行路径配置。"
+                f"Directory does not exist: {top_dir} or {side_dir}. "
+                "Please confirm SLEAP_OUTPUT_DIR and your local path configuration."
             )
 
     file_sets_json_path = os.path.join(sleap_output_dir, "file_sets.json")
@@ -192,7 +180,7 @@ def process_from_csv_path_simple(
         file_sets = generate_file_sets(sleap_output_dir)
         save_file_sets(file_sets, file_sets_json_path)
     if set_key not in file_sets:
-        raise ValueError(f"未找到 set key: {set_key}")
+        raise ValueError(f"Set key not found: {set_key}")
 
     file_set_info = file_sets[set_key]
     return process_single_set_simple(
@@ -211,8 +199,31 @@ def process_from_csv_path_simple(
     )
 
 
+def process_from_file_set_key_simple(
+    file_set_key,
+    file_sets_json_path,
+    sleap_output_dir,
+    output_dir=None,
+    **kwargs,
+):
+    """Run the simple pipeline for one file set key."""
+    with open(file_sets_json_path, "r", encoding="utf-8") as f:
+        file_sets = json.load(f)
+
+    if file_set_key not in file_sets:
+        raise ValueError(f"Set key not found: {file_set_key}")
+
+    file_set_info = file_sets[file_set_key]
+    return process_single_set_simple(
+        file_set_info,
+        sleap_output_dir,
+        output_dir=output_dir,
+        **kwargs,
+    )
+
+
 def _infer_sleap_output_dir_from_csv(csv_path):
-    """从 CSV 路径向上查找包含 top_mouth_* 与 side_mouth_* 的目录。"""
+    """Search upward from a CSV path for a valid SLEAP export root."""
     p = Path(csv_path).resolve()
     for _ in range(10):
         if p.parent == p:

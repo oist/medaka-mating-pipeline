@@ -18,7 +18,7 @@ def _run(cmd: list[str]) -> None:
 
 
 def _sleap_cmd(exe: str, args: list[str]) -> list[str]:
-    """Use executable from PATH if present; otherwise return [exe, *args] and let the system report error."""
+    """Use the executable from PATH if present; otherwise return `[exe, *args]`."""
     if shutil.which(exe) is not None:
         return [exe, *args]
     return [exe, *args]
@@ -26,22 +26,21 @@ def _sleap_cmd(exe: str, args: list[str]) -> list[str]:
 
 def extract_video_and_model_info(slp_path: Path):
     """
-    从SLEAP文件中提取视频文件名和模型名。
-    
-    返回:
-    - video_name: 视频文件名（不含扩展名）
-    - model_name: 模型名（从slp文件路径推断，例如从目录名）
+    Extract the source video name and inferred model name from a SLEAP file.
+
+    Returns:
+    - `video_name`: source video filename without extension
+    - `model_name`: inferred model name, usually from the parent directory
     """
     if sleap is None:
         raise SystemExit(
             "Cannot import sleap package. Please install SLEAP first, e.g.:\n"
             "pip install sleap or conda install -c conda-forge sleap"
         )
-    
+
     labels = None
     last_error = None
-    
-    # Try different loading methods
+
     try:
         from sleap.io.dataset import Labels  # type: ignore[import]
         labels = Labels.load_file(str(slp_path))  # type: ignore[attr-defined]
@@ -60,7 +59,7 @@ def extract_video_and_model_info(slp_path: Path):
                     labels = sio.load_slp(str(slp_path))  # type: ignore[attr-defined]
                 except Exception:  # noqa: BLE001
                     pass
-    
+
     if labels is None:
         error_msg = (
             f"Failed to load SLEAP file: {slp_path}\n"
@@ -71,38 +70,33 @@ def extract_video_and_model_info(slp_path: Path):
             "3. File format is valid"
         )
         raise SystemExit(error_msg)
-    
-    # 提取视频文件名
+
     video_name = None
-    if hasattr(labels, 'videos') and len(labels.videos) > 0:
+    if hasattr(labels, "videos") and len(labels.videos) > 0:
         video_path = Path(labels.videos[0].filename)
-        video_name = video_path.stem  # 不含扩展名的文件名
-    
-    # 从slp文件路径推断模型名
-    # 通常模型名在目录名中，例如: D:\sleap_output\top_mouth_180\xxx.slp
-    # 模型名可能是 "top_mouth_180"
+        video_name = video_path.stem
+
     model_name = None
     slp_parent = slp_path.parent
-    if slp_parent.name:  # 如果父目录有名称
+    if slp_parent.name:
         model_name = slp_parent.name
-    
+
     return video_name, model_name
 
 
 def load_slp_data_all_tracks(slp_path: Path):
-    """从 .slp 导出所有轨迹，track 使用与 overlay 视频一致的稳定 ID（Track_0/1/2 或 track name）。"""
+    """Export all tracks from a `.slp` file using stable track identifiers."""
     if sleap is None:
         raise SystemExit(
             "Cannot import sleap package. Please install SLEAP first, e.g.:\n"
             "pip install sleap or conda install -c conda-forge sleap"
         )
-    
+
     print(f"Loading SLEAP file: {slp_path}")
-    
+
     labels = None
     last_error = None
-    
-    # Try different loading methods
+
     try:
         from sleap.io.dataset import Labels  # type: ignore[import]
         labels = Labels.load_file(str(slp_path))  # type: ignore[attr-defined]
@@ -121,7 +115,7 @@ def load_slp_data_all_tracks(slp_path: Path):
                     labels = sio.load_slp(str(slp_path))  # type: ignore[attr-defined]
                 except Exception:  # noqa: BLE001
                     pass
-    
+
     if labels is None:
         error_msg = (
             f"Failed to load SLEAP file: {slp_path}\n"
@@ -133,19 +127,16 @@ def load_slp_data_all_tracks(slp_path: Path):
         )
         raise SystemExit(error_msg)
 
-    # 与 overlay 视频一致的稳定 track 列表（sleap-convert / 视频渲染用同一套）
     label_tracks = getattr(labels, "tracks", None) or []
     try:
         label_tracks = list(label_tracks)
     except Exception:
         label_tracks = []
 
-    # 与 03_sleap.ipynb 里的 _instance_points 保持同一逻辑（只是在这里顺便保留 score）
     def _instance_points_with_score(inst, lf, score_thresh: float = 0.01) -> dict[str, tuple[float, float, float]]:
         """
-        返回: node_name -> (x, y, score)
-        - 坐标提取方式与 Notebook 中生成 overlay 的 `_instance_points` 完全一致；
-        - 仅在 score >= score_thresh 时保留该点。
+        Return `node_name -> (x, y, score)` while keeping only points whose
+        score is at least `score_thresh`.
         """
         pts = getattr(inst, "points", None)
         if pts is None:
@@ -153,7 +144,6 @@ def load_slp_data_all_tracks(slp_path: Path):
 
         out: dict[str, tuple[float, float, float]] = {}
 
-        # 情况 1：老版本，points 是 dict-like（value 有 x/y/score 属性）
         if hasattr(pts, "items"):
             for node, p in pts.items():
                 score = float(getattr(p, "score", 1.0))
@@ -164,9 +154,8 @@ def load_slp_data_all_tracks(slp_path: Path):
                 out[str(node)] = (x, y, score)
             return out
 
-        # 情况 2：新版本，points 为 numpy 数组，需结合 skeleton 解析节点名
         try:
-            import numpy as np  # 局部导入，避免环境里没装 numpy 时整个脚本直接 ImportError
+            import numpy as np
         except ImportError as e:  # noqa: BLE001
             raise SystemExit(
                 "numpy is required to export all tracks. "
@@ -196,12 +185,10 @@ def load_slp_data_all_tracks(slp_path: Path):
 
     rows: list[dict] = []
 
-    # 遍历所有帧与 instance，使用与 overlay 一致的点解析与置信度阈值
     for lf in labels.labeled_frames:  # type: ignore[attr-defined]
         frame_idx = int(getattr(lf, "frame_idx", 0))
 
         for inst_idx, inst in enumerate(getattr(lf, "instances", [])):
-            # 使用与 overlay 一致的稳定 track 身份（不用 id(inst)，否则每帧都是新 ID）
             track_name = None
             if getattr(inst, "track", None) is not None:
                 track_name = getattr(inst.track, "name", None) or getattr(
@@ -214,7 +201,6 @@ def load_slp_data_all_tracks(slp_path: Path):
                     except (ValueError, TypeError):
                         pass
             if track_name is None:
-                # 无 track 时用「帧号 + 帧内序号」，保证至少同帧内顺序稳定
                 track_name = f"untracked_f{frame_idx}_{inst_idx}"
 
             pts = _instance_points_with_score(inst, lf)
@@ -243,8 +229,9 @@ def load_slp_data_all_tracks(slp_path: Path):
 
 def load_analysis_h5_all_tracks(h5_path: Path) -> pd.DataFrame:
     """
-    从官方 sleap-convert 导出的 analysis HDF5 中读取所有轨迹，展开为长表 CSV：
-    列为 frame, track, node, x, y, score。
+    Load all tracks from an analysis HDF5 exported by `sleap-convert` and
+    return them in long-table form with columns:
+    `frame, track, node, x, y, score`.
     """
     try:
         import h5py  # type: ignore[import]
@@ -262,10 +249,8 @@ def load_analysis_h5_all_tracks(h5_path: Path) -> pd.DataFrame:
     with h5py.File(h5_path, "r") as f:
         if "tracks" not in f:
             raise SystemExit(f"'tracks' dataset not found in analysis HDF5: {h5_path}")
-        tracks_ds = f["tracks"]
-        tracks = tracks_ds[()]  # 4D array
+        tracks = f["tracks"][()]
 
-        # 轨迹与节点名称
         track_names_ds = f.get("track_names")
         if track_names_ds is not None:
             raw = track_names_ds[()]
@@ -292,22 +277,17 @@ def load_analysis_h5_all_tracks(h5_path: Path) -> pd.DataFrame:
     if tracks.ndim != 4:
         raise SystemExit(f"Unsupported tracks ndim={tracks.ndim} in analysis HDF5 (expected 4).")
 
-    # 推断维度顺序：
-    # - 默认 sleap-convert 使用 MATLAB preset：tracks: (n_tracks, 2, n_nodes, n_frames)
-    # - 若最后一维为 2，则视为标准 preset：tracks: (n_frames, n_tracks, n_nodes, 2)
     use_matlab_order = False
     if tracks.shape[1] == 2:
         use_matlab_order = True
     elif tracks.shape[-1] == 2:
         use_matlab_order = False
     else:
-        # 回退：优先按 MATLAB 解释
         use_matlab_order = True
 
     rows: list[dict] = []
 
     if use_matlab_order:
-        # (n_tracks, 2, n_nodes, n_frames)
         n_tracks, _, n_nodes, n_frames = tracks.shape
         if not track_names:
             track_names = [f"Track_{i}" for i in range(n_tracks)]
@@ -340,7 +320,6 @@ def load_analysis_h5_all_tracks(h5_path: Path) -> pd.DataFrame:
                         }
                     )
     else:
-        # 标准 preset：tracks: (n_frames, n_tracks, n_nodes, 2)
         n_frames, n_tracks, n_nodes, _ = tracks.shape
         if not track_names:
             track_names = [f"Track_{i}" for i in range(n_tracks)]
@@ -387,28 +366,26 @@ def load_analysis_h5_all_tracks(h5_path: Path) -> pd.DataFrame:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Export SLEAP predictions (.slp) to analysis-friendly formats via `sleap-convert`. "
-            "(SLEAP 1.5.x uses `sleap-convert`; `sleap-export` is legacy.)\n"
-            "For CSV with same track identity as overlay video: use --all-tracks (uses stable Track_0/1/2 from .slp)."
+            "Export SLEAP predictions (.slp) to analysis-friendly formats via `sleap-convert`.\n"
+            "For CSV with stable track identity matching the overlay video, use --all-tracks."
         )
     )
     parser.add_argument(
         "--input",
         required=True,
-        help="Path to input predictions .slp (or labels .slp).",
+        help="Path to the input predictions .slp (or labels .slp).",
     )
     parser.add_argument(
         "--format",
         default="analysis",
-        choices=["analysis", "analysis.csv",
-                 "analysis.nix", "h5", "json", "slp"],
+        choices=["analysis", "analysis.csv", "analysis.nix", "h5", "json", "slp"],
         help="Output format passed to `sleap-convert --format`.",
     )
     parser.add_argument(
         "--output",
         default=None,
-        help="Output file path. If not provided and using --all-tracks with CSV format, "
-             "output filename will be auto-generated as: {model_name}_{video_name}.csv",
+        help="Output file path. If omitted and --all-tracks is used with CSV export, "
+             "the script auto-generates {model_name}_{video_name}.csv",
     )
     parser.add_argument(
         "--video",
@@ -417,8 +394,7 @@ def main() -> None:
     parser.add_argument(
         "--all-tracks",
         action="store_true",
-        help="For CSV format, export all tracks instead of just the first one. "
-             "This uses direct SLEAP API instead of sleap-convert.",
+        help="For CSV export, write all tracks instead of only the first one using the direct SLEAP API.",
     )
     args = parser.parse_args()
 
@@ -426,42 +402,39 @@ def main() -> None:
     if not input_path.exists():
         raise SystemExit(f"Input not found: {input_path}")
 
-    # If CSV format and need all tracks, use direct loading from .slp
     if args.format == "analysis.csv" and args.all_tracks:
-        print("Exporting all tracks to CSV using direct loading from .slp (all instances per frame)...")
+        print("Exporting all tracks to CSV using direct loading from .slp ...")
         df = load_slp_data_all_tracks(input_path)
 
-        # 提取视频名和模型名
         video_name, model_name = extract_video_and_model_info(input_path)
-        
+
         if video_name is None:
             raise SystemExit(
-                "无法从SLEAP文件中提取视频名。请使用 --output 参数手动指定输出路径。"
+                "Could not extract the source video name from the SLEAP file. "
+                "Please provide --output explicitly."
             )
-        
+
         if model_name is None:
             model_name = "unknown_model"
-            print(f"警告: 无法从路径推断模型名，使用默认值: {model_name}")
-        
-        # 生成输出文件名: {model_name}_{video_name}.csv
+            print(f"Warning: could not infer model name from the path; using: {model_name}")
+
         output_filename = f"{model_name}_{video_name}.csv"
-        
-        # 确定输出路径
+
         if args.output is None:
-            # 如果未指定输出路径，使用输入文件所在目录
             output_path = input_path.parent / output_filename
-            print(f"自动生成输出文件名: {output_filename}")
+            print(f"Auto-generated output filename: {output_filename}")
         else:
             output_path = Path(args.output)
-            # 如果指定的输出路径是目录，则在目录中生成自动命名的文件
             if output_path.is_dir() or (not output_path.suffix and not output_path.exists()):
                 output_path = output_path / output_filename
-                print(f"在指定目录中生成文件: {output_filename}")
+                print(f"Creating the auto-named file inside the specified directory: {output_filename}")
             else:
-                # 如果指定的是文件路径，使用该路径（但提示用户可以使用自动命名）
-                print(f"使用指定的输出路径: {output_path}")
-                print(f"提示: 如果希望使用自动命名 ({output_filename})，可以指定目录而不是文件路径")
-        
+                print(f"Using the explicitly requested output path: {output_path}")
+                print(
+                    f"Tip: if you want the auto-generated name ({output_filename}), "
+                    "pass a directory instead of a full file path."
+                )
+
         output_path.parent.mkdir(parents=True, exist_ok=True)
         df.to_csv(output_path, index=False)
         print(f"Successfully exported to: {output_path}")
@@ -471,10 +444,9 @@ def main() -> None:
         print(f"  - Frame range: {df['frame'].min()} - {df['frame'].max()}")
         return
 
-    # Otherwise use sleap-convert
     if args.output is None:
-        raise SystemExit("--output 参数是必需的（除非使用 --all-tracks 和 CSV 格式）")
-    
+        raise SystemExit("--output is required unless you use CSV export with --all-tracks")
+
     convert_args: list[str] = [str(input_path), "--format", args.format]
     if args.output:
         convert_args += ["--output", args.output]

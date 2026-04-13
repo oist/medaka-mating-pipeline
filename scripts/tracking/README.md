@@ -1,37 +1,40 @@
-# 跟踪数据处理模块
+# Tracking Post-Processing
 
-## 快速开始
+Use the tracking stage from the terminal instead of notebooks:
 
-### 一行命令处理并可视化
-
-```bash
-python scripts/tracking/main.py "d:\sleap_output\top_mouth_180\top_mouth_180_20251220_E_1_2_FCMC_PLAYER1_male1_Courtship_1905.506-1913.422.csv" --sleap-output-dir "d:\sleap_output" --output-dir "d:\sleap_output\processed"
+```powershell
+python -m scripts.tracking.main --paths-config configs/paths.local.toml `
+  "20251220_E_1_2_FCMC_male1_Courtship_1905.506-1913.422"
 ```
 
-或者使用批处理文件（Windows）：
+You can also start from a specific PLAYER1 CSV:
 
-```bash
-scripts\tracking\run_example.bat
+```powershell
+python -m scripts.tracking.main --paths-config configs/paths.local.toml `
+  "D:\sleap_output\top_mouth_180\top_mouth_180_20251220_E_1_2_FCMC_PLAYER1_male1_Courtship_1905.506-1913.422.csv"
 ```
 
-## 功能说明
+Useful flags:
 
-1. **自动生成file_sets.json**：自动扫描并分组同一实验的3个视角文件
-2. **ID分配**：使用Hungarian算法为每条鱼分配唯一且一致的ID
-3. **异常值处理**：检测并移除异常的位置数据
-4. **缺失值填充**：使用插值方法填充缺失的位置数据
-5. **可视化**：生成ID分配后和最终处理后的轨迹可视化
+- `--simple`: run the lightweight identity-stabilization path without outlier removal
+- `--no-viz`: skip visualization PNGs
+- `--skip-2d-interpolation`: keep NaN gaps for later 3D-stage handling
+- `--flow-weight`: add motion-direction cost to the Hungarian assignment
 
-## 详细文档
+What this stage does:
 
-请参阅 [ALGORITHM_DESCRIPTION.md](ALGORITHM_DESCRIPTION.md) 了解详细的算法说明。
+1. Groups the three matching camera CSV files.
+2. Assigns per-view identities across frames.
+3. Optionally removes outliers and mirror detections.
+4. Optionally interpolates/smooths 2D gaps.
+5. Writes processed CSVs for downstream 3D reconstruction.
 
-## 输出文件
+Outputs:
 
-处理完成后，会在输出目录生成：
+- `{set_key}_player1_processed.csv`
+- `{set_key}_player2_processed.csv`
+- `{set_key}_player3_processed.csv`
+- `{set_key}_after_id_assignment.png`
+- `{set_key}_final.png`
 
-- `{set_key}_player1_processed.csv` - PLAYER1处理后的数据
-- `{set_key}_player2_processed.csv` - PLAYER2处理后的数据
-- `{set_key}_player3_processed.csv` - PLAYER3处理后的数据
-- `{set_key}_after_id_assignment.png` - ID分配后的可视化
-- `{set_key}_final.png` - 最终处理后的可视化
+See [ALGORITHM_DESCRIPTION.md](ALGORITHM_DESCRIPTION.md) for implementation notes.

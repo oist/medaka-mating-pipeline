@@ -1,22 +1,22 @@
 """
-Step 4: 3D 标定质量可视化
+Step 4: visualize 3D calibration quality.
 
-支持多种输入：
-- 模板 .txt 文件（way1/way2/way3/way4）：按列着色（Pink/Yellow/Blue/Black/Orange/Purple/Silver）
-- point_mapping CSV：模板 vs 模型预测
-- 可同时叠加多个模板或多种预测结果
+Supported inputs:
+- template `.txt` files (`way1/way2/way3/way4`) colored by bead column
+- point_mapping CSV files (template vs model prediction)
+- multiple templates or multiple predictions layered together
 
-用法示例：
-    # 仅可视化模板（way1）
+Examples:
+    # Visualize one template only (way1)
     python scripts/calibration/qc_3d_template.py --template_txt "H:/calibration_raw/cali_20251217/cali_coords_template_way1.txt" --output qc_way1.png
 
-    # 可视化 point_mapping（模板 vs 预测）
+    # Visualize point_mapping (template vs prediction)
     python scripts/calibration/qc_3d_template.py --mapping_csv "path/to/point_mapping.csv" --template_txt "path/to/cali_coords_template_way1.txt"
 
-    # 多 way 模板一起显示
+    # Show several way templates together
     python scripts/calibration/qc_3d_template.py --template_dir "H:/calibration_raw/cali_20251217" --ways way1 way2 way3 way4 --output qc_all_ways.png
 
-    # 多个 mapping CSV 叠加（不同模型预测）
+    # Overlay several mapping CSVs (different model predictions)
     python scripts/calibration/qc_3d_template.py --mapping_csv a.csv --additional_mappings b.csv c.csv --output qc_compare.png
 """
 import argparse
@@ -31,7 +31,8 @@ import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 from matplotlib.gridspec import GridSpec
 
-# 与 Step 5b 一致的珠子颜色：前 4 点为顶点绿色，其余按列 Pink/Yellow/Blue/Black/Orange/Purple/Silver
+# Match the bead-color convention used by Step 5b:
+# first 4 points are green vertices, the rest are column colors.
 N_CORNERS = 4
 BEADS_PER_COLUMN = 7
 BEAD_COLUMN_COLOR_ORDER = ["pink", "yellow", "blue", "black", "orange", "purple", "silver"]
@@ -48,9 +49,9 @@ def get_point_color(i: int) -> str:
     return BEAD_COLUMN_COLOR_ORDER[col_idx]
 
 
-# 兼容两种调用方式：
-# - 作为包模块: python -m scripts.calibration.qc_3d_template
-# - 直接脚本路径: python scripts/calibration/qc_3d_template.py
+# Support both invocation styles:
+# - python -m scripts.calibration.qc_3d_template
+# - python scripts/calibration/qc_3d_template.py
 sys.path.append(os.path.join(os.path.dirname(__file__), "lib"))
 from visualize_coords_from_template import (  # type: ignore
     get_colors_from_template,
@@ -58,12 +59,12 @@ from visualize_coords_from_template import (  # type: ignore
 
 
 def load_template_txt(path: str) -> Tuple[np.ndarray, List[str]]:
-    """从模板 .txt 加载 3D 坐标及颜色。返回 (coords Nx3, colors)."""
+    """Load 3D coordinates and colors from a template `.txt` file."""
     return get_colors_from_template(path)
 
 
 def load_mapping_csv(path: str) -> Tuple[np.ndarray, np.ndarray]:
-    """读取 point_mapping CSV，返回 (template_3d, pred_3d)."""
+    """Load point_mapping CSV and return `(template_3d, pred_3d)`."""
     df = pd.read_csv(path)
     required_cols = ["X", "Y", "Z", "pred_X", "pred_Y", "pred_Z"]
     for c in required_cols:
@@ -76,7 +77,7 @@ def load_mapping_csv(path: str) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def find_template_in_dir(template_dir: str, way: str) -> Optional[str]:
-    """在目录中查找指定 way 的模板文件。"""
+    """Find the template file for one way inside a directory."""
     way = way.lower().replace("way", "way")
     patterns = [
         os.path.join(template_dir, f"cali_coords_template_{way}.txt"),
@@ -98,7 +99,7 @@ def plot_qc_3d(
     out_path: str = "qc_3d.png",
     template_name: Optional[str] = None,
 ) -> None:
-    """生成 4 小图：3D + XY + XZ + YZ，模板 vs 预测（若提供）。"""
+    """Generate four panels: 3D + XY + XZ + YZ, template vs prediction."""
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
 
     if colors is None:
@@ -110,7 +111,7 @@ def plot_qc_3d(
     fig = plt.figure(figsize=(13, 10))
     gs = GridSpec(2, 2, figure=fig)
 
-    # 3D 视图（template 与 pred 同色，template 加黑框区分）
+    # 3D view: template and prediction share colors; template uses a heavier edge.
     ax3d = fig.add_subplot(gs[0, 0], projection="3d")
     ax3d.set_title(f"{name} - 3D view (template vs predicted)")
     ax3d.scatter(
@@ -127,7 +128,7 @@ def plot_qc_3d(
     ax3d.set_ylabel("Y (mm)")
     ax3d.set_zlabel("Z (mm)")
 
-    # XY 视角（template 与 pred 同色，template 加黑框）
+    # XY view.
     ax_xy = fig.add_subplot(gs[0, 1])
     ax_xy.set_title(f"{name} - XY view")
     ax_xy.scatter(template[:, 0], template[:, 1], c=colors[: len(template)], s=12, alpha=0.8, edgecolors="k", linewidths=1.2)
@@ -137,7 +138,7 @@ def plot_qc_3d(
     ax_xy.set_ylabel("Y")
     ax_xy.invert_xaxis()
 
-    # XZ 视角（template 与 pred 同色，template 加黑框）
+    # XZ view.
     ax_xz = fig.add_subplot(gs[1, 0])
     ax_xz.set_title(f"{name} - XZ view")
     ax_xz.scatter(template[:, 0], template[:, 2], c=colors[: len(template)], s=12, alpha=0.8, edgecolors="k", linewidths=1.2)
@@ -146,7 +147,7 @@ def plot_qc_3d(
     ax_xz.set_xlabel("X")
     ax_xz.set_ylabel("Z")
 
-    # YZ 视角（template 与 pred 同色，template 加黑框）
+    # YZ view.
     ax_yz = fig.add_subplot(gs[1, 1])
     ax_yz.set_title(f"{name} - YZ view")
     ax_yz.scatter(template[:, 1], template[:, 2], c=colors[: len(template)], s=12, alpha=0.8, edgecolors="k", linewidths=1.2)
@@ -156,7 +157,7 @@ def plot_qc_3d(
     ax_yz.set_ylabel("Z")
     ax_yz.invert_xaxis()
 
-    # 图例只画一次：template = 同色 + 黑框，predicted = 同色 + 细边
+    # Draw one shared legend for template / predicted / origin.
     template_proxy = mlines.Line2D(
         [], [], color="none", marker="o", markerfacecolor="green",
         markeredgecolor="k", markeredgewidth=1.2, markersize=8, label="template",
@@ -186,7 +187,7 @@ def plot_qc_3d_multi(
     out_path: str,
     template_name: Optional[str] = None,
 ) -> None:
-    """叠加多个数据层（如多个 way 模板、多个预测）绘制。"""
+    """Draw multiple overlaid data layers such as several templates or predictions."""
     os.makedirs(os.path.dirname(out_path) or ".", exist_ok=True)
 
     name = template_name or "Template"
@@ -238,7 +239,7 @@ def plot_qc_3d_multi(
     ax_yz.set_xlabel("Y")
     ax_yz.set_ylabel("Z")
 
-    # 图例只画一次（与 5b 一致）
+    # Draw one shared legend.
     points_proxy = mlines.Line2D(
         [], [], color="none", marker="o", markerfacecolor="green",
         markeredgecolor="k", markeredgewidth=0.2, markersize=8, label="points",
@@ -310,7 +311,7 @@ def main() -> int:
     layers: List[Tuple[np.ndarray, Optional[np.ndarray], List[str], str]] = []
     out_path = args.output
 
-    # 模式 1: 多个 way 模板（仅 template_dir + ways）
+    # Mode 1: multiple way templates only.
     if args.template_dir and args.ways and not args.mapping_csv:
         template_dir = os.path.normpath(args.template_dir)
         template_name = None
@@ -330,7 +331,7 @@ def main() -> int:
         print(f"Saved multi-way figure to: {out_path}")
         return 0
 
-    # 模式 2: 仅 template_txt（无 mapping）
+    # Mode 2: template only, no mapping CSV.
     if args.template_txt and not args.mapping_csv:
         path = os.path.normpath(args.template_txt)
         if not os.path.exists(path):
@@ -344,7 +345,7 @@ def main() -> int:
         print(f"Saved template-only figure to: {out_path}")
         return 0
 
-    # 模式 3: mapping_csv（含可选 additional_mappings）
+    # Mode 3: mapping_csv with optional additional mappings.
     if not args.mapping_csv:
         parser.error("Need --mapping_csv, or --template_txt for template-only, or --template_dir + --ways")
     mapping_csv = os.path.normpath(args.mapping_csv)
@@ -355,7 +356,7 @@ def main() -> int:
     template_path = os.path.normpath(args.template_txt) if args.template_txt else None
     colors = [get_point_color(i) for i in range(len(template))]
 
-    # 模板名字：优先用 template_txt 文件名，否则从 mapping_csv 推断
+    # Prefer the template filename for display; otherwise infer a name from mapping_csv.
     template_name = None
     if template_path:
         template_name = os.path.splitext(os.path.basename(template_path))[0]
@@ -363,7 +364,7 @@ def main() -> int:
         base = os.path.splitext(os.path.basename(mapping_csv))[0]
         template_name = base.replace("_point_mapping", "")
 
-    # 单个 mapping
+    # Single mapping.
     if not args.additional_mappings:
         if not out_path:
             base_dir = os.path.dirname(mapping_csv)
@@ -381,7 +382,7 @@ def main() -> int:
         print(f"Saved 3D QC figure to: {out_path}")
         return 0
 
-    # 多个 mapping 叠加
+    # Multiple overlaid mappings.
     layers.append((template, pred, colors, os.path.basename(mapping_csv)))
     for p in args.additional_mappings.strip().split(","):
         p = p.strip()

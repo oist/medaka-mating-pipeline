@@ -1,13 +1,7 @@
 """
-3D 轨迹可视化（追踪 ID 之后的可视化步骤）
-=========================================
+Visualize already-generated 3D trajectories after identity tracking.
 
-从已有 3D CSV 生成 3D 轨迹视频 MP4（ffmpeg 编码，轨迹仅保留最近 N 秒），不重新跑三角化。
-
-用法:
-    python -m scripts.reconstruction.visualize_3d ^
-      --output_dir "H:\3d_trajectories" ^
-      --set_key "20251220_E_1_2_FCMC_male1_Courtship_1905.506-1913.422"
+This script creates trajectory PNG or MP4 outputs from existing 3D CSV files.
 """
 
 import argparse
@@ -19,21 +13,20 @@ import pandas as pd
 from scripts.calibration.trajectory_3d import plot_3d_trajectories, plot_3d_trajectories_video
 
 
-# 只选一组 3 条轨迹：若存在 ID_1/2/3 则只用它们，否则用 a/b/c（避免 a/b/c 与 ID_1/2/3 同时存在时画出 6 条线）
 PREFERRED_GROUP = ("ID_1", "ID_2", "ID_3")
 FALLBACK_GROUP = ("a", "b", "c")
 
 
 def load_trajectories_from_csv(output_dir: str, set_key: str) -> Dict[str, pd.DataFrame]:
-    """从 output_dir 读取 3D 轨迹。优先单 CSV {set_key}_3d.csv（frame, fish_id, X, Y, Z），否则回退到 {set_key}_a_3d.csv 等。"""
+    """Load 3D trajectories from either the long CSV or legacy per-group CSV files."""
     out = Path(output_dir)
     single = out / f"{set_key}_3d.csv"
     if single.exists():
         df = pd.read_csv(single)
         if "fish_id" not in df.columns:
-            raise ValueError(f"{single} 缺少列 fish_id")
+            raise ValueError(f"{single} is missing the fish_id column")
         return {fid: gr[["frame", "X", "Y", "Z"]].copy() for fid, gr in df.groupby("fish_id")}
-    # 兼容：分文件 a/b/c 或 ID_1/2/3
+
     for name in PREFERRED_GROUP:
         p = out / f"{set_key}_{name}_3d.csv"
         if p.exists():
@@ -48,7 +41,7 @@ def load_trajectories_from_csv(output_dir: str, set_key: str) -> Dict[str, pd.Da
         if p.exists():
             result[name] = pd.read_csv(p)
     if not result:
-        raise FileNotFoundError(f"未找到 3D CSV: {out}/{set_key}_3d.csv 或 {set_key}_*_3d.csv")
+        raise FileNotFoundError(f"3D CSV not found: {out}/{set_key}_3d.csv or {set_key}_*_3d.csv")
     return result
 
 
@@ -61,7 +54,7 @@ def run_video(
     data_fps: float | None = None,
     xyz_lim: tuple[float, float] | None = (0, 200),
 ) -> str:
-    """从 3D CSV 生成 MP4 视频。fps=输出视频帧率（越小播放越慢）；data_fps=原始数据帧率（用于 trail 计算）。"""
+    """Generate an MP4 trajectory video from existing 3D CSV files."""
     trajectories = load_trajectories_from_csv(output_dir, set_key)
     out_path = Path(output_dir) / f"{set_key}_3d_trajectories.mp4"
     plot_3d_trajectories_video(
@@ -77,7 +70,7 @@ def run_plot(
     set_key: str,
     xyz_lim: tuple[float, float] | None = (0, 200),
 ) -> str:
-    """从 3D CSV 生成 PNG 轨迹图。xyz_lim 固定坐标轴范围，默认 (0, 200)。"""
+    """Generate a PNG trajectory plot from existing 3D CSV files."""
     trajectories = load_trajectories_from_csv(output_dir, set_key)
     out_path = Path(output_dir) / f"{set_key}_3d_trajectories.png"
     plot_3d_trajectories(trajectories, str(out_path), xyz_lim=xyz_lim)
@@ -85,13 +78,13 @@ def run_plot(
 
 
 def main():
-    ap = argparse.ArgumentParser(description="从 3D CSV 生成 3D 轨迹视频 MP4")
-    ap.add_argument("--output_dir", required=True, help="3D CSV 所在目录")
-    ap.add_argument("--set_key", required=True, help="set key")
-    ap.add_argument("--fps", type=float, default=30, help="帧率")
-    ap.add_argument("--subsample", type=int, default=5, help="帧间隔")
-    ap.add_argument("--trail_seconds", type=float, default=5.0, help="轨迹只保留最近多少秒（默认 5）")
-    ap.add_argument("--format", choices=["mp4", "png"], default="mp4", help="输出格式")
+    ap = argparse.ArgumentParser(description="Render 3D trajectory plots or MP4 videos from CSV")
+    ap.add_argument("--output_dir", required=True, help="Directory containing the 3D CSV files")
+    ap.add_argument("--set_key", required=True, help="Set key")
+    ap.add_argument("--fps", type=float, default=30, help="Output video frame rate")
+    ap.add_argument("--subsample", type=int, default=5, help="Frame subsampling interval")
+    ap.add_argument("--trail_seconds", type=float, default=5.0, help="How many recent seconds of trajectory to keep visible")
+    ap.add_argument("--format", choices=["mp4", "png"], default="mp4", help="Output format")
     args = ap.parse_args()
 
     if args.format == "mp4":
@@ -101,7 +94,7 @@ def main():
         )
     else:
         out = run_plot(args.output_dir, args.set_key)
-    print(f"完成: {out}")
+    print(f"Done: {out}")
 
 
 if __name__ == "__main__":

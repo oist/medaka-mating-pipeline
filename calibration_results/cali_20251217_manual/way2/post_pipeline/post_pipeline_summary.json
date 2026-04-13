@@ -1,0 +1,87 @@
+{
+  "remap_summary": {
+    "cameras": {
+      "cam0": {
+        "input_path": "calibration_results\\cali_20251217_manual\\way2\\cali_way2_cam0_image_coords.txt",
+        "output_path": "calibration_results\\cali_20251217_manual\\way2\\remapped\\cali_way2_cam0_image_coords.txt",
+        "preview_path": "calibration_results\\cali_20251217_manual\\way2\\remapped\\cali_way2_cam0_remapped_preview.png",
+        "n_points": 53,
+        "changed_indices": 40,
+        "inferred_colors": {
+          "null": 4,
+          "pink": 8,
+          "yellow": 6,
+          "blue": 7,
+          "black": 5,
+          "silver": 9,
+          "orange": 7,
+          "purple": 7
+        }
+      },
+      "cam1": {
+        "input_path": "calibration_results\\cali_20251217_manual\\way2\\cali_way2_cam1_image_coords.txt",
+        "output_path": "calibration_results\\cali_20251217_manual\\way2\\remapped\\cali_way2_cam1_image_coords.txt",
+        "preview_path": "calibration_results\\cali_20251217_manual\\way2\\remapped\\cali_way2_cam1_remapped_preview.png",
+        "n_points": 53,
+        "changed_indices": 41,
+        "inferred_colors": {
+          "null": 4,
+          "pink": 6,
+          "purple": 8,
+          "yellow": 7,
+          "blue": 7,
+          "black": 4,
+          "silver": 10,
+          "orange": 7
+        }
+      },
+      "cam2": {
+        "input_path": "calibration_results\\cali_20251217_manual\\way2\\cali_way2_cam2_image_coords.txt",
+        "output_path": "calibration_results\\cali_20251217_manual\\way2\\remapped\\cali_way2_cam2_image_coords.txt",
+        "preview_path": "calibration_results\\cali_20251217_manual\\way2\\remapped\\cali_way2_cam2_remapped_preview.png",
+        "n_points": 53,
+        "changed_indices": 30,
+        "inferred_colors": {
+          "null": 4,
+          "pink": 7,
+          "yellow": 7,
+          "blue": 7,
+          "silver": 12,
+          "black": 2,
+          "orange": 7,
+          "purple": 7
+        }
+      }
+    }
+  },
+  "model_output": "calibration_results\\cali_20251217_manual\\way2\\post_pipeline\\models",
+  "qc_output": "calibration_results\\cali_20251217_manual\\way2\\post_pipeline\\qc",
+  "mapping_csv": "calibration_results\\cali_20251217_manual\\way2\\post_pipeline\\qc\\cali_20251217_point_mapping.csv",
+  "point_mapping_summary": {
+    "n_points": 53,
+    "mean_error_mm": 58.20004288092577,
+    "rmse_mm": 68.85109038332659,
+    "max_error_mm": 209.07975541339871
+  },
+  "reprojection_summary": {
+    "cam0": {
+      "mean": 276.051598497386,
+      "median": 255.25156017736757,
+      "std": 166.36412534169122,
+      "max": 796.1090312323563
+    },
+    "cam1": {
+      "mean": 262.63403629812416,
+      "median": 243.61920480192103,
+      "std": 151.16666267752439,
+      "max": 733.6131784511846
+    },
+    "cam2": {
+      "mean": 276.29713668436455,
+      "median": 277.2289318948081,
+      "std": 141.22568159218625,
+      "max": 691.0537512183756
+    }
+  },
+  "reprojection_views_path": "calibration_results\\cali_20251217_manual\\way2\\post_pipeline\\qc\\cali_20251217_point_mapping_reprojection_2d_views.png"
+}

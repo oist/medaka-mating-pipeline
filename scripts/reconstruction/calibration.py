@@ -1,9 +1,13 @@
 """
-校准模块：加载 joblib 模型并计算 3D 坐标与配准误差
+Calibration wrapper for the legacy reconstruction pipeline.
 
-与 detect_board 约定一致：
-- imCoords 顺序: cam0(top/XY), cam1(side1/XZ), cam2(side2/YZ) -> [xy_x, xy_y, xz_x, xz_y, yz_x, yz_y]
-- 训练数据来自 cali_way*_cam0/1/2_image_coords.txt，cam0=top, cam1=side1, cam2=side2
+Conventions:
+
+- `cam0` = top / XY
+- `cam1` = side1 / XZ
+- `cam2` = side2 / YZ
+- image coordinate order:
+  `[xy_x, xy_y, xz_x, xz_y, yz_x, yz_y]`
 """
 
 import os
@@ -14,17 +18,9 @@ from joblib import load
 
 
 class Calibration:
-    """加载校准模型，用于 3D 重建与配准误差计算"""
+    """Load calibration models for 3D reconstruction and registration scoring."""
 
     def __init__(self, calibration_folder_path: str):
-        """
-        Args:
-            calibration_folder_path: 校准模型目录，需包含:
-                - imCoords_to_XYZ.joblib
-                - xy_yz_to_xz.joblib
-                - xz_yz_to_xy.joblib
-                - xz_xy_to_yz.joblib
-        """
         self.calibration_folder_path = Path(calibration_folder_path)
         self.python_calibration_folder = self.calibration_folder_path / "python_calibration_models"
         if not self.python_calibration_folder.exists():
@@ -33,63 +29,46 @@ class Calibration:
         self._load_models()
 
     def _load_models(self):
-        """加载 joblib 模型"""
+        """Load the required joblib models."""
         self.xyz_getter = load(self.python_calibration_folder / "imCoords_to_XYZ.joblib")
         self.xz_getter = load(self.python_calibration_folder / "xy_yz_to_xz.joblib")
         self.xy_getter = load(self.python_calibration_folder / "xz_yz_to_xy.joblib")
         self.yz_getter = load(self.python_calibration_folder / "xz_xy_to_yz.joblib")
-        # 可选：3D→2D 重投影（用于 2D 叠加由 3D 投影得到）
         xyz_to_im_path = self.python_calibration_folder / "XYZ_to_imCoords.joblib"
         self._imcoords_getter = load(xyz_to_im_path) if xyz_to_im_path.exists() else None
 
     def has_imcoords_from_XYZ(self) -> bool:
-        """是否已加载 3D→2D 模型（XYZ_to_imCoords.joblib），可用于将 3D 投影到三相机 2D。"""
+        """Return True when the optional 3D->2D reprojection model is available."""
         return self._imcoords_getter is not None
 
     def compute_imCoords_from_XYZ(self, XYZ: np.ndarray) -> np.ndarray:
-        """
-        从 3D 坐标预测三相机 2D 图像坐标（重投影）。
-
-        Args:
-            XYZ: shape (3,) 或 (N, 3)
-
-        Returns:
-            shape (3, 2) 或 (N, 3, 2)，顺序 [cam0(top/XY), cam1(side1/XZ), cam2(side2/YZ)]，每行 (x, y) 像素
-        """
+        """Predict three-view 2D image coordinates from one or more 3D points."""
         if self._imcoords_getter is None:
-            raise RuntimeError("未找到 XYZ_to_imCoords.joblib，无法从 3D 投影到 2D")
+            raise RuntimeError("XYZ_to_imCoords.joblib is required for 3D->2D projection")
         single = XYZ.ndim == 1
         if single:
             XYZ = XYZ.reshape(1, 3)
-        flat = self._imcoords_getter.predict(XYZ)  # (N, 6)
+        flat = self._imcoords_getter.predict(XYZ)
         out = flat.reshape(-1, 3, 2)
         return out[0] if single else out
 
     def compute_XYZ_from_imageCoord_triplet(self, imCoords: np.ndarray) -> np.ndarray:
-        """
-        从三相机 2D 坐标预测 3D XYZ。
-
-        Args:
-            imCoords: shape (3, 2)，顺序 [cam0(top/XY), cam1(side1/XZ), cam2(side2/YZ)]
-
-        Returns:
-            XYZ: shape (3,)
-        """
+        """Predict one 3D point from a full three-view 2D triplet."""
         flat = imCoords.reshape(-1, 6)
         return self.xyz_getter.predict(flat).ravel()
 
     def compute_XZ_imcoords_from_XY_YZ(self, xy_imCoord: np.ndarray, yz_imCoord: np.ndarray) -> np.ndarray:
-        """从 XY 和 YZ 视图推导 XZ 视图坐标"""
+        """Infer XZ-view image coordinates from XY and YZ views."""
         inp = np.hstack((xy_imCoord, yz_imCoord)).reshape(1, 4)
         return self.xz_getter.predict(inp).ravel()
 
     def compute_XY_imcoords_from_XZ_YZ(self, xz_imCoord: np.ndarray, yz_imCoord: np.ndarray) -> np.ndarray:
-        """从 XZ 和 YZ 视图推导 XY 视图坐标"""
+        """Infer XY-view image coordinates from XZ and YZ views."""
         inp = np.hstack((xz_imCoord, yz_imCoord)).reshape(1, 4)
         return self.xy_getter.predict(inp).ravel()
 
     def compute_YZ_imcoords_from_XZ_XY(self, xz_imCoord: np.ndarray, xy_imCoord: np.ndarray) -> np.ndarray:
-        """从 XZ 和 XY 视图推导 YZ 视图坐标"""
+        """Infer YZ-view image coordinates from XZ and XY views."""
         inp = np.hstack((xz_imCoord, xy_imCoord)).reshape(1, 4)
         return self.yz_getter.predict(inp).ravel()
 
@@ -100,30 +79,16 @@ class Calibration:
         imCoords_cam2: np.ndarray,
     ) -> float:
         """
-        计算跨相机配准误差（参考 Dynamics_of_dominance tracking.py）。
-
-        用两个相机的 2D 坐标推导第三相机坐标，检查三视图自洽性。
-        误差 = 三个推导误差之和。
-
-        Args:
-            camIdxs: [0,1], [0,2], 或 [1,2]，表示 imCoords_cam1/cam2 来自哪两个相机
-            imCoords_cam1: 相机1的 (x,y)
-            imCoords_cam2: 相机2的 (x,y)
-
-        Returns:
-            标量误差，NaN 表示无效
+        Compute cross-camera correspondence error by deriving the third view
+        from two observed views and checking three-view consistency.
         """
         if np.any(np.isnan(imCoords_cam1)) or np.any(np.isnan(imCoords_cam2)):
             return np.nan
 
-        # 辅助模型：xy_yz_to_xz(XY,YZ)->XZ, xz_yz_to_xy(XZ,YZ)->XY, xz_xy_to_yz(XZ,XY)->YZ
-        # camIdxs [0,1]: 有 XY 和 XZ，求 YZ = xz_xy_to_yz(XZ, XY)
-        # camIdxs [0,2]: 有 XY 和 YZ，求 XZ = xy_yz_to_xz(XY, YZ)
-        # camIdxs [1,2]: 有 XZ 和 YZ，求 XY = xz_yz_to_xy(XZ, YZ)
         if camIdxs == [0, 1]:
             xy, xz = imCoords_cam1, imCoords_cam2
             yz = self.compute_YZ_imcoords_from_XZ_XY(xz, xy)
-            proposed = np.vstack((xz, xy, yz))  # [XZ, XY, YZ] 供后续误差计算
+            proposed = np.vstack((xz, xy, yz))
         elif camIdxs == [0, 2]:
             xy, yz = imCoords_cam1, imCoords_cam2
             xz = self.compute_XZ_imcoords_from_XY_YZ(xy, yz)
@@ -133,7 +98,7 @@ class Calibration:
             xy = self.compute_XY_imcoords_from_XZ_YZ(xz, yz)
             proposed = np.vstack((xz, xy, yz))
         else:
-            raise ValueError(f"camIdxs 必须为 [0,1], [0,2] 或 [1,2]，得到 {camIdxs}")
+            raise ValueError(f"camIdxs must be one of [0,1], [0,2], or [1,2]; got {camIdxs}")
 
         derived_xz = self.compute_XZ_imcoords_from_XY_YZ(proposed[1], proposed[2])
         img_der_xz = np.vstack((derived_xz, proposed[1], proposed[2]))
@@ -150,18 +115,9 @@ class Calibration:
         return float(err_xz + err_xy + err_yz)
 
     def compute_triplet_registration_error(self, imCoords: np.ndarray) -> float:
-        """
-        给定完整三相机 2D 坐标 triplet，计算配准误差。
-
-        Args:
-            imCoords: shape (3, 2)，[cam0, cam1, cam2]
-
-        Returns:
-            标量误差
-        """
+        """Compute registration error for one complete three-view 2D triplet."""
         if np.any(np.isnan(imCoords)):
             return np.nan
-        # 参考 Dynamics_of_dominance: 对 3 个相机的所有成对组合计算配准误差，并累加。
         err_01 = self.compute_point_correspondence_error([0, 1], imCoords[0], imCoords[1])
         err_02 = self.compute_point_correspondence_error([0, 2], imCoords[0], imCoords[2])
         err_12 = self.compute_point_correspondence_error([1, 2], imCoords[1], imCoords[2])

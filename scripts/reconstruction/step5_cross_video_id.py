@@ -1,13 +1,9 @@
 """
-Step 5: 跨视频/跨片段统一 ID（ID_1, ID_2, ID_3）
-================================================
+Step 5: unify IDs across clips / videos.
 
-在多个片段（clip）的 a/b/c 3D 轨迹上，为同一物理个体赋予跨片段一致的 ID_1, ID_2, ID_3。
-假定片段顺序为时间顺序；用上一片段最后一帧与当前片段第一帧的 3D 位置做 Hungarian 匹配，
-再按匹配结果重写当前片段的 CSV 为 _ID_1_3d.csv, _ID_2_3d.csv, _ID_3_3d.csv。
-
-输入: 同一 output_dir 下多组 {set_key}_a_3d.csv, _b_3d.csv, _c_3d.csv
-输出: 同目录下 {set_key}_ID_1_3d.csv, _ID_2_3d.csv, _ID_3_3d.csv（首片段用 a→ID_1, b→ID_2, c→ID_3）
+The script assigns consistent `ID_1`, `ID_2`, and `ID_3` labels across clips
+by matching the last frame of the previous clip to the first frame of the next
+clip in 3D space.
 """
 
 from pathlib import Path
@@ -22,33 +18,33 @@ ID_LABELS = ["ID_1", "ID_2", "ID_3"]
 
 
 def load_clip_3d(output_dir: Path, set_key: str) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """加载一个片段的 a/b/c 3D CSV，返回 (df_a, df_b, df_c)。"""
+    """Load one clip's `a/b/c` 3D CSV files."""
     dfs = {}
     for g in GROUP_LABELS:
         p = output_dir / f"{set_key}_{g}_3d.csv"
         if not p.exists():
-            raise FileNotFoundError(f"未找到: {p}")
+            raise FileNotFoundError(f"File not found: {p}")
         dfs[g] = pd.read_csv(p)
     return dfs["a"], dfs["b"], dfs["c"]
 
 
 def get_last_positions(df_a: pd.DataFrame, df_b: pd.DataFrame, df_c: pd.DataFrame):
-    """返回最后一帧的 3 个 3D 点，顺序为 [ID_1 对应, ID_2 对应, ID_3 对应]。"""
+    """Return the final-frame 3D points ordered as `ID_1/ID_2/ID_3`."""
     out = []
     for df in (df_a, df_b, df_c):
         if len(df) == 0:
-            raise ValueError("片段无数据，无法取最后一帧")
+            raise ValueError("Clip has no data; cannot read the final frame")
         last = df.iloc[-1]
         out.append([float(last["X"]), float(last["Y"]), float(last["Z"])])
     return np.array(out)
 
 
 def get_first_positions(df_a: pd.DataFrame, df_b: pd.DataFrame, df_c: pd.DataFrame):
-    """返回第一帧的 3 个 3D 点，顺序 a, b, c。"""
+    """Return the first-frame 3D points ordered as `a, b, c`."""
     out = []
     for df in (df_a, df_b, df_c):
         if len(df) == 0:
-            raise ValueError("片段无数据，无法取第一帧")
+            raise ValueError("Clip has no data; cannot read the first frame")
         first = df.iloc[0]
         out.append([float(first["X"]), float(first["Y"]), float(first["Z"])])
     return np.array(out)
@@ -56,17 +52,14 @@ def get_first_positions(df_a: pd.DataFrame, df_b: pd.DataFrame, df_c: pd.DataFra
 
 def match_ids_by_position(prev_pts: np.ndarray, curr_pts: np.ndarray) -> np.ndarray:
     """
-    prev_pts: (3, 3) 上一片段最后一帧 ID_1, ID_2, ID_3 的 XYZ
-    curr_pts: (3, 3) 当前片段第一帧 a, b, c 的 XYZ
-    返回: (3,) 的 permutation，curr_perm[i] = 当前片段中对应 ID_i 的 label 索引 (0=a,1=b,2=c)
+    Match current clip labels `a/b/c` to the previous clip's `ID_1/2/3` using
+    Hungarian assignment in 3D.
     """
     cost = np.zeros((3, 3))
     for i in range(3):
         for j in range(3):
             cost[i, j] = np.linalg.norm(prev_pts[i] - curr_pts[j])
     row_ind, col_ind = linear_sum_assignment(cost)
-    # row_ind: ID 索引 0,1,2  col_ind: 当前 a,b,c 索引
-    # ID_i 对应 current 的 col_ind[i]
     return np.array(col_ind)
 
 
@@ -75,19 +68,18 @@ def run(
     set_keys: List[str] | None = None,
 ) -> List[str]:
     """
-    对 output_dir 下多组 a/b/c 3D CSV 做跨片段 ID 统一，写出 _ID_1_3d.csv 等。
-    set_keys: 片段 key 列表（时间顺序）；若为 None 则自动扫描 *_a_3d.csv 并按 key 排序。
+    Unify IDs across multiple clips in `output_dir` and write
+    `{set_key}_ID_1_3d.csv`, etc.
     """
     out_dir = Path(output_dir)
     if set_keys is None:
         a_files = sorted(out_dir.glob("*_a_3d.csv"))
         set_keys = [f.stem.replace("_a_3d", "") for f in a_files]
     if not set_keys:
-        print("未找到任何 *_a_3d.csv，跳过跨视频 ID。")
+        print("No *_a_3d.csv files found; skipping cross-video ID unification.")
         return []
 
     written = []
-    # 上一片段最后一帧的 3 个点（按 ID_1, ID_2, ID_3）
     prev_pts = None
 
     for set_key in set_keys:
@@ -95,7 +87,6 @@ def run(
         dfs = [df_a, df_b, df_c]
 
         if prev_pts is None:
-            # 第一个片段：固定 a→ID_1, b→ID_2, c→ID_3
             perm = np.array([0, 1, 2])
             prev_pts = get_last_positions(df_a, df_b, df_c)
         else:
@@ -110,16 +101,16 @@ def run(
             path = out_dir / f"{set_key}_{id_name}_3d.csv"
             df.to_csv(path, index=False)
             written.append(str(path))
-        print(f"  已写 {set_key} -> {ID_LABELS}")
+        print(f"  Wrote {set_key} -> {ID_LABELS}")
 
     return written
 
 
 def main():
     import argparse
-    ap = argparse.ArgumentParser(description="Step 5: 跨视频统一 ID_1/2/3")
-    ap.add_argument("--output-dir", required=True, help="3D CSV 所在目录")
-    ap.add_argument("--set-keys", nargs="*", default=None, help="按时间顺序的 set_key 列表，不填则自动扫描")
+    ap = argparse.ArgumentParser(description="Step 5: unify ID_1/2/3 across clips")
+    ap.add_argument("--output-dir", required=True, help="Directory containing the 3D CSV files")
+    ap.add_argument("--set-keys", nargs="*", default=None, help="Set keys in chronological order; if omitted the script scans automatically")
     args = ap.parse_args()
     run(args.output_dir, args.set_keys)
 

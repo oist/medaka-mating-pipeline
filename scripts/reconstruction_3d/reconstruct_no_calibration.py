@@ -1,10 +1,13 @@
 """
-不用相机校准模型的 3D 重建：top=XY, side1=XZ, side2=YZ
-=========================================================
+3D reconstruction without a calibration model.
 
-约定：top 视角图像 (x,y) 直接当作世界 (X,Y)；side1 的 (x,y) 当作 (X,Z)；side2 的 (x,y) 当作 (Y,Z)。
-对每个 3D 点：X = top.x 或 side1.x（有则取/平均），Y = top.y 或 side2.x，Z = side1.y 或 side2.y。
-缺视角则该分量用 NaN，不做校准、不产生 0。
+Assumptions:
+
+- top view -> (X, Y)
+- side1 -> (X, Z)
+- side2 -> (Y, Z)
+
+Missing dimensions remain `NaN`.
 """
 
 from itertools import permutations
@@ -37,9 +40,9 @@ def _image_to_xyz_one(
     pt_side2: Tuple[float, float],
 ) -> Tuple[np.ndarray, float]:
     """
-    单点：top=(X,Y), side1=(X,Z), side2=(Y,Z)。
-    X = top.x 或 side1.x；Y = top.y 或 side2.x；Z = side1.y 或 side2.y。
-    缺视角则该分量为 NaN。cost = 两视角同坐标不一致时的平方和（一致则 0）。
+    Convert one top/side1/side2 triplet into an approximate 3D point.
+
+    The cost is the sum of squared disagreements between shared coordinates.
     """
     x0, y0 = float(pt_top[0]), float(pt_top[1])
     x1, y1 = float(pt_side1[0]), float(pt_side1[1])
@@ -66,10 +69,11 @@ def compute_candidates_no_calib(
     points_by_frame: Dict[int, Dict[str, List[Tuple[float, float]]]],
     *,
     xyz_bounds: Tuple[float, float] | None = None,
+    allow_permutations: bool = False,
 ) -> Dict[int, List[Dict]]:
     """
-    每帧枚举排列，用 top=XY, side1=XZ, side2=YZ 直接算 3D，无校准模型。
-    返回格式与 triangulate.compute_candidates 一致，供 select_best 使用。
+    Enumerate permutations per frame and compute 3D candidates without a
+    calibration model.
     """
     candidates_by_frame: Dict[int, List[Dict]] = {}
     low = high = None
@@ -81,7 +85,7 @@ def compute_candidates_no_calib(
     except ImportError:
         tqdm = lambda x, **kw: x
 
-    for frame in tqdm(sorted(points_by_frame.keys()), desc="3D(无校准)", unit="frame"):
+    for frame in tqdm(sorted(points_by_frame.keys()), desc="3D (no calibration)", unit="frame"):
         cams = points_by_frame[frame]
         pts0 = list(cams.get("cam0", []))
         pts1 = list(cams.get("cam1", []))
@@ -94,8 +98,13 @@ def compute_candidates_no_calib(
             pts2.append((np.nan, np.nan))
         pts0, pts1, pts2 = pts0[:NUM_INDIVIDUALS], pts1[:NUM_INDIVIDUALS], pts2[:NUM_INDIVIDUALS]
 
-        perms1 = list(permutations(range(NUM_INDIVIDUALS)))
-        perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+        if allow_permutations:
+            perms1 = list(permutations(range(NUM_INDIVIDUALS)))
+            perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+        else:
+            identity_perm = tuple(range(NUM_INDIVIDUALS))
+            perms1 = [identity_perm]
+            perms2 = [identity_perm]
         frame_candidates = []
 
         for perm1 in perms1:
@@ -134,16 +143,22 @@ def run_pipeline_no_calibration(
     *,
     output_dir: str | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
+    use_fish_id: bool | None = None,
+    allow_permutations: bool = False,
     fill_missing_3d: bool = True,
     plot: bool = True,
     first_frame_id_only: bool = True,
 ) -> Dict:
     """
-    无校准 3D 流程：加载 2D → top/side1/side2 直接映射 XY/XZ/YZ → 选最优排列 → 第一帧定 ID → 线性插值空缺 → 导出 CSV 与轨迹图。
+    Full no-calibration 3D pipeline: load 2D points, map them into pseudo-3D,
+    choose the best permutation, assign IDs from the first valid frame, fill
+    missing frames, and export the CSV/plot.
     """
-    points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=False)
+    points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=use_fish_id)
     candidates_by_frame = compute_candidates_no_calib(
-        points_by_frame, xyz_bounds=xyz_bounds
+        points_by_frame,
+        xyz_bounds=xyz_bounds,
+        allow_permutations=allow_permutations,
     )
     best = select_best_all_frames(candidates_by_frame, xyz_bounds=xyz_bounds)
     best_tracked = apply_first_frame_id_only(best)
@@ -164,7 +179,7 @@ def run_pipeline_no_calibration(
             dfs_3d = ensure_all_frames_and_fill_spline(dfs_3d, all_frames)
         csv_path = dfs_to_single_csv(dfs_3d, set_key=set_key, output_dir=str(out))
         if plot:
-            # 无校准时坐标可能是像素量级，不设紧的 xyz_lim
+            # In no-calibration mode, coordinates may remain at pixel scale.
             png_path = run_plot(str(out), set_key, xyz_lim=xyz_bounds)
 
     return {

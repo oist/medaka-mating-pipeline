@@ -9,6 +9,7 @@ This repository is structured as a pipeline with four major stages:
 
 See also:
 - [data_layout.md](data_layout.md)
+- [script_workflow.md](script_workflow.md)
 - [calibration.md](calibration.md)
 - [sleap.md](sleap.md)
 - [analysis.md](analysis.md)

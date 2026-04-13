@@ -1,6 +1,4 @@
-"""
-3D 轨迹可视化：从 3D CSV 或 trajectories 字典绘制 PNG。
-"""
+"""Render 3D trajectory PNGs from a CSV file or a trajectory dictionary."""
 
 from pathlib import Path
 from typing import Dict, Tuple
@@ -21,7 +19,7 @@ def _get_xyz(df: pd.DataFrame):
     elif "x" in df.columns and "y" in df.columns and "z" in df.columns:
         xyz = df[["x", "y", "z"]].rename(columns={"x": "X", "y": "Y", "z": "Z"})
     else:
-        raise ValueError(f"DataFrame 需含 X,Y,Z 或 x,y,z 列")
+        raise ValueError("DataFrame must contain X,Y,Z or x,y,z columns")
     frame = df["frame"].values if "frame" in df.columns else np.arange(len(df))
     return frame, xyz["X"].values, xyz["Y"].values, xyz["Z"].values
 
@@ -43,13 +41,12 @@ def plot_3d_trajectories(
     xyz_lim: Tuple[float, float] | None = DEFAULT_XYZ_LIM,
 ) -> None:
     """
-    绘制所有个体的 3D 轨迹线图并保存为 PNG。
-    trajectories: {个体标签: DataFrame 含 frame, X, Y, Z}
+    Plot all 3D trajectories and save the result as a PNG file.
     """
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     data = _sorted_xyz_per_label(trajectories)
     if not data:
-        raise ValueError("trajectories 为空或所有 DataFrame 为空")
+        raise ValueError("trajectories is empty or all DataFrames are empty")
 
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection="3d")
@@ -74,17 +71,17 @@ def run_plot(
     csv_name: str | None = None,
 ) -> str:
     """
-    从 output_dir 下 {set_key}_3d.csv 读取，绘制 3D 轨迹 PNG，保存为 {set_key}_3d_trajectories.png。
-    返回生成的 PNG 路径。
+    Read `{set_key}_3d.csv` from `output_dir`, draw the 3D trajectory plot, and
+    save it as `{set_key}_3d_trajectories.png`.
     """
     out_dir = Path(output_dir)
     csv_path = out_dir / (csv_name or f"{set_key}_3d.csv")
     if not csv_path.exists():
-        raise FileNotFoundError(f"未找到 3D CSV: {csv_path}")
+        raise FileNotFoundError(f"3D CSV not found: {csv_path}")
 
     df = pd.read_csv(csv_path)
     if "fish_id" not in df.columns:
-        raise ValueError("3D CSV 需含 fish_id 列")
+        raise ValueError("3D CSV must contain a fish_id column")
     trajectories = {}
     for fid in df["fish_id"].unique():
         sub = df[df["fish_id"] == fid].copy()
