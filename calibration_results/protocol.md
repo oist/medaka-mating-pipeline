@@ -205,7 +205,9 @@ python -m scripts.calibration.solve_intrinsics \
 The merged calibration assumes the cube is placed at an exact position
 and rotation for each way. In practice, placement is imprecise by
 ~1 mm translation and ~0.3 degrees rotation. The rigid refinement step
-corrects for this:
+corrects for this. Two variants are supported:
+
+**Beads only** (49 points per way, 196 total):
 
 ```
 python -m scripts.calibration.refine_calibration_rigid \
@@ -217,21 +219,32 @@ python -m scripts.calibration.refine_calibration_rigid \
     --way_names way1 way2 way3 way4
 ```
 
+**Beads + corners** (57 points per way, 228 total): omit `--beads_only`.
+The Kabsch fit still uses beads only (their cube-frame positions come
+directly from the template). Corners are assigned cube-frame positions
+by projecting the 8 known physical corners through the bead-derived
+`(R, t)` and matching each annotated corner to its nearest projection.
+This extends model coverage to the volume edges at `Z = 4` and
+`Z = 194` mm.
+
 The script:
 
 1. Trains an initial polynomial model with the assumed 3D targets.
 2. Predicts 3D positions for all calibration points.
 3. Uses the **Kabsch algorithm** to find the optimal rigid transform
-   (rotation R + translation t) per way, mapping the known cube
-   geometry to the predicted tank-frame positions.
-4. Computes refined 3D targets from the rigid transforms.
-5. Detects annotation outliers (points with large rigid-fit residuals).
-6. Retrains the model with refined targets, excluding outliers.
-7. Repeats until convergence (typically 2--3 iterations).
+   `(R, t)` per way, mapping the known cube geometry (beads) to the
+   predicted tank-frame positions.
+4. Assigns cube-frame positions to corners via nearest-match if
+   corners are included.
+5. Computes refined 3D targets from the rigid transforms.
+6. Detects annotation outliers (points with large rigid-fit residuals).
+7. Retrains the model with refined targets, excluding outliers.
+8. Repeats until convergence (typically 2--3 iterations).
 
-This improves the merged model by ~35% in 3D error (0.92 -> 0.60 mm
-mean on cali_20251217) and also identifies physically misplaced beads
-vs. annotation errors.
+On cali_20251217 this improves the merged 3D error from 0.92 mm mean
+(assumed poses) to ~0.60 mm mean (rigid-refined). Including corners
+barely changes 3D accuracy (~0.61 mm mean with corners vs 0.60 mm
+beads-only) but extends reliable volume coverage to the tank edges.
 
 ---
 
@@ -246,13 +259,16 @@ vs. annotation errors.
 | way3 | 0.65      | 0.74      | 1.56     |
 | way4 | 0.61      | 0.70      | 1.56     |
 
-### Merged model 3D error (beads only, 196 points)
+### Merged model 3D error
 
-| Model variant        | n   | Mean (mm) | RMSE (mm) | Max (mm) |
-|----------------------|-----|-----------|-----------|----------|
-| **Assumed poses**    | 196 | 0.92      | 1.03      | 2.38     |
-| **Rigid-refined**    | 196 | **0.60**  | **0.70**  | **2.26** |
-| Rigid (inliers only) | 191 | 0.57      | 0.63      | 1.26     |
+| Model variant                         | n   | Mean (mm) | RMSE (mm) | Max (mm) |
+|---------------------------------------|-----|-----------|-----------|----------|
+| Assumed poses, beads only             | 196 | 0.92      | 1.03      | 2.38     |
+| Assumed poses, beads + corners        | 228 | 1.30      | 1.75      | 7.31     |
+| **Rigid-refined, beads only**         | 196 | **0.60**  | **0.70**  | **2.26** |
+| **Rigid-refined, beads + corners**    | 228 | **0.61**  | **0.71**  | **2.38** |
+| Rigid, beads only, inliers (191)      | 191 | 0.57      | 0.63      | 1.26     |
+| Rigid, beads + corners, inliers (219) | 219 | 0.56      | 0.62      | 1.26     |
 
 ### Rigid-refined per-way transforms (cali_20251217)
 
@@ -267,18 +283,30 @@ These confirm that the cube was placed within ~1 mm and ~0.5 degrees
 of the assumed position for each way, with way2 showing the largest
 Y-axis offset (~1 mm).
 
-### Outlier beads detected
+### Outliers detected
 
-| Bead         | Ways flagged | Residual (mm) | Likely cause                |
-|--------------|-------------|---------------|-----------------------------|
-| beads_way1_008 | all 4     | 1.4 -- 2.2    | Physical bead misplacement  |
-| beads_way1_026 | way4      | 1.4           | Annotation error            |
+Rigid refinement flags points with residuals > 2.5 sigma above the
+per-way mean. Beads-only flagged 5 points; with-corners flagged 9
+(adds 2 bottom corners plus 2 more beads):
+
+| Point            | Ways flagged | Residual (mm) | Likely cause                |
+|------------------|-------------|---------------|-----------------------------|
+| beads_way1_008   | all 4       | 1.4 -- 2.2    | Physical bead misplacement  |
+| beads_way1_036   | way2, way3, way4 | 1.3 -- 2.4 | Physical bead misplacement  |
+| beads_way1_012   | way2        | 1.4           | Annotation error            |
+| beads_way1_026   | way4        | 1.4           | Annotation error            |
+| beads_way1_049   | way4        | 1.6           | Annotation error            |
+| corner_2_bottom  | way1        | 1.5           | Corner annotation imprecise |
+| corner_1_bottom  | way2        | 2.0           | Corner annotation imprecise |
 
 `beads_way1_008` (index 11, nominal position 50.0/50.0/162.5) is
 flagged in all 4 ways, strongly suggesting the physical bead is
-~1.5--2 mm from its template position on the cube.
+~1.5--2 mm from its template position on the cube. `beads_way1_036`
+is flagged in 3 ways and is another likely misplaced bead. Bottom
+corners are harder to annotate precisely (occluded by the tank base),
+which accounts for their larger residuals.
 
-### 2D reprojection error (beads only, per camera)
+### 2D reprojection error (rigid-refined, beads only)
 
 | Camera | Mean (px) | Median (px) | Max (px) |
 |--------|-----------|-------------|----------|
@@ -290,6 +318,13 @@ All three cameras show uniform ~2 px mean reprojection error with no
 outlier camera, indicating balanced calibration quality across views.
 The 2D reprojection floor (~2 px) reflects the annotation precision
 limit, not the calibration model.
+
+For the with-corners variant the apparent 2D reprojection rises
+(cam0 = 2.5 px, cam1 = cam2 = ~4.1 px) because `qc_reprojection_2d.py`
+fits a new 3D-to-2D inverse model on the point-mapping CSV, and the
+corners extend the Z range (4 - 194 mm vs 27.5 - 162.5 mm beads-only),
+giving that inverse model a harder job. The forward 2D-to-3D
+calibration is effectively unchanged, as the 3D metrics above show.
 
 ---
 
@@ -372,23 +407,28 @@ calibration_results/cali_20251217_manual/
         input/                                         # Merged annotation input
         models/imCoords_to_XYZ.joblib                  # Merged baseline model
         qc/                                            # Merged QC
-        models_rigid/imCoords_to_XYZ.joblib            # Rigid-refined model
-        qc_rigid/                                      # Rigid-refined QC
+        models_rigid/imCoords_to_XYZ.joblib            # Rigid-refined, beads only
+        qc_rigid/                                      # Rigid-refined QC (beads only)
+        models_rigid_with_corners/imCoords_to_XYZ.joblib  # Rigid-refined, beads + corners
+        qc_rigid_with_corners/                         # Rigid-refined QC (with corners)
 ```
 
 ### Model used for 3D reconstruction
 
 The reconstruction pipeline (`scripts/reconstruction_3d/calibration.py`)
-loads `imCoords_to_XYZ.joblib` from a configurable model folder. Point
-it to:
+loads `imCoords_to_XYZ.joblib` from a configurable model folder. Two
+rigid-refined models are available:
 
-```
-calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models_rigid/
-```
+- `models_rigid/` (beads only, 191 inlier points, 0.60 mm mean 3D
+  error) — use this if your tracking volume stays within the bead
+  envelope (roughly `27.5 - 162.5` mm in X/Y and Z).
+- `models_rigid_with_corners/` (beads + corners, 219 inlier points,
+  0.61 mm mean 3D error) — recommended when tracking near the tank
+  edges or floor/ceiling (Z near 4 or 194 mm), because the 32 corner
+  points extend reliable coverage to the volume boundary.
 
-This rigid-refined model was trained on 191 inlier bead points
-(196 total minus 5 outliers, across 4 orientations) and achieves
-0.60 mm mean / 0.70 mm RMSE 3D error across the calibrated volume.
+For most medaka-tracking work the with-corners model is the safer
+default since fish occasionally skim the tank floor and walls.
 
 ---
 
@@ -424,15 +464,22 @@ python -m scripts.calibration.solve_intrinsics \
     --merge_ways --beads_only \
     --model_types polynomial --poly_deg_range 2 3
 
-# 6. Rigid body refinement (recommended)
+# 6a. Rigid body refinement, beads only (recommended baseline)
 python -m scripts.calibration.refine_calibration_rigid \
     --calibration_folder <raw_root> \
     --image_coords_folder <merged_input> \
-    --output_folder <refined_models> \
-    --results_root <refined_qc> \
+    --output_folder <refined_models_beads> \
+    --results_root <refined_qc_beads> \
     --beads_only
 
-# 7. QC: 2D reprojection and volume error
+# 6b. Rigid body refinement, beads + corners (better edge coverage)
+python -m scripts.calibration.refine_calibration_rigid \
+    --calibration_folder <raw_root> \
+    --image_coords_folder <merged_input> \
+    --output_folder <refined_models_corners> \
+    --results_root <refined_qc_corners>
+
+# 7. QC: 2D reprojection and volume error (run for each variant)
 python -m scripts.calibration.qc_reprojection_2d --mapping_csv <refined_qc>/*_point_mapping.csv
 python -m scripts.calibration.qc_volume_error    --mapping_csv <refined_qc>/*_point_mapping.csv
 ```
