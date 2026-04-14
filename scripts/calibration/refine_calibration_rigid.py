@@ -123,17 +123,48 @@ def rotation_to_euler_deg(R: np.ndarray) -> Tuple[float, float, float]:
     return (np.degrees(x), np.degrees(y), np.degrees(z))
 
 
-def _tank_to_cube_frame(xyz: np.ndarray, way_num: int) -> np.ndarray:
+def _tank_to_cube_frame_beads(xyz: np.ndarray, way_num: int) -> np.ndarray:
     """Reverse the tank-frame conversion to recover cube-frame bead positions.
 
     ``load_calibration_data`` applies ``(190-X, 190-Y)`` for even ways.
-    This reverses that transform.
+    This reverses that transform.  Only valid for **bead** points.
     """
     cube = xyz.copy()
     if way_num % 2 == 0:
         cube[:, 0] = 190.0 - cube[:, 0]
         cube[:, 1] = 190.0 - cube[:, 1]
     return cube
+
+
+# The 8 physical corners of the calibration cube in its own frame.
+CUBE_FRAME_CORNERS = np.array([
+    [7.5, 7.5, 194.0],
+    [7.5, 182.5, 194.0],
+    [182.5, 7.5, 194.0],
+    [182.5, 182.5, 194.0],
+    [7.5, 7.5, 4.0],
+    [7.5, 182.5, 4.0],
+    [182.5, 7.5, 4.0],
+    [182.5, 182.5, 4.0],
+])
+
+
+def _assign_corner_cube_frames(
+    corner_tank_xyz: np.ndarray,
+    R: np.ndarray,
+    t: np.ndarray,
+) -> np.ndarray:
+    """Assign cube-frame positions to corners using a bead-derived rigid transform.
+
+    Projects every known cube-frame corner into the tank frame using
+    (R, t) and matches each annotated corner to its nearest projection.
+    """
+    expected_tank = apply_rigid(CUBE_FRAME_CORNERS, R, t)
+    cube_frame = np.zeros_like(corner_tank_xyz)
+    for i, tank_pos in enumerate(corner_tank_xyz):
+        dists = np.linalg.norm(expected_tank - tank_pos, axis=1)
+        cube_frame[i] = CUBE_FRAME_CORNERS[np.argmin(dists)]
+    return cube_frame
 
 
 # ---------------------------------------------------------------------------
@@ -195,19 +226,33 @@ def run_rigid_refinement(
             way_name=way_name,
             beads_only=beads_only,
         )
-        cube_frame = _tank_to_cube_frame(template_3d, way_num)
+        # Build per-point bead/corner mask
+        is_bead = np.array([l.startswith("BEAD:") for l in labels])
+        # Cube-frame positions: reliable for beads via the 180-deg reversal;
+        # corners need the bead-derived rigid transform (filled in later).
+        cube_frame = np.full_like(template_3d, np.nan)
+        cube_frame[is_bead] = _tank_to_cube_frame_beads(
+            template_3d[is_bead], way_num,
+        )
+        n_beads = int(is_bead.sum())
+        n_corners = int((~is_bead).sum())
         per_way[way_name] = dict(
             way_num=way_num,
             template_3d=template_3d,
             cube_frame=cube_frame,
             image_coords=image_coords,
             labels=labels,
+            is_bead=is_bead,
             n_points=template_3d.shape[0],
         )
-        print(f"  {way_name}: {template_3d.shape[0]} points loaded")
+        label = f"{n_beads} beads"
+        if n_corners:
+            label += f" + {n_corners} corners"
+        print(f"  {way_name}: {label}")
 
     # Build merged arrays with way-slice bookkeeping
     all_cube_parts, all_target_parts, all_pixel_parts = [], [], []
+    all_is_bead_parts: List[np.ndarray] = []
     all_labels: List[str] = []
     all_image_coords_parts = []
     way_slices: Dict[str, slice] = {}
@@ -221,6 +266,7 @@ def run_rigid_refinement(
         all_pixel_parts.append(
             wd["image_coords"].swapaxes(0, 1).reshape(n, -1)
         )
+        all_is_bead_parts.append(wd["is_bead"])
         all_image_coords_parts.append(wd["image_coords"])
         all_labels.extend(wd["labels"])
         way_slices[way_name] = slice(offset, offset + n)
@@ -229,10 +275,17 @@ def run_rigid_refinement(
     all_cube = np.vstack(all_cube_parts)
     all_targets_original = np.vstack(all_target_parts)
     all_pixels = np.vstack(all_pixel_parts)
+    all_is_bead = np.concatenate(all_is_bead_parts)
     all_image_coords = np.concatenate(all_image_coords_parts, axis=1)
     N_total = len(all_targets_original)
+    n_beads_total = int(all_is_bead.sum())
+    n_corners_total = N_total - n_beads_total
 
-    print(f"\nTotal: {N_total} points from {len(way_names)} way(s)")
+    summary_line = f"Total: {N_total} points ({n_beads_total} beads"
+    if n_corners_total:
+        summary_line += f" + {n_corners_total} corners"
+    summary_line += f") from {len(way_names)} way(s)"
+    print(f"\n{summary_line}")
 
     # ------------------------------------------------------------------
     # Phase 2: Iterative refinement
@@ -267,7 +320,7 @@ def run_rigid_refinement(
         # Predict for ALL points (including outliers)
         pred_3d = np.asarray(model.predict(all_pixels), dtype=float)
 
-        # Per-way Kabsch fit
+        # Per-way Kabsch fit (beads only for fitting, then apply to all)
         refined_targets = np.zeros_like(current_targets)
         all_residuals = np.zeros(N_total)
 
@@ -276,13 +329,27 @@ def run_rigid_refinement(
             way_cube = all_cube[s]
             way_pred = pred_3d[s]
             way_inlier = inlier_mask[s]
+            way_bead = all_is_bead[s]
 
-            if way_inlier.sum() < 6:
-                print(f"  [WARN] {way_name}: only {way_inlier.sum()} inliers, skipping rigid fit")
+            # Kabsch fit uses bead inliers only (cube-frame is reliable)
+            bead_inlier = way_bead & way_inlier
+            if bead_inlier.sum() < 6:
+                print(f"  [WARN] {way_name}: only {bead_inlier.sum()} bead inliers, skipping")
                 refined_targets[s] = current_targets[s]
                 continue
 
-            R, t = kabsch_rigid_fit(way_cube[way_inlier], way_pred[way_inlier])
+            R, t = kabsch_rigid_fit(way_cube[bead_inlier], way_pred[bead_inlier])
+
+            # Assign cube-frame positions to corners using the bead-derived
+            # rigid transform, then update all_cube so subsequent iterations
+            # and the final target computation use the correct values.
+            corner_mask_way = ~way_bead
+            if corner_mask_way.any():
+                corner_tank = current_targets[s][corner_mask_way]
+                corner_cube = _assign_corner_cube_frames(corner_tank, R, t)
+                all_cube[s][corner_mask_way] = corner_cube
+                way_cube = all_cube[s]  # refresh after update
+
             way_refined = apply_rigid(way_cube, R, t)
             refined_targets[s] = way_refined
 
@@ -295,7 +362,12 @@ def run_rigid_refinement(
                 t=t.tolist(),
                 euler_xyz_deg=list(euler),
             )
-            print(f"  {way_name}:")
+            n_way = int(way_bead.sum())
+            n_corners_way = int(corner_mask_way.sum())
+            pts_desc = f"{n_way} beads"
+            if n_corners_way:
+                pts_desc += f" + {n_corners_way} corners"
+            print(f"  {way_name} ({pts_desc}):")
             print(f"    Rotation (deg): ({euler[0]:+.2f}, {euler[1]:+.2f}, {euler[2]:+.2f})")
             print(f"    Translation (mm): ({t[0]:+.2f}, {t[1]:+.2f}, {t[2]:+.2f})")
             inlier_res = residuals[way_inlier]
