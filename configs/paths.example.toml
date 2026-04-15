@@ -10,3 +10,13 @@ tracking_output_dir = "G:\\path\\to\\shared_dataset_root\\processed"
 calibration_model_dir = "G:\\path\\to\\shared_dataset_root\\calibration_model"
 reconstruction_output_dir = "G:\\path\\to\\shared_dataset_root\\reconstruction_3d"
 runs_dir = "G:\\path\\to\\shared_dataset_root\\runs"
+
+# Root directory containing per-experiment recording folders
+# (e.g. Z:\\StephensU\\medaka\\medaka_202512). Each subfolder is expected to
+# contain top_cam\\cam0_top.mp4, side1_cam\\cam1_side.mp4, side2_cam\\cam2_side.mp4.
+medaka_data_dir = "Z:\\StephensU\\medaka\\medaka_202512"
+
+# Root directory containing SLEAP model subfolders (sleap_top_mouth,
+# sleap_side_mouth). Model entries in configs/sleap/model_paths.yaml are
+# resolved relative to this directory.
+sleap_models_dir = "G:\\path\\to\\sleap"

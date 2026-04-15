@@ -1,9 +1,15 @@
+# SLEAP model paths for medaka batch inference.
+#
+# Entries are directory names under `sleap_models_dir` from
+# configs/paths.local.toml. Each directory must contain a `best.ckpt`
+# (sleap-nn) or `training_config.json` (sleap) for the model.
+#
+# For top-down pipelines, specify centroid + instance models.
+
 sleap:
-  # Model directories as produced by SLEAP training.
-  #
-  # For `sleap-track`, these should be paths to a trained model directory
-  # containing `training_config.json`.
-  #
-  # For top-down pipelines, specify centroid first, then instance.
-  centroid_model_dir: /path/to/centroid_model_dir
-  instance_model_dir: /path/to/instance_model_dir
+  top:
+    centroid: sleap_top_mouth/models/260313_152145.centroid.n=330
+    instance: sleap_top_mouth/models/260313_175737.centered_instance.n=330
+  side:
+    centroid: sleap_side_mouth/models/260111_170857.centroid.n=593
+    instance: sleap_side_mouth/models/260112_115936.centered_instance.n=593
