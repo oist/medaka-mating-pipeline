@@ -48,6 +48,47 @@ python scripts/sleap/batch_track.py `
   --max-instances 3
 ```
 
+## Batch inference across all experiments
+
+Use `batch_predict.py` to walk every experiment folder under
+`medaka_data_dir` and run top + side1 + side2 inference for each one.
+Paths and model versions are read from `configs/paths.local.toml` and
+`configs/sleap/model_paths.yaml`, so the command stays short and the
+same across machines.
+
+Expected per-experiment recording layout:
+
+```
+<medaka_data_dir>/<experiment>/top_cam/cam0_top.mp4
+<medaka_data_dir>/<experiment>/side1_cam/cam1_side.mp4
+<medaka_data_dir>/<experiment>/side2_cam/cam2_side.mp4
+```
+
+Outputs are written as:
+
+```
+<sleap_output_dir>/<experiment>/{top_cam,side1_cam,side2_cam}.slp
+```
+
+Existing outputs are skipped automatically (`--force` to re-run).
+
+```powershell
+# Preview the work plan for every experiment:
+python -m scripts.sleap.batch_predict --paths-config configs/paths.local.toml --dry-run
+
+# Run a single experiment:
+python -m scripts.sleap.batch_predict `
+  --paths-config configs/paths.local.toml `
+  --experiments 20251220_D_1_1_FCMC
+
+# Run everything:
+python -m scripts.sleap.batch_predict --paths-config configs/paths.local.toml
+```
+
+Required `paths.local.toml` keys: `medaka_data_dir`, `sleap_models_dir`,
+`sleap_output_dir`. The model-version selection (currently top `n=330`,
+side `n=593`) lives in `configs/sleap/model_paths.yaml`.
+
 ## Export
 
 Use `export_tracks.py` to export `.slp` predictions into:
@@ -70,6 +111,7 @@ This is especially useful when all three synchronized views are available.
 
 ## Related files
 
+- `batch_predict.py`
 - `batch_track.py`
 - `export_tracks.py`
 - `qc_tracks.py`

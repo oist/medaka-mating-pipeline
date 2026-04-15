@@ -115,35 +115,42 @@ def find_side_videos(top_video_path: Path) -> tuple[Path | None, Path | None]:
     parent = top_path.parent
     name = top_path.name
 
-    candidates: list[tuple[Path, str]] = []
+    side1_candidates: list[Path] = []
+    side2_candidates: list[Path] = []
 
     if parent.name.lower() == "top_cam":
         side1_dir = parent.with_name("side1_cam")
         side2_dir = parent.with_name("side2_cam")
 
-        side1_name = name.replace("cam0", "cam1").replace("top", "side1")
-        side2_name = name.replace("cam0", "cam2").replace("top", "side2")
+        # medaka recording convention: top_cam/cam0_top.mp4 paired with
+        # side1_cam/cam1_side.mp4 and side2_cam/cam2_side.mp4.
+        side1_candidates.append(side1_dir / name.replace("cam0_top", "cam1_side"))
+        side2_candidates.append(side2_dir / name.replace("cam0_top", "cam2_side"))
 
-        candidates.append((side1_dir / side1_name, "cam_rule_side1"))
-        candidates.append((side2_dir / side2_name, "cam_rule_side2"))
+        # legacy squid-style naming: cam1_side1 / cam2_side2.
+        side1_candidates.append(
+            side1_dir / name.replace("cam0", "cam1").replace("top", "side1")
+        )
+        side2_candidates.append(
+            side2_dir / name.replace("cam0", "cam2").replace("top", "side2")
+        )
 
-    side1_name_fallback = name.replace("cam0", "cam1").replace("top", "side1")
-    side2_name_fallback = name.replace("cam0", "cam2").replace("top", "side2")
-    candidates.append((parent / side1_name_fallback, "name_only_side1"))
-    candidates.append((parent / side2_name_fallback, "name_only_side2"))
+    side1_candidates.append(parent / name.replace("cam0_top", "cam1_side"))
+    side2_candidates.append(parent / name.replace("cam0_top", "cam2_side"))
+    side1_candidates.append(
+        parent / name.replace("cam0", "cam1").replace("top", "side1")
+    )
+    side2_candidates.append(
+        parent / name.replace("cam0", "cam2").replace("top", "side2")
+    )
 
-    side1_path_final: Path | None = None
-    side2_path_final: Path | None = None
+    def _first_existing(paths: list[Path]) -> Path | None:
+        for p in paths:
+            if p.exists():
+                return p
+        return None
 
-    for cand_path, _kind in candidates:
-        if not cand_path.exists():
-            continue
-        if "side1" in cand_path.stem and side1_path_final is None:
-            side1_path_final = cand_path
-        if "side2" in cand_path.stem and side2_path_final is None:
-            side2_path_final = cand_path
-
-    return side1_path_final, side2_path_final
+    return _first_existing(side1_candidates), _first_existing(side2_candidates)
 
 
 def run_sleap_tracking(
