@@ -17,6 +17,7 @@ from scripts.tracking.process_tracking_simple import (
     process_from_csv_path_simple,
     process_from_file_set_key_simple,
 )
+from scripts.tracking.slp_merge import merge_experiment
 
 
 def _looks_like_csv_path(value: str) -> bool:
@@ -30,12 +31,35 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "input",
-        help="CSV path or set key. CSV paths auto-resolve the matching PLAYER1/2/3 set.",
+        help="CSV path, set key, or experiment folder name (with --merge-chunks).",
     )
     parser.add_argument(
         "--paths-config",
         default=None,
         help="Optional local TOML path config. Defaults to configs/paths.local.toml if present.",
+    )
+    parser.add_argument(
+        "--merge-chunks",
+        action="store_true",
+        help=(
+            "Treat `input` as an experiment folder name (e.g. 20251220_D_1_1_FCMC), "
+            "merge the per-view chunk .slp files under sleap_output_dir/<input>/ into "
+            "a single .slp per view, and write experiment_metadata.json. "
+            "Skips views whose merged file is already newer than every chunk."
+        ),
+    )
+    parser.add_argument(
+        "--force-merge",
+        action="store_true",
+        help="With --merge-chunks, re-merge even if the merged file is fresh.",
+    )
+    parser.add_argument(
+        "--medaka-data-dir",
+        default=None,
+        help=(
+            "Override medaka_data_dir (raw recordings root) for --merge-chunks. "
+            "Used to read per-camera metadata.csv."
+        ),
     )
     parser.add_argument(
         "--sleap-output-dir",
@@ -93,6 +117,25 @@ def main() -> None:
             "SLEAP output root is required. Pass --sleap-output-dir or define "
             "sleap_output_dir in configs/paths.local.toml."
         )
+
+    if args.merge_chunks:
+        medaka_data_dir = choose_path(
+            args.medaka_data_dir,
+            local_paths.medaka_data_dir if local_paths else None,
+        )
+        if medaka_data_dir is None:
+            parser.error(
+                "--merge-chunks needs medaka_data_dir (the manifest lives in "
+                "the raw recording folder). Pass --medaka-data-dir or set "
+                "medaka_data_dir in configs/paths.local.toml."
+            )
+        merge_experiment(
+            experiment_name=args.input,
+            sleap_output_dir=sleap_output_dir,
+            raw_data_dir=medaka_data_dir,
+            force=args.force_merge,
+        )
+        return
 
     common_kwargs = {
         "output_dir": output_dir,
