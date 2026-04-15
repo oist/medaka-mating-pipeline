@@ -21,12 +21,18 @@ CAM_ORDER = ["cam0", "cam1", "cam2"]
 LABELS = ["a", "b", "c"]
 
 
+def _default_labels(num_individuals: int) -> List[str]:
+    """Generate per-candidate labels ('a', 'b', ...) for any N."""
+    return [chr(ord("a") + i) for i in range(num_individuals)]
+
+
 def compute_candidates(
     cal: Calibration,
     points_by_frame: Dict[int, Dict[str, List[Tuple[float, float]]]],
     *,
     xyz_bounds: Tuple[float, float] | None = None,
     allow_permutations: bool = True,
+    num_individuals: int | None = None,
 ) -> Dict[int, List[Dict]]:
     """
     Enumerate permutations of cam1/cam2 assignments and compute candidate 3D
@@ -38,6 +44,9 @@ def compute_candidates(
     low, high = (xyz_bounds or (None, None))[0], (xyz_bounds or (None, None))[1]
     candidates_by_frame: Dict[int, List[Dict]] = {}
 
+    n = num_individuals if num_individuals is not None else NUM_INDIVIDUALS
+    labels = _default_labels(n)
+
     try:
         from tqdm import tqdm
     except ImportError:
@@ -48,19 +57,19 @@ def compute_candidates(
         pts0 = list(cams.get("cam0", []))
         pts1 = list(cams.get("cam1", []))
         pts2 = list(cams.get("cam2", []))
-        while len(pts0) < NUM_INDIVIDUALS:
+        while len(pts0) < n:
             pts0.append((np.nan, np.nan))
-        while len(pts1) < NUM_INDIVIDUALS:
+        while len(pts1) < n:
             pts1.append((np.nan, np.nan))
-        while len(pts2) < NUM_INDIVIDUALS:
+        while len(pts2) < n:
             pts2.append((np.nan, np.nan))
-        pts0, pts1, pts2 = pts0[:NUM_INDIVIDUALS], pts1[:NUM_INDIVIDUALS], pts2[:NUM_INDIVIDUALS]
+        pts0, pts1, pts2 = pts0[:n], pts1[:n], pts2[:n]
 
         if allow_permutations:
-            perms1 = list(permutations(range(NUM_INDIVIDUALS)))
-            perms2 = list(permutations(range(NUM_INDIVIDUALS)))
+            perms1 = list(permutations(range(n)))
+            perms2 = list(permutations(range(n)))
         else:
-            identity_perm = tuple(range(NUM_INDIVIDUALS))
+            identity_perm = tuple(range(n))
             perms1 = [identity_perm]
             perms2 = [identity_perm]
         frame_candidates = []
@@ -68,9 +77,9 @@ def compute_candidates(
         for perm1 in perms1:
             for perm2 in perms2:
                 groups = {}
+                errors: Dict[str, float] = {}
                 total_cost = 0.0
-                valid = True
-                for i, label in enumerate(LABELS):
+                for i, label in enumerate(labels):
                     j1, j2 = perm1[i], perm2[i]
                     im0 = np.array(pts0[i], dtype=float)
                     im1 = np.array(pts1[j1], dtype=float)
@@ -79,29 +88,35 @@ def compute_candidates(
                     if np.any(np.isnan(triplet)):
                         total_cost += np.inf
                         groups[label] = [np.nan, np.nan, np.nan]
+                        errors[label] = float("inf")
                         continue
                     xyz = cal.compute_XYZ_from_imageCoord_triplet(triplet)
                     # Invalid or out-of-bounds predictions are left as NaN.
                     if np.any(np.isnan(xyz)) or np.any(np.isinf(xyz)):
                         total_cost += np.inf
                         groups[label] = [np.nan, np.nan, np.nan]
+                        errors[label] = float("inf")
                         continue
                     if low is not None and high is not None:
                         if np.any(xyz < low) or np.any(xyz > high):
                             total_cost += np.inf
                             groups[label] = [np.nan, np.nan, np.nan]
+                            errors[label] = float("inf")
                             continue
                     err = cal.compute_triplet_registration_error(triplet)
                     if np.isfinite(err):
                         total_cost += err
+                        errors[label] = float(err)
                     else:
                         total_cost += np.inf
+                        errors[label] = float("inf")
                     groups[label] = [float(xyz[0]), float(xyz[1]), float(xyz[2])]
                 frame_candidates.append({
                     "groups": groups,
                     "perm_cam1": list(perm1),
                     "perm_cam2": list(perm2),
                     "cost": float(total_cost),
+                    "errors": errors,
                 })
         candidates_by_frame[frame] = frame_candidates
 

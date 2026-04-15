@@ -15,11 +15,16 @@ import pandas as pd
 ID_LABELS = ["ID_1", "ID_2", "ID_3"]
 
 
+def _id_labels_for(n: int) -> List[str]:
+    return [f"ID_{i + 1}" for i in range(n)]
+
+
 def best_by_frame_to_dfs(
     best_by_frame: Dict[int, Dict],
     *,
     shift_to_positive: bool = True,
     ensure_non_negative: bool = False,
+    num_individuals: int | None = None,
 ) -> Dict[str, pd.DataFrame]:
     """
     Convert `best_by_frame` into `{label: DataFrame(frame, X, Y, Z)}`.
@@ -27,16 +32,17 @@ def best_by_frame_to_dfs(
     Only valid points are written immediately. Missing points are left for the
     later fill stage.
     """
-    dfs: Dict[str, pd.DataFrame] = {lb: [] for lb in ID_LABELS}
+    id_labels = _id_labels_for(num_individuals) if num_individuals is not None else ID_LABELS
+    dfs: Dict[str, pd.DataFrame] = {lb: [] for lb in id_labels}
     for frame, info in sorted(best_by_frame.items()):
         groups = info.get("groups", {})
-        for lb in ID_LABELS:
+        for lb in id_labels:
             pt = groups.get(lb)
             if pt is not None and len(pt) == 3 and not (np.isnan(pt).any() or np.isinf(pt).any()):
                 dfs[lb].append({"frame": frame, "X": pt[0], "Y": pt[1], "Z": pt[2]})
 
     out = {}
-    for lb in ID_LABELS:
+    for lb in id_labels:
         if dfs[lb]:
             out[lb] = pd.DataFrame(dfs[lb])
         else:
