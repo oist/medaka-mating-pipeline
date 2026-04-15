@@ -56,6 +56,7 @@ def apply_cross_frame_tracking(
     flow_weight: float = 10.0,
     num_individuals: int | None = None,
     max_jump_mm: float | None = None,
+    max_jump_hard_cap_mm: float | None = None,
     max_gap_frames: int | None = None,
 ) -> Dict[int, Dict]:
     """
@@ -69,6 +70,11 @@ def apply_cross_frame_tracking(
       - `max_jump_mm`: reject Hungarian matches where the per-frame distance
         exceeds `max_jump_mm * gap_frames`. An ID whose match is rejected
         keeps its last valid position and the current-frame slot is NaN.
+      - `max_jump_hard_cap_mm`: absolute ceiling on the per-match distance,
+        applied in addition to the gap-scaled gate. Prevents long NaN gaps
+        from making the gate permissive enough to pick up a different fish
+        (at gap=N the effective threshold is
+        `min(max_jump_mm * N, max_jump_hard_cap_mm)`).
       - `max_gap_frames`: retire an ID whose last valid position is older
         than this many frames. Retired slots can be re-seeded by unmatched
         current-frame points.
@@ -134,9 +140,20 @@ def apply_cross_frame_tracking(
                 continue
             fr_prev, pt_prev = lv
             gap = max(1, t_curr - fr_prev)
+            # Effective per-match threshold: the minimum of the gap-scaled
+            # gate and the absolute hard cap (if either is set).
+            threshold = None
+            if max_jump_mm is not None:
+                threshold = max_jump_mm * gap
+            if max_jump_hard_cap_mm is not None:
+                threshold = (
+                    max_jump_hard_cap_mm
+                    if threshold is None
+                    else min(threshold, max_jump_hard_cap_mm)
+                )
             for j in valid_curr:
                 d = float(np.linalg.norm(pt_prev - pts_curr[j]))
-                if max_jump_mm is not None and d > max_jump_mm * gap:
+                if threshold is not None and d > threshold:
                     continue
                 cost[i, j] = d
 

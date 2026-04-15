@@ -56,6 +56,7 @@ def run_reconstruction_from_slp(
     xyz_bounds: Tuple[float, float] | None = None,
     max_residual_per_fish: float | None = None,
     max_jump_mm: float | None = None,
+    max_jump_hard_cap_mm: float | None = None,
     max_gap_frames: int | None = None,
     first_frame_id_only: bool = False,
     fill_missing: bool = True,
@@ -103,6 +104,7 @@ def run_reconstruction_from_slp(
             best,
             num_individuals=num_individuals,
             max_jump_mm=max_jump_mm,
+            max_jump_hard_cap_mm=max_jump_hard_cap_mm,
             max_gap_frames=max_gap_frames,
         )
 
@@ -244,6 +246,15 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--max-jump-hard-cap-mm", type=float, default=None,
+        help=(
+            "Absolute ceiling on the per-match distance (combined with "
+            "--max-jump-mm so the effective threshold at gap=N is "
+            "min(max_jump_mm*N, hard_cap)). Prevents long NaN gaps from "
+            "accepting a different fish as the same ID. Default: no cap."
+        ),
+    )
+    parser.add_argument(
         "--max-gap-frames", type=int, default=None,
         help=(
             "Retire an ID whose last valid 3D position is older than this "
@@ -326,6 +337,7 @@ def main(argv: list[str] | None = None) -> None:
         xyz_bounds=tuple(args.xyz_bounds) if args.xyz_bounds else None,
         max_residual_per_fish=args.max_residual_per_fish,
         max_jump_mm=args.max_jump_mm,
+        max_jump_hard_cap_mm=args.max_jump_hard_cap_mm,
         max_gap_frames=args.max_gap_frames,
         first_frame_id_only=args.first_frame_id_only,
         fill_missing=not args.no_fill_missing,
