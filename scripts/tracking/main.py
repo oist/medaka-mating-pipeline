@@ -95,6 +95,20 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Disable in-view mirror filtering in the full pipeline.",
     )
+    parser.add_argument(
+        "--use-id-network",
+        action="store_true",
+        help=(
+            "After Hungarian ID assignment, train a per-clip contrastive "
+            "ResNet18 on cam0 crops and rewrite fish_id from its embedding. "
+            "Requires medaka_data_dir to resolve cam0_top.mp4."
+        ),
+    )
+    parser.add_argument("--id-network-epochs", type=int, default=5)
+    parser.add_argument("--id-network-batch-size", type=int, default=64)
+    parser.add_argument("--id-network-lr", type=float, default=1e-3)
+    parser.add_argument("--id-network-device", default="cuda")
+    parser.add_argument("--id-network-min-confidence", type=float, default=0.6)
     return parser
 
 
@@ -160,6 +174,16 @@ def main() -> None:
             "max_jump_per_frame": args.max_jump_per_frame,
             "skip_2d_interpolation": args.skip_2d_interpolation,
             "apply_mirror_filter": not args.no_mirror_filter,
+            "use_id_network": args.use_id_network,
+            "medaka_data_dir": choose_path(
+                args.medaka_data_dir,
+                local_paths.medaka_data_dir if local_paths else None,
+            ),
+            "id_network_epochs": args.id_network_epochs,
+            "id_network_batch_size": args.id_network_batch_size,
+            "id_network_lr": args.id_network_lr,
+            "id_network_device": args.id_network_device,
+            "id_network_min_confidence": args.id_network_min_confidence,
         }
 
     input_value = args.input

@@ -61,14 +61,55 @@ def process_single_set(file_set_info, sleap_output_dir, output_dir=None,
             id_assigned_file = os.path.join(output_dir, f"{set_key}_{player}_id_assigned.csv")
             df.to_csv(id_assigned_file, index=False)
             print(f"  Saved: {id_assigned_file}")
-    
+
+    # Step 2b (optional): learned identity refinement on cam0 (player1) using
+    # a contrastively-trained embedder over SLEAP-centered crops. Refined
+    # labels then flow into outlier detection and downstream stages.
+    if kwargs.get('use_id_network', False):
+        medaka_data_dir = kwargs.get('medaka_data_dir')
+        if medaka_data_dir is None:
+            print("Step 2b: skipped (use_id_network=True but medaka_data_dir not provided).")
+        else:
+            from .id_network._paths import resolve_cam0_video_and_offset
+            from .id_network.infer import refine_fish_ids
+            from .id_network.train import TrainConfig
+
+            resolved = resolve_cam0_video_and_offset(file_set_info, medaka_data_dir, fps=fps)
+            if resolved is None:
+                print("Step 2b: skipped (could not resolve cam0 video or clip start time).")
+            else:
+                video_path, frame_offset = resolved
+                print(f"Step 2b: refining cam0 IDs with learned CNN ({video_path.name}, offset={frame_offset})...")
+                train_config = TrainConfig(
+                    epochs=kwargs.get('id_network_epochs', 5),
+                    batch_size=kwargs.get('id_network_batch_size', 64),
+                    lr=kwargs.get('id_network_lr', 1e-3),
+                    device=kwargs.get('id_network_device', 'cuda'),
+                )
+                save_model_path = None
+                if output_dir:
+                    save_model_path = os.path.join(output_dir, f"{set_key}_embedder.pt")
+                result = refine_fish_ids(
+                    tracked_dfs['player1'],
+                    video_path=video_path,
+                    frame_offset=frame_offset,
+                    train_config=train_config,
+                    min_confidence=kwargs.get('id_network_min_confidence', 0.6),
+                    save_model_path=save_model_path,
+                )
+                tracked_dfs['player1'] = result.df
+                if output_dir:
+                    refined_path = os.path.join(output_dir, f"{set_key}_player1_id_refined.csv")
+                    result.df.to_csv(refined_path, index=False)
+                    print(f"  Saved: {refined_path}")
+
     # Plot the trajectories after ID assignment.
     if visualize:
         print("Rendering visualization after ID assignment...")
         set_key = file_set_info.get('key', 'unknown')
         id_viz_path = os.path.join(output_dir, f"{set_key}_after_id_assignment.png") if output_dir else None
         plot_trajectories_three_views(tracked_dfs, title_suffix="After ID Assignment", save_path=id_viz_path)
-    
+
     # Step 3: outlier detection using a frame-gap-scaled threshold.
     print("Step 3: removing outliers (single pass with frame-gap scaling)...")
     set_key = file_set_info.get('key', 'unknown')
