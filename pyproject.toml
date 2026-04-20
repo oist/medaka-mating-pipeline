@@ -40,6 +40,9 @@ dev = [
 sleap = [
   "sleap-io",
 ]
+rerun = [
+  "rerun-sdk>=0.22",
+]
 
 [dependency-groups]
 dev = [
@@ -49,6 +52,9 @@ dev = [
 ]
 sleap = [
   "sleap-io",
+]
+rerun = [
+  "rerun-sdk>=0.22",
 ]
 
 # uv configuration:
