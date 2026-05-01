@@ -142,12 +142,19 @@ inter-pick spacing per `(experiment, view)`.
 
 **Output**:
 
-- `mined_frames.csv` — every candidate row with `signals_fired`,
-  `suspicion_score`, `time_bin`, and a `picked` boolean.
+- `mined_frames.parquet` — every candidate row (~21M for 24 experiments)
+  with `signals_fired`, `suspicion_score`, `time_bin`, and a `picked`
+  boolean. Compressed columnar format; load with
+  `pandas.read_parquet(...)`. CSV is ~30x larger and ~30x slower so we
+  skip it for the full table.
+- `picked_frames.csv` — only the `picked == True` subset (~target-count
+  rows). Small enough for visidata or quick `cat`.
 - `annotation_seed.pkg.slp` — SLEAP labels project. Two-node skeleton
   `mouth -> tail`, with `mouth` copied from the predictions and `tail` seeded
   a few pixels below `mouth` (BL is unknown until the new model trains).
-  Frames are embedded so the file is portable.
+  Frames are embedded so the file is portable; every picked frame is also
+  added as a `SuggestionFrame` so sleap-label's "next suggestion"
+  navigation walks them in order.
 - `mining_report.txt` — signal frequency + diversification breakdown.
 - `cache/<experiment>/<view>.parquet` — per-view feature cache; subsequent
   runs skip the .slp scan when the parquet is newer than the source.

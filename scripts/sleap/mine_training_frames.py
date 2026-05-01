@@ -995,9 +995,17 @@ def run_pipeline(
     n_picked = int(selected["picked"].sum())
     print(f"Frames picked: {n_picked} / target {target_count}")
 
-    csv_path = out_dir / "mined_frames.csv"
-    selected.to_csv(csv_path, index=False)
-    print(f"Wrote {csv_path}")
+    # Full table (~21M rows): parquet only. CSV would be ~3.6 GB and is
+    # rarely browsed in full. Parquet compresses the same data to ~100 MB
+    # and reads ~30x faster in pandas.
+    parquet_path = out_dir / "mined_frames.parquet"
+    selected.to_parquet(parquet_path, index=False, compression="zstd")
+    print(f"Wrote {parquet_path}")
+
+    # Picked-frames CSV: small, human-inspectable, useful in visidata.
+    picked_csv_path = out_dir / "picked_frames.csv"
+    selected[selected["picked"]].to_csv(picked_csv_path, index=False)
+    print(f"Wrote {picked_csv_path}")
 
     seed_summary = None
     if not skip_seed:
@@ -1015,7 +1023,8 @@ def run_pipeline(
     print(f"Wrote {report_path}")
 
     return {
-        "csv_path": str(csv_path),
+        "parquet_path": str(parquet_path),
+        "picked_csv_path": str(picked_csv_path),
         "report_path": str(report_path),
         "n_candidates": int(len(combined)),
         "n_picked": n_picked,
