@@ -802,10 +802,18 @@ def build_annotation_seed_slp(
             seed_lfs.append(seed_lf)
             n_with_inst += 1
 
+    # Mirror every labeled frame as a SuggestionFrame so sleap-label's
+    # "next suggestion" navigation walks through the picked set in order.
+    suggestions = [
+        sio.SuggestionFrame(video=lf.video, frame_idx=int(lf.frame_idx))
+        for lf in seed_lfs
+    ]
+
     labels = sio.Labels(
         skeletons=[skel],
         videos=list({id(v): v for v in (lf.video for lf in seed_lfs)}.values()),
         labeled_frames=seed_lfs,
+        suggestions=suggestions,
     )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
