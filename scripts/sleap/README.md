@@ -109,9 +109,72 @@ Use `qc_tracks.py` to classify missing detections frame by frame as:
 
 This is especially useful when all three synchronized views are available.
 
+## Active-learning frame mining (`mine_training_frames.py`)
+
+`mine_training_frames.py` walks every inferred experiment under
+`sleap_output_dir`, scores frames with active-learning signals, picks a
+diversified candidate set, and emits a SLEAP labels project ready for
+annotation in `sleap-label`.
+
+**Inputs**: merged per-view `.slp` files at
+`<sleap_output_dir>/<experiment>/{top_cam,side1_cam,side2_cam}.slp`. Optional
+`<reconstruction_output_dir>/<experiment>_best_pre_link.json` is consumed for
+signal S4 when present.
+
+**Signals** (per-frame, weight in parentheses):
+
+| ID  | Signal                                          | Weight |
+|-----|-------------------------------------------------|--------|
+| S1  | Stationary track over rolling window (reflection) | 1.0  |
+| S2  | Adjacent-frame jump in the body-length band (mouth/tail flip) | 1.5 |
+| S3  | Cross-view instance-count mismatch (max-3 cap dropping) | 2.0 |
+| S4  | High per-fish reprojection residual (from pre-link JSON) | 1.5 |
+| S5  | Score dispersion within a frame                  | 1.0  |
+
+Body length is estimated per (experiment, view) from the 99.5th percentile of
+adjacent-frame step length on the simple-NN-tracked predictions. The full
+percentile spectrum is logged to the per-view `.meta.json` cache for
+inspection.
+
+**Selection** is round-robin across `(experiment, view, time_bin)` buckets,
+sorted by suspicion score within each bucket, with a configurable minimum
+inter-pick spacing per `(experiment, view)`.
+
+**Output**:
+
+- `mined_frames.csv` — every candidate row with `signals_fired`,
+  `suspicion_score`, `time_bin`, and a `picked` boolean.
+- `annotation_seed.pkg.slp` — SLEAP labels project. Two-node skeleton
+  `mouth -> tail`, with `mouth` copied from the predictions and `tail` seeded
+  a few pixels below `mouth` (BL is unknown until the new model trains).
+  Frames are embedded so the file is portable.
+- `mining_report.txt` — signal frequency + diversification breakdown.
+- `cache/<experiment>/<view>.parquet` — per-view feature cache; subsequent
+  runs skip the .slp scan when the parquet is newer than the source.
+
+```powershell
+# Full run, all 24 experiments, 500 picks:
+python -m scripts.sleap.mine_training_frames `
+  --paths-config configs/paths.local.toml `
+  --target-count 500
+
+# Smoke run on one experiment:
+python -m scripts.sleap.mine_training_frames `
+  --paths-config configs/paths.local.toml `
+  --experiments 20251225_K_1_2_FCMC `
+  --target-count 80
+```
+
+After the run, open `annotation_seed.pkg.slp` in `sleap-label`, drag each
+`tail` node to the correct location (and delete spurious instances on
+reflection-flagged frames), then save and feed the corrected project into
+SLEAP transfer-learning training. The original predicted `mouth` positions
+are preserved, so untouched frames still contribute correct `mouth` labels.
+
 ## Related files
 
 - `batch_predict.py`
 - `batch_track.py`
 - `export_tracks.py`
+- `mine_training_frames.py`
 - `qc_tracks.py`
