@@ -64,6 +64,7 @@ def run_reconstruction_from_slp(
     plot: bool = True,
     output_tag: str | None = None,
     save_best_json: bool = True,
+    save_best_pre_link_json: bool = True,
 ) -> dict:
     slp_paths = {
         view: slp_dir / f"{view}.slp" for view in VIEW_TO_CAM
@@ -111,6 +112,13 @@ def run_reconstruction_from_slp(
     output_dir.mkdir(parents=True, exist_ok=True)
     tag = output_tag or experiment_name
 
+    pre_link_json_path: Path | None = None
+    if save_best_pre_link_json:
+        pre_link_json_path = output_dir / f"{tag}_best_pre_link.json"
+        save_best_pre_link_json_to(
+            best, pre_link_json_path, num_individuals=num_individuals
+        )
+
     best_json_path: Path | None = None
     if save_best_json:
         best_json_path = output_dir / f"{tag}_best.json"
@@ -141,11 +149,100 @@ def run_reconstruction_from_slp(
         "csv_path": csv_path,
         "png_path": png_path,
         "best_json_path": str(best_json_path) if best_json_path else None,
+        "best_pre_link_json_path": (
+            str(pre_link_json_path) if pre_link_json_path else None
+        ),
         "points_by_frame": points_by_frame,
         "best_tracked": best_tracked,
         "num_frames": len(points_by_frame),
         "num_individuals": num_individuals,
     }
+
+
+def _src_labels(num_individuals: int) -> list[str]:
+    return [chr(ord("a") + i) for i in range(num_individuals)]
+
+
+def save_best_pre_link_json_to(
+    best: dict, path: Path, *, num_individuals: int
+) -> None:
+    """
+    Per-frame pre-link artifact: the chosen min-cost candidate before any
+    cross-frame ID linking. Re-linking experiments consume this so they can
+    iterate without re-running triangulation.
+
+    Format (compact JSON):
+        {
+          "num_individuals": 3,
+          "src_labels": ["a", "b", "c"],
+          "frames": {
+            "<frame>": {
+              "groups":  {"a":[x,y,z], "b":[x,y,z], "c":[x,y,z]},
+              "errors":  {"a":<float|null>, ...},
+              "perm_cam1": [..],
+              "perm_cam2": [..],
+              "dropped_high_residual": ["a", ...]
+            }, ...
+          }
+        }
+    """
+    src = _src_labels(num_individuals)
+    out: dict = {}
+    nan = float("nan")
+    for frame, info in best.items():
+        groups = info.get("groups", {}) or {}
+        errors = info.get("errors", {}) or {}
+        out[int(frame)] = {
+            "groups": {
+                lb: [float(v) for v in (groups.get(lb) or [nan, nan, nan])]
+                for lb in src
+            },
+            "errors": {
+                lb: (
+                    float(errors[lb])
+                    if (lb in errors and errors[lb] is not None)
+                    else None
+                )
+                for lb in src
+            },
+            "perm_cam1": list(info.get("perm_cam1", []) or []),
+            "perm_cam2": list(info.get("perm_cam2", []) or []),
+            "dropped_high_residual": list(
+                info.get("dropped_high_residual", []) or []
+            ),
+        }
+    payload = {
+        "num_individuals": num_individuals,
+        "src_labels": src,
+        "frames": out,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as fh:
+        # Compact: no indent. 348k frames at ~150 B/frame ≈ 50 MB.
+        json.dump(payload, fh, separators=(",", ":"))
+
+
+def load_best_pre_link_json(path: Path) -> dict:
+    """
+    Load a pre-link JSON produced by `save_best_pre_link_json_to` into the
+    same shape `select_best_all_frames` returns, so it can be fed straight
+    into `apply_cross_frame_tracking` (or any alternate linker).
+    """
+    with Path(path).open("r", encoding="utf-8") as fh:
+        payload = json.load(fh)
+    out: dict = {}
+    for f_str, info in payload["frames"].items():
+        out[int(f_str)] = {
+            "groups": {k: list(v) for k, v in info["groups"].items()},
+            "errors": {
+                k: (float(v) if v is not None else None)
+                for k, v in info["errors"].items()
+            },
+            "perm_cam1": list(info["perm_cam1"]),
+            "perm_cam2": list(info["perm_cam2"]),
+            "dropped_high_residual": list(info.get("dropped_high_residual", [])),
+        }
+    return out
 
 
 def _save_best_tracked_json(
@@ -282,6 +379,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="Skip writing the per-frame detection->ID mapping JSON.",
     )
     parser.add_argument(
+        "--no-save-best-pre-link-json", action="store_true",
+        help="Skip writing the pre-link per-frame candidate JSON.",
+    )
+    parser.add_argument(
         "--output-tag", default=None,
         help="Suffix for output files (default: experiment name).",
     )
@@ -345,6 +446,7 @@ def main(argv: list[str] | None = None) -> None:
         plot=not args.no_plot,
         output_tag=tag,
         save_best_json=not args.no_save_best_json,
+        save_best_pre_link_json=not args.no_save_best_pre_link_json,
     )
 
     print()
@@ -355,6 +457,8 @@ def main(argv: list[str] | None = None) -> None:
         print(f"Trajectory plot  : {result['png_path']}")
     if result["best_json_path"]:
         print(f"best-tracked JSON: {result['best_json_path']}")
+    if result["best_pre_link_json_path"]:
+        print(f"pre-link JSON    : {result['best_pre_link_json_path']}")
 
 
 if __name__ == "__main__":

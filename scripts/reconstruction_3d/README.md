@@ -43,6 +43,31 @@ Pipeline summary:
 7. Optionally fill missing 3D frames with spline interpolation.
 8. Export `{set_key}_3d.csv` and an optional trajectory PNG.
 
+Interactive QC with Rerun:
+
+```powershell
+python -m scripts.visualization.rerun_viewer 20251225_K_1_2_FCMC `
+  --paths-config configs/paths.local.toml `
+  --start-frame 171800 --end-frame 176799
+```
+
+For a full 30-minute run, start with diagnostics only so the `.rrd` does not
+become dominated by video frames:
+
+```powershell
+python -m scripts.visualization.rerun_viewer 20251225_K_1_2_FCMC `
+  --paths-config configs/paths.local.toml `
+  --no-video --save full_qc.rrd
+```
+
+The viewer overlays the three SLEAP camera streams when video is enabled,
+logs linked 3D tracks, and, when `<tag>_best_pre_link.json` exists, logs the
+pre-link triangulated candidates plus registration-error timelines. Use the
+full-run diagnostic pass to find fragile frame ranges, then rerun a short
+window with video enabled for visual inspection. Relinked outputs from
+`relink.py` can be opened with `--tag <experiment>_relinked`; the viewer
+auto-detects `<experiment>_best_relinked.json`.
+
 Main modules:
 
 - `load_2d.py`
