@@ -39,6 +39,7 @@ def load_points_by_frame(
     slp_paths: Dict[str, Path | str],
     *,
     num_individuals: int = 3,
+    num_candidates: int | None = None,
     start_frame: int | None = None,
     end_frame: int | None = None,
 ) -> Dict[int, Dict[str, List[Tuple[float, float]]]]:
@@ -49,8 +50,13 @@ def load_points_by_frame(
         Mapping from view name (`top_cam`, `side1_cam`, `side2_cam`) to merged
         `.slp` path.
     num_individuals : int
-        Number of fish slots to keep per view. Extra detections are dropped
-        (highest-score kept).
+        Number of fish slots to keep per view (when ``num_candidates`` is None).
+        Extra detections are dropped (highest-score kept).
+    num_candidates : int, optional
+        Override the per-view slot count. Use this when downstream
+        triangulation enumerates more candidates per view than there are real
+        fish (e.g. ``-n 6`` SLEAP inference + reflection-rejecting 3D scoring).
+        When None, defaults to ``num_individuals`` (the pre-existing behaviour).
     start_frame, end_frame : int, optional
         Inclusive frame-index filter.
 
@@ -58,8 +64,10 @@ def load_points_by_frame(
     -------
     points_by_frame : dict
         `{frame_idx: {"cam0": [(x, y), ...], "cam1": ..., "cam2": ...}}` with
-        `num_individuals` entries per view. Missing detections are `(NaN, NaN)`.
+        ``num_candidates or num_individuals`` entries per view. Missing
+        detections are ``(NaN, NaN)``.
     """
+    slots = num_candidates if num_candidates is not None else num_individuals
     try:
         import sleap_io as sio
     except ImportError as exc:
@@ -104,9 +112,9 @@ def load_points_by_frame(
                 raw,
                 key=lambda r: (-(r[2] if np.isfinite(r[2]) else -np.inf), r[0]),
             )
-            keep = raw_sorted[:num_individuals]
+            keep = raw_sorted[:slots]
             points: list[Tuple[float, float]] = [(x, y) for (x, y, _s) in keep]
-            while len(points) < num_individuals:
+            while len(points) < slots:
                 points.append((np.nan, np.nan))
             result[fi][cam] = points
     return result

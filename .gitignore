@@ -219,6 +219,7 @@ data/derived/
 *.h5
 *.hdf5
 *.slp
+*.rrd
 
 # OMX oh-my-codex files
 .omx/

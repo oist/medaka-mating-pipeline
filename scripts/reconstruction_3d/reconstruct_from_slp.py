@@ -25,6 +25,8 @@ import sys
 from pathlib import Path
 from typing import Tuple
 
+import numpy as np
+
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
@@ -51,6 +53,7 @@ def run_reconstruction_from_slp(
     model_folder: Path,
     output_dir: Path,
     num_individuals: int = 3,
+    num_candidates: int | None = None,
     start_frame: int | None = None,
     end_frame: int | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
@@ -73,6 +76,7 @@ def run_reconstruction_from_slp(
     points_by_frame = load_points_by_frame(
         slp_paths,
         num_individuals=num_individuals,
+        num_candidates=num_candidates,
         start_frame=start_frame,
         end_frame=end_frame,
     )
@@ -85,19 +89,46 @@ def run_reconstruction_from_slp(
     cal = Calibration(str(model_folder))
     allow_permutations = bool(cal.has_geometric_scoring)
 
-    candidates = compute_candidates(
-        cal,
-        points_by_frame,
-        xyz_bounds=xyz_bounds,
-        allow_permutations=allow_permutations,
-        num_individuals=num_individuals,
-    )
-    best = select_best_all_frames(
-        candidates,
-        xyz_bounds=xyz_bounds,
-        num_individuals=num_individuals,
-        max_residual_per_fish=max_residual_per_fish,
-    )
+    if num_candidates is not None and num_candidates > num_individuals:
+        # Each view exposes more candidates than fish: enumerate all triplets
+        # through the calibration model, drop those outside xyz_bounds, and
+        # greedily pick `num_individuals` mutually-exclusive triplets minimising
+        # reprojection error. Skips select_best_all_frames since the picker is
+        # already producing a single optimal candidate per frame.
+        from scripts.reconstruction_3d.triangulate_extra_candidates import (
+            compute_best_assignments_per_frame,
+        )
+        best = compute_best_assignments_per_frame(
+            cal,
+            points_by_frame,
+            xyz_bounds=xyz_bounds,
+            num_individuals=num_individuals,
+            num_candidates=num_candidates,
+        )
+        if max_residual_per_fish is not None:
+            for info in best.values():
+                errors = info["errors"]
+                groups = info["groups"]
+                dropped = []
+                for lb, err in errors.items():
+                    if not np.isfinite(err) or err > max_residual_per_fish:
+                        groups[lb] = [float("nan")] * 3
+                        dropped.append(lb)
+                info["dropped_high_residual"] = dropped
+    else:
+        candidates = compute_candidates(
+            cal,
+            points_by_frame,
+            xyz_bounds=xyz_bounds,
+            allow_permutations=allow_permutations,
+            num_individuals=num_individuals,
+        )
+        best = select_best_all_frames(
+            candidates,
+            xyz_bounds=xyz_bounds,
+            num_individuals=num_individuals,
+            max_residual_per_fish=max_residual_per_fish,
+        )
     if first_frame_id_only:
         best_tracked = apply_first_frame_id_only(best)
     else:
@@ -192,6 +223,11 @@ def save_best_pre_link_json_to(
     for frame, info in best.items():
         groups = info.get("groups", {}) or {}
         errors = info.get("errors", {}) or {}
+        # perm_cam0 is implicit identity in the legacy path (cam0 anchor) but
+        # explicit when triangulating from a larger candidate pool than fish
+        # count; persist whichever is provided so cross-view linking can map
+        # back to the right .slp instance index.
+        perm_cam0 = list(info.get("perm_cam0") or list(range(num_individuals)))
         out[int(frame)] = {
             "groups": {
                 lb: [float(v) for v in (groups.get(lb) or [nan, nan, nan])]
@@ -205,8 +241,10 @@ def save_best_pre_link_json_to(
                 )
                 for lb in src
             },
+            "perm_cam0": perm_cam0,
             "perm_cam1": list(info.get("perm_cam1", []) or []),
             "perm_cam2": list(info.get("perm_cam2", []) or []),
+            "recovered": [bool(r) for r in (info.get("recovered") or [])],
             "dropped_high_residual": list(
                 info.get("dropped_high_residual", []) or []
             ),
@@ -231,6 +269,7 @@ def load_best_pre_link_json(path: Path) -> dict:
     with Path(path).open("r", encoding="utf-8") as fh:
         payload = json.load(fh)
     out: dict = {}
+    n = int(payload.get("num_individuals", 3))
     for f_str, info in payload["frames"].items():
         out[int(f_str)] = {
             "groups": {k: list(v) for k, v in info["groups"].items()},
@@ -238,6 +277,7 @@ def load_best_pre_link_json(path: Path) -> dict:
                 k: (float(v) if v is not None else None)
                 for k, v in info["errors"].items()
             },
+            "perm_cam0": list(info.get("perm_cam0") or list(range(n))),
             "perm_cam1": list(info["perm_cam1"]),
             "perm_cam2": list(info["perm_cam2"]),
             "dropped_high_residual": list(info.get("dropped_high_residual", [])),
@@ -258,19 +298,25 @@ def _save_best_tracked_json(
     out: dict = {}
     for frame, info in best_tracked.items():
         id_mapping = info.get("id_mapping") or []
+        perm_cam0 = info.get("perm_cam0") or list(range(num_individuals))
         perm_cam1 = info.get("perm_cam1") or list(range(num_individuals))
         perm_cam2 = info.get("perm_cam2") or list(range(num_individuals))
 
-        # cam0 has no permutation: det index k -> label index k.
-        # cam_i_label_for_det[k] = label index for detection k in cam i.
-        cam0_label = list(range(num_individuals))
-        cam1_label = [-1] * num_individuals
-        cam2_label = [-1] * num_individuals
+        # detection-slot -> label index. With more candidates than fish, a
+        # given .slp instance may not map to any fish (-1).
+        det_indices = [d for d in (*perm_cam0, *perm_cam1, *perm_cam2) if d >= 0]
+        n_slots = max([num_individuals] + [d + 1 for d in det_indices])
+        cam0_label = [-1] * n_slots
+        cam1_label = [-1] * n_slots
+        cam2_label = [-1] * n_slots
+        for lbl_idx, det_idx in enumerate(perm_cam0):
+            if 0 <= det_idx < n_slots:
+                cam0_label[det_idx] = lbl_idx
         for lbl_idx, det_idx in enumerate(perm_cam1):
-            if 0 <= det_idx < num_individuals:
+            if 0 <= det_idx < n_slots:
                 cam1_label[det_idx] = lbl_idx
         for lbl_idx, det_idx in enumerate(perm_cam2):
-            if 0 <= det_idx < num_individuals:
+            if 0 <= det_idx < n_slots:
                 cam2_label[det_idx] = lbl_idx
 
         # id_mapping[i] = label idx for ID_(i+1); invert to label -> ID_name.
@@ -285,10 +331,15 @@ def _save_best_tracked_json(
                 for k in cam_label_list
             ]
 
+        # Recovered-by-id flag: indices align with id_labels (ID_1, ID_2, ...).
+        recovered_by_id = [
+            bool(r) for r in (info.get("recovered") or [False] * num_individuals)
+        ]
         out[int(frame)] = {
             "cam0_to_id": _view_map(cam0_label),
             "cam1_to_id": _view_map(cam1_label),
             "cam2_to_id": _view_map(cam2_label),
+            "recovered": recovered_by_id,
             "groups": {k: v for k, v in info.get("groups", {}).items()},
         }
 
@@ -321,6 +372,18 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Overrides reconstruction_output_dir.")
     parser.add_argument("--num-individuals", type=int, default=3,
                         help="Max fish slots per view (default 3).")
+    parser.add_argument(
+        "--num-candidates", type=int, default=None,
+        help=(
+            "Per-view candidate count to load when SLEAP was run with "
+            "more detections per frame than fish (e.g. -n 6 to recover real "
+            "fish that would otherwise be displaced by reflections). When set "
+            "and > --num-individuals, triangulation switches to greedy "
+            "mutually-exclusive triplet selection across N^3 candidate "
+            "triplets (with xyz_bounds gating reflections). Default: same as "
+            "--num-individuals (legacy behaviour)."
+        ),
+    )
     parser.add_argument("--start-frame", type=int, default=None)
     parser.add_argument("--end-frame", type=int, default=None)
     parser.add_argument(
@@ -433,6 +496,7 @@ def main(argv: list[str] | None = None) -> None:
         model_folder=Path(model_folder),
         output_dir=Path(output_dir),
         num_individuals=args.num_individuals,
+        num_candidates=args.num_candidates,
         start_frame=args.start_frame,
         end_frame=args.end_frame,
         xyz_bounds=tuple(args.xyz_bounds) if args.xyz_bounds else None,

@@ -109,10 +109,22 @@ def apply_cross_frame_tracking(
             id_mapping_0[i] = int(src_idx)
         else:
             new_groups_0[id_name] = [np.nan, np.nan, np.nan]
+    first_info = best_by_frame[frames[0]]
+    first_recovered_src = list(first_info.get("recovered", []))
+    # id_mapping_0[id_idx] = src label idx for ID_(id_idx+1); reorder
+    # the recovered flag to follow IDs instead of source labels.
+    first_recovered_by_id = [
+        bool(first_recovered_src[src_idx])
+        if (0 <= src_idx < len(first_recovered_src))
+        else False
+        for src_idx in id_mapping_0
+    ]
     result[frames[0]] = {
         "groups": new_groups_0,
-        "perm_cam1": list(best_by_frame[frames[0]].get("perm_cam1", [])),
-        "perm_cam2": list(best_by_frame[frames[0]].get("perm_cam2", [])),
+        "perm_cam0": list(first_info.get("perm_cam0", [])),
+        "perm_cam1": list(first_info.get("perm_cam1", [])),
+        "perm_cam2": list(first_info.get("perm_cam2", [])),
+        "recovered": first_recovered_by_id,
         "id_mapping": id_mapping_0,
     }
 
@@ -188,10 +200,19 @@ def apply_cross_frame_tracking(
             last_valid[id_name] = (t_curr, pt.copy())
             id_mapping[i] = j
 
+        recovered_src = list(curr_info.get("recovered", []))
+        recovered_by_id = [
+            bool(recovered_src[src_idx])
+            if (0 <= src_idx < len(recovered_src))
+            else False
+            for src_idx in id_mapping
+        ]
         result[t_curr] = {
             "groups": new_groups,
+            "perm_cam0": list(curr_info.get("perm_cam0", [])),
             "perm_cam1": list(curr_info.get("perm_cam1", [])),
             "perm_cam2": list(curr_info.get("perm_cam2", [])),
+            "recovered": recovered_by_id,
             "id_mapping": id_mapping,
         }
 
@@ -246,6 +267,7 @@ def apply_first_frame_id_only(best_by_frame: Dict[int, Dict]) -> Dict[int, Dict]
                 new_groups[id_name] = [np.nan, np.nan, np.nan]
         result[f] = {
             "groups": new_groups,
+            "perm_cam0": list(info.get("perm_cam0", [])),
             "perm_cam1": list(info.get("perm_cam1", [])),
             "perm_cam2": list(info.get("perm_cam2", [])),
         }

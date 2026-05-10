@@ -313,7 +313,10 @@ def _draw_detections_on_frame(
     cam_to_id: list,
     num_individuals: int,
 ) -> np.ndarray:
-    """Draw ID-colored keypoint circles and labels onto a BGR frame."""
+    """Draw ID-colored keypoint circles for assigned detections and dim grey
+    dots for unassigned ones — so it's visible when a real fish gets culled
+    by the 3D reconstruction's tank-bounds / mutually-exclusive triplet pick.
+    """
     import cv2
 
     ranked = sorted(
@@ -323,24 +326,37 @@ def _draw_detections_on_frame(
             e[0][0][0] if len(e[0]) else np.inf,
         ),
     )
-    for slot_idx, (pts, score, _orig) in enumerate(ranked[:num_individuals]):
+    # Cull-overlay style for detections the reconstructor didn't pick.
+    cull_fill_bgr = (180, 180, 180)
+    cull_outline_bgr = (60, 60, 60)
+
+    for slot_idx, (pts, score, _orig) in enumerate(ranked):
         fish_id = cam_to_id[slot_idx] if slot_idx < len(cam_to_id) else None
-        rgba = _id_color(fish_id)
-        bgr = (rgba[2], rgba[1], rgba[0])
-        for x, y in pts:
-            if not (np.isfinite(x) and np.isfinite(y)):
-                continue
-            cx, cy = int(round(x)), int(round(y))
-            cv2.circle(frame, (cx, cy), 10, bgr, 2, cv2.LINE_AA)
-            cv2.circle(frame, (cx, cy), 2, bgr, -1, cv2.LINE_AA)
-        if pts is not None and len(pts) > 0 and np.isfinite(pts[0]).all():
-            label = fish_id if fish_id else "?"
-            anchor = pts[0]
-            cv2.putText(
-                frame, label,
-                (int(anchor[0]) + 12, int(anchor[1]) + 14),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, bgr, 1, cv2.LINE_AA,
-            )
+        if fish_id is not None:
+            rgba = _id_color(fish_id)
+            bgr = (rgba[2], rgba[1], rgba[0])
+            for x, y in pts:
+                if not (np.isfinite(x) and np.isfinite(y)):
+                    continue
+                cx, cy = int(round(x)), int(round(y))
+                cv2.circle(frame, (cx, cy), 10, bgr, 2, cv2.LINE_AA)
+                cv2.circle(frame, (cx, cy), 2, bgr, -1, cv2.LINE_AA)
+            if pts is not None and len(pts) > 0 and np.isfinite(pts[0]).all():
+                anchor = pts[0]
+                cv2.putText(
+                    frame, fish_id,
+                    (int(anchor[0]) + 12, int(anchor[1]) + 14),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, bgr, 1, cv2.LINE_AA,
+                )
+        else:
+            # Unassigned raw prediction (extra n=6-fish candidate or one the
+            # reconstructor rejected). Draw small dim dot.
+            for x, y in pts:
+                if not (np.isfinite(x) and np.isfinite(y)):
+                    continue
+                cx, cy = int(round(x)), int(round(y))
+                cv2.circle(frame, (cx, cy), 4, cull_outline_bgr, 1, cv2.LINE_AA)
+                cv2.circle(frame, (cx, cy), 2, cull_fill_bgr, -1, cv2.LINE_AA)
     return frame
 
 
@@ -405,8 +421,10 @@ def log_3d_trajectories(
     end_frame: int,
     fps: float,
     jump_warning_mm: float,
+    trail_seconds: float = 1.0,
 ) -> None:
     frames = np.arange(start_frame, end_frame + 1)
+    trail_window = max(1, int(round(fps * trail_seconds)))
     for fid in id_labels:
         sub = df_3d[df_3d["fish_id"] == fid].set_index("frame")
         sub = sub.reindex(frames)
@@ -437,9 +455,39 @@ def log_3d_trajectories(
                         labels=[fid],
                     ),
                 )
+
+                # Trailing polyline of the last `trail_window` positions, with
+                # NaN-gaps split into separate strips so missing frames don't
+                # connect across discontinuities.
+                lo = max(0, i - trail_window + 1)
+                window = xyz[lo : i + 1]
+                strips: list[list[list[float]]] = []
+                run: list[list[float]] = []
+                for p in window:
+                    if np.isfinite(p).all():
+                        run.append(p.tolist())
+                    elif run:
+                        if len(run) >= 2:
+                            strips.append(run)
+                        run = []
+                if len(run) >= 2:
+                    strips.append(run)
+                if strips:
+                    rr.log(
+                        f"world/{fid}/trail",
+                        rr.LineStrips3D(
+                            strips,
+                            colors=[(*color[:3], 200)] * len(strips),
+                            radii=0.6,
+                        ),
+                    )
+                else:
+                    rr.log(f"world/{fid}/trail", rr.Clear(recursive=False))
+
                 prev_valid = pt.copy()
             else:
                 rr.log(f"world/{fid}", rr.Clear(recursive=False))
+                rr.log(f"world/{fid}/trail", rr.Clear(recursive=False))
                 _log_scalar(rr, f"diagnostics/jump_mm/{fid}", float("nan"))
 
 
@@ -460,9 +508,11 @@ def run_viewer(
     best_json_override: Path | None = None,
     pre_link_json_override: Path | None = None,
     decisions_csv_override: Path | None = None,
+    slp_dir_override: Path | None = None,
     no_pre_link: bool = False,
     residual_warning: float = 5000.0,
     jump_warning_mm: float = 15.0,
+    trail_seconds: float = 1.0,
 ) -> None:
     try:
         import rerun as rr
@@ -528,7 +578,7 @@ def run_viewer(
     if not no_video and not no_2d and has_best_json:
         from scripts.sleap.visualize_predictions import index_predictions_by_frame
 
-        slp_dir = sleap_output_dir / experiment
+        slp_dir = slp_dir_override if slp_dir_override is not None else sleap_output_dir / experiment
         for view in VIEW_ORDER:
             slp_path = slp_dir / f"{view}.slp"
             if slp_path.exists():
@@ -573,6 +623,7 @@ def run_viewer(
         end_frame,
         fps,
         jump_warning_mm,
+        trail_seconds=trail_seconds,
     )
 
     if not no_pre_link:
@@ -667,6 +718,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Explicit relink decisions CSV path for event markers.",
     )
     parser.add_argument(
+        "--slp-dir",
+        default=None,
+        help=(
+            "Explicit directory containing top_cam.slp / side1_cam.slp / "
+            "side2_cam.slp. Overrides the default <sleap_output_dir>/<experiment> "
+            "lookup; useful when comparing alternate inference rounds."
+        ),
+    )
+    parser.add_argument(
         "--no-pre-link",
         action="store_true",
         help="Skip pre-link candidate points and registration-error timelines.",
@@ -682,6 +742,15 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=15.0,
         help="Color 3D track points red above this inter-sample jump.",
+    )
+    parser.add_argument(
+        "--trail-seconds",
+        type=float,
+        default=1.0,
+        help=(
+            "How many seconds of past 3D positions to draw as a trailing "
+            "polyline behind each fish (default 1.0). Use 0 to disable trails."
+        ),
     )
     parser.add_argument("--paths-config", default=None)
     parser.add_argument("--sleap-output-dir", default=None)
@@ -733,9 +802,11 @@ def main(argv: list[str] | None = None) -> None:
         best_json_override=_json_path_or_none(args.best_json),
         pre_link_json_override=_json_path_or_none(args.pre_link_json),
         decisions_csv_override=_json_path_or_none(args.decisions_csv),
+        slp_dir_override=_json_path_or_none(args.slp_dir),
         no_pre_link=args.no_pre_link,
         residual_warning=args.residual_warning,
         jump_warning_mm=args.jump_warning_mm,
+        trail_seconds=args.trail_seconds,
     )
 
 
