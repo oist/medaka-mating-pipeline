@@ -119,6 +119,116 @@ python -m scripts.sleap.visualize_predictions 20251220_D_1_1_FCMC \
     --track-csv <sleap_output_dir>/20251220_D_1_1_FCMC/top_cam.tracks.csv
 ```
 
+### 2.3b Blob-first top-camera ID prototype
+
+The top camera can be used as an idtracker-style identity prior, but the
+prototype should operate on fish-shaped blobs/fragments rather than per-frame
+mouth crops. The workflow below mines candidate blobs, lets you curate clean
+ID seeds, trains a simple fragment-level appearance model, and writes an
+overlay-compatible CSV. Ambiguous fragments are left as `unknown`.
+
+Fragment linking is a lightweight Mask-OCSORT-style tracker rather than plain
+SORT: it uses centroid velocity prediction, mask IoU, bbox IoU, area stability,
+Hungarian assignment, manual-ID compatibility constraints, and a short offline
+tracklet stitch pass. Same-frame split blobs assigned the same manual ID are
+merged into virtual training crops/masks before fitting the appearance model.
+
+```bash
+python -m scripts.tracking.top_camera_identity mine-blobs 20251225_K_1_2_FCMC \
+    --paths-config configs/paths.local.toml \
+    --start-frame 171300 --end-frame 173000 \
+    --max-candidates-per-sleap 1 \
+    --out-dir runs/top_id/20251225_K_1_2_FCMC_f171300-173000
+
+python -m scripts.tracking.top_camera_identity review \
+    runs/top_id/20251225_K_1_2_FCMC_f171300-173000/blob_candidates.csv \
+    --experiment 20251225_K_1_2_FCMC \
+    --paths-config configs/paths.local.toml \
+    --play-fps 2
+
+python -m scripts.tracking.top_camera_identity train-id \
+    runs/top_id/20251225_K_1_2_FCMC_f171300-173000/blob_candidates.reviewed.csv
+
+python -m scripts.tracking.top_camera_identity apply-id \
+    runs/top_id/20251225_K_1_2_FCMC_f171300-173000/blob_candidates.reviewed.csv \
+    runs/top_id/20251225_K_1_2_FCMC_f171300-173000/top_id_model.joblib
+```
+
+For a fresh first-pass dataset from background subtraction only, without SLEAP
+proximity filtering or SAM masks:
+
+```bash
+python -m scripts.tracking.top_camera_identity mine-blobs 20251225_K_1_2_FCMC \
+    --paths-config configs/paths.local.toml \
+    --start-frame 171300 --end-frame 173000 \
+    --pure-bgsub \
+    --threshold 24 \
+    --min-area 80 --max-area 8000 \
+    --out-dir runs/top_id/20251225_K_1_2_FCMC_f171300-173000_pure_bgsub
+```
+
+To reduce manual review time, curate a small clean seed set first, then
+bootstrap labels on the same blob candidates:
+
+```bash
+python -m scripts.tracking.top_camera_identity bootstrap-id \
+    runs/top_id/20251225_K_1_2_FCMC_f171300-173000/blob_candidates.reviewed.csv
+
+python -m scripts.tracking.top_camera_identity review \
+    runs/top_id/20251225_K_1_2_FCMC_f171300-173000/blob_candidates.bootstrapped.csv \
+    --experiment 20251225_K_1_2_FCMC \
+    --paths-config configs/paths.local.toml \
+    --play-fps 2
+```
+
+Repeat `bootstrap-id -> review` as labels improve. Rows confirmed with the GUI
+are marked `id_source=manual`; automatic guesses are marked
+`id_source=bootstrap`, and bootstrap training ignores its own previous guesses
+unless `--include-bootstrap-labels` is passed. Use `--suggest-only` if you want
+predicted IDs shown in the reviewer without changing rows to `status=accept`.
+
+Outputs include `blob_candidates.csv`, `masks/`, `crops/`,
+`blob_candidates_preview.mp4`, `top_cam.blob_identity_tracks.csv`, and
+`top_cam.blob_identity_fragments.csv`. To overlay the result:
+
+```bash
+python -m scripts.sleap.visualize_predictions 20251225_K_1_2_FCMC \
+    --paths-config configs/paths.local.toml \
+    --view top_cam --frames 171300-173000 \
+    --track-csv runs/top_id/20251225_K_1_2_FCMC_f171300-173000/top_cam.blob_identity_tracks.csv \
+    --track-only \
+    --output runs/top_id/20251225_K_1_2_FCMC_f171300-173000/top_cam.blob_identity.viz.mp4
+```
+
+When `--track-csv` is provided, the visualizer draws the CSV track points
+directly and uses nearest matching to recolor SLEAP keypoints. Use
+`--track-only` to hide raw SLEAP keypoints and show only blob-ID centroids,
+which is usually easier for identity QC. Without
+`--track-csv`, colors are only raw per-frame SLEAP instance order and can swap.
+
+Optional SAM/SAM2/SAM3 assistance is ingested as an external manifest with
+columns `frame,mask_path,source,score`; the repo does not depend on SAM.
+
+The reviewer opens the full top-camera frame when `--video` or `--experiment`
+is provided. It overlays translucent masks, bounding boxes, and current labels.
+Use click/`[`/`]`/`tab` to choose a blob, `1`/`2`/`3` to assign ID, `u` for
+unknown, `r` or `d` to reject/delete a candidate, `space` for slow play/pause,
+left/right arrows or `p`/`n` to move frames, `+`/`-` to change speed, mouse
+wheel to zoom around the cursor, and `s` to save.
+Press `f` for smart-fill mode; moving the mouse previews the connected, locally
+color-similar fill region, clicking adds it to the selected mask, and `,`/`.`
+shrinks/grows the smart-fill search area. Press `x` for smart-erase mode; it
+uses the same preview but removes the clicked connected region from the selected
+mask. Press `a` for add-mask brush mode, `e` for erase-mask brush mode, `z` to
+undo the latest brush/fill/erase edit, `v` to return to selection mode, and
+`,`/`.` to change brush size outside smart modes. Brush and smart edits rewrite
+the candidate mask PNG and update `area`, `bbox_*`, centroid, and crop artifacts
+in the reviewed CSV directory. Pressing `q` also autosaves. With the default
+reviewed output path, mask edits are mirrored back to the input candidate CSV so
+reopened masks and bboxes stay consistent; if `blob_candidates.reviewed.csv`
+already exists, reopening from `blob_candidates.csv` will load the reviewed file.
+Pass `--crop-only` if you only want the old crop-by-crop view.
+
 ### 2.4 3D-first tracker (recommended)
 
 ```bash
