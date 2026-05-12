@@ -1,6 +1,6 @@
 data_config:
   train_labels_path:
-  - annotation_seed.pkg.slp
+  - labels.pkg.slp
   val_labels_path: null
   validation_fraction: 0.1
   use_same_data_for_val: false
@@ -8,9 +8,9 @@ data_config:
   provider: LabelsReader
   user_instances_only: true
   data_pipeline_fw: torch_dataset_cache_img_memory
-  cache_img_path: null
+  cache_img_path: C:\sleap_cache\retrain_20260508_side_centroid
   use_existing_imgs: false
-  delete_cache_imgs_after_training: true
+  delete_cache_imgs_after_training: false
   parallel_caching: true
   cache_workers: 0
   preprocessing:
@@ -18,7 +18,7 @@ data_config:
     ensure_grayscale: false
     max_height: null
     max_width: null
-    scale: 0.75
+    scale: 1.0
     crop_size: null
     min_crop_size: 100
     crop_padding: null
@@ -30,13 +30,13 @@ data_config:
       uniform_noise_p: 0.0
       gaussian_noise_mean: 0.0
       gaussian_noise_std: 0.02
-      gaussian_noise_p: 1.0
+      gaussian_noise_p: 0.0
       contrast_min: 0.9
       contrast_max: 1.1
-      contrast_p: 1.0
+      contrast_p: 0.0
       brightness_min: 0.9
       brightness_max: 1.1
-      brightness_p: 1.0
+      brightness_p: 0.0
     geometric:
       rotation_min: -15.0
       rotation_max: 15.0
@@ -58,7 +58,7 @@ data_config:
       mixup_p: 0.0
   use_negative_frames: false
   negative_loss_weight: 1.0
-  skeletons: null
+  skeletons: []
 model_config:
   init_weights: default
   pretrained_backbone_weights: null
@@ -82,7 +82,7 @@ model_config:
     single_instance: null
     centroid:
       confmaps:
-        anchor_part: null
+        anchor_part: mouth
         sigma: 2.5
         output_stride: 2
     centered_instance: null
@@ -117,7 +117,7 @@ trainer_config:
   use_wandb: false
   save_ckpt: true
   ckpt_dir: models
-  run_name: 260508_173520.centroid.n=500
+  run_name: 260512_035249.centroid.n=334
   resume_ckpt_path: null
   wandb:
     entity: null
@@ -138,7 +138,7 @@ trainer_config:
     delete_local_logs: null
   optimizer_name: Adam
   optimizer:
-    lr: 0.001
+    lr: 0.0001
     amsgrad: false
   lr_scheduler:
     step_lr: null

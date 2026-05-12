@@ -449,6 +449,25 @@ def build_parser() -> argparse.ArgumentParser:
         "--output-tag", default=None,
         help="Suffix for output files (default: experiment name).",
     )
+    parser.add_argument(
+        "--bind-top-id", action="store_true",
+        help="After 3D temporal linking, attach top_cam 2D track IDs via "
+             "reprojection-NN (writes <tag>_3d_identified.csv). Requires "
+             "--top-tracks-csv.",
+    )
+    parser.add_argument(
+        "--top-tracks-csv", default=None, type=Path,
+        help="Path to top_cam.tracks.csv produced by track_simple_nn. "
+             "Required when --bind-top-id is set.",
+    )
+    parser.add_argument(
+        "--bind-distance", type=float, default=60.0,
+        help="Max projection-NN gate in px for the bind step (default 60).",
+    )
+    parser.add_argument(
+        "--bind-min-frames", type=int, default=500,
+        help="Drop top tracks shorter than this from the bind anchor pool.",
+    )
     return parser
 
 
@@ -523,6 +542,25 @@ def main(argv: list[str] | None = None) -> None:
         print(f"best-tracked JSON: {result['best_json_path']}")
     if result["best_pre_link_json_path"]:
         print(f"pre-link JSON    : {result['best_pre_link_json_path']}")
+
+    if args.bind_top_id:
+        if args.top_tracks_csv is None:
+            parser.error("--bind-top-id requires --top-tracks-csv.")
+        if not args.top_tracks_csv.exists():
+            parser.error(f"top tracks CSV not found: {args.top_tracks_csv}")
+        from scripts.reconstruction_3d.bind_topcam_id import bind
+        exp_3d_csv = Path(result["csv_path"])
+        out_csv = exp_3d_csv.with_name(exp_3d_csv.stem + "_identified.csv")
+        calib = Calibration(str(model_folder))
+        bind(
+            exp_3d_csv=exp_3d_csv,
+            top_tracks_csv=args.top_tracks_csv,
+            calib=calib,
+            out_csv=out_csv,
+            bind_distance=args.bind_distance,
+            require_min_frames=args.bind_min_frames,
+        )
+        print(f"3D identified CSV: {out_csv}")
 
 
 if __name__ == "__main__":

@@ -38,9 +38,24 @@ class _ActiveTrack:
     history: list[tuple[int, float, float, float | None]] = field(default_factory=list)
 
 
-def _instance_position(inst) -> tuple[float, float] | None:
-    """Centroid of an instance's visible nodes (NaN-safe)."""
+def _instance_position(
+    inst, *, node_names: list[str] | None = None, anchor_node: str | None = None,
+) -> tuple[float, float] | None:
+    """Position of an instance for tracking.
+
+    If `anchor_node` is given and that node is present + finite for this
+    instance, return that node's xy directly. Otherwise fall back to the
+    NaN-safe centroid of all visible nodes (legacy default behaviour).
+    """
     pts = inst.numpy()  # (n_nodes, 2)
+    if anchor_node is not None and node_names is not None:
+        try:
+            idx = node_names.index(anchor_node)
+            pt = pts[idx]
+            if np.isfinite(pt).all():
+                return float(pt[0]), float(pt[1])
+        except ValueError:
+            pass
     mask = np.isfinite(pts).all(axis=1)
     if not mask.any():
         return None
@@ -57,6 +72,8 @@ def track(
     max_distance: float = 100.0,
     max_tracks: int = 3,
     max_gap: int = 50,
+    anchor_node: str | None = None,
+    top_k_by_score: int | None = None,
 ) -> tuple[list[dict], dict]:
     """
     Run NN tracking on a merged .slp.
@@ -92,7 +109,11 @@ def track(
     labels = sio.load_slp(str(slp_path))
     if not labels.skeletons:
         raise RuntimeError(f"No skeleton found in {slp_path}")
-    node_name = labels.skeletons[0].nodes[0].name
+    node_names = [n.name for n in labels.skeletons[0].nodes]
+    # `node_name` is the legacy single-keypoint label written into tracks.csv.
+    # When tracking on a specific anchor (e.g. "mouth"), record that; otherwise
+    # fall back to the first skeleton node for backward compatibility.
+    node_name = anchor_node if (anchor_node in node_names) else node_names[0]
 
     frames = sorted(labels.labeled_frames, key=lambda f: f.frame_idx)
     frames = [f for f in frames if f.frame_idx >= start_frame]
@@ -116,9 +137,21 @@ def track(
         fi = int(f.frame_idx)
         _retire_stale(fi)
 
+        # Optional score-filter: keep only the top-K highest-scoring instances
+        # before tracking (recovers max_instances=K-at-inference behaviour at runtime).
+        instances = list(f.instances)
+        if top_k_by_score is not None and len(instances) > top_k_by_score:
+            instances = sorted(
+                instances,
+                key=lambda inst: (getattr(inst, "score", None) or 0.0),
+                reverse=True,
+            )[:top_k_by_score]
+
         detections = []
-        for inst in f.instances:
-            pos = _instance_position(inst)
+        for inst in instances:
+            pos = _instance_position(
+                inst, node_names=node_names, anchor_node=anchor_node,
+            )
             if pos is None:
                 continue
             score = getattr(inst, "score", None)
@@ -246,6 +279,16 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Cap on concurrent track IDs (default 3 = 1F+2M).")
     parser.add_argument("--max-gap", type=int, default=50,
                         help="Retire a track unseen for more than this many frames.")
+    parser.add_argument(
+        "--anchor-node", default=None,
+        help="If set, track on this skeleton node's xy directly instead of the "
+             "centroid of all visible nodes (e.g. 'mouth' for the round2 mouth+tail model).",
+    )
+    parser.add_argument(
+        "--top-k-by-score", type=int, default=None,
+        help="If set, keep only the top-K instances per frame ranked by SLEAP "
+             "instance.score before tracking (recovers n=K-at-inference behaviour).",
+    )
     parser.add_argument("--paths-config", default=None)
     parser.add_argument("--sleap-output-dir", default=None)
     return parser
@@ -288,6 +331,8 @@ def main(argv: list[str] | None = None) -> None:
         max_distance=args.max_distance,
         max_tracks=args.max_tracks,
         max_gap=args.max_gap,
+        anchor_node=args.anchor_node,
+        top_k_by_score=args.top_k_by_score,
     )
     write_csv(rows, output)
 

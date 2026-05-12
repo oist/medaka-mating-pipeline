@@ -252,3 +252,18 @@ class Calibration:
         if out.ndim == 2 and out.shape[1] == 6:
             return out.reshape(-1, 3, 2)
         return out
+
+    def project_world_to_view(self, xyz: np.ndarray, view: str) -> np.ndarray:
+        """
+        Reproject (N, 3) world coordinates to a single camera view's image plane.
+
+        view in {"top_cam", "side1_cam", "side2_cam"} (mapped to cam0/cam1/cam2).
+        Returns (N, 2) pixel coordinates.
+        """
+        view_to_cam = {"top_cam": 0, "side1_cam": 1, "side2_cam": 2}
+        if view not in view_to_cam:
+            raise ValueError(f"unknown view {view!r}; expected one of {list(view_to_cam)}")
+        all_views = self.compute_imCoords_from_XYZ(xyz)  # (N, 3, 2)
+        if all_views.ndim == 2:
+            all_views = all_views.reshape(1, 3, 2)
+        return all_views[:, view_to_cam[view], :]

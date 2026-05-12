@@ -43,6 +43,25 @@ sleap = [
 rerun = [
   "rerun-sdk>=0.22",
 ]
+# Multi-view annotation GUIs in scripts/sleap/ (napari + PyQt5 stack).
+# Install with `uv sync --extra gui` (or `--all-extras`).
+gui = [
+  "napari>=0.5",
+  "PyQt5>=5.15",
+  # pyqt5-qt5 has no Windows wheels after 5.15.2; pin on Windows only.
+  "PyQt5-Qt5==5.15.2; sys_platform == 'win32'",
+  "magicgui>=0.10",
+  "superqt>=0.7",
+]
+# TensorRT inference convenience extras for the sleap-nn -> TRT path
+# (see memory/project_tensorrt_inference.md). Not imported by repo Python,
+# but kept here so `uv sync --extra tensorrt` installs the needed runtime.
+tensorrt = [
+  "tensorrt>=10.0",
+  "onnx>=1.16",
+  "onnxruntime-gpu>=1.20",
+  "onnxslim>=0.1",
+]
 
 [dependency-groups]
 dev = [
@@ -56,6 +75,20 @@ sleap = [
 rerun = [
   "rerun-sdk>=0.22",
 ]
+gui = [
+  "napari>=0.5",
+  "PyQt5>=5.15",
+  # pyqt5-qt5 has no Windows wheels after 5.15.2; pin on Windows only.
+  "PyQt5-Qt5==5.15.2; sys_platform == 'win32'",
+  "magicgui>=0.10",
+  "superqt>=0.7",
+]
+tensorrt = [
+  "tensorrt>=10.0",
+  "onnx>=1.16",
+  "onnxruntime-gpu>=1.20",
+  "onnxslim>=0.1",
+]
 
 # uv configuration:
 # - Windows/Linux use the PyTorch CUDA 13.0 index.
@@ -66,7 +99,10 @@ url = "https://download.pytorch.org/whl/cu130"
 explicit = true
 
 [tool.uv]
-default-groups = ["dev"]
+# `sleap` and `rerun` are needed by the common-path scripts (track_simple_nn,
+# bind_topcam_id, rerun_viewer), so include them in the default install.
+# `gui` and `tensorrt` stay opt-in (Qt platform plugins / CUDA-only).
+default-groups = ["dev", "sleap", "rerun"]
 
 [tool.uv.sources]
 torch = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]

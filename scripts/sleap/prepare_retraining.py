@@ -158,8 +158,15 @@ def stage_config(
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--seed", type=Path, required=True, help="annotation_seed.pkg.slp")
+    ap.add_argument("--seed", type=Path, default=None,
+                    help="annotation_seed.pkg.slp (omit with --skip-labels to "
+                         "re-stage configs against existing <view>/labels.pkg.slp).")
     ap.add_argument("--out-dir", type=Path, required=True, help="root output dir")
+    ap.add_argument(
+        "--skip-labels", action="store_true",
+        help="Skip the seed-split step; assume <out_dir>/<view>/labels.pkg.slp "
+             "already exists. Useful for restaging configs after a template edit.",
+    )
     ap.add_argument(
         "--pretrained-from",
         type=Path,
@@ -176,8 +183,20 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     round_name = out_dir.name  # e.g. "retrain_20260508" -> used in cache path
 
-    print(f"[1/2] Splitting {args.seed} by view")
-    slp_by_view = split_seed(args.seed, out_dir)
+    if args.skip_labels:
+        slp_by_view: dict[str, Path] = {}
+        for view in VIEW_TAGS:
+            p = out_dir / view / "labels.pkg.slp"
+            if p.exists():
+                slp_by_view[view] = p
+                print(f"[1/2] view '{view}': re-using existing {p}")
+            else:
+                print(f"[1/2] view '{view}': no labels.pkg.slp at {p}, skipping")
+    else:
+        if args.seed is None:
+            ap.error("--seed is required unless --skip-labels is set.")
+        print(f"[1/2] Splitting {args.seed} by view")
+        slp_by_view = split_seed(args.seed, out_dir)
 
     print(f"[2/2] Staging configs from templates {TEMPLATE_DIR}")
     train_cmds: list[str] = []

@@ -50,7 +50,31 @@ are:
                    ├─► track_simple_nn.py (2D, per view)        → tracks.csv
                    │
                    └─► reconstruct_from_slp.py (3D, all views)  → 3d.csv
+                       │
+                       └─► --bind-top-id (optional)             → 3d_identified.csv
+                           uses top_cam.tracks.csv as 2D-ID anchor;
+                           per-frame reprojection-NN + global Hungarian
+                           1-to-1 voting attaches a stable `final_fish_id`
+                           to each geometry trajectory.
 ```
+
+### 2D-ID source for `--bind-top-id` (round2_trt_n6 production pipeline)
+
+Empirical 10-window evaluation (`runs/id_eval_batch_step2_isolation/`) showed that
+**neither mouth-anchored matching nor top-K-by-score filtering improves identity
+quality** on the n=6 source. Within the production source `round2_trt_n6/`, the
+best 2D-ID tracker is the **default centroid tracker** invoked on
+`round2_trt_n6/top_cam.slp`:
+
+```bash
+python -m scripts.tracking.track_simple_nn <exp> \
+    --slp <sleap_output_dir>/<exp>/round2_trt_n6/top_cam.slp \
+    --output <exp>_top_cam.tracks.csv \
+    --max-distance 100 --max-tracks 3 --max-gap 500
+```
+
+(no `--anchor-node`, no `--top-k-by-score` — those flags exist for experimentation
+but degrade quality on this source; see commit log for the isolation study.)
 
 ### 2.1 Merge per-view chunks → one `.slp` per camera
 

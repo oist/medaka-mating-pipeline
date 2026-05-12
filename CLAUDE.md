@@ -37,14 +37,16 @@ docs/                   # overview, calibration, data_layout, script_workflow, e
 
 ```bash
 # Recommended: uv (configured to pull torch from pytorch-cu130 index on win/linux)
+# Default install now includes sleap-io and rerun-sdk (common-path scripts need them).
 uv sync --python 3.11
 
-# Optional extras
-uv sync --extra rerun        # rerun-sdk for visualization/rerun_viewer.py
-uv sync --extra sleap        # sleap-io for .slp loading/merging
+# Optional extras (opt-in)
+uv sync --extra gui          # napari + PyQt5 for scripts/sleap/*_annotator.py
+uv sync --extra tensorrt     # tensorrt + onnx for the sleap-nn -> TRT inference path
+uv sync --all-extras         # everything at once
 
 # Alternative: pip
-python -m venv .venv && pip install -e ".[dev]"
+python -m venv .venv && pip install -e ".[dev,sleap,rerun]"
 ```
 
 - Python >=3.11, <3.14
@@ -190,3 +192,42 @@ CI runs on GitHub Actions (Ubuntu, Python 3.11).
 - Network drive paths (Z:, G:) vary by machine — never hardcode them.
 - `scripts/analysis/compute_*_metrics.py` are placeholders that raise `SystemExit("TODO: ...")`; the working analysis scripts there are the `render_*_video.py` renderers.
 - For new behavior-tracking work, prefer the `.slp`-based path (HPC inference → `--merge-chunks` → `reconstruct_from_slp`) over the legacy clip-CSV path.
+
+## Session Start Rules
+
+- Always read [MEMORY.md](MEMORY.md) at the start of a session to load the current project status, rules, and procedures before starting work.
+- When rules or procedures change, update MEMORY.md in the same turn so future sessions inherit the change.
+
+## Work Rules
+
+### No confirmation needed (auto-execute)
+
+- Listing files and folders (`ls`, `find`, Glob)
+- Reading existing files
+- Investigation, analysis, and read-only inspection of project state
+
+### Confirmation required (ask y/n first)
+
+- Creating new files
+- Writing to or overwriting existing files
+- Installing packages or modifying dependencies
+
+These confirmation rules apply to changes initiated by Claude. When the user explicitly asks for a specific create/edit/install in their message, that request is the confirmation — proceed without re-asking.
+
+## Script Execution Notes
+
+- Always run Python scripts via the project virtualenv, not the system interpreter:
+  - Windows (PowerShell): `.venv\Scripts\python.exe scripts\xxx.py`
+  - Unix: `.venv/bin/python scripts/xxx.py`
+- Use full paths for binaries when the user's PATH may not be configured. Concrete paths on this machine are recorded in [MEMORY.md](MEMORY.md) under *Key technical info → Common commands / binary paths* (e.g. `ffmpeg`).
+
+## ECC Agent Usage Rules
+
+| Trigger | Agent |
+|---------|-------|
+| After creating or modifying a script or other source file | `code-reviewer` |
+| After touching authentication, API credentials, or external-communication code | `security-reviewer` |
+| Before implementing a new feature that spans multiple files | `planner` |
+| Before fixing a bug or adding a new feature (write tests first) | `tdd-guide` |
+
+Launch independent agents in parallel when their work doesn't depend on each other (see `~/.claude/rules/ecc/common/agents.md`).
