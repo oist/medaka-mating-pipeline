@@ -225,3 +225,5 @@ data/derived/
 .omx/
 # OMC oh-my-codex files
 .omc/
+# Claude Code local working state
+.claude/
