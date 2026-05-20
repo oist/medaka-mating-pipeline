@@ -24,7 +24,7 @@ dependencies = [
     "scikit-learn>=1.8.0",
     "scipy>=1.14.1",
     "seaborn>=0.13.0",
-    "sleap[nn]>=1.6.2",
+    "sleap[nn]>=1.6.3",
     "torch>=2.6.0",
     "torchvision>=0.21.0",
     "torchaudio>=2.6.0",
@@ -66,6 +66,7 @@ tensorrt = [
 [dependency-groups]
 dev = [
   "ipykernel>=7.1.0",
+  "isort>=8.0.1",
   "pytest>=7",
   "visidata>=3.0",
 ]

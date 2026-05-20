@@ -46,8 +46,13 @@ def _count_labels(labels_slp: Path) -> int | None:
 def run_one(
     *, config_path: Path, run_name: str, log_path: Path, dry_run: bool,
 ) -> int:
+    # Invoke the sleap_nn CLI module via the venv interpreter rather than the
+    # `sleap-nn.exe` setuptools wrapper. On Windows with Application Control,
+    # newly installed/updated wrappers can trip [WinError 4551] until the IT
+    # policy catches up; the python -m form bypasses that since the venv's
+    # python is already trusted.
     cmd = [
-        "sleap-nn", "train",
+        sys.executable, "-m", "sleap_nn.cli", "train",
         "--config-name", config_path.name,
         "--config-dir", str(config_path.parent),
         f"trainer_config.run_name={run_name}",
@@ -91,17 +96,23 @@ def main(argv: list[str] | None = None) -> int:
                    help="Print what would run without launching.")
     p.add_argument("--continue-on-fail", action="store_true",
                    help="Don't stop the sequence if a training returns non-zero.")
+    p.add_argument("--kinds", nargs="+", default=None, choices=KINDS,
+                   help="Subset of model kinds to train (default: all).")
+    p.add_argument("--views", nargs="+", default=None, choices=VIEWS,
+                   help="Subset of views to train (default: all).")
     args = p.parse_args(argv)
 
     if not args.round_dir.is_dir():
         sys.exit(f"--round-dir not found: {args.round_dir}")
 
+    views = list(args.views) if args.views else VIEWS
+    kinds = list(args.kinds) if args.kinds else KINDS
     failures = []
-    for view in VIEWS:
+    for view in views:
         labels_slp = args.round_dir / view / "labels.pkg.slp"
         n = _count_labels(labels_slp) if labels_slp.exists() else None
         n_tag = n if n is not None else "X"
-        for kind in KINDS:
+        for kind in kinds:
             cfg = args.round_dir / view / "configs" / f"{kind}.yaml"
             if not cfg.exists():
                 print(f"[skip] {view}/{kind}: config not found: {cfg}")

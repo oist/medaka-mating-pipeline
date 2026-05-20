@@ -7,7 +7,7 @@ data_config:
   test_file_path: null
   provider: LabelsReader
   user_instances_only: true
-  data_pipeline_fw: torch_dataset_cache_img_memory
+  data_pipeline_fw: torch_dataset_cache_img_disk
   cache_img_path: C:\sleap_cache\retrain_20260508_side_centered_instance
   use_existing_imgs: false
   delete_cache_imgs_after_training: false
@@ -38,11 +38,11 @@ data_config:
       brightness_max: 1.1
       brightness_p: 0.0
     geometric:
-      rotation_min: -15.0
-      rotation_max: 15.0
+      rotation_min: -180.0
+      rotation_max: 180.0
       rotation_p: 1.0
-      scale_min: 0.9
-      scale_max: 1.1
+      scale_min: 0.7
+      scale_max: 1.3
       scale_p: 1.0
       translate_width: 0.0
       translate_height: 0.0
@@ -75,7 +75,7 @@ model_config:
       up_interpolate: true
       stacks: 1
       convs_per_block: 2
-      output_stride: 4
+      output_stride: 2
     convnext: null
     swint: null
   head_configs:
@@ -86,7 +86,7 @@ model_config:
         part_names: null
         anchor_part: mouth
         sigma: 2.5
-        output_stride: 4
+        output_stride: 2
         loss_weight: 1.0
     bottomup: null
     multi_class_bottomup: null
