@@ -34,6 +34,13 @@ from pathlib import Path
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from scripts.common.boris_events import find_boris_csv, summarise_boris
+from scripts.common.experiment_list import (
+    load_group_list,
+    load_lay_eggs_table,
+    lookup_group,
+    lookup_lay_eggs,
+)
 from scripts.common.experiment_metadata import MANIFEST_FILENAME, VIEWS
 from scripts.common.local_paths import choose_path, load_local_paths
 
@@ -58,6 +65,66 @@ def collect_manifests(data_root: Path) -> list[dict]:
     return manifests
 
 
+def attach_boris(manifest: dict, boris_dir: Path | None) -> dict:
+    """
+    Add a `boris` section to a manifest in-place when a matching CSV exists.
+
+    Shape:
+        manifest["boris"] = {
+            "csv_path": "<abs path>",
+            "n_events": int,
+            "n_unique_behaviors": int,
+            "n_unique_subjects": int,
+            "first_frame": int | None,
+            "last_frame": int | None,
+            "duration_sec": float | None,
+            "behaviors": {name: count, ...},
+            "subjects":  {name: count, ...},
+        }
+    """
+    if boris_dir is None:
+        return manifest
+    csv_path = find_boris_csv(manifest.get("folder_name", ""), boris_dir)
+    if csv_path is None:
+        return manifest
+    try:
+        summary = summarise_boris(csv_path)
+    except Exception as exc:  # noqa: BLE001
+        print(f"WARN: could not read BORIS file {csv_path}: {exc}", file=sys.stderr)
+        return manifest
+    manifest["boris"] = {
+        "csv_path": str(summary.csv_path),
+        "n_events": summary.n_events,
+        "n_unique_behaviors": summary.n_unique_behaviors,
+        "n_unique_subjects": summary.n_unique_subjects,
+        "first_frame": summary.first_frame,
+        "last_frame": summary.last_frame,
+        "duration_sec": summary.duration_sec,
+        "behaviors": summary.behaviors,
+        "subjects": summary.subjects,
+    }
+    return manifest
+
+
+def attach_experiment_list(
+    manifest: dict,
+    lay_eggs_df: pd.DataFrame | None,
+    group_df: pd.DataFrame | None,
+) -> dict:
+    """Attach `experiment_list` (per-row) and `group_info` (per-group) sections."""
+    if lay_eggs_df is not None:
+        row = lookup_lay_eggs(lay_eggs_df, manifest.get("folder_name", ""))
+        if row is not None:
+            manifest["experiment_list"] = row
+    if group_df is not None:
+        group = (manifest.get("experiment") or {}).get("group")
+        if group:
+            row = lookup_group(group_df, group)
+            if row is not None:
+                manifest["group_info"] = row
+    return manifest
+
+
 def derive_convenience_fields(manifest: dict) -> dict:
     """
     Flat helper columns for the CSV view — quick merge-status + frame counts
@@ -80,6 +147,28 @@ def derive_convenience_fields(manifest: dict) -> dict:
     out["merged_side1"] = per_view_merged.get("side1_cam", False)
     out["merged_side2"] = per_view_merged.get("side2_cam", False)
     out["merged_all"] = all(per_view_merged.get(v, False) for v in VIEWS)
+
+    boris = manifest.get("boris") or {}
+    out["has_boris"] = bool(boris)
+    out["boris_n_events"] = boris.get("n_events")
+    out["boris_n_behaviors"] = boris.get("n_unique_behaviors")
+    out["boris_first_frame"] = boris.get("first_frame")
+    out["boris_last_frame"] = boris.get("last_frame")
+
+    expl = manifest.get("experiment_list") or {}
+    out["has_experiment_list"] = bool(expl)
+    out["eggs"] = expl.get("eggs")
+    out["eggs_after"] = expl.get("eggs_after")
+    out["female_accept"] = expl.get("female_accept")
+    out["male_contest"] = expl.get("male_contest")
+    out["sneak"] = expl.get("sneak")
+
+    group_info = manifest.get("group_info") or {}
+    out["female_desc"] = group_info.get("female_desc")
+    out["male1_desc"] = group_info.get("male1_desc")
+    out["male2_desc"] = group_info.get("male2_desc")
+    out["group_detail"] = group_info.get("detail")
+
     return out
 
 
@@ -131,17 +220,45 @@ def write_csv(manifests: list[dict], path: Path) -> None:
     df.to_csv(path, index=False)
 
 
-def build_catalog(data_root: Path, output_dir: Path, basename: str) -> dict:
+def build_catalog(
+    data_root: Path,
+    output_dir: Path,
+    basename: str,
+    boris_dir: Path | None = None,
+    experiment_list_dir: Path | None = None,
+) -> dict:
     manifests = collect_manifests(data_root)
+    if boris_dir is not None:
+        for m in manifests:
+            attach_boris(m, boris_dir)
+
+    lay_eggs_df = None
+    group_df = None
+    if experiment_list_dir is not None:
+        try:
+            lay_eggs_df = load_lay_eggs_table(experiment_list_dir)
+        except Exception as exc:  # noqa: BLE001
+            print(f"WARN: could not load lay_eggs_table.csv: {exc}", file=sys.stderr)
+        try:
+            group_df = load_group_list(experiment_list_dir)
+        except Exception as exc:  # noqa: BLE001
+            print(f"WARN: could not load group_list.csv: {exc}", file=sys.stderr)
+        for m in manifests:
+            attach_experiment_list(m, lay_eggs_df, group_df)
+
     jsonl_path = output_dir / f"{basename}.jsonl"
     csv_path = output_dir / f"{basename}.csv"
     write_jsonl(manifests, jsonl_path)
     write_csv(manifests, csv_path)
 
     merged_count = sum(1 for m in manifests if (m.get("sleap") or {}).get("views"))
+    boris_count = sum(1 for m in manifests if m.get("boris"))
+    expl_count = sum(1 for m in manifests if m.get("experiment_list"))
     return {
         "n_experiments": len(manifests),
         "n_with_sleap": merged_count,
+        "n_with_boris": boris_count,
+        "n_with_experiment_list": expl_count,
         "jsonl": jsonl_path,
         "csv": csv_path,
     }
@@ -164,6 +281,18 @@ def main(argv: list[str] | None = None) -> None:
         default=DEFAULT_CATALOG_BASENAME,
         help=f"Output file basename (default: {DEFAULT_CATALOG_BASENAME}).",
     )
+    parser.add_argument(
+        "--boris-events-dir",
+        default=None,
+        help="Directory of BORIS event CSVs. Defaults to boris_events_dir from "
+             "paths config; pass '' to skip BORIS enrichment.",
+    )
+    parser.add_argument(
+        "--experiment-list-dir",
+        default=None,
+        help="Directory of cached Experiment List sheet CSVs. Defaults to "
+             "experiment_list_dir from paths config; pass '' to skip.",
+    )
     parser.add_argument("--paths-config", default=None)
     args = parser.parse_args(argv)
 
@@ -179,9 +308,35 @@ def main(argv: list[str] | None = None) -> None:
     root = Path(root_str)
     out_dir = Path(args.output_dir) if args.output_dir else root
 
-    summary = build_catalog(root, out_dir, args.basename)
+    if args.boris_events_dir == "":
+        boris_dir: Path | None = None
+    else:
+        boris_str = choose_path(
+            args.boris_events_dir,
+            local.boris_events_dir if local else None,
+        )
+        boris_dir = Path(boris_str) if boris_str else None
+
+    if args.experiment_list_dir == "":
+        expl_dir: Path | None = None
+    else:
+        expl_str = choose_path(
+            args.experiment_list_dir,
+            local.experiment_list_dir if local else None,
+        )
+        expl_dir = Path(expl_str) if expl_str else None
+
+    summary = build_catalog(
+        root,
+        out_dir,
+        args.basename,
+        boris_dir=boris_dir,
+        experiment_list_dir=expl_dir,
+    )
     print(f"Wrote {summary['n_experiments']} experiments "
-          f"({summary['n_with_sleap']} with SLEAP merge info):")
+          f"({summary['n_with_sleap']} with SLEAP merge info, "
+          f"{summary['n_with_boris']} with BORIS, "
+          f"{summary['n_with_experiment_list']} with Experiment List):")
     print(f"  {summary['jsonl']}")
     print(f"  {summary['csv']}")
 

@@ -20,3 +20,12 @@ medaka_data_dir = "Z:\\StephensU\\medaka\\medaka_202512"
 # sleap_side_mouth). Model entries in configs/sleap/model_paths.yaml are
 # resolved relative to this directory.
 sleap_models_dir = "G:\\path\\to\\sleap"
+
+# Directory of manual BORIS behavior annotations, one CSV per experiment
+# (e.g. 20251220_E_1_1_FCMC.csv). The CSV "Image index" column gives the
+# top-cam frame number, so events can be pinned directly to frames.
+boris_events_dir = "G:\\path\\to\\boris_events"
+
+# Directory holding per-sheet CSV cache of the "Experiment List" Google Sheet
+# (lay_eggs_table.csv, group_list.csv, ...). Re-sync via the Drive MCP.
+experiment_list_dir = "G:\\path\\to\\experiment_list"

@@ -1,0 +1,35 @@
+[paths]
+# Machine-specific roots for the medaka 3D tracking pipeline.
+# Tracked in git so the standard OIST layout is reproducible; override per
+# machine by passing --paths-config to scripts when your mounts differ.
+
+# Top-level shared roots on the OIST network share
+data_root    = "Z:\\StephensU\\medaka"
+raw_data_dir = "Z:\\StephensU\\medaka\\medaka_202512"
+
+# Pipeline outputs (network share)
+sleap_output_dir          = "Z:\\StephensU\\medaka\\sleap_output"
+processed_dir             = "Z:\\StephensU\\medaka\\processed"
+tracking_output_dir       = "Z:\\StephensU\\medaka\\processed"
+reconstruction_output_dir = "Z:\\StephensU\\medaka\\reconstruction_3d"
+runs_dir                  = "Z:\\StephensU\\medaka\\runs"
+
+# Calibration model (checked into repo; resolved relative to repo root)
+calibration_model_dir = "calibration_results\\cali_20251217_manual\\merged_rule_reassigned_beads_only\\models"
+
+# Raw recording root: each subfolder is one experiment with top_cam/, side1_cam/, side2_cam/.
+medaka_data_dir = "Z:\\StephensU\\medaka\\medaka_202512"
+
+# SLEAP model root. Entries in configs/sleap/model_paths.yaml resolve relative to this.
+sleap_models_dir = "Z:\\StephensU\\medaka\\sleap_models"
+
+# Manual BORIS behavior annotations (one CSV per experiment, named <folder>.csv).
+# Lives in the lab's shared Google Drive; integrated into the catalog so frames
+# can be pinned by Image index.
+boris_events_dir = "G:\\.shortcut-targets-by-id\\14OI1k7IaNOdC5yaC9GnYyCi2u-gfGLEs\\OIST 1215-0122\\boris_events"
+
+# Per-sheet CSV cache of the "Experiment List" Google Sheet
+# (file ID 1Ae9OXJpCsjcB6z77K2oIKPGTIGS6Rl9Bt1enHOL8-uY). Used by build_catalog
+# to attach outcome (eggs / female_accept / contest counts) and per-group fish
+# descriptions to each manifest. Re-sync via the Drive MCP when the sheet changes.
+experiment_list_dir = "Z:\\StephensU\\medaka\\medaka_202512\\experiment_list"

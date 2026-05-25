@@ -205,7 +205,9 @@ __marimo__/
 # Project outputs / large artifacts
 runs/
 calibration_outputs/
-configs/paths.local.toml
+# NOTE: configs/paths.local.toml is intentionally tracked so the lab's
+# shared OIST/Z: layout is reproducible. Override locally with --paths-config
+# if your mounts differ.
 
 # Data (keep data/README.md tracked)
 data/raw/
