@@ -15,12 +15,15 @@ authors = [{ name = "makoto hiroi" }]
 # and behavior analysis.
 dependencies = [
     "imageio-ffmpeg>=0.5.0",
+    "h5py>=3.11.0",
     "joblib>=1.5.3",
     "matplotlib>=3.10.8",
     "numpy>=2.3.5",
     "opencv-python>=4.11.0.86",
     "pandas>=2.3.3",
     "pillow>=10.0.0",
+    "pyarrow>=16.0.0",
+    "PyYAML>=6.0.0",
     "scikit-learn>=1.8.0",
     "scipy>=1.14.1",
     "seaborn>=0.13.0",
@@ -112,8 +115,8 @@ torchvision = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or s
 torchaudio = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
 
 [tool.setuptools]
-package-dir = {"" = "src", "scripts" = "scripts"}
+package-dir = {"" = "src", "scripts" = "scripts", "sam2_id_experiment" = "sam2_id_experiment"}
 
 [tool.setuptools.packages.find]
 where = ["src", "."]
-include = ["medaka_pipeline*", "scripts*"]
+include = ["medaka_pipeline*", "scripts*", "sam2_id_experiment*"]

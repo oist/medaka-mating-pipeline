@@ -204,6 +204,8 @@ __marimo__/
 
 # Project outputs / large artifacts
 runs/
+outputs/
+checkpoints/
 calibration_outputs/
 # NOTE: configs/paths.local.toml is intentionally tracked so the lab's
 # shared OIST/Z: layout is reproducible. Override locally with --paths-config

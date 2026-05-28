@@ -1860,6 +1860,7 @@ name = "medaka-mating-pipeline"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "h5py" },
     { name = "imageio-ffmpeg" },
     { name = "joblib" },
     { name = "matplotlib" },
@@ -1868,6 +1869,8 @@ dependencies = [
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "pillow" },
+    { name = "pyarrow" },
+    { name = "pyyaml" },
     { name = "scikit-learn" },
     { name = "scipy" },
     { name = "seaborn" },
@@ -1936,6 +1939,7 @@ tensorrt = [
 
 [package.metadata]
 requires-dist = [
+    { name = "h5py", specifier = ">=3.11.0" },
     { name = "imageio-ffmpeg", specifier = ">=0.5.0" },
     { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=7.1.0" },
     { name = "joblib", specifier = ">=1.5.3" },
@@ -1950,9 +1954,11 @@ requires-dist = [
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "pillow", specifier = ">=10.0.0" },
+    { name = "pyarrow", specifier = ">=16.0.0" },
     { name = "pyqt5", marker = "extra == 'gui'", specifier = ">=5.15" },
     { name = "pyqt5-qt5", marker = "sys_platform == 'win32' and extra == 'gui'", specifier = "==5.15.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7" },
+    { name = "pyyaml", specifier = ">=6.0.0" },
     { name = "rerun-sdk", marker = "extra == 'rerun'", specifier = ">=0.22" },
     { name = "scikit-learn", specifier = ">=1.8.0" },
     { name = "scipy", specifier = ">=1.14.1" },
