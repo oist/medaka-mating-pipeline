@@ -1,0 +1,617 @@
+experiment_name: 20251225_K_1_2_FCMC
+view: top_cam
+paths_config: configs/paths.local.toml
+output_dir: outputs/{experiment_name}/{view}_f176300_181300
+start_frame: 176300
+end_frame: 181300
+n_animals_expected: 3
+sam2:
+  runner: sam2_video_predictor
+  model_cfg: sam2_hiera_l.yaml
+  checkpoint: checkpoints/sam2_hiera_large.pt
+  device: cuda
+  prompt_mode: manual_initial_frame
+  max_side_px: 600
+  jpeg_quality: 90
+  vos_optimized: false
+  frame_stride: 10
+  cache_frames: true
+  frame_cache_dir: outputs/{experiment_name}/{view}/sam2_frame_cache
+  refresh_frame_cache: false
+  async_loading_frames: true
+  offload_video_to_cpu: false
+  offload_state_to_cpu: false
+  prompts:
+  - obj_id: 0
+    frame: 0
+    points:
+    - - 764
+      - 113
+    - - 741
+      - 136
+    - - 720
+      - 167
+    - - 723
+      - 197
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 0
+    points:
+    - - 893
+      - 215
+    - - 912
+      - 228
+    - - 928
+      - 237
+    - - 945
+      - 257
+    - - 967
+      - 268
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 0
+    points:
+    - - 191
+      - 984
+    - - 216
+      - 988
+    - - 249
+      - 993
+    - - 272
+      - 999
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 41
+    points:
+    - - 824
+      - 104
+    - - 797
+      - 117
+    - - 765
+      - 133
+    - - 748
+      - 148
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 41
+    points:
+    - - 843
+      - 176
+    - - 861
+      - 185
+    - - 876
+      - 197
+    - - 903
+      - 213
+    - - 937
+      - 239
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 41
+    points:
+    - - 185
+      - 984
+    - - 216
+      - 991
+    - - 249
+      - 996
+    - - 269
+      - 999
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 81
+    points:
+    - - 877
+      - 111
+    - - 845
+      - 116
+    - - 789
+      - 115
+    - - 745
+      - 117
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 81
+    points:
+    - - 811
+      - 164
+    - - 837
+      - 179
+    - - 861
+      - 192
+    - - 893
+      - 207
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 81
+    points:
+    - - 185
+      - 991
+    - - 217
+      - 993
+    - - 265
+      - 1001
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 101
+    points:
+    - - 965
+      - 108
+    - - 957
+      - 127
+    - - 939
+      - 152
+    - - 909
+      - 164
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 101
+    points:
+    - - 676
+      - 252
+    - - 700
+      - 231
+    - - 728
+      - 217
+    - - 755
+      - 216
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 101
+    points:
+    - - 183
+      - 987
+    - - 215
+      - 993
+    - - 243
+      - 999
+    - - 264
+      - 1003
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 121
+    points:
+    - - 979
+      - 108
+    - - 963
+      - 167
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 121
+    points:
+    - - 620
+      - 357
+    - - 625
+      - 316
+    - - 625
+      - 277
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 121
+    points:
+    - - 183
+      - 989
+    - - 216
+      - 996
+    - - 255
+      - 999
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 161
+    points:
+    - - 889
+      - 105
+    - - 919
+      - 123
+    - - 967
+      - 143
+    - - 1005
+      - 176
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 161
+    points:
+    - - 593
+      - 611
+    - - 592
+      - 579
+    - - 589
+      - 544
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 161
+    points:
+    - - 180
+      - 987
+    - - 223
+      - 1000
+    - - 251
+      - 1007
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 200
+    points:
+    - - 840
+      - 111
+    - - 876
+      - 117
+    - - 909
+      - 120
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 200
+    points:
+    - - 609
+      - 772
+    - - 607
+      - 740
+    - - 596
+      - 691
+    - - 601
+      - 660
+    labels:
+    - 1
+    - 1
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 200
+    points:
+    - - 183
+      - 991
+    - - 216
+      - 996
+    - - 257
+      - 1007
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 3249
+    points:
+    - - 124
+      - 997
+    - - 153
+      - 993
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 3249
+    points:
+    - - 471
+      - 936
+    - - 495
+      - 941
+    - - 547
+      - 975
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 3249
+    points:
+    - - 121
+      - 923
+    - - 147
+      - 941
+    - - 173
+      - 959
+    labels:
+    - 1
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 3261
+    points:
+    - - 116
+      - 992
+    - - 140
+      - 1008
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 3261
+    points:
+    - - 459
+      - 941
+    - - 495
+      - 936
+    labels:
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 3261
+    points:
+    - - 135
+      - 917
+    - - 164
+      - 951
+    labels:
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 3324
+    points:
+    - - 100
+      - 917
+    - - 116
+      - 952
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 3324
+    points:
+    - - 384
+      - 1004
+    - - 417
+      - 995
+    labels:
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 3324
+    points:
+    - - 179
+      - 845
+    - - 180
+      - 888
+    labels:
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 3347
+    points:
+    - - 109
+      - 885
+    - - 109
+      - 928
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 3347
+    points:
+    - - 361
+      - 1007
+    - - 385
+      - 1004
+    labels:
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 3347
+    points:
+    - - 188
+      - 808
+    - - 191
+      - 848
+    labels:
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 3422
+    points:
+    - - 164
+      - 732
+    - - 167
+      - 780
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 3422
+    points:
+    - - 264
+      - 928
+    - - 295
+      - 947
+    labels:
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 3422
+    points:
+    - - 220
+      - 575
+    - - 227
+      - 600
+    labels:
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 3532
+    points:
+    - - 161
+      - 504
+    - - 183
+      - 539
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 3532
+    points:
+    - - 207
+      - 761
+    - - 219
+      - 797
+    labels:
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 3532
+    points:
+    - - 183
+      - 413
+    - - 200
+      - 439
+    labels:
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 3661
+    points:
+    - - 272
+      - 260
+    - - 252
+      - 293
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 3661
+    points:
+    - - 233
+      - 487
+    - - 215
+      - 505
+    labels:
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 3661
+    points:
+    - - 317
+      - 355
+    - - 348
+      - 349
+    labels:
+    - 1
+    - 1
+  - obj_id: 0
+    frame: 3785
+    points:
+    - - 287
+      - 207
+    - - 277
+      - 236
+    labels:
+    - 1
+    - 1
+  - obj_id: 1
+    frame: 3785
+    points:
+    - - 343
+      - 361
+    - - 329
+      - 377
+    labels:
+    - 1
+    - 1
+  - obj_id: 2
+    frame: 3785
+    points:
+    - - 395
+      - 189
+    - - 397
+      - 228
+    labels:
+    - 1
+    - 1
+opencv_bgsub:
+  threshold: 24
+  open_px: 3
+  close_px: 7
+  min_area: 80
+  max_area: 8000
+  background_samples: 80
+  max_track_distance_px: 80
+qc:
+  min_tracklet_length_frames: 100
+  min_mask_area: 50
+  max_mask_area: 100000
+  max_area_cv: 0.35
+  max_centroid_speed_px_per_frame: 80
+  min_confidence: 0.8
+  reject_near_crossing: true
+  crossing_distance_px: 30
+  max_missing_frames: 0
+  max_area_ratio_change: 2.0
+  edge_margin_px: 5
+  max_overlap_fraction: 0.05
+  expected_object_count: 3
+  flag_bbox_touching_edge: true
+id_dataset:
+  crop_size: 128
+  max_crops_per_tracklet: 500
+  positive_pairs_per_tracklet: 1000
+  negative_pairs_per_tracklet_pair: 500
+  random_seed: 13
+debug:
+  write_overlay_video: true
+  write_rejected_examples: true
