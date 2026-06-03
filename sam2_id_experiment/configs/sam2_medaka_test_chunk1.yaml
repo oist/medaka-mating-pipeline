@@ -1,0 +1,32 @@
+experiment_name: 20251225_K_1_2_FCMC
+view: top_cam
+paths_config: configs/paths.local.toml
+output_dir: outputs/{experiment_name}/{view}
+start_frame: 171300
+end_frame: 176300
+n_animals_expected: 3
+
+hybrid_tracking:
+  view: top_cam
+  sleap_subdir: round4_260520
+  anchor_node: mouth
+  num_individuals: 3
+  max_points_per_frame: 3
+  max_sleap_distance_px_per_frame: 12.0
+  max_sleap_gap_frames: 500
+  segmentation_match_distance_px: 160.0
+  segmentation_anchor_statuses:
+    - clean_train
+    - usable_inference
+    - manual_review
+  segmentation_bonus: 80.0
+  segmentation_conflict_penalty: 220.0
+  motion_bind_weight: 0.35
+  segmentation_bind_weight: 1.0
+  manual_review_bind_weight: 0.15
+  bootstrap_initial_sleap: true
+  bootstrap_bind_weight: 0.05
+  reject_large_segmentation_anchor_jumps: true
+  max_segmentation_anchor_jump_px_per_frame: 40.0
+  max_segmentation_anchor_hard_jump_px: 250.0
+  close_contact_distance_px: 35.0

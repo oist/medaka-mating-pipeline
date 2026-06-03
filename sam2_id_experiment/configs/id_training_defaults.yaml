@@ -1,0 +1,6 @@
+crop_size: 128
+max_crops_per_tracklet: 500
+positive_pairs_per_tracklet: 1000
+negative_pairs_per_tracklet_pair: 500
+random_seed: 13
+

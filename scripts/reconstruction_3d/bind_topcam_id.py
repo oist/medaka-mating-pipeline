@@ -18,8 +18,9 @@ After the per-frame pass, each geometry `fish_id` is mapped to its modal
 `source_top_id` over the full run and written to `final_fish_id` so that
 downstream behavioral analysis sees a stable identity.
 
-Output columns: frame, fish_id (geometry), X, Y, Z, source_top_id, bind_score,
-bind_source, final_fish_id.
+Output columns include frame, fish_id (geometry), X, Y, Z, source_top_id,
+source_top_label, source_identity_trajectory_id, bind_score, bind_source, and
+final_fish_id.
 """
 
 import argparse
@@ -87,6 +88,10 @@ def bind(
                     "fish_id": r["fish_id"],
                     "X": float(r["X"]), "Y": float(r["Y"]), "Z": float(r["Z"]),
                     "source_top_id": np.nan,
+                    "source_top_label": "",
+                    "source_identity_trajectory_id": "",
+                    "source_qc_status": "",
+                    "source_bind_weight": 0.0,
                     "bind_score": np.nan,
                     "bind_source": "geometry_only",
                 })
@@ -94,6 +99,10 @@ def bind(
 
         top_xy = tf[["x", "y"]].to_numpy(dtype=float)
         top_ids = tf["track_id"].to_numpy()
+        top_labels = _optional_column(tf, "track_label", default="")
+        top_trajectory_ids = _optional_column(tf, "identity_trajectory_id", default="")
+        top_qc_status = _optional_column(tf, "qc_status", default="")
+        top_weights = _numeric_optional_column(tf, "bind_weight", default=1.0)
 
         cost = np.full((len(gf), len(tf)), 1e9, dtype=float)
         if valid_mask.any():
@@ -112,6 +121,10 @@ def bind(
                 "fish_id": r["fish_id"],
                 "X": float(r["X"]), "Y": float(r["Y"]), "Z": float(r["Z"]),
                 "source_top_id": int(top_ids[ci]),
+                "source_top_label": str(top_labels[ci]),
+                "source_identity_trajectory_id": str(top_trajectory_ids[ci]),
+                "source_qc_status": str(top_qc_status[ci]),
+                "source_bind_weight": float(top_weights[ci]),
                 "bind_score": float(cost[ri, ci]),
                 "bind_source": "top_cam_2d",
             })
@@ -126,6 +139,10 @@ def bind(
                 "fish_id": r["fish_id"],
                 "X": float(r["X"]), "Y": float(r["Y"]), "Z": float(r["Z"]),
                 "source_top_id": np.nan,
+                "source_top_label": "",
+                "source_identity_trajectory_id": "",
+                "source_qc_status": "",
+                "source_bind_weight": 0.0,
                 "bind_score": np.nan,
                 "bind_source": "geometry_only",
             })
@@ -137,9 +154,12 @@ def bind(
     # independent per-fish modes.
     bound_only = df.dropna(subset=["source_top_id"])
     if not bound_only.empty:
+        if "source_bind_weight" not in bound_only.columns:
+            bound_only = bound_only.copy()
+            bound_only["source_bind_weight"] = 1.0
         tally = bound_only.pivot_table(
             index="fish_id", columns="source_top_id",
-            values="bind_score", aggfunc="count", fill_value=0,
+            values="source_bind_weight", aggfunc="sum", fill_value=0,
         )
         geom_ids = tally.index.tolist()
         top_ids_unique = tally.columns.tolist()
@@ -156,18 +176,21 @@ def bind(
         mapping = {}
         geom_ids = []
 
+    label_by_top_id = _top_label_lookup(bound_only) if not bound_only.empty else {}
     print(f"[bind] global 1-to-1 assignment geometry fish_id -> top_track_id:")
     for fid in df["fish_id"].unique():
         tid = mapping.get(fid)
-        print(f"  {fid}: {tid if tid is not None else 'unbound (fallback to geometry id)'}")
+        label = label_by_top_id.get(tid, "") if tid is not None else ""
+        suffix = f" ({label})" if label else ""
+        print(f"  {fid}: {tid if tid is not None else 'unbound (fallback to geometry id)'}{suffix}")
 
     fallback_str = df["fish_id"].astype(str)
-    df["final_fish_id"] = df["fish_id"].map(mapping)
-    df["final_fish_id"] = np.where(
-        df["final_fish_id"].notna(),
-        df["final_fish_id"].astype("Int64").astype(str),
-        fallback_str,
-    )
+    label_mapping = {
+        fid: (label_by_top_id.get(tid) or str(int(tid)))
+        for fid, tid in mapping.items()
+    }
+    df["final_fish_id"] = df["fish_id"].map(label_mapping)
+    df["final_fish_id"] = df["final_fish_id"].fillna(fallback_str)
 
     bound = int((df["bind_source"] == "top_cam_2d").sum())
     total = len(df)
@@ -177,6 +200,32 @@ def bind(
     df.to_csv(out_csv, index=False)
     print(f"[bind] wrote {out_csv}")
     return df
+
+
+def _optional_column(df: pd.DataFrame, name: str, *, default: str) -> np.ndarray:
+    if name not in df.columns:
+        return np.asarray([default] * len(df), dtype=object)
+    return df[name].fillna(default).astype(str).to_numpy()
+
+
+def _numeric_optional_column(df: pd.DataFrame, name: str, *, default: float) -> np.ndarray:
+    if name not in df.columns:
+        return np.full((len(df),), float(default), dtype=float)
+    return pd.to_numeric(df[name], errors="coerce").fillna(float(default)).to_numpy(dtype=float)
+
+
+def _top_label_lookup(bound_only: pd.DataFrame) -> dict:
+    if "source_top_label" not in bound_only.columns:
+        return {}
+    lookup: dict = {}
+    for top_id, group in bound_only.groupby("source_top_id"):
+        if pd.isna(top_id):
+            continue
+        labels = group["source_top_label"].fillna("").astype(str)
+        labels = labels[labels != ""]
+        if not labels.empty:
+            lookup[int(top_id)] = labels.mode().iloc[0]
+    return lookup
 
 
 def build_parser() -> argparse.ArgumentParser:

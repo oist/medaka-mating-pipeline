@@ -1,0 +1,14 @@
+min_tracklet_length_frames: 100
+min_mask_area: 50
+max_mask_area: 100000
+max_area_cv: 0.35
+max_centroid_speed_px_per_frame: 80
+min_confidence: 0.8
+reject_near_crossing: true
+crossing_distance_px: 30
+max_missing_frames: 0
+max_area_ratio_change: 2.0
+edge_margin_px: 5
+max_overlap_fraction: 0.05
+expected_object_count: 3
+flag_bbox_touching_edge: true

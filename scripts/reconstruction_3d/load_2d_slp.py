@@ -24,9 +24,19 @@ import numpy as np
 VIEW_TO_CAM = {"top_cam": "cam0", "side1_cam": "cam1", "side2_cam": "cam2"}
 
 
-def _instance_point(inst) -> tuple[float, float, float]:
+def _instance_point(
+    inst,
+    *,
+    node_names: list[str] | None = None,
+    anchor_node: str | None = None,
+) -> tuple[float, float, float]:
     """Return (x, y, score) for an instance. x/y are NaN if nothing visible."""
     pts = inst.numpy()  # (n_nodes, 2)
+    if anchor_node is not None and node_names is not None and anchor_node in node_names:
+        pt = pts[node_names.index(anchor_node)]
+        score = getattr(inst, "score", None)
+        if np.isfinite(pt).all():
+            return float(pt[0]), float(pt[1]), float(score) if score is not None else np.nan
     mask = np.isfinite(pts).all(axis=1)
     if not mask.any():
         return np.nan, np.nan, float(getattr(inst, "score", np.nan) or np.nan)
@@ -42,6 +52,7 @@ def load_points_by_frame(
     num_candidates: int | None = None,
     start_frame: int | None = None,
     end_frame: int | None = None,
+    anchor_node: str | None = None,
 ) -> Dict[int, Dict[str, List[Tuple[float, float]]]]:
     """
     Parameters
@@ -59,6 +70,10 @@ def load_points_by_frame(
         When None, defaults to ``num_individuals`` (the pre-existing behaviour).
     start_frame, end_frame : int, optional
         Inclusive frame-index filter.
+    anchor_node : str, optional
+        If provided, use this skeleton node's xy for each instance instead of
+        the centroid of visible nodes. For the current medaka mouth-only SLEAP
+        model, pass ``"mouth"`` to make the data contract explicit.
 
     Returns
     -------
@@ -83,6 +98,7 @@ def load_points_by_frame(
         if not path.exists():
             raise FileNotFoundError(f"{view} .slp not found: {path}")
         labels = sio.load_slp(str(path))
+        node_names = [node.name for node in labels.skeletons[0].nodes] if labels.skeletons else []
         by_frame: Dict[int, list] = {}
         for f in labels.labeled_frames:
             fi = int(f.frame_idx)
@@ -92,7 +108,11 @@ def load_points_by_frame(
                 continue
             pts: list[tuple[float, float, float]] = []
             for inst in f.instances:
-                x, y, score = _instance_point(inst)
+                x, y, score = _instance_point(
+                    inst,
+                    node_names=node_names,
+                    anchor_node=anchor_node,
+                )
                 if np.isfinite(x) and np.isfinite(y):
                     pts.append((x, y, score))
             if pts:
