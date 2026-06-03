@@ -19,6 +19,6 @@ jobs:
           pip install pytest || true
       - name: Run tests
         env:
-          PYTHONPATH: src
+          PYTHONPATH: .:src
         run: |
           pytest -q
