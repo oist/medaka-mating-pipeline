@@ -27,6 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
             "review_label columns. Labels conservatively override automatic QC."
         ),
     )
+    parser.add_argument("--output-prefix", default="", help="Optional filename prefix, e.g. detectron2_.")
     return parser
 
 
@@ -95,12 +96,13 @@ def main(argv: list[str] | None = None) -> None:
         image_shape=_video_shape(cfg.video_path),
     )
 
-    qc_path = out_dir / "tracklets_qc.parquet"
-    mask_qc_path = out_dir / "mask_qc_frames.parquet"
-    mask_qc_csv_path = out_dir / "mask_qc_frames.csv"
-    summary_path = out_dir / "tracklet_summary_qc.parquet"
-    rejected_path = out_dir / "rejected_intervals.csv"
-    report_path = out_dir / "qc_summary.json"
+    prefix = str(args.output_prefix)
+    qc_path = out_dir / f"{prefix}tracklets_qc.parquet"
+    mask_qc_path = out_dir / f"{prefix}mask_qc_frames.parquet"
+    mask_qc_csv_path = out_dir / f"{prefix}mask_qc_frames.csv"
+    summary_path = out_dir / f"{prefix}tracklet_summary_qc.parquet"
+    rejected_path = out_dir / f"{prefix}rejected_intervals.csv"
+    report_path = out_dir / f"{prefix}qc_summary.json"
 
     per_frame.to_parquet(qc_path, index=False)
     per_frame.to_parquet(mask_qc_path, index=False)

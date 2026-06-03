@@ -29,6 +29,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--target-local-frame", type=int, default=0)
     parser.add_argument("--min-area", type=int, default=50)
     parser.add_argument("--points-per-mask", type=int, default=3)
+    parser.add_argument("--negative-points-per-other-mask", type=int, default=1)
     parser.add_argument("--output", default=None, help="Prompt YAML output path.")
     parser.add_argument("--update-config", action="store_true")
     parser.add_argument(
@@ -53,6 +54,7 @@ def main(argv: list[str] | None = None) -> None:
         target_local_frame=int(args.target_local_frame),
         min_area=int(args.min_area),
         points_per_mask=int(args.points_per_mask),
+        negative_points_per_other_mask=int(args.negative_points_per_other_mask),
     )
     if not prompts:
         raise RuntimeError(

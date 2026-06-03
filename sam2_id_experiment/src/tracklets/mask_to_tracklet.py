@@ -90,7 +90,7 @@ def summarize_tracklets(instance_df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(columns=[
             "tracklet_id", "sam2_track_id", "frame_start", "frame_end", "n_frames",
             "mean_area", "area_cv", "mean_speed", "max_speed", "mean_confidence",
-            "min_confidence", "n_missing_frames",
+            "min_confidence", "frame_step", "n_missing_frames",
         ])
 
     rows: list[dict] = []
@@ -99,7 +99,8 @@ def summarize_tracklets(instance_df: pd.DataFrame) -> pd.DataFrame:
         frame_start = int(frames.min())
         frame_end = int(frames.max())
         n_frames = int(group.shape[0])
-        expected = frame_end - frame_start + 1
+        frame_step = _infer_frame_step(frames)
+        expected = ((frame_end - frame_start) // frame_step) + 1
         mean_area = float(group["area"].mean())
         area_std = float(group["area"].std(ddof=0))
         area_cv = area_std / mean_area if mean_area > 0 else math.inf
@@ -116,7 +117,16 @@ def summarize_tracklets(instance_df: pd.DataFrame) -> pd.DataFrame:
             "max_speed": float(speed.max()) if not speed.empty else 0.0,
             "mean_confidence": float(group["confidence"].mean()),
             "min_confidence": float(group["confidence"].min()),
+            "frame_step": frame_step,
             "n_missing_frames": int(expected - n_frames),
         })
     return pd.DataFrame(rows)
 
+
+def _infer_frame_step(frames: pd.Series) -> int:
+    unique_frames = pd.Series(frames.astype(int).unique()).sort_values()
+    diffs = unique_frames.diff().dropna()
+    diffs = diffs[diffs > 0]
+    if diffs.empty:
+        return 1
+    return int(diffs.value_counts().sort_values(ascending=False).index[0])

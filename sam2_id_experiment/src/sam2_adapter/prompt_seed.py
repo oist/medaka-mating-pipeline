@@ -12,6 +12,7 @@ def seed_prompts_from_mask_h5(
     target_local_frame: int = 0,
     min_area: int = 50,
     points_per_mask: int = 3,
+    negative_points_per_other_mask: int = 1,
 ) -> tuple[list[dict], int]:
     """Create SAM2 point prompts from masks at the nearest available frame."""
     try:
@@ -27,7 +28,7 @@ def seed_prompts_from_mask_h5(
         selected_frame = min(frames, key=lambda frame: abs(frame - int(source_frame)))
         frame_group = h5[f"frame_{selected_frame:06d}"]
 
-        prompts: list[dict] = []
+        mask_points: list[tuple[int, list[list[int]], list[list[int]]]] = []
         for instance_key in sorted(k for k in frame_group.keys() if k.startswith("instance_")):
             instance = frame_group[instance_key]
             track_id = int(instance.attrs.get("sam2_track_id", -1))
@@ -40,13 +41,26 @@ def seed_prompts_from_mask_h5(
             points = mask_prompt_points(mask, n_points=max(1, int(points_per_mask)))
             if not points:
                 continue
-            prompts.append({
-                "obj_id": track_id,
-                "frame": int(target_local_frame),
-                "points": points,
-                "labels": [1] * len(points),
-            })
+            negative_points = mask_prompt_points(
+                mask,
+                n_points=max(1, int(negative_points_per_other_mask)),
+            )
+            mask_points.append((track_id, points, negative_points))
 
+    prompts: list[dict] = []
+    for track_id, positive_points, _negative_points in mask_points:
+        negatives: list[list[int]] = []
+        if negative_points_per_other_mask > 0:
+            for other_track_id, _other_positive, other_negative in mask_points:
+                if int(other_track_id) == int(track_id):
+                    continue
+                negatives.extend(other_negative[:negative_points_per_other_mask])
+        prompts.append({
+            "obj_id": track_id,
+            "frame": int(target_local_frame),
+            "points": positive_points + negatives,
+            "labels": [1] * len(positive_points) + [0] * len(negatives),
+        })
     prompts.sort(key=lambda prompt: int(prompt["obj_id"]))
     return prompts, int(selected_frame)
 

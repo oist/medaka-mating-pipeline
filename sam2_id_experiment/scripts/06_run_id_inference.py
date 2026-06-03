@@ -18,13 +18,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dataset", required=True)
     parser.add_argument("--model", required=True)
     parser.add_argument("--device", default="cpu")
+    parser.add_argument("--output-dir", default=None)
     return parser
 
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     cfg = load_config(args.config)
-    out_dir = ensure_output_dir(cfg) / "id_inference"
+    out_dir = Path(args.output_dir) if args.output_dir else ensure_output_dir(cfg) / "id_inference"
     result = embed_crops(
         dataset_dir=args.dataset,
         model_path=args.model,
@@ -36,4 +37,3 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-

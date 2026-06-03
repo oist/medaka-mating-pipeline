@@ -19,13 +19,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--config", required=True)
     parser.add_argument("--tracklets", required=True)
     parser.add_argument("--masks", required=True)
+    parser.add_argument("--output-dir", default=None)
     return parser
 
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     cfg = load_config(args.config)
-    out_dir = ensure_output_dir(cfg) / "id_training_dataset"
+    out_dir = Path(args.output_dir) if args.output_dir else ensure_output_dir(cfg) / "id_training_dataset"
     ds_cfg = config_section(cfg, "id_dataset")
     debug_cfg = config_section(cfg, "debug")
 
@@ -47,4 +48,3 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-
