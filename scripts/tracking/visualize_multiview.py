@@ -72,6 +72,12 @@ ID_COLORS_BGR: Dict[str, Tuple[int, int, int]] = {
     "ID_6": (75, 86, 140),    # tab:brown
     "ID_7": (194, 119, 227),  # tab:pink
     "ID_8": (127, 127, 127),  # tab:gray
+    "pseudo_ID_0": (180, 119, 31),
+    "pseudo_ID_1": (14, 127, 255),
+    "pseudo_ID_2": (44, 160, 44),
+    "pseudo_ID_3": (40, 39, 214),
+    "pseudo_ID_4": (189, 103, 148),
+    "pseudo_ID_5": (75, 86, 140),
 }
 UNASSIGNED_BGR = (110, 110, 110)
 
@@ -102,6 +108,11 @@ def _draw_frame_overlay(
     *,
     frame_idx: int,
     view: str,
+    node_names: list[str] | None = None,
+    display_id_by_geometry_id: Dict[str, str] | None = None,
+    draw_orientation_arrows: bool = False,
+    arrow_head_node: str = "mouth",
+    arrow_tail_node: str = "tail",
     radius: int = 10,
 ) -> np.ndarray:
     """Draw keypoints coloured by ID on one camera frame."""
@@ -111,7 +122,19 @@ def _draw_frame_overlay(
         fish_id = None
         if slot_idx < len(cam_to_id):
             fish_id = cam_to_id[slot_idx]
-        color = _id_color(fish_id)
+        display_id = display_id_by_geometry_id.get(fish_id, fish_id) if display_id_by_geometry_id else fish_id
+        color = _id_color(display_id)
+        finite_pts = [(float(x), float(y)) for x, y in pts if np.isfinite(x) and np.isfinite(y)]
+        if draw_orientation_arrows:
+            arrow = _orientation_arrow_points(
+                pts,
+                node_names=node_names,
+                head_node=arrow_head_node,
+                tail_node=arrow_tail_node,
+            )
+            if arrow is not None:
+                tail, head = arrow
+                cv2.arrowedLine(out, tail, head, color, 2, cv2.LINE_AA, tipLength=0.25)
         for x, y in pts:
             if not (np.isfinite(x) and np.isfinite(y)):
                 continue
@@ -120,7 +143,7 @@ def _draw_frame_overlay(
             cv2.circle(out, (cx, cy), 2, color, thickness=-1, lineType=cv2.LINE_AA)
         if len(pts) > 0 and np.isfinite(pts[0]).all():
             anchor = pts[0]
-            label = fish_id if fish_id else "?"
+            label = display_id if display_id else "?"
             if score is not None and np.isfinite(score):
                 label = f"{label} {score:.2f}"
             cv2.putText(
@@ -198,6 +221,33 @@ def _make_projector(
     return project
 
 
+def _orientation_arrow_points(
+    pts: np.ndarray,
+    *,
+    node_names: list[str] | None,
+    head_node: str,
+    tail_node: str,
+) -> tuple[tuple[int, int], tuple[int, int]] | None:
+    """Return tail->head pixel points for a body-axis arrow when possible."""
+    pts = np.asarray(pts, dtype=float)
+    if node_names and head_node in node_names and tail_node in node_names:
+        head = pts[node_names.index(head_node)]
+        tail = pts[node_names.index(tail_node)]
+        if np.isfinite(head).all() and np.isfinite(tail).all():
+            return (
+                (int(round(tail[0])), int(round(tail[1]))),
+                (int(round(head[0])), int(round(head[1]))),
+            )
+
+    finite = [(float(x), float(y)) for x, y in pts if np.isfinite(x) and np.isfinite(y)]
+    if len(finite) < 2:
+        return None
+    return (
+        tuple(int(round(v)) for v in finite[1]),
+        tuple(int(round(v)) for v in finite[0]),
+    )
+
+
 def _render_3d_panel(
     size: int,
     xyz_by_id: Dict[str, np.ndarray],
@@ -207,6 +257,10 @@ def _render_3d_panel(
     y_range: Tuple[float, float],
     z_range: Tuple[float, float],
     current_idx: int,
+    display_id_by_geometry_id: Dict[str, str] | None = None,
+    draw_motion_arrows: bool = False,
+    motion_arrow_frames: int = 12,
+    motion_arrow_scale: float = 2.5,
     azim_deg: float = -60.0,
     elev_deg: float = 25.0,
     invert_x: bool = True,
@@ -265,7 +319,8 @@ def _render_3d_panel(
         )
 
     for fid, pts in xyz_by_id.items():
-        color = _id_color(fid)
+        display_id = display_id_by_geometry_id.get(fid, fid) if display_id_by_geometry_id else fid
+        color = _id_color(display_id)
         start = max(0, current_idx - trail_len + 1)
         segment = pts[start : current_idx + 1]
         if len(segment) < 2:
@@ -285,7 +340,8 @@ def _render_3d_panel(
             i = j + 1
 
     for fid, pts in xyz_by_id.items():
-        color = _id_color(fid)
+        display_id = display_id_by_geometry_id.get(fid, fid) if display_id_by_geometry_id else fid
+        color = _id_color(display_id)
         if current_idx >= len(pts):
             continue
         p = pts[current_idx]
@@ -295,8 +351,24 @@ def _render_3d_panel(
         px, py = int(proj[0]), int(proj[1])
         cv2.circle(canvas, (px, py), 7, color, thickness=2, lineType=cv2.LINE_AA)
         cv2.circle(canvas, (px, py), 3, color, thickness=-1, lineType=cv2.LINE_AA)
+        if draw_motion_arrows:
+            prev_idx = _previous_finite_index(pts, current_idx, max_back=int(motion_arrow_frames))
+            if prev_idx is not None:
+                delta = p - pts[prev_idx]
+                if np.isfinite(delta).all() and float(np.linalg.norm(delta)) > 1e-6:
+                    tip_3d = p + delta * float(motion_arrow_scale)
+                    uv = project(np.vstack([p, tip_3d])).round().astype(int)
+                    cv2.arrowedLine(
+                        canvas,
+                        tuple(uv[0]),
+                        tuple(uv[1]),
+                        color,
+                        2,
+                        cv2.LINE_AA,
+                        tipLength=0.25,
+                    )
         cv2.putText(
-            canvas, fid, (px + 8, py - 8),
+            canvas, display_id, (px + 8, py - 8),
             cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1, cv2.LINE_AA,
         )
 
@@ -307,6 +379,14 @@ def _render_3d_panel(
     return canvas
 
 
+def _previous_finite_index(points: np.ndarray, current_idx: int, *, max_back: int) -> int | None:
+    start = max(0, int(current_idx) - max(1, int(max_back)))
+    for idx in range(int(current_idx) - 1, start - 1, -1):
+        if 0 <= idx < len(points) and np.isfinite(points[idx]).all():
+            return idx
+    return None
+
+
 def _resize_square(img: np.ndarray, size: int) -> np.ndarray:
     h, w = img.shape[:2]
     if h == size and w == size:
@@ -314,29 +394,62 @@ def _resize_square(img: np.ndarray, size: int) -> np.ndarray:
     return cv2.resize(img, (size, size), interpolation=cv2.INTER_AREA)
 
 
+def _load_display_id_map(identified_csv: Path | None) -> Dict[str, str]:
+    if identified_csv is None:
+        return {}
+    if not identified_csv.exists():
+        raise FileNotFoundError(f"Identified 3D CSV not found: {identified_csv}")
+    df = pd.read_csv(identified_csv)
+    required = {"fish_id", "final_fish_id"}
+    missing = required - set(df.columns)
+    if missing:
+        raise ValueError(f"Identified CSV missing columns: {', '.join(sorted(missing))}")
+    out: Dict[str, str] = {}
+    for fish_id, group in df.dropna(subset=["fish_id", "final_fish_id"]).groupby("fish_id"):
+        labels = group["final_fish_id"].astype(str)
+        labels = labels[labels.ne("")]
+        if labels.empty:
+            continue
+        out[str(fish_id)] = str(labels.value_counts().index[0])
+    return out
+
+
 def render(
     *,
     experiment: str,
     tag: str,
     sleap_output_dir: Path,
+    sleap_subdir: str | None = None,
+    reconstruction_dir: Path | None = None,
     medaka_data_dir: Path,
     output_path: Path,
     start_frame: int,
     end_frame: int,
+    identified_csv: Path | None = None,
     panel_size: int = 600,
     trail_seconds: float = 2.0,
     fps: float | None = None,
+    draw_orientation_arrows: bool = False,
+    arrow_head_node: str = "mouth",
+    arrow_tail_node: str = "tail",
+    draw_motion_arrows: bool = False,
+    motion_arrow_frames: int = 12,
+    motion_arrow_scale: float = 2.5,
     azim_deg: float = -60.0,
     elev_deg: float = 25.0,
     invert_x: bool = True,
 ) -> None:
     slp_dir = sleap_output_dir / experiment
-    json_path = slp_dir / f"{tag}_best.json"
-    csv_path = slp_dir / f"{tag}_3d.csv"
+    if sleap_subdir:
+        slp_dir = slp_dir / sleap_subdir
+    reconstruction_root = reconstruction_dir if reconstruction_dir is not None else slp_dir
+    json_path = reconstruction_root / f"{tag}_best.json"
+    csv_path = reconstruction_root / f"{tag}_3d.csv"
     if not json_path.exists():
         raise FileNotFoundError(f"Best-tracked JSON not found: {json_path}")
     if not csv_path.exists():
         raise FileNotFoundError(f"3D CSV not found: {csv_path}")
+    display_id_by_geometry_id = _load_display_id_map(identified_csv)
 
     with json_path.open("r", encoding="utf-8") as fh:
         best_json = json.load(fh)
@@ -367,9 +480,11 @@ def render(
             raise FileNotFoundError(f"Missing video for {view}: {videos[view]}")
 
     preds_by_view: Dict[str, dict] = {}
+    node_names_by_view: Dict[str, list[str]] = {}
     for view in VIEW_ORDER:
-        by_frame, _ = index_predictions_by_frame(slps[view])
+        by_frame, node_names = index_predictions_by_frame(slps[view])
         preds_by_view[view] = by_frame
+        node_names_by_view[view] = node_names
 
     caps = {view: cv2.VideoCapture(str(videos[view])) for view in VIEW_ORDER}
     try:
@@ -400,6 +515,11 @@ def render(
                 cam_to_id = mapping_info.get(f"{VIEW_TO_CAM[view]}_to_id", [])
                 annotated = _draw_frame_overlay(
                     frame, instances, cam_to_id, frame_idx=int(fi), view=view,
+                    node_names=node_names_by_view.get(view),
+                    display_id_by_geometry_id=display_id_by_geometry_id,
+                    draw_orientation_arrows=draw_orientation_arrows,
+                    arrow_head_node=arrow_head_node,
+                    arrow_tail_node=arrow_tail_node,
                     radius=max(6, panel_size // 120),
                 )
                 panels[view] = _resize_square(annotated, panel_size)
@@ -412,6 +532,10 @@ def render(
                 y_range=(-10.0, 210.0),
                 z_range=(-10.0, 210.0),
                 current_idx=fi_offset,
+                display_id_by_geometry_id=display_id_by_geometry_id,
+                draw_motion_arrows=draw_motion_arrows,
+                motion_arrow_frames=motion_arrow_frames,
+                motion_arrow_scale=motion_arrow_scale,
                 azim_deg=azim_deg,
                 elev_deg=elev_deg,
                 invert_x=invert_x,
@@ -460,6 +584,38 @@ def build_parser() -> argparse.ArgumentParser:
         help="Output FPS (defaults to source FPS).",
     )
     parser.add_argument(
+        "--draw-orientation-arrows",
+        action="store_true",
+        help="Draw 2D body-axis arrows when the requested SLEAP nodes exist.",
+    )
+    parser.add_argument(
+        "--arrow-head-node",
+        default="mouth",
+        help="SLEAP node used as the arrow head for 2D orientation arrows.",
+    )
+    parser.add_argument(
+        "--arrow-tail-node",
+        default="tail",
+        help="SLEAP node used as the arrow tail for 2D orientation arrows.",
+    )
+    parser.add_argument(
+        "--draw-motion-arrows",
+        action="store_true",
+        help="Draw 3D motion-direction arrows from recent trajectory displacement.",
+    )
+    parser.add_argument(
+        "--motion-arrow-frames",
+        type=int,
+        default=12,
+        help="Look back this many frames for the 3D motion arrow direction.",
+    )
+    parser.add_argument(
+        "--motion-arrow-scale",
+        type=float,
+        default=2.5,
+        help="Scale factor for 3D motion arrows.",
+    )
+    parser.add_argument(
         "--azim", type=float, default=-60.0,
         help="3D panel azimuth around world-Z in degrees (default -60).",
     )
@@ -474,6 +630,24 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--paths-config", default=None)
     parser.add_argument("--sleap-output-dir", default=None)
+    parser.add_argument(
+        "--sleap-subdir",
+        default=None,
+        help=(
+            "Optional subfolder inside the experiment SLEAP directory, e.g. "
+            "round3_3node_full. Defaults to the experiment root."
+        ),
+    )
+    parser.add_argument(
+        "--reconstruction-dir",
+        default=None,
+        help="Directory containing <tag>_best.json and <tag>_3d.csv. Defaults to the SLEAP experiment folder.",
+    )
+    parser.add_argument(
+        "--identified-csv",
+        default=None,
+        help="Optional <tag>_3d_identified.csv; displays final_fish_id labels instead of geometry IDs.",
+    )
     parser.add_argument("--medaka-data-dir", default=None)
     return parser
 
@@ -500,12 +674,21 @@ def main(argv: list[str] | None = None) -> None:
         experiment=args.experiment,
         tag=args.tag,
         sleap_output_dir=Path(sleap_output_dir),
+        sleap_subdir=args.sleap_subdir,
+        reconstruction_dir=Path(args.reconstruction_dir) if args.reconstruction_dir else None,
         medaka_data_dir=Path(medaka_data_dir),
         output_path=Path(args.output),
         start_frame=args.start_frame,
         end_frame=args.end_frame,
+        identified_csv=Path(args.identified_csv) if args.identified_csv else None,
         panel_size=args.panel_size,
         trail_seconds=args.trail_seconds,
+        draw_orientation_arrows=args.draw_orientation_arrows,
+        arrow_head_node=args.arrow_head_node,
+        arrow_tail_node=args.arrow_tail_node,
+        draw_motion_arrows=args.draw_motion_arrows,
+        motion_arrow_frames=args.motion_arrow_frames,
+        motion_arrow_scale=args.motion_arrow_scale,
         azim_deg=args.azim,
         elev_deg=args.elev,
         invert_x=not args.no_invert_x,
