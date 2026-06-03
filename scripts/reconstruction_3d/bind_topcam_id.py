@@ -219,10 +219,12 @@ def _top_label_lookup(bound_only: pd.DataFrame) -> dict:
         return {}
     lookup: dict = {}
     for top_id, group in bound_only.groupby("source_top_id"):
+        if pd.isna(top_id):
+            continue
         labels = group["source_top_label"].fillna("").astype(str)
         labels = labels[labels != ""]
         if not labels.empty:
-            lookup[top_id] = labels.mode().iloc[0]
+            lookup[int(top_id)] = labels.mode().iloc[0]
     return lookup
 
 

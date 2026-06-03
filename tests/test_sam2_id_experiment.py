@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scripts.reconstruction_3d.bind_topcam_id import bind
+from scripts.reconstruction_3d.bind_topcam_id import _top_label_lookup, bind
 from scripts.reconstruction_3d.load_2d_slp import _instance_point as _reconstruction_instance_point
 from sam2_id_experiment.src.config import load_config
 from sam2_id_experiment.src.detectron2_adapter.coco_merge import merge_coco_exports
@@ -1059,6 +1059,17 @@ def test_bind_topcam_id_preserves_segmentation_track_labels(tmp_path):
     assert set(out["source_top_label"]) == {"pseudo_ID_0"}
     assert set(out["source_identity_trajectory_id"]) == {"pseudo_ID_0_seg0"}
     assert set(out["final_fish_id"]) == {"pseudo_ID_0"}
+
+
+def test_top_label_lookup_normalizes_float_track_ids_and_skips_missing_ids():
+    bound = pd.DataFrame([
+        {"source_top_id": 0.0, "source_top_label": "pseudo_ID_0"},
+        {"source_top_id": 0.0, "source_top_label": "pseudo_ID_0"},
+        {"source_top_id": 1.0, "source_top_label": "pseudo_ID_1"},
+        {"source_top_id": np.nan, "source_top_label": "missing"},
+    ])
+
+    assert _top_label_lookup(bound) == {0: "pseudo_ID_0", 1: "pseudo_ID_1"}
 
 
 def test_body_metrics_attach_tail_without_changing_identity():

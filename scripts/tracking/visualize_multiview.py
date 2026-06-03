@@ -124,7 +124,6 @@ def _draw_frame_overlay(
             fish_id = cam_to_id[slot_idx]
         display_id = display_id_by_geometry_id.get(fish_id, fish_id) if display_id_by_geometry_id else fish_id
         color = _id_color(display_id)
-        finite_pts = [(float(x), float(y)) for x, y in pts if np.isfinite(x) and np.isfinite(y)]
         if draw_orientation_arrows:
             arrow = _orientation_arrow_points(
                 pts,
