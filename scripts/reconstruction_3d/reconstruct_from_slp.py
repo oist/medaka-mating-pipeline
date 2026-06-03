@@ -56,6 +56,7 @@ def run_reconstruction_from_slp(
     num_candidates: int | None = None,
     start_frame: int | None = None,
     end_frame: int | None = None,
+    anchor_node: str | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
     max_residual_per_fish: float | None = None,
     max_jump_mm: float | None = None,
@@ -79,6 +80,7 @@ def run_reconstruction_from_slp(
         num_candidates=num_candidates,
         start_frame=start_frame,
         end_frame=end_frame,
+        anchor_node=anchor_node,
     )
     if not points_by_frame:
         raise RuntimeError(
@@ -366,6 +368,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--paths-config", default=None)
     parser.add_argument("--sleap-output-dir", default=None,
                         help="Overrides sleap_output_dir.")
+    parser.add_argument(
+        "--sleap-subdir",
+        default=None,
+        help=(
+            "Optional subfolder inside the experiment SLEAP directory, e.g. "
+            "round3_3node_full. Defaults to the experiment root."
+        ),
+    )
     parser.add_argument("--model-folder", default=None,
                         help="Overrides calibration_model_dir.")
     parser.add_argument("--output-dir", default=None,
@@ -386,6 +396,22 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--start-frame", type=int, default=None)
     parser.add_argument("--end-frame", type=int, default=None)
+    parser.add_argument(
+        "--anchor-node",
+        default="mouth",
+        help=(
+            "Use this SLEAP node for canonical 2D/3D tracking points "
+            "(default: mouth)."
+        ),
+    )
+    parser.add_argument(
+        "--use-visible-node-centroid",
+        action="store_true",
+        help=(
+            "Experimental: use visible-node centroids instead of --anchor-node. "
+            "This is useful for mouth-vs-centroid comparisons, not production tracking."
+        ),
+    )
     parser.add_argument(
         "--xyz-bounds", nargs=2, type=float, default=None, metavar=("LOW", "HIGH"),
         help="Accept only 3D points inside this cube. Default: no bound.",
@@ -500,6 +526,8 @@ def main(argv: list[str] | None = None) -> None:
         )
 
     slp_dir = Path(sleap_output_dir) / args.experiment
+    if args.sleap_subdir:
+        slp_dir = slp_dir / args.sleap_subdir
     if not slp_dir.is_dir():
         parser.error(f"SLEAP output folder not found: {slp_dir}")
 
@@ -518,6 +546,7 @@ def main(argv: list[str] | None = None) -> None:
         num_candidates=args.num_candidates,
         start_frame=args.start_frame,
         end_frame=args.end_frame,
+        anchor_node=None if args.use_visible_node_centroid else args.anchor_node,
         xyz_bounds=tuple(args.xyz_bounds) if args.xyz_bounds else None,
         max_residual_per_fish=args.max_residual_per_fish,
         max_jump_mm=args.max_jump_mm,

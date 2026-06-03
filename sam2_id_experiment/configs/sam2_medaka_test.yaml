@@ -606,6 +606,36 @@ qc:
   max_overlap_fraction: 0.05
   expected_object_count: 3
   flag_bbox_touching_edge: true
+sleap_gate:
+  enabled: true
+  view: top_cam
+  sleap_subdir: round4_260520
+  anchor_node: mouth
+  max_distance_to_mask_px: 20
+  max_distance_to_centroid_px: 120
+  min_sleap_score: 0.0
+  require_one_mask_per_sleap_point: true
+  reject_without_sleap_match: true
+hybrid_tracking:
+  view: top_cam
+  sleap_subdir: round4_260520
+  anchor_node: mouth
+  num_individuals: 3
+  max_points_per_frame: 3
+  max_sleap_distance_px_per_frame: 12.0
+  max_sleap_gap_frames: 500
+  segmentation_match_distance_px: 160.0
+  segmentation_anchor_statuses:
+  - clean_train
+  - usable_inference
+  - manual_review
+  segmentation_bonus: 80.0
+  segmentation_conflict_penalty: 220.0
+  motion_bind_weight: 0.35
+  segmentation_bind_weight: 1.0
+  manual_review_bind_weight: 0.15
+  bootstrap_initial_sleap: true
+  bootstrap_bind_weight: 0.05
 id_dataset:
   crop_size: 128
   max_crops_per_tracklet: 500
