@@ -73,8 +73,8 @@ def test_append_bottom_corners_adds_symmetric_bottom_points():
 
     assert len(extended) == 9
     assert extended[-4].index == 5
-    assert np.allclose(extended[-4].xyz, np.array([0.0, 0.0, 0.0]))
-    assert np.allclose(extended[-1].xyz, np.array([0.0, 190.0, 0.0]))
+    assert np.allclose(extended[-4].xyz, np.array([0.0, 0.0, 4.0]))
+    assert np.allclose(extended[-1].xyz, np.array([0.0, 190.0, 4.0]))
 
 
 def test_annotation_sort_key_prioritizes_beads_then_top_then_bottom_corners():
