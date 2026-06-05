@@ -258,12 +258,27 @@ Pass `--crop-only` if you only want the old crop-by-crop view.
 ```bash
 python -m scripts.reconstruction_3d.reconstruct_from_slp 20251220_D_1_1_FCMC \
     --paths-config configs/paths.local.toml \
+    --sleap-subdir round4_260520 \
+    --num-candidates 6 \
     --start-frame 171800 --end-frame 176799 \
     --xyz-bounds -20 220 --no-shift-to-positive \
     --max-residual-per-fish 5000 \
     --max-jump-mm 30 --max-gap-frames 100 \
     --num-individuals 3
 ```
+
+> **Always pass `--num-candidates 6` for `.slp` produced with
+> `--max-instances 6` inference** (the standard now). It selects the greedy
+> mutually-exclusive triplet path (`triangulate_extra_candidates.py`, tqdm
+> **"3D best-assign"**, ~500-660 frame/s — full length ~10 min) and recovers
+> reflection-displaced fish via `--xyz-bounds` gating. **Omitting it silently
+> falls back to the default full-permutation path** (`triangulate.py`, tqdm
+> **"3D candidates"**, ~10 frame/s — full length ~9.7 h), which is both far
+> slower **and a different algorithm** whose results do not match the validated
+> round4 numbers. Seeing "3D candidates" in the log means the flag was
+> forgotten. Use `--sleap-subdir <round_tag>` when the merged `.slp` live in a
+> round-tagged subfolder (`<sleap_output_dir>/<exp>/<round_tag>/<view>.slp`)
+> rather than directly under `<exp>/`.
 
 Algorithm (Dynamics-of-dominance-style):
 
@@ -323,8 +338,15 @@ Clear bimodality between "good fits" (<1k) and "broken fits" (>10k) — default
 medaka swim speed (observed p99 ~2.5 mm/frame ≈ 0.4 m/s). Tighten to 15 mm
 if you still see rare single-frame outliers.
 
-**Throughput**: ~10 frames/s single-core with 36 permutations per frame;
-5000 frames ≈ 9 min.
+**Throughput** (single-core), by path:
+
+| Path | tqdm label | frame/s | 348k frames |
+| --- | --- | ---: | ---: |
+| `--num-candidates 6` (greedy triplet, **recommended**) | `3D best-assign` | ~500–660 | ~10 min |
+| default (full 36-permutation) | `3D candidates` | ~10 | ~9.7 h |
+
+Prefer the `--num-candidates 6` path (see callout in §2.4). Both are
+single-core, so independent experiments can run in parallel.
 
 ### 2.5 Related scripts
 

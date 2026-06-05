@@ -95,7 +95,15 @@ scripts.tracking.main --merge-chunks <exp>      → <view>.slp + experiment_meta
 The 3D-first tracker (`reconstruct_from_slp`) is the recommended path: it enumerates per-frame
 cross-view permutations, scores triplets via reprojection through the calibration model, and
 links IDs in 3D with a velocity/gap-aware Hungarian matcher. See
-[scripts/tracking/README.md](scripts/tracking/README.md) for thresholds and rationale.
+[scripts/tracking/README.md](scripts/tracking/README.md) §2.4 for thresholds and rationale, and
+[AGENTS.md](AGENTS.md) for the full copy-pasteable inference→3D runbook.
+
+> **Gotcha — always pass `--num-candidates 6`** to `reconstruct_from_slp` for `.slp` produced
+> with `--max-instances 6` inference. It selects the fast greedy-triplet path (tqdm
+> `3D best-assign`, ~10 min full length) that the validated round4 metrics use. Omitting it
+> silently falls back to the default full-permutation path (tqdm `3D candidates`, ~9.7 h) —
+> slower **and a different algorithm**. Use `--sleap-subdir <round_tag>` when the `.slp` live in
+> a round-tagged subfolder.
 
 ### B. Legacy workflow (pre-cut clips, CSV-based)
 
