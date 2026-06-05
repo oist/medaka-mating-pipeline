@@ -58,23 +58,24 @@ are:
                            to each geometry trajectory.
 ```
 
-### 2D-ID source for `--bind-top-id` (round2_trt_n6 production pipeline)
+### 2D-ID source for `--bind-top-id` (round4_260520 production pipeline)
 
 Empirical 10-window evaluation (`runs/id_eval_batch_step2_isolation/`) showed that
 **neither mouth-anchored matching nor top-K-by-score filtering improves identity
-quality** on the n=6 source. Within the production source `round2_trt_n6/`, the
-best 2D-ID tracker is the **default centroid tracker** invoked on
-`round2_trt_n6/top_cam.slp`:
+quality** on the n=6 source. The best 2D-ID tracker is the **default visible-node
+centroid tracker** invoked on the round4 top-camera `.slp`:
 
 ```bash
 python -m scripts.tracking.track_simple_nn <exp> \
-    --slp <sleap_output_dir>/<exp>/round2_trt_n6/top_cam.slp \
-    --output <exp>_top_cam.tracks.csv \
+    --slp <sleap_output_dir>/<exp>/round4_260520/top_cam.slp \
+    --output <sleap_output_dir>/<exp>/round4_260520/top_cam.tracks.csv \
     --max-distance 100 --max-tracks 3 --max-gap 500
 ```
 
 (no `--anchor-node`, no `--top-k-by-score` — those flags exist for experimentation
-but degrade quality on this source; see commit log for the isolation study.)
+but degrade quality; the isolation study above was first run on the older
+`round2_trt_n6/` source and the conclusion carries to round4 mouth+tail. See
+commit log.)
 
 ### 2.1 Merge per-view chunks → one `.slp` per camera
 
@@ -260,12 +261,22 @@ python -m scripts.reconstruction_3d.reconstruct_from_slp 20251220_D_1_1_FCMC \
     --paths-config configs/paths.local.toml \
     --sleap-subdir round4_260520 \
     --num-candidates 6 \
-    --start-frame 171800 --end-frame 176799 \
+    --use-visible-node-centroid \
     --xyz-bounds -20 220 --no-shift-to-positive \
     --max-residual-per-fish 5000 \
-    --max-jump-mm 30 --max-gap-frames 100 \
-    --num-individuals 3
+    --max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100 \
+    --num-individuals 3 \
+    --bind-top-id \
+    --top-tracks-csv <sleap_output_dir>/20251220_D_1_1_FCMC/round4_260520/top_cam.tracks.csv
 ```
+
+The round4 production run uses **`--use-visible-node-centroid`** (centroid of the
+visible mouth+tail nodes — invariant to round4 mouth↔tail swaps), the ID-link
+thresholds **`--max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100`**,
+and **`--bind-top-id`** (with the Stage 2.3 `top_cam.tracks.csv`) to emit
+`<tag>_3d_identified.csv` carrying a stable `final_fish_id`. Run
+`track_simple_nn` (sect. 2.3 / the 2D-ID source box above) first to produce that
+tracks CSV. Omit `--start-frame/--end-frame` for a full-length run.
 
 > **Always pass `--num-candidates 6` for `.slp` produced with
 > `--max-instances 6` inference** (the standard now). It selects the greedy
@@ -334,9 +345,13 @@ calibration:
 Clear bimodality between "good fits" (<1k) and "broken fits" (>10k) — default
 `--max-residual-per-fish 5000` rejects ~5–10% of per-fish assignments.
 
-`--max-jump-mm 30` at 166 fps permits ≤5 m/s per-frame, well above natural
-medaka swim speed (observed p99 ~2.5 mm/frame ≈ 0.4 m/s). Tighten to 15 mm
-if you still see rare single-frame outliers.
+`--max-jump-mm` gates ID linking per-frame; pair it with `--max-jump-hard-cap-mm`
+so the effective threshold at a gap of N frames is `min(max_jump_mm*N,
+hard_cap)`. The round4 full-length production run uses **`--max-jump-mm 8
+--max-jump-hard-cap-mm 80`** (≈1.3 m/s instantaneous at 166 fps, well above the
+observed p99 ~2.5 mm/frame ≈ 0.4 m/s, while the 80 mm cap stops a long NaN gap
+from binding a *different* fish onto the same ID). Loosen `--max-jump-mm` toward
+30 only for sparse/low-fps clips where 8 mm fragments tracks.
 
 **Throughput** (single-core), by path:
 

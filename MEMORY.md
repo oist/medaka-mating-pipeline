@@ -45,7 +45,7 @@ medaka-mating-pipeline/
 ## Automation Systems In Place
 
 - **HPC SLEAP inference** (`scripts/hpc/`): One Slurm array job per view × N chunks runs on OIST saion. Outputs land in `/bucket/StephensU/medaka/sleap_output/<experiment>/`. Merge happens locally via `scripts.tracking.main --merge-chunks`. See [scripts/hpc/README.md](scripts/hpc/README.md).
-- **TensorRT-accelerated inference**: `sleap-nn export` + `predict` gives ~2.5× speedup over PyTorch; use `--device cuda` (not `cuda:0`); export FP16 engines.
+- **Local SLEAP inference path**: torch via `sleap_nn.cli track` (`scripts/sleap/run_round_inference.py --mode track`, the default). TensorRT export is **broken on the RTX 5070 Ti** (Blackwell `peaks_castOut` op has no TRT 10.16 tactic), and ONNX adds no worthwhile speedup — so do **not** propose `--mode predict`/TRT export on this machine. See [AGENTS.md](AGENTS.md) "3D Tracking Runbook".
 - **CI**: GitHub Actions runs `pytest -q` on Ubuntu / Python 3.11 using `environment/requirements.txt`.
 - **Calibration production model**: `calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models/imCoords_to_XYZ.joblib` (0.90 mm mean / 1.00 mm RMSE / 2.15 mm max over 228 points).
 
@@ -68,7 +68,7 @@ Set these when invoking `scripts/hpc/` from the saion login node (see [scripts/h
 
 ### Common commands / binary paths
 
-- Sync env: `uv sync --python 3.13` (optional: `--extra rerun`, `--extra sleap`).
+- Sync env: `uv sync --python 3.11` (repo standard; optional: `--extra rerun`, `--extra sleap`).
 - Run a Python script: `.venv\Scripts\python.exe -m scripts.<module> ...` (Windows PowerShell).
 - Run tests: `pytest -q`.
 - ffmpeg: installed under `C:\ffmpeg\` on the user's PCs, but the exact subfolder (version) varies per machine and per colleague — **do not hardcode a single path**. Discover it at the start of each session when needed:

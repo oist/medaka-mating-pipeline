@@ -408,8 +408,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--use-visible-node-centroid",
         action="store_true",
         help=(
-            "Experimental: use visible-node centroids instead of --anchor-node. "
-            "This is useful for mouth-vs-centroid comparisons, not production tracking."
+            "Use the centroid of all visible nodes instead of --anchor-node. "
+            "This is the round4 production choice: the mouth+tail centroid is "
+            "invariant to the known round4 mouth<->tail node swaps. Leave off "
+            "(mouth anchor) only for mouth-vs-centroid comparison experiments."
         ),
     )
     parser.add_argument(

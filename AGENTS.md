@@ -67,8 +67,24 @@ in reusable code.
       --paths-config configs/paths.local.toml
   ```
 
-**Stage 2 - 3D reconstruction + identity tracking.** Consumes the three
-`<view>.slp` files and writes `<tag>_3d.csv` (`frame,fish_id,X,Y,Z`).
+**Stage 2 - top-camera 2D identity track.** A per-view NN tracker on the
+top camera supplies the stable 2D-ID anchor that the bind step (Stage 3b) uses
+to attach a `final_fish_id`. Track on the **default visible-node centroid**
+(do **not** pass `--anchor-node`; mouth-anchoring was measured ~2x worse).
+
+```bash
+.venv/Scripts/python.exe -m scripts.tracking.track_simple_nn <experiment> \
+    --paths-config configs/paths.local.toml \
+    --view top_cam \
+    --slp Z:/StephensU/medaka/sleap_output/<experiment>/round4_260520/top_cam.slp \
+    --output Z:/StephensU/medaka/sleap_output/<experiment>/round4_260520/top_cam.tracks.csv \
+    --max-distance 100 --max-tracks 3 --max-gap 500
+```
+
+**Stage 3 - 3D reconstruction + identity binding.** Consumes the three
+`<view>.slp` files plus the top-cam tracks; writes `<tag>_3d.csv`
+(`frame,fish_id,X,Y,Z`) **and** `<tag>_3d_identified.csv` (adds
+`final_fish_id`, `bind_source`, `bind_score`, ...).
 
 ```bash
 .venv/Scripts/python.exe -m scripts.reconstruction_3d.reconstruct_from_slp \
@@ -76,9 +92,13 @@ in reusable code.
     --paths-config configs/paths.local.toml \
     --sleap-subdir round4_260520 \
     --num-candidates 6 \
+    --use-visible-node-centroid \
     --xyz-bounds -20 220 --no-shift-to-positive \
-    --max-residual-per-fish 5000 --max-jump-mm 30 --max-gap-frames 100 \
+    --max-residual-per-fish 5000 \
+    --max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100 \
     --num-individuals 3 \
+    --bind-top-id \
+    --top-tracks-csv Z:/StephensU/medaka/sleap_output/<experiment>/round4_260520/top_cam.tracks.csv \
     --output-dir Z:/StephensU/medaka/reconstruction_3d/<experiment>/round4_260520 \
     --output-tag round4_260520
 ```
@@ -96,18 +116,33 @@ in reusable code.
     both far slower **and a different algorithm** that does not match the
     validated numbers. If you ever see "3D candidates" in the log, you forgot
     the flag; stop and re-run.
+- **`--use-visible-node-centroid` is the round4 production choice.** It tracks
+  the centroid of the visible `mouth`+`tail` nodes, which is invariant to the
+  known round4 mouth<->tail swaps (see [[project-sleap-round4]]); mouth-anchoring
+  is for comparison experiments only.
+- **3D ID-link thresholds**: `--max-jump-mm 8 --max-jump-hard-cap-mm 80
+  --max-gap-frames 100`. The hard cap is essential - it bounds the per-match
+  distance so a long NaN gap cannot accept a *different* fish as the same ID
+  (effective gate at gap N = `min(8*N, 80)` mm).
+- **`--bind-top-id` + `--top-tracks-csv`** attach the Stage 2 top-cam IDs to the
+  3D trajectories (per-frame reprojection-NN gated by `--bind-distance`, default
+  60 px, then a global 1-to-1 Hungarian vote), producing the
+  `final_fish_id` in `<tag>_3d_identified.csv`. Frames where the top camera is
+  occluded inherit the geometry ID and are flagged `bind_source=geometry_only`.
 - `--sleap-subdir <round_tag>` points the loader at the round-tagged subfolder
   (`<sleap_output_dir>/<experiment>/<round_tag>/<view>.slp`). Omit only if the
   merged `.slp` live directly under `<experiment>/`.
-- `--anchor-node` defaults to `mouth`, matching the 2-node `mouth -> tail`
-  skeleton. The thresholds above are the documented production values.
 
-**QC the result** (per experiment) from the pre-link JSON: report
-all-3-fish-valid coverage (frames where all three `groups` are finite) and the
-per-fish residual distribution (`errors`, px^2; healthy round4 is median <200,
-frac>5000 <1%). These are pre-fill numbers; the final `_3d.csv` is
-spline-gap-filled. See `scripts/tracking/README.md` (sect. 2.4) for threshold
-rationale.
+**QC both outputs** (per experiment):
+- From the pre-link JSON (`<tag>_best_pre_link.json`): all-3-fish-valid coverage
+  (frames where all three `groups` are finite) and the per-fish residual
+  distribution (`errors`, px^2). These are pre-fill; the final `_3d.csv` is
+  spline-gap-filled.
+- From `<tag>_3d.csv` / `<tag>_3d_identified.csv`: 3D speed-spike rate (large
+  per-frame jumps = residual ID swaps), the `bind_source` split
+  (`top_cam_2d` vs `geometry_only`), the `bind_score` distribution, and that
+  `final_fish_id` is a stable 1-to-1 relabel of the geometry IDs.
+See `scripts/tracking/README.md` (sect. 2.4) for threshold rationale.
 
 ## Data And Paths
 

@@ -87,23 +87,32 @@ SLEAP inference on saion (scripts/hpc/)         → per-view chunked .slp on /bu
         ▼
 scripts.tracking.main --merge-chunks <exp>      → <view>.slp + experiment_metadata.json
         │
-        ├─► scripts.tracking.track_simple_nn (2D, per view)         → tracks.csv
-        │
-        └─► scripts.reconstruction_3d.reconstruct_from_slp (3D)     → <tag>_3d.csv
+        ├─► track_simple_nn on round4_260520/top_cam.slp (2D-ID anchor)  → top_cam.tracks.csv
+        │                                                                      │
+        └─► reconstruct_from_slp (3D, --num-candidates 6 …) ───────────────────┤
+                                                                               ▼
+              --bind-top-id --top-tracks-csv top_cam.tracks.csv  → <tag>_3d.csv
+                                                                 + <tag>_3d_identified.csv (final_fish_id)
 ```
 
 The 3D-first tracker (`reconstruct_from_slp`) is the recommended path: it enumerates per-frame
 cross-view permutations, scores triplets via reprojection through the calibration model, and
-links IDs in 3D with a velocity/gap-aware Hungarian matcher. See
+links IDs in 3D with a velocity/gap-aware Hungarian matcher. Stable per-fish identities come
+from binding the top-camera 2D track IDs onto the 3D trajectories (`--bind-top-id`), which
+writes `<tag>_3d_identified.csv` with a `final_fish_id`. See
 [scripts/tracking/README.md](scripts/tracking/README.md) §2.4 for thresholds and rationale, and
-[AGENTS.md](AGENTS.md) for the full copy-pasteable inference→3D runbook.
+[AGENTS.md](AGENTS.md) for the full copy-pasteable inference→2D-ID→3D runbook (the canonical
+round4 recipe).
 
-> **Gotcha — always pass `--num-candidates 6`** to `reconstruct_from_slp` for `.slp` produced
-> with `--max-instances 6` inference. It selects the fast greedy-triplet path (tqdm
-> `3D best-assign`, ~10 min full length) that the validated round4 metrics use. Omitting it
-> silently falls back to the default full-permutation path (tqdm `3D candidates`, ~9.7 h) —
-> slower **and a different algorithm**. Use `--sleap-subdir <round_tag>` when the `.slp` live in
-> a round-tagged subfolder.
+> **Gotchas for `reconstruct_from_slp` on round4 `.slp`** (`--max-instances 6` inference):
+> - **Always pass `--num-candidates 6`** — selects the fast greedy-triplet path (tqdm
+>   `3D best-assign`, ~10 min full length) behind the validated metrics. Omitting it silently
+>   falls back to the slow default full-permutation path (tqdm `3D candidates`, ~9.7 h) —
+>   slower **and a different algorithm**.
+> - **Use `--use-visible-node-centroid`** (round4 production: swap-invariant mouth+tail
+>   centroid), the ID-link thresholds **`--max-jump-mm 8 --max-jump-hard-cap-mm 80
+>   --max-gap-frames 100`**, and **`--bind-top-id --top-tracks-csv …`** for stable IDs.
+> - Use `--sleap-subdir <round_tag>` when the `.slp` live in a round-tagged subfolder.
 
 ### B. Legacy workflow (pre-cut clips, CSV-based)
 
