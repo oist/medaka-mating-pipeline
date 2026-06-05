@@ -79,6 +79,8 @@ SIGNAL_WEIGHTS: dict[str, float] = {
     "S3": 2.0,   # cross-view count mismatch (max-3 cap dropping)
     "S4": 1.5,   # high reprojection residual
     "S5": 1.0,   # score dispersion
+    "S6": 2.0,   # weak 3D/ID result (NaN XYZ or geometry-only top bind)
+    "S7": 1.0,   # high top-camera reprojection bind distance
 }
 
 
@@ -90,8 +92,17 @@ def _per_view_cache_path(cache_root: Path, experiment: str, view: str) -> Path:
     return cache_root / experiment / f"{view}.parquet"
 
 
-def _slp_path_for(slp_root: Path, experiment: str, view: str) -> Path:
-    return slp_root / experiment / f"{view}.slp"
+def _slp_path_for(
+    slp_root: Path,
+    experiment: str,
+    view: str,
+    *,
+    sleap_subdir: str | None = None,
+) -> Path:
+    base = slp_root / experiment
+    if sleap_subdir:
+        base = base / sleap_subdir
+    return base / f"{view}.slp"
 
 
 def _is_cache_fresh(cache_path: Path, slp_path: Path) -> bool:
@@ -379,6 +390,7 @@ def build_features_for_experiment(
     experiment: str,
     *,
     slp_root: Path,
+    sleap_subdir: str | None = None,
     cache_root: Path,
     skip_frame: int,
     nn_gate_px: float = DEFAULT_NN_GATE_PX,
@@ -398,7 +410,9 @@ def build_features_for_experiment(
     """
     out: dict[str, dict] = {}
     for view in VIEWS:
-        slp_path = _slp_path_for(slp_root, experiment, view)
+        slp_path = _slp_path_for(
+            slp_root, experiment, view, sleap_subdir=sleap_subdir
+        )
         if not slp_path.exists():
             if log:
                 print(f"  [{experiment}/{view}] missing .slp, skip")
@@ -470,11 +484,61 @@ def _load_pre_link_residuals(
     return flagged
 
 
+def _load_identified_failure_frames(
+    identified_csv_path: Path,
+    *,
+    bind_score_quantile: float = 0.95,
+) -> tuple[set[int], set[int], dict]:
+    """
+    Return (S6 frames, S7 frames, metadata) from a *_3d_identified.csv.
+
+    S6 is intentionally broad: any frame with NaN XYZ or a geometry-only row
+    tells us the SLEAP/triangulation/bind stack was under stress.
+    S7 focuses on top-camera binds whose reprojection distance is in the
+    high tail of accepted matches.
+    """
+    if not identified_csv_path.exists():
+        return set(), set(), {}
+
+    usecols = lambda c: c in {
+        "frame", "X", "Y", "Z", "bind_source", "bind_score",
+    }
+    df = pd.read_csv(identified_csv_path, usecols=usecols)
+    s6_frames: set[int] = set()
+    if {"X", "Y", "Z"}.issubset(df.columns):
+        xyz = df[["X", "Y", "Z"]].to_numpy(dtype=float)
+        bad_xyz = ~np.isfinite(xyz).all(axis=1)
+        s6_frames.update(df.loc[bad_xyz, "frame"].astype(int).tolist())
+    if "bind_source" in df.columns:
+        geom_only = df["bind_source"].astype(str) == "geometry_only"
+        s6_frames.update(df.loc[geom_only, "frame"].astype(int).tolist())
+
+    s7_frames: set[int] = set()
+    threshold = float("nan")
+    if "bind_score" in df.columns:
+        scores = pd.to_numeric(df["bind_score"], errors="coerce").dropna()
+        if not scores.empty:
+            threshold = float(scores.quantile(bind_score_quantile))
+            high_bind = pd.to_numeric(df["bind_score"], errors="coerce") >= threshold
+            s7_frames.update(df.loc[high_bind, "frame"].astype(int).tolist())
+
+    meta = {
+        "identified_csv": str(identified_csv_path),
+        "s6_frames": len(s6_frames),
+        "s7_frames": len(s7_frames),
+        "s7_bind_score_threshold": threshold,
+        "s7_bind_score_quantile": bind_score_quantile,
+    }
+    return s6_frames, s7_frames, meta
+
+
 def aggregate_experiment(
     experiment: str,
     per_view: dict[str, dict],
     *,
     pre_link_json_path: Path | None = None,
+    identified_csv_path: Path | None = None,
+    bind_score_quantile: float = 0.95,
     fps: float,
     skip_frame: int,
     time_bins: int,
@@ -486,6 +550,13 @@ def aggregate_experiment(
     s4_frames: set[int] = set()
     if pre_link_json_path is not None:
         s4_frames = _load_pre_link_residuals(pre_link_json_path)
+    s6_frames: set[int] = set()
+    s7_frames: set[int] = set()
+    if identified_csv_path is not None:
+        s6_frames, s7_frames, _ = _load_identified_failure_frames(
+            identified_csv_path,
+            bind_score_quantile=bind_score_quantile,
+        )
 
     # Per-frame n_inst counts across views (for S3).
     n_inst_per_view: dict[str, dict[int, int]] = {}
@@ -520,6 +591,8 @@ def aggregate_experiment(
             s3_gap = n_max - n_min_active if n_min_active else 0
             s3 = s3_gap >= 1
             s4 = f in s4_frames
+            s6 = f in s6_frames
+            s7 = f in s7_frames
 
             signals: list[str] = []
             if bool(r["s1"]):
@@ -532,6 +605,10 @@ def aggregate_experiment(
                 signals.append("S4")
             if bool(r["s5"]):
                 signals.append("S5")
+            if s6:
+                signals.append("S6")
+            if s7:
+                signals.append("S7")
 
             score = sum(SIGNAL_WEIGHTS[s] for s in signals)
             # Time bin: linear partition over (skip_frame, max_frame).
@@ -704,6 +781,7 @@ def build_annotation_seed_slp(
     picks_df: pd.DataFrame,
     *,
     slp_root: Path,
+    sleap_subdir: str | None = None,
     out_path: Path,
     tail_offset_xy: tuple[float, float] = (0.0, DEFAULT_TAIL_SEED_OFFSET_PX),
     embed: str | bool = "user",
@@ -712,6 +790,11 @@ def build_annotation_seed_slp(
     """
     Assemble a SLEAP labels project containing the picked frames with a
     ``mouth -> tail`` skeleton.
+
+    If the source predictions already contain a finite ``tail`` node (as in
+    round4 mouth+tail inference), preserve it. If the source has only
+    ``mouth`` or the tail is missing/NaN for an instance, seed tail next to
+    mouth as a hidden fallback for the annotator.
 
     Returns a summary dict with frame counts and the output path.
     """
@@ -731,18 +814,25 @@ def build_annotation_seed_slp(
     seed_lfs: list["sio.LabeledFrame"] = []
     n_with_inst = 0
     n_skipped = 0
+    n_tail_from_source = 0
+    n_tail_seeded = 0
 
     picks = picks_df[picks_df["picked"]].copy()
     picks.sort_values(["experiment", "view", "frame"], inplace=True)
 
     for (exp, view), group in picks.groupby(["experiment", "view"], sort=False):
-        slp_path = _slp_path_for(slp_root, exp, view)
+        slp_path = _slp_path_for(
+            slp_root, exp, view, sleap_subdir=sleap_subdir
+        )
         if not slp_path.exists():
             n_skipped += len(group)
             continue
         if slp_path not in src_cache:
             src_cache[slp_path] = sio.load_slp(str(slp_path))
         src = src_cache[slp_path]
+        src_nodes = [n.name for n in src.skeletons[0].nodes] if src.skeletons else []
+        mouth_idx = src_nodes.index("mouth") if "mouth" in src_nodes else 0
+        tail_idx = src_nodes.index("tail") if "tail" in src_nodes else None
         # Map frame_idx -> LabeledFrame in the source .slp for O(1) lookup.
         frame_index = {int(lf.frame_idx): lf for lf in src.labeled_frames}
 
@@ -778,16 +868,38 @@ def build_annotation_seed_slp(
             new_instances: list = []
             for inst in src_lf.instances:
                 pts = inst.numpy()
-                mask = np.isfinite(pts).all(axis=1)
-                if not mask.any():
+                if mouth_idx >= len(pts):
                     continue
-                # The source skeleton is single-node `mouth`.
-                mx, my = pts[mask][0]
-                tx = float(mx) + tail_offset_xy[0]
-                ty = float(my) + tail_offset_xy[1]
+                mouth = pts[mouth_idx]
+                if not np.isfinite(mouth).all():
+                    mask = np.isfinite(pts).all(axis=1)
+                    if not mask.any():
+                        continue
+                    mouth = pts[mask][0]
+                mx, my = float(mouth[0]), float(mouth[1])
+
+                tail = None
+                if tail_idx is not None and tail_idx < len(pts):
+                    cand_tail = pts[tail_idx]
+                    if np.isfinite(cand_tail).all():
+                        tail = cand_tail
+                if tail is not None:
+                    tx, ty = float(tail[0]), float(tail[1])
+                    tail_visible = True
+                    n_tail_from_source += 1
+                else:
+                    tx = mx + tail_offset_xy[0]
+                    ty = my + tail_offset_xy[1]
+                    tail_visible = False
+                    n_tail_seeded += 1
                 new_inst = sio.Instance.from_numpy(
-                    points_data=np.array([[float(mx), float(my)],
-                                          [tx, ty]], dtype=float),
+                    points_data=np.array(
+                        [
+                            [float(mx), float(my), True],
+                            [tx, ty, tail_visible],
+                        ],
+                        dtype=float,
+                    ),
                     skeleton=skel,
                 )
                 new_instances.append(new_inst)
@@ -837,6 +949,8 @@ def build_annotation_seed_slp(
         "out_path": str(out_path),
         "n_frames": n_with_inst,
         "n_skipped": n_skipped,
+        "n_tail_from_source": n_tail_from_source,
+        "n_tail_seeded": n_tail_seeded,
         "embedded": embedded,
     }
 
@@ -913,12 +1027,30 @@ def discover_experiments(slp_root: Path) -> list[str]:
     return exps
 
 
+def discover_experiments_for_subdir(slp_root: Path, sleap_subdir: str | None) -> list[str]:
+    """List experiments containing merged view .slp files in an optional subdir."""
+    if not sleap_subdir:
+        return discover_experiments(slp_root)
+    exps: list[str] = []
+    for child in sorted(slp_root.iterdir()):
+        if not child.is_dir():
+            continue
+        base = child / sleap_subdir
+        if any((base / f"{v}.slp").exists() for v in VIEWS):
+            exps.append(child.name)
+    return exps
+
+
 def run_pipeline(
     *,
     slp_root: Path,
+    sleap_subdir: str | None,
     cache_root: Path,
     out_dir: Path,
     pre_link_dir: Path | None,
+    pre_link_json: Path | None,
+    identified_csv: Path | None,
+    bind_score_quantile: float,
     experiments: list[str],
     fps: float,
     skip_frame: int,
@@ -947,6 +1079,7 @@ def run_pipeline(
         per_view = build_features_for_experiment(
             exp,
             slp_root=slp_root,
+            sleap_subdir=sleap_subdir,
             cache_root=cache_root,
             skip_frame=skip_frame,
             nn_gate_px=nn_gate_px,
@@ -964,14 +1097,21 @@ def run_pipeline(
             bl_estimates[(exp, view)] = payload["meta"].get("bl_px_est", float("nan"))
 
         pre_link_json_path = None
-        if pre_link_dir is not None:
+        if pre_link_json is not None:
+            pre_link_json_path = pre_link_json
+        elif pre_link_dir is not None:
             cand = pre_link_dir / f"{exp}_best_pre_link.json"
             if cand.exists():
                 pre_link_json_path = cand
+        identified_csv_path = None
+        if identified_csv is not None:
+            identified_csv_path = identified_csv
         df = aggregate_experiment(
             exp,
             per_view,
             pre_link_json_path=pre_link_json_path,
+            identified_csv_path=identified_csv_path,
+            bind_score_quantile=bind_score_quantile,
             fps=fps,
             skip_frame=skip_frame,
             time_bins=time_bins,
@@ -1013,6 +1153,7 @@ def run_pipeline(
         seed_summary = build_annotation_seed_slp(
             selected,
             slp_root=slp_root,
+            sleap_subdir=sleap_subdir,
             out_path=seed_path,
             tail_offset_xy=(0.0, tail_offset_px),
             embed=embed,
@@ -1045,11 +1186,34 @@ def build_parser() -> argparse.ArgumentParser:
         help="Override sleap_output_dir (where merged per-view .slp files live).",
     )
     p.add_argument(
+        "--sleap-subdir", default=None,
+        help=(
+            "Optional subfolder inside each experiment, e.g. round4_260520. "
+            "Use this when mining from a retraining round under "
+            "<sleap_output_dir>/<experiment>/<round>/."
+        ),
+    )
+    p.add_argument(
         "--reconstruction-dir", default=None,
         help=(
             "Override reconstruction_output_dir; used to find "
             "<exp>_best_pre_link.json for signal S4."
         ),
+    )
+    p.add_argument(
+        "--pre-link-json", default=None,
+        help="Explicit *_best_pre_link.json for S4 residual signal.",
+    )
+    p.add_argument(
+        "--identified-csv", default=None,
+        help=(
+            "Explicit *_3d_identified.csv for S6/S7 signals "
+            "(NaN/geometry-only/high-bind-distance frames)."
+        ),
+    )
+    p.add_argument(
+        "--bind-score-quantile", type=float, default=0.95,
+        help="Quantile of accepted bind_score used for S7 high-bind signal.",
     )
     p.add_argument(
         "--out-dir", default=None,
@@ -1144,12 +1308,16 @@ def main(argv: list[str] | None = None) -> None:
     pre_link_dir = Path(reconstruction_dir) if reconstruction_dir else None
 
     out_dir = Path(args.out_dir) if args.out_dir else slp_root / "training_frame_mining"
-    cache_root = Path(args.cache_dir) if args.cache_dir else out_dir / "cache"
+    if args.cache_dir:
+        cache_root = Path(args.cache_dir)
+    else:
+        cache_suffix = args.sleap_subdir or "root"
+        cache_root = out_dir / "cache" / cache_suffix
 
     if args.experiments:
         experiments = list(args.experiments)
     else:
-        experiments = discover_experiments(slp_root)
+        experiments = discover_experiments_for_subdir(slp_root, args.sleap_subdir)
     if not experiments:
         parser.error(f"No experiments with merged .slp under {slp_root}")
 
@@ -1163,9 +1331,13 @@ def main(argv: list[str] | None = None) -> None:
 
     run_pipeline(
         slp_root=slp_root,
+        sleap_subdir=args.sleap_subdir,
         cache_root=cache_root,
         out_dir=out_dir,
         pre_link_dir=pre_link_dir,
+        pre_link_json=Path(args.pre_link_json) if args.pre_link_json else None,
+        identified_csv=Path(args.identified_csv) if args.identified_csv else None,
+        bind_score_quantile=args.bind_score_quantile,
         experiments=experiments,
         fps=args.fps,
         skip_frame=skip_frame,

@@ -126,6 +126,31 @@ def lookup_2d_arrow(
     return mouth, tail
 
 
+def display_labels_from_identified_csv(
+    csv_path: Path,
+    fish_ids: list[str],
+    *,
+    id_col: str = "final_fish_id",
+) -> list[str]:
+    """Map geometry fish IDs from best.json to labels from an identified CSV."""
+    import pandas as pd
+
+    df = pd.read_csv(csv_path, usecols=lambda c: c in {"fish_id", id_col})
+    if "fish_id" not in df.columns or id_col not in df.columns:
+        raise ValueError(
+            f"{csv_path} must contain columns 'fish_id' and {id_col!r}."
+        )
+    out: list[str] = []
+    for fid in fish_ids:
+        sub = df.loc[df["fish_id"].astype(str) == str(fid), id_col].dropna()
+        if sub.empty:
+            out.append(str(fid))
+            continue
+        label = str(sub.astype(str).mode().iloc[0])
+        out.append(label)
+    return out
+
+
 # ---------------------------------------------------------------------------
 # Main pipeline
 # ---------------------------------------------------------------------------
@@ -159,6 +184,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--trail-seconds", type=float, default=5.0)
     ap.add_argument("--source-fps", type=float, default=166.0)
     ap.add_argument("--fill-gap-frames", type=int, default=30)
+    ap.add_argument("--identified-csv", type=Path, default=None,
+                    help="Optional *_3d_identified.csv; if provided, draw "
+                         "labels from --display-id-col instead of geometry IDs.")
+    ap.add_argument("--display-id-col", default="final_fish_id",
+                    help="Column in --identified-csv to use as displayed ID label.")
     args = ap.parse_args(argv)
 
     # Imports that pull heavy deps (cv2, matplotlib) only after CLI parsing.
@@ -197,8 +227,17 @@ def main(argv: list[str] | None = None) -> int:
         best_payload = json.load(fh)
     fish_ids = list(best_payload.get("id_labels")
                     or [f"ID_{i+1}" for i in range(int(best_payload.get("num_individuals", 3)))])
+    display_ids = fish_ids
+    if args.identified_csv is not None:
+        display_ids = display_labels_from_identified_csv(
+            args.identified_csv,
+            fish_ids,
+            id_col=args.display_id_col,
+        )
     best = {int(k): v for k, v in best_payload["frames"].items()}
     print(f"  {len(best)} frames, fish_ids={fish_ids}")
+    if display_ids != fish_ids:
+        print(f"  display labels: {dict(zip(fish_ids, display_ids))}")
 
     # 2) Per-view .slp (mouth + tail xy per instance, slot-sorted by score).
     slp_per_view: dict[str, dict[int, np.ndarray]] = {}
@@ -273,7 +312,7 @@ def main(argv: list[str] | None = None) -> int:
     trail_frames = int(round(args.trail_seconds * args.source_fps / max(1, args.frame_step)))
     renderer3d = SkeletonRenderer3D(
         width=panel, height=panel, xyz_lim=tuple(args.xyz_lim),
-        fish_ids=fish_ids, elev=args.elev, azim=args.azim,
+        fish_ids=display_ids, elev=args.elev, azim=args.azim,
         arrows=True, trail_frames=trail_frames,
     )
 
@@ -289,14 +328,17 @@ def main(argv: list[str] | None = None) -> int:
     cap_widths: dict[str, int] = {}
     cap_heights: dict[str, int] = {}
     cur_idx: dict[str, int] = {}
+    first_render_frame = frame_indices[0] if frame_indices else 0
     for v, p in cap_paths.items():
         cap = cv2.VideoCapture(str(p))
         if not cap.isOpened():
             sys.exit(f"failed to open {p}")
+        if first_render_frame > 0:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, first_render_frame)
         caps[v] = cap
         cap_widths[v] = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         cap_heights[v] = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        cur_idx[v] = 0
+        cur_idx[v] = first_render_frame
         print(f"  {v}: {cap_widths[v]}x{cap_heights[v]} @ "
               f"{cap.get(cv2.CAP_PROP_FRAME_COUNT):.0f} frames")
 
@@ -328,7 +370,7 @@ def main(argv: list[str] | None = None) -> int:
                 for k, fid in enumerate(fish_ids):
                     m, t = lookup_2d_arrow(best_frame_info, slp_per_view,
                                            src_frame, view, fid)
-                    arrows.append((fid, m, t, fish_colors_bgr[k]))
+                    arrows.append((display_ids[k], m, t, fish_colors_bgr[k]))
                 # Arrow geometry scaled to source resolution; downsamples to
                 # ~ (thickness * panel/src) px in the final mp4.
                 src_w = cap_widths[view]
