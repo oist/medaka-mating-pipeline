@@ -60,12 +60,15 @@ def bind(
     if missing_t:
         raise ValueError(f"{top_tracks_csv} missing columns: {missing_t}")
 
-    sizes = top.groupby("track_id").size()
+    top = top.copy()
+    top["bind_identity_key"] = _bind_identity_keys(top)
+
+    sizes = top.groupby("bind_identity_key").size()
     keep = sizes[sizes >= require_min_frames].index
     n_dropped = len(sizes) - len(keep)
     if n_dropped:
-        print(f"[bind] dropping {n_dropped} top tracks below {require_min_frames} frames")
-    top = top[top["track_id"].isin(keep)].copy()
+        print(f"[bind] dropping {n_dropped} top identity keys below {require_min_frames} frames")
+    top = top[top["bind_identity_key"].isin(keep)].copy()
 
     top_by_frame = {int(fi): g for fi, g in top.groupby("frame")}
 
@@ -90,6 +93,7 @@ def bind(
                     "source_top_id": np.nan,
                     "source_top_label": "",
                     "source_identity_trajectory_id": "",
+                    "source_bind_key": "",
                     "source_qc_status": "",
                     "source_bind_weight": 0.0,
                     "bind_score": np.nan,
@@ -103,6 +107,7 @@ def bind(
         top_trajectory_ids = _optional_column(tf, "identity_trajectory_id", default="")
         top_qc_status = _optional_column(tf, "qc_status", default="")
         top_weights = _numeric_optional_column(tf, "bind_weight", default=1.0)
+        top_bind_keys = _optional_column(tf, "bind_identity_key", default="")
 
         cost = np.full((len(gf), len(tf)), 1e9, dtype=float)
         if valid_mask.any():
@@ -123,6 +128,7 @@ def bind(
                 "source_top_id": int(top_ids[ci]),
                 "source_top_label": str(top_labels[ci]),
                 "source_identity_trajectory_id": str(top_trajectory_ids[ci]),
+                "source_bind_key": str(top_bind_keys[ci]),
                 "source_qc_status": str(top_qc_status[ci]),
                 "source_bind_weight": float(top_weights[ci]),
                 "bind_score": float(cost[ri, ci]),
@@ -141,6 +147,7 @@ def bind(
                 "source_top_id": np.nan,
                 "source_top_label": "",
                 "source_identity_trajectory_id": "",
+                "source_bind_key": "",
                 "source_qc_status": "",
                 "source_bind_weight": 0.0,
                 "bind_score": np.nan,
@@ -149,46 +156,44 @@ def bind(
 
     df = pd.DataFrame(rows).sort_values(["frame", "fish_id"]).reset_index(drop=True)
 
-    # Global Hungarian assignment on the (geometry fish_id) x (top track_id) tally
-    # matrix — prevents two geometry IDs from collapsing onto one top track via
-    # independent per-fish modes.
+    # Global Hungarian assignment on the (geometry fish_id) x stable top identity
+    # key tally matrix. This prevents two geometry IDs from collapsing onto one
+    # top identity and lets short segmentation fragments with the same
+    # biological label vote together.
     bound_only = df.dropna(subset=["source_top_id"])
     if not bound_only.empty:
         if "source_bind_weight" not in bound_only.columns:
             bound_only = bound_only.copy()
             bound_only["source_bind_weight"] = 1.0
         tally = bound_only.pivot_table(
-            index="fish_id", columns="source_top_id",
+            index="fish_id", columns="source_bind_key",
             values="source_bind_weight", aggfunc="sum", fill_value=0,
         )
         geom_ids = tally.index.tolist()
-        top_ids_unique = tally.columns.tolist()
+        top_keys_unique = tally.columns.tolist()
         cost = -tally.to_numpy(dtype=float)  # maximize tally => minimize negative
         if cost.size > 0:
             row_ind, col_ind = linear_sum_assignment(cost)
             mapping: dict = {}
             for ri, ci in zip(row_ind, col_ind):
                 if -cost[ri, ci] > 0:  # only accept positive-tally pairs
-                    mapping[geom_ids[ri]] = int(top_ids_unique[ci])
+                    mapping[geom_ids[ri]] = str(top_keys_unique[ci])
         else:
             mapping = {}
     else:
         mapping = {}
         geom_ids = []
 
-    label_by_top_id = _top_label_lookup(bound_only) if not bound_only.empty else {}
-    print(f"[bind] global 1-to-1 assignment geometry fish_id -> top_track_id:")
+    label_by_key = _top_label_lookup_by_key(bound_only) if not bound_only.empty else {}
+    print(f"[bind] global 1-to-1 assignment geometry fish_id -> top identity key:")
     for fid in df["fish_id"].unique():
-        tid = mapping.get(fid)
-        label = label_by_top_id.get(tid, "") if tid is not None else ""
-        suffix = f" ({label})" if label else ""
-        print(f"  {fid}: {tid if tid is not None else 'unbound (fallback to geometry id)'}{suffix}")
+        key = mapping.get(fid)
+        label = label_by_key.get(key, "") if key is not None else ""
+        suffix = f" ({label})" if label and label != key else ""
+        print(f"  {fid}: {key if key is not None else 'unbound (fallback to geometry id)'}{suffix}")
 
     fallback_str = df["fish_id"].astype(str)
-    label_mapping = {
-        fid: (label_by_top_id.get(tid) or str(int(tid)))
-        for fid, tid in mapping.items()
-    }
+    label_mapping = {fid: (label_by_key.get(key) or str(key)) for fid, key in mapping.items()}
     df["final_fish_id"] = df["fish_id"].map(label_mapping)
     df["final_fish_id"] = df["final_fish_id"].fillna(fallback_str)
 
@@ -214,6 +219,23 @@ def _numeric_optional_column(df: pd.DataFrame, name: str, *, default: float) -> 
     return pd.to_numeric(df[name], errors="coerce").fillna(float(default)).to_numpy(dtype=float)
 
 
+def _bind_identity_keys(df: pd.DataFrame) -> pd.Series:
+    candidates = []
+    for col in ("identity", "track_label", "assigned_identity"):
+        if col in df.columns:
+            value = df[col].fillna("").astype(str).str.strip()
+            value = value.mask(value.isin(["", "unknown", "unassigned", "nan", "None"]))
+            candidates.append(value)
+    if candidates:
+        key = candidates[0]
+        for value in candidates[1:]:
+            key = key.fillna(value)
+        key = key.fillna(df["track_id"].astype(str))
+    else:
+        key = df["track_id"].astype(str)
+    return key.astype(str)
+
+
 def _top_label_lookup(bound_only: pd.DataFrame) -> dict:
     if "source_top_label" not in bound_only.columns:
         return {}
@@ -225,6 +247,19 @@ def _top_label_lookup(bound_only: pd.DataFrame) -> dict:
         labels = labels[labels != ""]
         if not labels.empty:
             lookup[int(top_id)] = labels.mode().iloc[0]
+    return lookup
+
+
+def _top_label_lookup_by_key(bound_only: pd.DataFrame) -> dict:
+    if "source_bind_key" not in bound_only.columns:
+        return {}
+    lookup: dict = {}
+    for key, group in bound_only.groupby("source_bind_key"):
+        if pd.isna(key) or str(key) == "":
+            continue
+        labels = group.get("source_top_label", pd.Series([], dtype=str)).fillna("").astype(str)
+        labels = labels[labels != ""]
+        lookup[str(key)] = labels.mode().iloc[0] if not labels.empty else str(key)
     return lookup
 
 

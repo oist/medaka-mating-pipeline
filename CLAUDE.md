@@ -26,6 +26,7 @@ scripts/                # All active logic lives here (not src/)
   visualization/        # rerun_viewer.py — interactive 3D + multiview Rerun viewer
   common/               # local_paths.py, experiment_metadata.py, build_catalog.py
   debug/                # One-off issue reproductions
+sam2_id_experiment/     # SAM2/Detectron2 segmentation-assisted identity tools
 src/medaka_pipeline/    # Package scaffold — placeholders only, not used yet
 configs/                # YAML/TOML config (acquisition, sleap, paths)
 calibration_results/    # Checked-in calibration data & trained models
@@ -88,6 +89,7 @@ SLEAP inference on saion (scripts/hpc/)         → per-view chunked .slp on /bu
 scripts.tracking.main --merge-chunks <exp>      → <view>.slp + experiment_metadata.json
         │
         ├─► track_simple_nn on round4_260520/top_cam.slp (2D-ID anchor)  → top_cam.tracks.csv
+        │      optional replacement/augmentation: 3D-seeded segmentation ID → top_cam.seg_identity_tracks.csv
         │                                                                      │
         └─► reconstruct_from_slp (3D, --num-candidates 6 …) ───────────────────┤
                                                                                ▼
@@ -113,6 +115,56 @@ round4 recipe).
 >   centroid), the ID-link thresholds **`--max-jump-mm 8 --max-jump-hard-cap-mm 80
 >   --max-gap-frames 100`**, and **`--bind-top-id --top-tracks-csv …`** for stable IDs.
 > - Use `--sleap-subdir <round_tag>` when the `.slp` live in a round-tagged subfolder.
+
+#### Segmentation-assisted ID recovery (2026-06-06)
+
+Use this when the simple top-camera NN track fragments or swaps through false
+negatives, occlusions, or crossings. Keep 3D reconstruction as the source of
+geometry, but replace or augment the top-camera bind anchor with a
+segmentation-assisted identity CSV.
+
+1. Mine clean top-view SAM2 prompts from existing 3D outputs:
+
+```powershell
+.venv\Scripts\python.exe -m sam2_id_experiment.scripts.24_seed_prompts_from_3d `
+  --identified-3d-csv <output_dir>\<tag>_3d_identified.csv `
+  --best-pre-link-json <output_dir>\<tag>_best_pre_link.json `
+  --paths-config configs/paths.local.toml `
+  --output-dir runs\seg_id\<experiment>\<round_tag>\seed_from_3d
+```
+
+This writes `clean_seed_windows.csv`, `clean_seed_points.csv`,
+`sam2_seed_prompts_from_3d.yaml`, and a summary JSON. Seeds are intentionally
+conservative: finite 3D rows, one-to-one `final_fish_id`, low residual, low bind
+score, sufficient 3D separation, and no speed spike.
+
+2. Feed `sam2_seed_prompts_from_3d.yaml` into the existing
+`sam2_id_experiment/scripts/01_*` through `23_*` segmentation-ID workflow
+(SAM2/Detectron2 masks, SLEAP gating, QC filtering, ID assignment/stitching).
+
+3. Export bind-compatible tracks with
+`sam2_id_experiment.src.sleap_adapter.top_track_export.export_segmentation_top_tracks`
+or the existing `20_export_segmentation_top_tracks.py` script. The export now
+pools short fragments by biological `assigned_identity` while keeping
+`identity_trajectory_id` as provenance.
+
+4. Re-run or re-bind 3D with:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.reconstruction_3d.reconstruct_from_slp <experiment> `
+  --paths-config configs/paths.local.toml `
+  --sleap-subdir round4_260520 `
+  --num-candidates 6 --use-visible-node-centroid `
+  --xyz-bounds -20 220 --no-shift-to-positive `
+  --max-residual-per-fish 5000 `
+  --max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100 `
+  --num-individuals 3 `
+  --bind-top-id `
+  --top-tracks-csv <top_cam.seg_identity_tracks.csv>
+```
+
+`bind_topcam_id.py` now writes `source_bind_key` and votes globally by that
+stable key, so multiple short segmentation fragments can count as one fish.
 
 ### B. Legacy workflow (pre-cut clips, CSV-based)
 
@@ -165,6 +217,32 @@ Data collected in 4 orientations ("ways") rotated ~90 degrees each.
 4. `solve_intrinsics.py` - train model (supports merge mode for multi-way)
 5. QC scripts: `qc_3d_error.py`, `qc_reprojection_2d.py`, `qc_volume_error.py`
 
+**Rigid-object refinement extension (2026-06-06)**:
+
+For a second calibration filming, prefer a moved rigid object with 6+ known,
+non-coplanar bright markers over a simple triangle. The new refiner consumes:
+
+- `rigid_object_geometry.csv`: `marker_id,object_x,object_y,object_z`
+- `rigid_object_image_coords.csv`: `pose_id,marker_id,cam0_x,cam0_y,cam1_x,cam1_y,cam2_x,cam2_y`
+
+Run:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.calibration.refine_calibration_rigid_object `
+  --rigid-object-geometry-csv <geometry.csv> `
+  --rigid-object-image-coords-csv <image_coords.csv> `
+  --base-model-folder <current_model_dir> `
+  --output-folder <new_model_dir> `
+  --results-root <qc_output_dir>
+```
+
+It fits a Kabsch pose per object placement, projects observations onto the
+rigid geometry, retrains `imCoords_to_XYZ.joblib`, `XYZ_to_imCoords.joblib`,
+and the pairwise helper models, then writes `rigid_object_refined_points.csv`
+and `calibration_refinement_report.json`. Accept a refined model only if
+held-out rigid-object error and downstream 3D residual/speed-spike metrics do
+not regress.
+
 ## HPC SLEAP Inference (OIST saion)
 
 `scripts/hpc/` runs SLEAP from the saion login node, submitting one Slurm array job per view
@@ -199,6 +277,10 @@ pytest tests/test_tracking_and_reconstruction_regressions.py  # Specific
 
 Tests cover: tracking regressions, calibration GUI, helper backends, bead remapping, 3D reconstruction.
 CI runs on GitHub Actions (Ubuntu, Python 3.11).
+
+New precision/ID tests live in `tests/test_precision_identity_plan.py` and cover
+3D prompt mining, segmentation fragment pooling, bind-key voting, and synthetic
+rigid-object refinement.
 
 ## Working with This Repo
 

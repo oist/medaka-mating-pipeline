@@ -144,6 +144,38 @@ to attach a `final_fish_id`. Track on the **default visible-node centroid**
   `final_fish_id` is a stable 1-to-1 relabel of the geometry IDs.
 See `scripts/tracking/README.md` (sect. 2.4) for threshold rationale.
 
+**Optional Stage 4 - 3D-seeded segmentation ID anchor.** Use this when
+`track_simple_nn` is the weak link around false negatives, occlusions, or
+crossings. The goal is not to change the 3D geometry path; it is to produce a
+better top-camera identity CSV for `--bind-top-id`.
+
+1. Mine clean seed windows from the existing 3D output:
+
+```bash
+.venv/Scripts/python.exe -m sam2_id_experiment.scripts.24_seed_prompts_from_3d \
+    --identified-3d-csv <output_dir>/<tag>_3d_identified.csv \
+    --best-pre-link-json <output_dir>/<tag>_best_pre_link.json \
+    --paths-config configs/paths.local.toml \
+    --output-dir runs/seg_id/<experiment>/<round_tag>/seed_from_3d
+```
+
+Outputs are `clean_seed_windows.csv`, `clean_seed_points.csv`,
+`sam2_seed_prompts_from_3d.yaml`, and
+`sam2_seed_prompts_from_3d_summary.json`. The miner is intentionally strict:
+finite 3D rows, unique `final_fish_id`, low pre-link residual, low bind score,
+sufficient 3D separation, and no speed spike.
+
+2. Use the existing `sam2_id_experiment/scripts/` workflow to run SAM2 or
+Detectron2 masks, SLEAP-mask gating, QC filtering, ID assignment/stitching, and
+top-track export. `top_track_export.py` now pools fragments by biological
+`assigned_identity`, while preserving `identity_trajectory_id` as provenance.
+
+3. Re-run `reconstruct_from_slp --bind-top-id` with the exported
+`top_cam.seg_identity_tracks.csv`, or call `scripts.reconstruction_3d.bind_topcam_id`
+directly on an existing `<tag>_3d.csv`. The bind step now writes
+`source_bind_key` and tallies by that stable identity key, so short fragments
+with the same biological ID count together.
+
 ## Data And Paths
 
 - Large raw data, videos, `.slp`, `.h5`, and similar outputs live outside the repo.
@@ -160,6 +192,18 @@ See `scripts/tracking/README.md` (sect. 2.4) for threshold rationale.
   `calibration_results/cali_20251217_manual/`.
 - When editing calibration scripts, verify behavior against the checked-in QC data
   where feasible.
+- For new precision refinement, prefer filming a moved rigid object with 6+
+  known non-coplanar bright markers. Use
+  `scripts.calibration.refine_calibration_rigid_object` with:
+  - `rigid_object_geometry.csv`:
+    `marker_id,object_x,object_y,object_z`
+  - `rigid_object_image_coords.csv`:
+    `pose_id,marker_id,cam0_x,cam0_y,cam1_x,cam1_y,cam2_x,cam2_y`
+  The script fits a Kabsch pose per object placement, retrains
+  `imCoords_to_XYZ.joblib`, `XYZ_to_imCoords.joblib`, and pairwise helper
+  models, and writes `calibration_refinement_report.json`. Accept the new model
+  only if held-out rigid-object error and downstream 3D QC metrics do not
+  regress.
 
 ## Code Style
 

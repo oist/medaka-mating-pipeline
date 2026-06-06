@@ -29,12 +29,15 @@ def export_segmentation_top_tracks(
         if missing:
             raise ValueError(f"Identity tracks missing columns: {', '.join(sorted(missing))}")
         tracks = identity_tracks.copy()
-        trajectory_ids = sorted(str(v) for v in tracks["identity_trajectory_id"].dropna().unique())
-        id_map = {trajectory_id: idx for idx, trajectory_id in enumerate(trajectory_ids)}
         track_label = tracks.get("assigned_identity", tracks["identity_trajectory_id"]).fillna("").astype(str)
+        # The bind step needs a stable biological-ID track id. Keep the
+        # fragment identifier separately in identity_trajectory_id so multiple
+        # short segmentation fragments can still vote as one fish.
+        identity_labels = sorted(str(v) for v in track_label[track_label != ""].unique())
+        id_map = {identity: idx for idx, identity in enumerate(identity_labels)}
         out = pd.DataFrame({
             "frame": tracks["frame"].astype(int),
-            "track_id": tracks["identity_trajectory_id"].astype(str).map(id_map).astype(int),
+            "track_id": track_label.map(id_map).fillna(-1).astype(int),
             "x": tracks["centroid_x"].astype(float),
             "y": tracks["centroid_y"].astype(float),
             "score": tracks.get("confidence", pd.Series(1.0, index=tracks.index)).astype(float),

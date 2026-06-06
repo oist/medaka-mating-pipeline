@@ -3,7 +3,7 @@
 > Read this file at the start of every session (see [CLAUDE.md](CLAUDE.md) → *Session Start Rules*).
 > When project state, rules, or procedures change, update this file in the same turn.
 
-Last updated: 2026-05-11
+Last updated: 2026-06-06
 
 ---
 
@@ -22,7 +22,7 @@ Top-level layout (see [CLAUDE.md](CLAUDE.md) → *Repository Layout* for the ful
 medaka-mating-pipeline/
 ├── scripts/                  # All active logic
 │   ├── acquisition/          # Multi-camera recording (campy, Basler)
-│   ├── calibration/          # Bead-based calibration + lib/
+│   ├── calibration/          # Bead/object calibration + lib/
 │   ├── hpc/                  # Slurm SLEAP inference on OIST saion
 │   ├── sleap/                # SLEAP batch inference & visualization
 │   ├── tracking/             # 2D tracking (legacy + .slp workflow)
@@ -33,6 +33,7 @@ medaka-mating-pipeline/
 │   ├── common/               # local_paths.py, experiment_metadata.py
 │   └── debug/                # One-off bug repros
 ├── src/medaka_pipeline/      # Package scaffold only (not used yet)
+├── sam2_id_experiment/       # SAM2/Detectron2 segmentation-assisted ID tools
 ├── configs/                  # YAML/TOML configs (acquisition, sleap, paths)
 ├── calibration_results/      # Checked-in calibration data + trained models
 ├── tests/                    # pytest unit tests
@@ -48,6 +49,11 @@ medaka-mating-pipeline/
 - **Local SLEAP inference path**: torch via `sleap_nn.cli track` (`scripts/sleap/run_round_inference.py --mode track`, the default). TensorRT export is **broken on the RTX 5070 Ti** (Blackwell `peaks_castOut` op has no TRT 10.16 tactic), and ONNX adds no worthwhile speedup — so do **not** propose `--mode predict`/TRT export on this machine. See [AGENTS.md](AGENTS.md) "3D Tracking Runbook".
 - **CI**: GitHub Actions runs `pytest -q` on Ubuntu / Python 3.11 using `environment/requirements.txt`.
 - **Calibration production model**: `calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models/imCoords_to_XYZ.joblib` (0.90 mm mean / 1.00 mm RMSE / 2.15 mm max over 228 points).
+- **2026-06-06 precision/ID upgrade**:
+  - 3D-seeded SAM2 prompt mining lives in `sam2_id_experiment/src/sam2_adapter/prompt_seed_from_3d.py` with CLI `sam2_id_experiment/scripts/24_seed_prompts_from_3d.py`.
+  - Segmentation top-track export now pools multiple short fragments by biological `assigned_identity` while preserving `identity_trajectory_id` provenance.
+  - `scripts/reconstruction_3d/bind_topcam_id.py` now votes by stable `source_bind_key`, so fragmented segmentation IDs can replace/augment `top_cam.tracks.csv`.
+  - Arbitrary moved rigid-object calibration refinement lives in `scripts/calibration/refine_calibration_rigid_object.py`.
 
 ## Key Technical Info
 
@@ -91,11 +97,20 @@ Set these when invoking `scripts/hpc/` from the saion login node (see [scripts/h
 - Extra-candidates 3D reconstructor with cam0 recovery via pairwise model (round-2 hit 99.02% 3-fish coverage).
 - Calibration model (`cali_20251217_manual`) accepted as production.
 - ID consistency evaluation script: [scripts/tracking/evaluate_id_consistency.py](scripts/tracking/evaluate_id_consistency.py) (added 2026-05-11).
+- 3D-seeded segmentation-ID handoff:
+  - Mine clean prompts from `<tag>_3d_identified.csv` + `<tag>_best_pre_link.json`:
+    `.venv\Scripts\python.exe -m sam2_id_experiment.scripts.24_seed_prompts_from_3d --identified-3d-csv <tag>_3d_identified.csv --best-pre-link-json <tag>_best_pre_link.json --paths-config configs/paths.local.toml --output-dir runs/seg_id/<experiment>/<round_tag>/seed_from_3d`
+  - Outputs: `clean_seed_windows.csv`, `clean_seed_points.csv`, `sam2_seed_prompts_from_3d.yaml`, `sam2_seed_prompts_from_3d_summary.json`.
+  - Use those prompts with the existing SAM2/Detectron2 scripts, then export a bind-compatible top track CSV via `export_segmentation_top_tracks`; pass it to `reconstruct_from_slp --bind-top-id --top-tracks-csv <top_cam.seg_identity_tracks.csv>`.
+- Rigid-object calibration refinement:
+  - New input contract: `rigid_object_geometry.csv` with `marker_id,object_x,object_y,object_z`; `rigid_object_image_coords.csv` with `pose_id,marker_id,cam0_x,cam0_y,cam1_x,cam1_y,cam2_x,cam2_y`.
+  - Run `.venv\Scripts\python.exe -m scripts.calibration.refine_calibration_rigid_object --rigid-object-geometry-csv <geometry.csv> --rigid-object-image-coords-csv <image_coords.csv> --base-model-folder <current_models> --output-folder <new_models> --results-root <qc_dir>`.
+  - Writes `imCoords_to_XYZ.joblib`, `XYZ_to_imCoords.joblib`, pairwise helper models, `rigid_object_refined_points.csv`, and `calibration_refinement_report.json`.
 
 ### Low priority / next up
 
 - Behavioral metric scripts in [scripts/analysis/](scripts/analysis/) (`compute_*_metrics.py`) — currently `SystemExit("TODO: ...")` placeholders.
-- SLEAP retraining round 2: add `tail` node, mine frames from 24 inferred experiments (see auto-memory `project_sleap_retrain_plan.md`).
+- Continue SLEAP retraining with more labels from failure modes: high residual, dropped fish, speed spikes, crossings, reflections, tank edges/depth extremes, and occlusion windows. Validate by downstream 3D metrics, not only SLEAP loss.
 
 ---
 
