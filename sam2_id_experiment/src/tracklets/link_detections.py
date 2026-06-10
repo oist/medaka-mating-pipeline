@@ -138,9 +138,11 @@ def _greedy_matches(
             dist = _distance(det_centroid, track.centroid)
             if not np.isfinite(dist) or dist > max_centroid_distance_px:
                 continue
-            iou = mask_iou(det.mask, track.mask)
-            if iou < min_iou:
-                continue
+            iou = 0.0
+            if float(min_iou) > 0:
+                iou = mask_iou(det.mask, track.mask)
+                if iou < min_iou:
+                    continue
             distance_score = 1.0 - min(1.0, dist / max_centroid_distance_px)
             score = float(iou_weight) * iou + float(distance_weight) * distance_score
             candidates.append((score, det_idx, int(tracklet_id)))

@@ -38,8 +38,9 @@ def mine_3d_seed_prompts(
     calib,
     config: Mapping | None = None,
     start_frame: int | None = None,
+    view: str = "top_cam",
 ) -> SeedMiningResult:
-    """Select clean 3D frames and turn their top-view reprojections into SAM2 prompts.
+    """Select clean 3D frames and turn their camera-view reprojections into SAM2 prompts.
 
     The selector is intentionally conservative: pseudo-ID seeds must be finite,
     separated in 3D, low residual, low bind error, and not moving implausibly
@@ -63,6 +64,7 @@ def mine_3d_seed_prompts(
         windows,
         calib=calib,
         num_individuals=int(cfg["num_individuals"]),
+        view=str(view),
     )
     if start_frame is None and not seed_points.empty:
         start_frame = int(seed_points["prompt_frame"].min())
@@ -78,6 +80,7 @@ def mine_3d_seed_prompts(
         "n_windows": int(len(windows)),
         "n_seed_points": int(len(seed_points)),
         "start_frame": int(start_frame or 0),
+        "view": str(view),
         "config": _jsonable_config(cfg),
         "reject_reason_counts": _reject_reason_counts(frame_table),
     }
@@ -123,6 +126,51 @@ def write_seed_mining_outputs(
     }
 
 
+def project_identified_3d_to_view(
+    identified_3d: str | Path | pd.DataFrame,
+    *,
+    calib,
+    view: str,
+) -> pd.DataFrame:
+    """Project identified 3D tracks into one camera as an ID reference table."""
+    geom = _load_identified_3d(identified_3d)
+    columns = ["frame", "x", "y", "identity", "final_fish_id", "fish_id", "view"]
+    if geom.empty:
+        return pd.DataFrame(columns=columns)
+
+    rows: list[dict] = []
+    for frame, group in geom.groupby("frame", sort=True):
+        clean = group.dropna(subset=["X", "Y", "Z", "final_fish_id"]).copy()
+        clean = clean[clean["final_fish_id"].astype(str).ne("")]
+        if clean.empty:
+            continue
+        xy = calib.project_world_to_view(clean[["X", "Y", "Z"]].to_numpy(dtype=float), str(view))
+        for i, row in enumerate(clean.to_dict("records")):
+            identity = str(row["final_fish_id"])
+            rows.append({
+                "frame": int(frame),
+                "x": float(xy[i, 0]),
+                "y": float(xy[i, 1]),
+                "identity": identity,
+                "final_fish_id": identity,
+                "fish_id": _reference_fish_id(row.get("fish_id")),
+                "view": str(view),
+            })
+    return pd.DataFrame(rows, columns=columns)
+
+
+def _reference_fish_id(value):
+    if value is None or pd.isna(value):
+        return ""
+    try:
+        as_float = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    if np.isfinite(as_float) and as_float.is_integer():
+        return int(as_float)
+    return str(value)
+
+
 def sam2_prompts_from_seed_points(
     seed_points: pd.DataFrame,
     *,
@@ -139,7 +187,11 @@ def sam2_prompts_from_seed_points(
             }
         }
 
-    required = {"window_id", "prompt_frame", "final_fish_id", "obj_id", "top_x", "top_y"}
+    if {"x", "y"}.issubset(seed_points.columns):
+        x_col, y_col = "x", "y"
+    else:
+        x_col, y_col = "top_x", "top_y"
+    required = {"window_id", "prompt_frame", "final_fish_id", "obj_id", x_col, y_col}
     missing = required - set(seed_points.columns)
     if missing:
         raise ValueError(f"seed_points missing columns: {', '.join(sorted(missing))}")
@@ -148,11 +200,11 @@ def sam2_prompts_from_seed_points(
     for (_window_id, frame), group in ordered.groupby(["window_id", "prompt_frame"], sort=True):
         point_rows = group.to_dict("records")
         for row in point_rows:
-            own_point = [_round_px(row["top_x"]), _round_px(row["top_y"])]
+            own_point = [_round_px(row[x_col]), _round_px(row[y_col])]
             points = [own_point]
             labels = [1]
             negatives = [
-                [_round_px(other["top_x"]), _round_px(other["top_y"])]
+                [_round_px(other[x_col]), _round_px(other[y_col])]
                 for other in point_rows
                 if int(other["obj_id"]) != int(row["obj_id"])
             ][: max(0, int(negative_points_per_other_fish))]
@@ -359,11 +411,12 @@ def _seed_points_for_windows(
     *,
     calib,
     num_individuals: int,
+    view: str,
 ) -> pd.DataFrame:
     if windows.empty:
         return pd.DataFrame(columns=[
             "window_id", "frame_start", "frame_end", "prompt_frame",
-            "final_fish_id", "obj_id", "X", "Y", "Z", "top_x", "top_y",
+            "final_fish_id", "obj_id", "X", "Y", "Z", "x", "y", "view", "top_x", "top_y",
         ])
     labels = sorted(str(v) for v in geom["final_fish_id"].dropna().astype(str).unique())
     obj_ids = {label: idx for idx, label in enumerate(labels[:num_individuals])}
@@ -377,7 +430,7 @@ def _seed_points_for_windows(
         group = group[group["final_fish_id"].astype(str).isin(obj_ids)].copy()
         group.sort_values("final_fish_id", inplace=True)
         xyz = group[["X", "Y", "Z"]].to_numpy(dtype=float)
-        top_xy = calib.project_world_to_view(xyz, "top_cam") if len(group) else np.empty((0, 2))
+        view_xy = calib.project_world_to_view(xyz, str(view)) if len(group) else np.empty((0, 2))
         for i, row in enumerate(group.to_dict("records")):
             label = str(row["final_fish_id"])
             rows.append({
@@ -390,8 +443,11 @@ def _seed_points_for_windows(
                 "X": float(row["X"]),
                 "Y": float(row["Y"]),
                 "Z": float(row["Z"]),
-                "top_x": float(top_xy[i, 0]),
-                "top_y": float(top_xy[i, 1]),
+                "x": float(view_xy[i, 0]),
+                "y": float(view_xy[i, 1]),
+                "view": str(view),
+                "top_x": float(view_xy[i, 0]),
+                "top_y": float(view_xy[i, 1]),
                 "min_separation_mm": float(window["min_separation_mm"]),
                 "max_speed_mm_per_frame": float(window["max_speed_mm_per_frame"]),
                 "max_residual_px2": float(window["max_residual_px2"]),

@@ -1,0 +1,89 @@
+experiment_name: 20251225_K_1_2_FCMC
+view: side1_cam
+paths_config: ..\configs\paths.local.toml
+output_dir: outputs/{experiment_name}/{view}_f176300_181300
+start_frame: 176300
+end_frame: 181300
+n_animals_expected: 3
+sam2:
+  runner: sam2_video_predictor
+  model_cfg: sam2_hiera_l.yaml
+  checkpoint: checkpoints/sam2_hiera_large.pt
+  device: cuda
+  prompt_mode: seeded_from_3d
+  max_side_px: 600
+  jpeg_quality: 90
+  vos_optimized: false
+  frame_stride: 10
+  cache_frames: true
+  frame_cache_dir: outputs/{experiment_name}/{view}_f176300_181300/sam2_frame_cache
+  refresh_frame_cache: false
+  async_loading_frames: true
+  offload_video_to_cpu: false
+  offload_state_to_cpu: false
+  prompts: []
+opencv_bgsub:
+  threshold: 24
+  open_px: 3
+  close_px: 7
+  min_area: 80
+  max_area: 8000
+  background_samples: 80
+  max_track_distance_px: 80
+qc:
+  min_tracklet_length_frames: 100
+  min_mask_area: 50
+  max_mask_area: 100000
+  max_area_cv: 0.35
+  max_centroid_speed_px_per_frame: 80
+  min_confidence: 0.8
+  reject_near_crossing: true
+  crossing_distance_px: 30
+  max_missing_frames: 5000
+  max_area_ratio_change: 2.0
+  edge_margin_px: 5
+  max_overlap_fraction: 0.05
+  expected_object_count: 3
+  flag_bbox_touching_edge: true
+sleap_gate:
+  enabled: true
+  view: side1_cam
+  sleap_subdir: round4_260520
+  max_distance_to_mask_px: 20
+  max_distance_to_centroid_px: 120
+  min_sleap_score: 0.0
+  require_one_mask_per_sleap_point: true
+  reject_without_sleap_match: true
+hybrid_tracking:
+  view: side1_cam
+  sleap_subdir: round4_260520
+  num_individuals: 3
+  max_points_per_frame: 3
+  max_sleap_distance_px_per_frame: 12.0
+  max_sleap_gap_frames: 500
+  segmentation_match_distance_px: 160.0
+  segmentation_anchor_statuses:
+  - clean_train
+  - usable_inference
+  - manual_review
+  segmentation_bonus: 80.0
+  segmentation_conflict_penalty: 220.0
+  motion_bind_weight: 0.35
+  segmentation_bind_weight: 1.0
+  manual_review_bind_weight: 0.15
+  bootstrap_initial_sleap: true
+  bootstrap_bind_weight: 0.05
+id_dataset:
+  crop_size: 128
+  max_crops_per_tracklet: 500
+  positive_pairs_per_tracklet: 1000
+  negative_pairs_per_tracklet_pair: 500
+  random_seed: 13
+debug:
+  write_overlay_video: true
+  write_rejected_examples: true
+side_pipeline:
+  pilot: true
+  source_template: top_cam
+  review_tool: sam2_id_experiment/scripts/27_napari_review_tracklets.py
+  identity_reference: projected_3d_identity_reference.csv

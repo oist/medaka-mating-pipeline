@@ -463,7 +463,7 @@ def test_human_review_labels_override_conservatively():
         bad_rows.append(_mask_row(frame=frame, tracklet_id=1, x0=35, y0=10, x1=45, y1=20, review_label="merged"))
         good_rows.append(_mask_row(frame=frame, tracklet_id=2, x0=10, y0=35, x1=20, y1=45, review_label="good"))
     df = pd.DataFrame(good_rows + bad_rows)
-    _per_frame, summary = classify_tracklets(
+    per_frame, summary = classify_tracklets(
         df,
         {
             "min_tracklet_length_frames": 10,
@@ -481,7 +481,44 @@ def test_human_review_labels_override_conservatively():
 
     statuses = dict(zip(summary["tracklet_id"], summary["qc_status"]))
     assert statuses[0] == "clean_train"
-    assert statuses[1] == "reject"
+    row_statuses = {
+        tracklet_id: set(group["qc_status"])
+        for tracklet_id, group in per_frame.groupby("tracklet_id")
+    }
+    assert row_statuses[1] == {"reject"}
+    assert "human_review_merged" in set(per_frame[per_frame["tracklet_id"] == 1]["qc_reason"])
+
+
+def test_human_review_good_is_frame_local_auto_qc_override():
+    rows = []
+    for frame in range(10):
+        label = "merged" if frame == 5 else "good"
+        rows.append(_mask_row(frame=frame, tracklet_id=0, x0=0 if frame == 4 else 10, y0=10, x1=20, y1=20, review_label=label))
+        rows.append(_mask_row(frame=frame, tracklet_id=1, x0=35, y0=10, x1=45, y1=20, review_label="good"))
+        rows.append(_mask_row(frame=frame, tracklet_id=2, x0=10, y0=35, x1=20, y1=45, review_label="good"))
+
+    per_frame, _summary = classify_tracklets(
+        pd.DataFrame(rows),
+        {
+            "min_tracklet_length_frames": 10,
+            "min_mask_area": 5,
+            "max_mask_area": 1000,
+            "max_area_cv": 1.0,
+            "max_centroid_speed_px_per_frame": 100,
+            "min_confidence": 0.8,
+            "max_missing_frames": 100,
+            "expected_object_count": 3,
+            "edge_margin_px": 5,
+            "crossing_distance_px": 5,
+        },
+        image_shape=(64, 64),
+    )
+
+    reviewed = per_frame[per_frame["tracklet_id"] == 0].sort_values("frame")
+    assert reviewed[reviewed["frame"] == 5]["qc_status"].iloc[0] == "reject"
+    assert reviewed[reviewed["frame"] == 5]["qc_reason"].iloc[0] == "human_review_merged"
+    assert set(reviewed[reviewed["frame"] != 5]["qc_status"]) == {"clean_train"}
+    assert set(reviewed[reviewed["frame"] != 5]["qc_reason"]) == {"human_review_good"}
 
 
 def test_qc_segments_respect_sampled_frame_stride():

@@ -13,6 +13,7 @@ from scripts.reconstruction_3d.calibration import Calibration
 
 from sam2_id_experiment.src.sam2_adapter.prompt_seed_from_3d import (
     mine_3d_seed_prompts,
+    project_identified_3d_to_view,
     write_seed_mining_outputs,
 )
 
@@ -24,6 +25,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--identified-3d-csv", required=True, type=Path)
     parser.add_argument("--best-pre-link-json", required=True, type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
+    parser.add_argument(
+        "--view",
+        default="top_cam",
+        choices=["top_cam", "side1_cam", "side2_cam"],
+        help="Camera view for prompt reprojection.",
+    )
+    parser.add_argument(
+        "--reference-csv",
+        default=None,
+        type=Path,
+        help="Optional output CSV with projected frame,x,y,identity reference rows.",
+    )
     parser.add_argument("--paths-config", default=None)
     parser.add_argument("--calibration-model-dir", default=None)
     parser.add_argument("--start-frame", type=int, default=None)
@@ -60,14 +73,25 @@ def main(argv: list[str] | None = None) -> None:
         "max_windows": int(args.max_windows),
         "negative_points_per_other_fish": int(args.negative_points_per_other_fish),
     }
+    calib = Calibration(model_dir)
     result = mine_3d_seed_prompts(
         identified_3d=args.identified_3d_csv,
         best_pre_link=args.best_pre_link_json,
-        calib=Calibration(model_dir),
+        calib=calib,
         config=cfg,
         start_frame=args.start_frame,
+        view=args.view,
     )
     paths = write_seed_mining_outputs(result, output_dir=args.output_dir)
+    if args.reference_csv is not None:
+        reference = project_identified_3d_to_view(
+            args.identified_3d_csv,
+            calib=calib,
+            view=args.view,
+        )
+        args.reference_csv.parent.mkdir(parents=True, exist_ok=True)
+        reference.to_csv(args.reference_csv, index=False)
+        paths["reference_csv"] = str(args.reference_csv)
     print(json.dumps({**paths, **result.summary}, indent=2))
 
 

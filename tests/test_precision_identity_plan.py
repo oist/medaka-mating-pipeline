@@ -7,7 +7,10 @@ import numpy as np
 import pandas as pd
 from joblib import dump
 
-from sam2_id_experiment.src.sam2_adapter.prompt_seed_from_3d import mine_3d_seed_prompts
+from sam2_id_experiment.src.sam2_adapter.prompt_seed_from_3d import (
+    mine_3d_seed_prompts,
+    project_identified_3d_to_view,
+)
 from sam2_id_experiment.src.sleap_adapter.top_track_export import export_segmentation_top_tracks
 from scripts.calibration.refine_calibration_rigid_object import run_rigid_object_refinement
 from scripts.reconstruction_3d.bind_topcam_id import bind
@@ -15,8 +18,14 @@ from scripts.reconstruction_3d.bind_topcam_id import bind
 
 class _IdentityProjectionCalibration:
     def project_world_to_view(self, xyz: np.ndarray, view: str) -> np.ndarray:
-        assert view == "top_cam"
-        return np.asarray(xyz, dtype=float)[:, :2]
+        xyz = np.asarray(xyz, dtype=float)
+        if view == "top_cam":
+            return xyz[:, :2]
+        if view == "side1_cam":
+            return xyz[:, [0, 2]]
+        if view == "side2_cam":
+            return xyz[:, [1, 2]]
+        raise AssertionError(view)
 
 
 class _OrthographicIm2XYZModel:
@@ -114,6 +123,83 @@ def test_mine_3d_seed_prompts_selects_clean_windows_and_negatives():
     assert all(prompt["labels"].count(1) == 1 for prompt in prompts)
     assert all(prompt["labels"].count(0) == 1 for prompt in prompts)
     assert prompts[0]["absolute_frame"] in {1, 4}
+
+
+def test_mine_3d_seed_prompts_projects_requested_side_view():
+    rows = []
+    for frame in range(3):
+        rows.extend([
+            {
+                "frame": frame,
+                "fish_id": 0,
+                "final_fish_id": "pseudo_ID_0",
+                "X": 10.0,
+                "Y": 20.0,
+                "Z": 30.0 + frame,
+                "bind_source": "top_cam_2d",
+                "bind_score": 2.0,
+            },
+            {
+                "frame": frame,
+                "fish_id": 1,
+                "final_fish_id": "pseudo_ID_1",
+                "X": 80.0,
+                "Y": 20.0,
+                "Z": 30.0,
+                "bind_source": "top_cam_2d",
+                "bind_score": 2.0,
+            },
+            {
+                "frame": frame,
+                "fish_id": 2,
+                "final_fish_id": "pseudo_ID_2",
+                "X": 10.0,
+                "Y": 90.0,
+                "Z": 30.0,
+                "bind_source": "top_cam_2d",
+                "bind_score": 2.0,
+            },
+        ])
+    result = mine_3d_seed_prompts(
+        identified_3d=pd.DataFrame(rows),
+        best_pre_link=None,
+        calib=_IdentityProjectionCalibration(),
+        config={"num_individuals": 3, "min_window_frames": 2, "max_windows": 1},
+        view="side1_cam",
+    )
+
+    assert result.summary["view"] == "side1_cam"
+    first = result.seed_points[result.seed_points["final_fish_id"].eq("pseudo_ID_0")].iloc[0]
+    assert first["x"] == 10.0
+    assert first["y"] in {30.0, 31.0}
+    assert first["view"] == "side1_cam"
+
+
+def test_project_identified_3d_to_side_reference_table():
+    reference = project_identified_3d_to_view(
+        pd.DataFrame([
+            {
+                "frame": 5,
+                "fish_id": 2,
+                "final_fish_id": "pseudo_ID_2",
+                "X": 1.0,
+                "Y": 2.0,
+                "Z": 3.0,
+            }
+        ]),
+        calib=_IdentityProjectionCalibration(),
+        view="side2_cam",
+    )
+
+    assert reference.to_dict("records") == [{
+        "frame": 5,
+        "x": 2.0,
+        "y": 3.0,
+        "identity": "pseudo_ID_2",
+        "final_fish_id": "pseudo_ID_2",
+        "fish_id": 2,
+        "view": "side2_cam",
+    }]
 
 
 def test_segmentation_top_export_pools_fragments_by_assigned_identity(tmp_path):

@@ -56,9 +56,6 @@ def classify_tracklets(
             hard_reasons.append("low_confidence")
         if row["n_frames"] < max(2, min_len // 5):
             hard_reasons.append("very_short_tracklet")
-        if _has_any_reason(row, REJECT_REVIEW_LABELS, prefix="review_"):
-            hard_reasons.append("human_review_reject")
-
         inference_reasons: list[str] = []
         if row["n_frames"] < min_len:
             inference_reasons.append("short_tracklet")
@@ -75,9 +72,6 @@ def classify_tracklets(
         auto_reasons = _summary_auto_reasons(row)
         if auto_reasons:
             review_reasons.extend(auto_reasons)
-        if _has_any_reason(row, REVIEW_REVIEW_LABELS, prefix="review_"):
-            review_reasons.append("human_review_uncertain")
-
         if hard_reasons:
             statuses.append("reject")
             reasons.append(";".join(hard_reasons + review_reasons + inference_reasons))
@@ -125,26 +119,27 @@ def _summary_auto_reasons(row: dict) -> list[str]:
     reasons = str(row.get("auto_qc_reasons", "") or "")
     if not reasons:
         return []
-    return [f"auto_{r}" for r in reasons.split(";") if r]
-
-
-def _has_any_reason(row: dict, labels: set[str], *, prefix: str) -> bool:
-    reasons = str(row.get("auto_qc_reasons", "") or "")
-    return any(f"{prefix}{label}" in reasons.split(";") for label in labels)
+    return [f"auto_{r}" for r in reasons.split(";") if r and not r.startswith("review_")]
 
 
 def _classify_frame_row(row: dict) -> tuple[str, str]:
     tracklet_status = str(row.get("tracklet_qc_status", "manual_review"))
     tracklet_reason = str(row.get("tracklet_qc_reason", "") or "")
+    review_label = str(row.get("review_label", "") or "").strip().lower()
     auto_reason = str(row.get("auto_qc_reason", "") or "")
     auto_parts = [r for r in auto_reason.split(";") if r]
 
+    if review_label == "good":
+        return "clean_train", "human_review_good"
+    if review_label in REJECT_REVIEW_LABELS:
+        return "reject", f"human_review_{review_label}"
+    if review_label in REVIEW_REVIEW_LABELS:
+        return "manual_review", f"human_review_{review_label}"
     if tracklet_status == "reject":
         return "reject", tracklet_reason
-    if any(r in {f"review_{label}" for label in REJECT_REVIEW_LABELS} for r in auto_parts):
-        return "reject", auto_reason
-    if auto_parts:
-        return "manual_review", auto_reason
+    non_review_auto_parts = [r for r in auto_parts if not r.startswith("review_")]
+    if non_review_auto_parts:
+        return "manual_review", ";".join(non_review_auto_parts)
     if bool(row.get("has_tracklet_level_review", False)):
         return "manual_review", tracklet_reason
     if tracklet_status == "usable_inference":

@@ -20,6 +20,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--tracklets", required=True)
     parser.add_argument("--assignments", default=None)
     parser.add_argument("--max-frames", type=int, default=None)
+    parser.add_argument("--output", default=None, help="Output MP4 path. Defaults to <config output_dir>/qc_overlay.mp4.")
     return parser
 
 
@@ -33,7 +34,7 @@ def main(argv: list[str] | None = None) -> None:
         mask_path=args.masks,
         tracklets_qc=pd.read_parquet(args.tracklets),
         assignments=assignments,
-        output_path=out_dir / "qc_overlay.mp4",
+        output_path=Path(args.output) if args.output else out_dir / "qc_overlay.mp4",
         max_frames=args.max_frames,
     )
     print(f"Wrote {out_path}")

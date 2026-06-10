@@ -110,7 +110,8 @@ def main(argv: list[str] | None = None) -> None:
     summary.to_parquet(summary_path, index=False)
     rejected_intervals_from_qc(summary).to_csv(rejected_path, index=False)
 
-    status_counts = summary["qc_status"].value_counts().to_dict() if not summary.empty else {}
+    tracklet_status_counts = summary["qc_status"].value_counts().to_dict() if not summary.empty else {}
+    frame_status_counts = per_frame["qc_status"].value_counts().to_dict() if not per_frame.empty else {}
     n_clean_frames = int(per_frame["qc_status"].eq("clean_train").sum()) if not per_frame.empty else 0
     flag_counts = {}
     if not per_frame.empty:
@@ -121,7 +122,9 @@ def main(argv: list[str] | None = None) -> None:
     report = {
         "n_tracklets": int(summary.shape[0]),
         "n_mask_instances": int(per_frame.shape[0]),
-        "status_counts": {str(k): int(v) for k, v in status_counts.items()},
+        "status_counts": {str(k): int(v) for k, v in frame_status_counts.items()},
+        "frame_status_counts": {str(k): int(v) for k, v in frame_status_counts.items()},
+        "tracklet_status_counts": {str(k): int(v) for k, v in tracklet_status_counts.items()},
         "auto_qc_flag_counts": {str(k): int(v) for k, v in sorted(flag_counts.items())},
         "clean_train_instances": n_clean_frames,
         "estimated_pseudo_positive_contamination_rate": "not_estimated_requires_manual_audit",
