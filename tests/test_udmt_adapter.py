@@ -2,7 +2,14 @@ from __future__ import annotations
 
 import pandas as pd
 
-from UDMT.bidirectional import BidirectionalConfig, repair_tracks_with_backward
+from UDMT.bidirectional import (
+    BidirectionalConfig,
+    CrossingConfig,
+    annotate_crossing_rows,
+    detect_crossing_events,
+    detect_motion_anomalies,
+    repair_tracks_with_backward,
+)
 from UDMT.metrics import TrackQualityConfig, score_track_table
 from UDMT.refinement import RefinementConfig, refine_tracks_with_masks
 
@@ -115,3 +122,72 @@ def test_bidirectional_repair_uses_backward_consensus_on_anomaly():
     assert repaired_frame2["udmt_repair_action"] == "backward_consensus"
     assert summary.repaired_rows >= 1
     assert int(votes["votes"].max()) >= 1
+
+
+def test_crossing_detector_catches_smooth_swap_without_speed_spike():
+    rows = []
+    for frame in range(11):
+        rows.append({"frame": frame, "track_id": 0, "x": float(frame), "y": 0.0})
+        rows.append({"frame": frame, "track_id": 1, "x": float(10 - frame), "y": 0.0})
+    tracks = pd.DataFrame(rows)
+
+    motion = detect_motion_anomalies(
+        tracks,
+        BidirectionalConfig(max_speed_px_per_frame=50.0, max_speed_ratio=4.0),
+    )
+    events = detect_crossing_events(
+        tracks,
+        CrossingConfig(distance_threshold=2.1, min_duration_frames=3),
+    )
+    annotated = annotate_crossing_rows(
+        tracks,
+        events,
+        CrossingConfig(distance_threshold=2.1, min_duration_frames=3),
+    )
+
+    assert not motion["udmt_motion_anomaly"].any()
+    assert len(events) == 1
+    event = events.iloc[0]
+    assert int(event["start_frame"]) == 4
+    assert int(event["end_frame"]) == 6
+    assert int(event["min_frame"]) == 5
+    assert annotated["udmt_crossing_candidate"].sum() == 6
+
+
+def test_crossing_detector_supports_3d_geometry_tracks():
+    rows = []
+    for frame in range(11):
+        rows.append(
+            {
+                "frame": frame,
+                "fish_id": "A",
+                "X": float(frame),
+                "Y": 0.0,
+                "Z": 5.0,
+            }
+        )
+        rows.append(
+            {
+                "frame": frame,
+                "fish_id": "B",
+                "X": float(10 - frame),
+                "Y": 0.0,
+                "Z": 5.0,
+            }
+        )
+    tracks_3d = pd.DataFrame(rows)
+
+    events = detect_crossing_events(
+        tracks_3d,
+        CrossingConfig(
+            id_column="fish_id",
+            coordinate_columns=("X", "Y", "Z"),
+            distance_threshold=2.1,
+            min_duration_frames=3,
+        ),
+    )
+
+    assert len(events) == 1
+    assert events.iloc[0]["track_id_a"] == "A"
+    assert events.iloc[0]["track_id_b"] == "B"
+    assert events.iloc[0]["coordinate_columns"] == "X,Y,Z"

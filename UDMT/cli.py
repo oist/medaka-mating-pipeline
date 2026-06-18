@@ -6,7 +6,13 @@ from pathlib import Path
 
 import pandas as pd
 
-from UDMT.bidirectional import BidirectionalConfig, repair_tracks_with_backward
+from UDMT.bidirectional import (
+    BidirectionalConfig,
+    CrossingConfig,
+    annotate_crossing_rows,
+    detect_crossing_events,
+    repair_tracks_with_backward,
+)
 from UDMT.io import read_csv, write_jsonable_summary
 from UDMT.metrics import TrackQualityConfig, score_track_table
 from UDMT.refinement import RefinementConfig, refine_tracks_with_masks
@@ -55,7 +61,34 @@ def build_parser() -> argparse.ArgumentParser:
     repair.add_argument("--min-mapping-votes", type=int, default=3)
     repair.add_argument("--consensus-blend", type=float, default=1.0)
     repair.add_argument("--repair-all-consensus", action="store_true")
+    repair.add_argument(
+        "--repair-crossings",
+        action="store_true",
+        help="Also use close-contact crossing rows as backward-consensus repair triggers.",
+    )
+    repair.add_argument("--crossing-distance", type=float, default=35.0)
+    repair.add_argument("--crossing-min-duration", type=int, default=1)
     repair.add_argument("--drop-unrepaired-anomalies", action="store_true")
+
+    crossings = sub.add_parser(
+        "crossings",
+        help="Detect smooth close-contact crossing events in 2D or 3D tracks.",
+    )
+    crossings.add_argument("--tracks", required=True, type=Path)
+    crossings.add_argument("--events", required=True, type=Path)
+    crossings.add_argument("--annotated", type=Path)
+    crossings.add_argument("--id-column", default="track_id")
+    crossings.add_argument(
+        "--coordinate-columns",
+        nargs="+",
+        default=["x", "y"],
+        help="Coordinate columns, e.g. x y for top-cam or X Y Z for 3D.",
+    )
+    crossings.add_argument("--distance-threshold", type=float, default=35.0)
+    crossings.add_argument("--min-duration", type=int, default=1)
+    crossings.add_argument("--merge-gap", type=int, default=0)
+    crossings.add_argument("--dtw-window", type=int, default=20)
+    crossings.add_argument("--dtw-threshold", type=float, default=None)
     return parser
 
 
@@ -106,6 +139,9 @@ def main(argv: list[str] | None = None) -> None:
                 min_mapping_votes=args.min_mapping_votes,
                 consensus_blend=args.consensus_blend,
                 repair_anomalies_only=not args.repair_all_consensus,
+                repair_crossings=args.repair_crossings,
+                crossing_distance_px=args.crossing_distance,
+                crossing_min_duration_frames=args.crossing_min_duration,
                 drop_unrepaired_anomalies=args.drop_unrepaired_anomalies,
             ),
         )
@@ -113,6 +149,31 @@ def main(argv: list[str] | None = None) -> None:
         if args.votes is not None:
             _write_csv(votes, args.votes)
         _emit_summary(summary.to_dict(), args.summary)
+        return
+
+    if args.command == "crossings":
+        cfg = CrossingConfig(
+            id_column=args.id_column,
+            coordinate_columns=tuple(args.coordinate_columns),
+            distance_threshold=args.distance_threshold,
+            min_duration_frames=args.min_duration,
+            merge_gap_frames=args.merge_gap,
+            dtw_window_frames=args.dtw_window,
+            dtw_threshold=args.dtw_threshold,
+        )
+        tracks = read_csv(args.tracks)
+        events = detect_crossing_events(tracks, cfg)
+        _write_csv(events, args.events)
+        if args.annotated is not None:
+            _write_csv(annotate_crossing_rows(tracks, events, cfg), args.annotated)
+        _emit_summary(
+            {
+                "n_events": int(len(events)),
+                "events_csv": str(args.events),
+                "annotated_csv": None if args.annotated is None else str(args.annotated),
+            },
+            None,
+        )
         return
 
     raise SystemExit(f"Unknown command: {args.command}")

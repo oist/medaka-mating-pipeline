@@ -8,6 +8,7 @@ workflow:
 
 - automatic quality scoring for candidate 2D identity tracks,
 - mask-centroid localization refinement,
+- smooth crossing-event detection for 2D or 3D tracks,
 - bidirectional forward/backward consensus repair.
 
 The production 3D path remains unchanged. These tools produce CSVs that can be
@@ -57,7 +58,8 @@ external UDMT feature, not as a hidden dependency.
 SLEAP or segmentation top-camera tracks
   -> UDMT score/select candidate CSVs
   -> UDMT refine centers with mask centroids
-  -> UDMT repair suspicious rows with a backward pass
+  -> UDMT detect smooth close-contact crossings
+  -> UDMT repair suspicious rows with a backward pass, or export crossing windows for review
   -> reconstruct_from_slp --bind-top-id --top-tracks-csv <refined/repaired.csv>
 ```
 
@@ -108,6 +110,32 @@ python -m UDMT repair \
   --votes top_cam.udmt_forward_backward_votes.csv
 ```
 
+Detect smooth crossing windows in top-camera tracks:
+
+```bash
+python -m UDMT crossings \
+  --tracks top_cam.tracks.csv \
+  --events top_cam.udmt_crossings.csv \
+  --annotated top_cam.udmt_crossing_annotated.tracks.csv \
+  --id-column track_id \
+  --coordinate-columns x y \
+  --distance-threshold 35 \
+  --min-duration 2
+```
+
+Detect smooth crossing windows in 3D geometry tracks:
+
+```bash
+python -m UDMT crossings \
+  --tracks round5_260611_3d.csv \
+  --events round5_260611_3d.udmt_crossings.csv \
+  --annotated round5_260611_3d.udmt_crossing_annotated.csv \
+  --id-column fish_id \
+  --coordinate-columns X Y Z \
+  --distance-threshold 15 \
+  --min-duration 2
+```
+
 Then bind to 3D:
 
 ```bash
@@ -133,7 +161,8 @@ Then bind to 3D:
 - `metrics.py`: transparent track quality metrics.
 - `tuning.py`: UDMT-style candidate ranking utilities.
 - `refinement.py`: mask-centroid localization refinement.
-- `bidirectional.py`: forward/backward ID mapping and conservative repair.
+- `bidirectional.py`: crossing-event detection plus forward/backward ID mapping
+  and conservative repair.
 - `cli.py`: command-line wrapper.
 
 ## Implementation Cautions
@@ -142,10 +171,17 @@ Then bind to 3D:
   checkpoints.
 - Mask refinement is only as good as the mask table. Reject masks, tiny masks,
   and reflection masks before trusting the output.
+- Speed spikes are not the right primary trigger for smooth medaka swaps.
+  Use `python -m UDMT crossings` on 3D geometry tracks or top-camera tracks to
+  find close-contact windows even when kinematics remain smooth.
 - Bidirectional repair is conservative by default: it only modifies motion
-  anomalies after the forward/backward ID mapping is established. Normal
-  consensus uses a tight same-frame gate; anomalous rows can use a larger
-  repair gate because the forward point itself may be the bad observation.
+  anomalies, or crossing rows when `--repair-crossings` is passed, after the
+  forward/backward ID mapping is established. Normal consensus uses a tight
+  same-frame gate; anomalous/crossing rows can use a larger repair gate because
+  the forward point itself may be the bad observation.
+- The full UDMT-style "which fish swapped" majority vote is not implemented
+  here yet. For now, crossing windows are detection/review artifacts unless a
+  suitable backward pass and medaka-specific vote signals are supplied.
 - For round4 production 3D, keep `--num-candidates 6` and the existing
   reconstruction flags. Use this adapter only to improve the top-camera
   identity anchor.
