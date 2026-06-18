@@ -72,28 +72,38 @@ KINDS = ("centroid", "centered_instance")
 # ---------------------------------------------------------------------------
 
 def _walk_source_filename(json_blob: dict) -> str | None:
-    """Walk a videoN/source_video JSON chain to the leaf MediaVideo path.
+    """Walk a videoN/source_video JSON chain to the leaf recording path.
 
-    The JSON nests ``source_video`` inside itself: HDF5Video -> HDF5Video
-    -> MediaVideo. We descend until a backend says ``MediaVideo`` (or until
-    we hit a filename that isn't a .pkg.slp).
+    The JSON nests ``source_video`` inside itself, one layer per embedding
+    round-trip: HDF5Video (this .pkg.slp) -> HDF5Video (annotation seed) ->
+    ... -> MediaVideo (the original mp4). We descend through every embedded
+    wrapper and return the first path that is clearly the source recording:
+    a ``MediaVideo`` backend, or any filename already carrying a view tag.
+
+    Earlier this short-circuited on "first filename not ending in .pkg.slp",
+    which broke on newer annotator bundles that wrap the data in an
+    ``edits.pkg_full.slp`` (ends in ``.slp``, not ``.pkg.slp``) — that guard
+    returned the wrapper path (no view tag) instead of descending to the mp4.
     """
     cur = json_blob
-    for _ in range(8):
+    last_fname: str | None = None
+    for _ in range(12):
         if not isinstance(cur, dict):
-            return None
+            break
         backend = cur.get("backend", {}) or {}
         fname = backend.get("filename") or cur.get("filename")
         btype = backend.get("type")
+        if fname:
+            last_fname = fname
         if btype == "MediaVideo" and fname:
             return fname
-        if fname and not str(fname).lower().endswith(".pkg.slp"):
+        if fname and _classify_path(fname) is not None:
             return fname
         nxt = cur.get("source_video")
         if nxt is None:
-            return fname
+            break
         cur = nxt
-    return None
+    return last_fname
 
 
 def _classify_path(path: str | None) -> str | None:

@@ -139,6 +139,7 @@ def track_view(
     max_instances: int,
     log_path: Path,
     dry_run: bool,
+    frames: str | None = None,
 ) -> int:
     """Torch-path inference via ``sleap_nn.cli track``."""
     centroid_dir = _resolve_run(round_dir, bucket, "centroid", round_tag)
@@ -154,6 +155,10 @@ def track_view(
         "--batch_size", str(batch_size),
         "--max_instances", str(max_instances),
     ]
+    # Optional frame subset (comma list "1,2,3" or range "start-end"); used for
+    # quick slice tests so we don't run full-length (~348k frames) inference.
+    if frames:
+        cmd += ["--frames", frames]
     print(f"\n--- track {view} ---")
     print(f"  video: {video}")
     print(f"  out  : {output_slp}")
@@ -248,6 +253,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--max-batch-size", type=int, default=8,
                    help="Used at export time (graph compile constraint).")
     p.add_argument("--predict-batch-size", type=int, default=8)
+    p.add_argument("--frames", default=None,
+                   help="Optional frame subset for track mode: comma list "
+                        "(e.g. 1,2,3) or a range (e.g. 171800-176799). Omit "
+                        "for full-length inference.")
     p.add_argument("--crop-size", type=int, default=256)
     p.add_argument("--runtime", default="auto",
                    choices=["auto", "onnx", "tensorrt"])
@@ -302,6 +311,7 @@ def main(argv: list[str] | None = None) -> int:
                 batch_size=args.predict_batch_size,
                 max_instances=args.max_instances,
                 log_path=log, dry_run=args.dry_run,
+                frames=args.frames,
             )
         else:
             rc = predict_view(
