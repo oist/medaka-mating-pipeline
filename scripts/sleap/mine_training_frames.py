@@ -643,6 +643,82 @@ def aggregate_experiment(
 # Selection: stratified greedy across (experiment, view, time_bin).
 # ---------------------------------------------------------------------------
 
+def apply_force_include(
+    selected: pd.DataFrame,
+    force_include_csv: Path,
+) -> tuple[pd.DataFrame, dict]:
+    """
+    Force ``picked = True`` for every (experiment, view, frame) listed in
+    ``force_include_csv`` (columns: experiment, view, frame). Rows already in
+    the candidate table are flipped in place; rows that are absent (e.g. a
+    crossing frame that produced no mined signal) are appended as minimal
+    ``forced`` rows so ``build_annotation_seed_slp`` still reads their
+    predictions from the source .slp.
+
+    A boolean ``forced`` column marks provenance. Returns (updated_df, stats).
+    """
+    req = pd.read_csv(force_include_csv)
+    missing_cols = {"experiment", "view", "frame"} - set(req.columns)
+    if missing_cols:
+        raise ValueError(
+            f"--force-include-csv {force_include_csv} missing columns: "
+            f"{sorted(missing_cols)}"
+        )
+    req = req[["experiment", "view", "frame"]].copy()
+    req["experiment"] = req["experiment"].astype(str)
+    req["view"] = req["view"].astype(str)
+    req["frame"] = req["frame"].astype(int)
+    bad_view = sorted(set(req["view"]) - set(VIEWS))
+    if bad_view:
+        raise ValueError(
+            f"--force-include-csv has unknown view(s) {bad_view}; "
+            f"expected one of {list(VIEWS)}"
+        )
+    req = req.drop_duplicates(ignore_index=True)
+
+    out = selected.copy()
+    if "forced" not in out.columns:
+        out["forced"] = False
+    # Match on the (experiment, view, frame) key.
+    key_cols = ["experiment", "view", "frame"]
+    existing_keys = set(map(tuple, out[key_cols].astype(
+        {"experiment": str, "view": str, "frame": int}).itertuples(
+        index=False, name=None)))
+    new_rows = []
+    n_flipped = 0
+    for exp, view, frame in req.itertuples(index=False, name=None):
+        if (exp, view, frame) in existing_keys:
+            mask = (
+                (out["experiment"].astype(str) == exp)
+                & (out["view"].astype(str) == view)
+                & (out["frame"].astype(int) == frame)
+            )
+            n_flipped += int((~out.loc[mask, "picked"]).sum())
+            out.loc[mask, "picked"] = True
+            out.loc[mask, "forced"] = True
+        else:
+            row = {c: np.nan for c in out.columns}
+            row.update({"experiment": exp, "view": view, "frame": frame,
+                        "picked": True, "forced": True})
+            if "n_signals" in out.columns:
+                row["n_signals"] = 0
+            if "signals_fired" in out.columns:
+                row["signals_fired"] = ""
+            if "time_bin" in out.columns:
+                # Sentinel: keeps time_bin integer (no NaN -> no float coercion,
+                # which would crash write_report's {tb:02d}); groups as "forced".
+                row["time_bin"] = -1
+            new_rows.append(row)
+    if new_rows:
+        out = pd.concat([out, pd.DataFrame(new_rows)], ignore_index=True)
+    stats = {
+        "requested": int(len(req)),
+        "flipped_existing": n_flipped,
+        "appended_missing": int(len(new_rows)),
+    }
+    return out, stats
+
+
 def select_candidates(
     df: pd.DataFrame,
     *,
@@ -1004,7 +1080,10 @@ def write_report(
     lines.append("## Per-time-bin picks (across experiments)")
     pt = picks[picks["picked"]].groupby("time_bin").size().sort_index()
     for tb, n in pt.items():
-        lines.append(f"  bin {tb:02d}: {n}")
+        if pd.isna(tb) or int(tb) < 0:
+            lines.append(f"  bin forced/unbinned: {n}")
+        else:
+            lines.append(f"  bin {int(tb):02d}: {n}")
     lines.append("")
     lines.append("## BL_px estimates (99.5th pct step length)")
     for (exp, view), bl in sorted(bl_estimates.items()):
@@ -1048,8 +1127,10 @@ def run_pipeline(
     cache_root: Path,
     out_dir: Path,
     pre_link_dir: Path | None,
+    reconstruction_subdir: str | None = None,
     pre_link_json: Path | None,
     identified_csv: Path | None,
+    force_include_csv: Path | None = None,
     bind_score_quantile: float,
     experiments: list[str],
     fps: float,
@@ -1099,6 +1180,11 @@ def run_pipeline(
         pre_link_json_path = None
         if pre_link_json is not None:
             pre_link_json_path = pre_link_json
+        elif reconstruction_subdir and pre_link_dir is not None:
+            cand = (pre_link_dir / reconstruction_subdir / exp
+                    / f"{reconstruction_subdir}_best_pre_link.json")
+            if cand.exists():
+                pre_link_json_path = cand
         elif pre_link_dir is not None:
             cand = pre_link_dir / f"{exp}_best_pre_link.json"
             if cand.exists():
@@ -1106,6 +1192,11 @@ def run_pipeline(
         identified_csv_path = None
         if identified_csv is not None:
             identified_csv_path = identified_csv
+        elif reconstruction_subdir and pre_link_dir is not None:
+            cand = (pre_link_dir / reconstruction_subdir / exp
+                    / f"{reconstruction_subdir}_3d_identified.csv")
+            if cand.exists():
+                identified_csv_path = cand
         df = aggregate_experiment(
             exp,
             per_view,
@@ -1132,8 +1223,18 @@ def run_pipeline(
         min_inter_pick_frames=min_inter_pick_frames,
         time_bins=time_bins,
     )
+    n_signal_picked = int(selected["picked"].sum())
+    print(f"Frames picked (signal-based): {n_signal_picked} / target {target_count}")
+
+    if force_include_csv is not None:
+        selected, fi_stats = apply_force_include(selected, force_include_csv)
+        print(
+            f"Force-include: {fi_stats['requested']} requested "
+            f"({fi_stats['flipped_existing']} flipped from candidates, "
+            f"{fi_stats['appended_missing']} appended as forced rows)."
+        )
     n_picked = int(selected["picked"].sum())
-    print(f"Frames picked: {n_picked} / target {target_count}")
+    print(f"Frames picked (total): {n_picked}")
 
     # Full table (~21M rows): parquet only. CSV would be ~3.6 GB and is
     # rarely browsed in full. Parquet compresses the same data to ~100 MB
@@ -1198,6 +1299,16 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Override reconstruction_output_dir; used to find "
             "<exp>_best_pre_link.json for signal S4."
+        ),
+    )
+    p.add_argument(
+        "--reconstruction-subdir", default=None,
+        help=(
+            "Round-tag subfolder under reconstruction_output_dir for the "
+            "round-tagged layout <recon_dir>/<subdir>/<exp>/<subdir>_*. When "
+            "set, S4/S6/S7 per-experiment files are discovered as "
+            "<subdir>_best_pre_link.json and <subdir>_3d_identified.csv inside "
+            "each experiment folder (e.g. --reconstruction-subdir round5_260611)."
         ),
     )
     p.add_argument(
@@ -1276,6 +1387,17 @@ def build_parser() -> argparse.ArgumentParser:
         help="Don't build annotation_seed.pkg.slp (just emit mined_frames.csv).",
     )
     p.add_argument(
+        "--force-include-csv", default=None,
+        help=(
+            "CSV with columns experiment,view,frame (view in "
+            "{top_cam,side1_cam,side2_cam}) whose rows are FORCE-picked into the "
+            "seed regardless of signal-based selection. Use to guarantee "
+            "hand-reviewed hard cases (e.g. crossing events) are annotated. "
+            "Frames absent from the candidate table are appended as forced rows; "
+            "the seed builder still reads their predictions from the source .slp."
+        ),
+    )
+    p.add_argument(
         "--embed", default="user",
         help=(
             "sleap-io save_slp embed mode (default: 'user' — embeds picked "
@@ -1335,8 +1457,10 @@ def main(argv: list[str] | None = None) -> None:
         cache_root=cache_root,
         out_dir=out_dir,
         pre_link_dir=pre_link_dir,
+        reconstruction_subdir=args.reconstruction_subdir,
         pre_link_json=Path(args.pre_link_json) if args.pre_link_json else None,
         identified_csv=Path(args.identified_csv) if args.identified_csv else None,
+        force_include_csv=Path(args.force_include_csv) if args.force_include_csv else None,
         bind_score_quantile=args.bind_score_quantile,
         experiments=experiments,
         fps=args.fps,

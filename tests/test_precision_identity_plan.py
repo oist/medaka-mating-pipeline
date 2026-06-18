@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 from joblib import dump
 
 from sam2_id_experiment.src.sam2_adapter.prompt_seed_from_3d import (
@@ -14,6 +15,7 @@ from sam2_id_experiment.src.sam2_adapter.prompt_seed_from_3d import (
 from sam2_id_experiment.src.sleap_adapter.top_track_export import export_segmentation_top_tracks
 from scripts.calibration.refine_calibration_rigid_object import run_rigid_object_refinement
 from scripts.reconstruction_3d.bind_topcam_id import bind
+from scripts.sleap.mine_training_frames import apply_force_include, write_report
 
 
 class _IdentityProjectionCalibration:
@@ -326,3 +328,67 @@ def test_rigid_object_refinement_trains_models_and_report(tmp_path):
     assert Path(report["mapping_csv"]).exists()
     assert report["n_poses"] == 4
     assert report["mean_pose_residual_mm"] < 1e-6
+
+
+def _candidate_table() -> pd.DataFrame:
+    """Minimal mined-candidate table with the columns the miner produces."""
+    return pd.DataFrame({
+        "experiment": ["E1", "E1", "E1"],
+        "view": ["top_cam", "top_cam", "side1_cam"],
+        "frame": [100, 200, 300],
+        "n_signals": [1, 0, 2],
+        "signals_fired": ["s2", "", "s2;s4"],
+        "time_bin": [0, 0, 1],
+        "picked": [True, False, False],
+    })
+
+
+def test_apply_force_include_flips_existing_and_appends_missing(tmp_path):
+    sel = _candidate_table()
+    fi = pd.DataFrame({
+        "experiment": ["E1", "E1", "E1"],
+        "view": ["top_cam", "top_cam", "side2_cam"],
+        "frame": [100, 200, 999],  # already-picked, flip, append-missing
+    })
+    csv = tmp_path / "force.csv"
+    fi.to_csv(csv, index=False)
+
+    out, stats = apply_force_include(sel, csv)
+
+    assert stats == {"requested": 3, "flipped_existing": 1, "appended_missing": 1}
+    # 100 (was picked) + 200 (flipped) + 999 (appended); 300 stays unpicked.
+    assert int(out["picked"].sum()) == 3
+    assert not bool(out.loc[out["frame"] == 300, "picked"].iloc[0])
+    assert bool(out.loc[out["frame"] == 200, "forced"].iloc[0])
+    appended = out[out["frame"] == 999].iloc[0]
+    assert appended["picked"] and appended["forced"]
+    assert appended["n_signals"] == 0 and appended["signals_fired"] == ""
+    # time_bin must stay integer (sentinel -1), never NaN -> float (Bug 1).
+    assert out["time_bin"].dtype.kind in "iu"
+    assert int(appended["time_bin"]) == -1
+
+
+def test_apply_force_include_validates_input(tmp_path):
+    sel = _candidate_table()
+    bad_view = tmp_path / "badview.csv"
+    pd.DataFrame({"experiment": ["E1"], "view": ["nope"], "frame": [1]}).to_csv(bad_view, index=False)
+    with pytest.raises(ValueError):
+        apply_force_include(sel, bad_view)
+    missing_col = tmp_path / "missingcol.csv"
+    pd.DataFrame({"experiment": ["E1"], "frame": [1]}).to_csv(missing_col, index=False)
+    with pytest.raises(ValueError):
+        apply_force_include(sel, missing_col)
+
+
+def test_write_report_survives_forced_rows(tmp_path):
+    """Regression: appended forced rows once crashed write_report via NaN time_bin."""
+    sel = _candidate_table()
+    fi = pd.DataFrame({"experiment": ["E1"], "view": ["side2_cam"], "frame": [999]})
+    csv = tmp_path / "force.csv"
+    fi.to_csv(csv, index=False)
+    out, _ = apply_force_include(sel, csv)
+
+    report = tmp_path / "report.txt"
+    write_report(out, out, report, bl_estimates={})  # must not raise
+    text = report.read_text(encoding="utf-8")
+    assert "forced/unbinned" in text
