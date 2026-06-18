@@ -115,8 +115,8 @@ torchvision = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or s
 torchaudio = [{ index = "pytorch-cu130", marker = "sys_platform == 'win32' or sys_platform == 'linux'" }]
 
 [tool.setuptools]
-package-dir = {"" = "src", "scripts" = "scripts", "sam2_id_experiment" = "sam2_id_experiment"}
+package-dir = {"" = "src", "scripts" = "scripts", "sam2_id_experiment" = "sam2_id_experiment", "UDMT" = "UDMT"}
 
 [tool.setuptools.packages.find]
 where = ["src", "."]
-include = ["medaka_pipeline*", "scripts*", "sam2_id_experiment*"]
+include = ["medaka_pipeline*", "scripts*", "sam2_id_experiment*", "UDMT*"]
