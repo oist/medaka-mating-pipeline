@@ -279,10 +279,16 @@ def render_three_view_video(
     trail_duration_s: float = 1.0,
     show_trail_row: bool = True,
     simple_dots: bool = False,
+    start_frame: int | None = None,
+    end_frame: int | None = None,
 ) -> None:
     """
     Top row: three synchronized videos with point overlays.
     Optional bottom row: three trail-only panels.
+
+    ``start_frame`` / ``end_frame`` (inclusive) bound the rendered window; omit
+    both to render the whole video. Useful when the overlay CSV only covers a
+    slice of a long recording — otherwise every untouched frame is written too.
     """
     if cv2 is None:
         raise SystemExit("opencv-python is required: pip install opencv-python")
@@ -326,12 +332,20 @@ def render_three_view_video(
 
     colors = [(0, 255, 0), (0, 165, 255), (255, 0, 0)]  # BGR
 
-    for idx in tqdm(range(n_frames), desc="Writing video", unit="frame", ncols=80):
+    lo = max(0, start_frame) if start_frame is not None else 0
+    hi = min(n_frames, end_frame + 1) if end_frame is not None else n_frames
+    # Track each capture's read head so we only seek when the next frame is
+    # non-consecutive; sequential cap.read() is far faster than a per-frame
+    # cap.set(POS_FRAMES) re-seek on long mp4s.
+    read_pos = {v: -10 for v in order}
+    for idx in tqdm(range(lo, hi), desc="Writing video", unit="frame", ncols=80):
         row_video = []
         for i, v in enumerate(order):
             cap = caps[v]
-            cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
+            if idx != read_pos[v] + 1:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, idx)
             ret, frame = cap.read()
+            read_pos[v] = idx
             if not ret:
                 frame = np.zeros((out_h_row, scales[i][0], 3), dtype=np.uint8)
             elif len(frame.shape) == 2:

@@ -142,6 +142,12 @@ def run_render_3d_projection_video(
     cal = Calibration(model_folder)
     view_data = project_3d_to_2d_views(df_3d, cal)
 
+    # The CSV may cover only a slice of a long recording (e.g. frames
+    # 171800-176799); bound the writer to that window so it doesn't render every
+    # untouched frame of the full-length source video.
+    f_min = int(df_3d["frame"].min())
+    f_max = int(df_3d["frame"].max())
+
     video_paths = find_videos_by_set_key(
         video_dir, set_key, video_top, video_side1, video_side2
     )
@@ -161,6 +167,8 @@ def run_render_3d_projection_video(
         trail_duration_s=trail_duration_s,
         show_trail_row=show_trail_row,
         simple_dots=True,
+        start_frame=f_min,
+        end_frame=f_max,
     )
     return output_path
 
