@@ -12,6 +12,7 @@ from UDMT.bidirectional import (
 )
 from UDMT.metrics import TrackQualityConfig, score_track_table
 from UDMT.refinement import RefinementConfig, refine_tracks_with_masks
+from UDMT.resolver import ResolverConfig, resolve_crossings
 
 
 def _smooth_tracks() -> pd.DataFrame:
@@ -191,3 +192,97 @@ def test_crossing_detector_supports_3d_geometry_tracks():
     assert events.iloc[0]["track_id_a"] == "A"
     assert events.iloc[0]["track_id_b"] == "B"
     assert events.iloc[0]["coordinate_columns"] == "X,Y,Z"
+
+
+def test_crossing_review_gate_marks_tight_sustained_events_only():
+    rows = []
+    for frame in range(11):
+        rows.append({"frame": frame, "track_id": "tight_a", "x": float(frame), "y": 0.0})
+        rows.append({"frame": frame, "track_id": "tight_b", "x": float(10 - frame), "y": 0.0})
+        rows.append({"frame": frame, "track_id": "mild_a", "x": 100.0 + frame, "y": 0.0})
+        rows.append({"frame": frame, "track_id": "mild_b", "x": 107.0 + frame, "y": 0.0})
+    tracks = pd.DataFrame(rows)
+
+    events = detect_crossing_events(
+        tracks,
+        CrossingConfig(
+            distance_threshold=8.0,
+            min_duration_frames=3,
+            review_max_min_distance=2.0,
+            review_min_duration_frames=3,
+        ),
+    )
+
+    assert len(events) == 2
+    review_events = events[events["review_candidate"]]
+    assert len(review_events) == 1
+    assert review_events.iloc[0]["track_id_a"] == "tight_a"
+    assert review_events.iloc[0]["track_id_b"] == "tight_b"
+
+
+def test_resolver_suspects_anomalous_fish_and_reviews_ambiguous():
+    frames = list(range(70, 151))
+    rows = []
+    for f in frames:
+        # A: smooth except a single big jerk at frame 110 (high velocity std/ratio)
+        ax = 0.1 * f + (50.0 if f >= 110 else 0.0)
+        rows.append({"frame": f, "fish_id": "A", "X": ax, "Y": 0.0, "Z": 0.0})
+        rows.append({"frame": f, "fish_id": "B", "X": 0.1 * f, "Y": 5.0, "Z": 0.0})
+        # C, D: both smooth, parallel -> ambiguous pair
+        rows.append({"frame": f, "fish_id": "C", "X": 0.1 * f, "Y": 10.0, "Z": 0.0})
+        rows.append({"frame": f, "fish_id": "D", "X": 0.1 * f, "Y": 11.0, "Z": 0.0})
+    tracks_3d = pd.DataFrame(rows)
+    identified = pd.DataFrame(
+        {"frame": f, "fish_id": fid, "bind_score": bs}
+        for f in frames
+        for fid, bs in (("A", 30.0), ("B", 3.0), ("C", 5.0), ("D", 5.0))
+    )
+    events = pd.DataFrame([
+        {"event_id": 0, "track_id_a": "A", "track_id_b": "B", "start_frame": 100,
+         "end_frame": 120, "min_frame": 110, "min_distance": 2.0,
+         "duration_frames": 21, "review_candidate": True},
+        {"event_id": 1, "track_id_a": "C", "track_id_b": "D", "start_frame": 100,
+         "end_frame": 120, "min_frame": 110, "min_distance": 1.0,
+         "duration_frames": 21, "review_candidate": True},
+    ])
+
+    decisions, summary = resolve_crossings(
+        events, tracks_3d, identified=identified, config=ResolverConfig()
+    )
+    d = decisions.set_index("event_id")
+    assert d.loc[0, "decision"] == "suspect:A"
+    assert d.loc[0, "margin"] >= ResolverConfig().margin_threshold
+    assert d.loc[1, "decision"] == "review"
+    assert summary.suspect_calls == 1
+    assert summary.review_flags == 1
+    # read-only: input event table is untouched
+    assert "decision" not in events.columns
+
+
+def test_resolver_residual_cue_maps_slots_to_fish_by_position():
+    frames = list(range(70, 151))
+    rows = []
+    pre_link = {"frames": {}}
+    for f in frames:
+        a_pos = [0.1 * f, 0.0, 0.0]
+        b_pos = [0.1 * f, 5.0, 0.0]
+        rows.append({"frame": f, "fish_id": "A", "X": a_pos[0], "Y": a_pos[1], "Z": a_pos[2]})
+        rows.append({"frame": f, "fish_id": "B", "X": b_pos[0], "Y": b_pos[1], "Z": b_pos[2]})
+        # slot "a" sits on fish A (Y=0), slot "b" on fish B (Y=5); B has high residual
+        pre_link["frames"][str(f)] = {
+            "groups": {"a": a_pos, "b": b_pos},
+            "errors": {"a": 1.0, "b": 50.0},
+        }
+    tracks_3d = pd.DataFrame(rows)
+    events = pd.DataFrame([
+        {"event_id": 0, "track_id_a": "A", "track_id_b": "B", "start_frame": 100,
+         "end_frame": 120, "min_frame": 110, "min_distance": 2.0,
+         "duration_frames": 21, "review_candidate": True},
+    ])
+
+    decisions, _ = resolve_crossings(events, tracks_3d, pre_link=pre_link, config=ResolverConfig())
+    row = decisions.iloc[0]
+    # residual correctly attributed by position: A low, B high
+    assert abs(row["resid_a"] - 1.0) < 1e-6
+    assert abs(row["resid_b"] - 50.0) < 1e-6
+    assert row["decision"] == "suspect:B"

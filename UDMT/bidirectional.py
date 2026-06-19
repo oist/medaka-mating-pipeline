@@ -45,6 +45,8 @@ class CrossingConfig:
     dtw_window_frames: int = 20
     dtw_threshold: float | None = None
     normalize_dtw: bool = True
+    review_max_min_distance: float | None = None
+    review_min_duration_frames: int | None = None
 
 
 @dataclass(frozen=True)
@@ -95,6 +97,13 @@ def detect_crossing_events(
             if cfg.dtw_threshold is not None:
                 if dtw_distance is None or dtw_distance > float(cfg.dtw_threshold):
                     continue
+            duration = int(len(segment))
+            min_distance = float(min_row["distance"])
+            review_candidate = _passes_review_gate(
+                min_distance=min_distance,
+                duration_frames=duration,
+                cfg=cfg,
+            )
             events.append(
                 {
                     "event_id": event_id,
@@ -102,11 +111,18 @@ def detect_crossing_events(
                     "track_id_b": str(min_row["track_id_b"]),
                     "start_frame": int(segment["frame"].min()),
                     "end_frame": int(segment["frame"].max()),
-                    "duration_frames": int(len(segment)),
+                    "duration_frames": duration,
                     "min_frame": int(min_row["frame"]),
-                    "min_distance": float(min_row["distance"]),
+                    "min_distance": min_distance,
                     "distance_threshold": float(cfg.distance_threshold),
                     "dtw_distance": np.nan if dtw_distance is None else float(dtw_distance),
+                    "review_candidate": bool(review_candidate),
+                    "review_max_min_distance": np.nan
+                    if cfg.review_max_min_distance is None
+                    else float(cfg.review_max_min_distance),
+                    "review_min_duration_frames": np.nan
+                    if cfg.review_min_duration_frames is None
+                    else int(cfg.review_min_duration_frames),
                     "coordinate_columns": ",".join(cfg.coordinate_columns),
                     "id_column": cfg.id_column,
                 }
@@ -355,32 +371,40 @@ def _normalize_coordinate_tracks(tracks: pd.DataFrame, cfg: CrossingConfig) -> p
 
 
 def _pairwise_distances_by_frame(df: pd.DataFrame, cfg: CrossingConfig) -> pd.DataFrame:
-    rows: list[dict] = []
     coord_cols = list(cfg.coordinate_columns)
-    for frame, group in df.groupby("frame", sort=False):
-        if len(group) < 2:
-            continue
-        ids = group["_track_key"].to_numpy(dtype=object)
-        coords = group[coord_cols].to_numpy(dtype=float)
-        for i in range(len(group) - 1):
-            for j in range(i + 1, len(group)):
-                a = str(ids[i])
-                b = str(ids[j])
-                if a > b:
-                    a, b = b, a
-                    ci, cj = coords[j], coords[i]
-                else:
-                    ci, cj = coords[i], coords[j]
-                rows.append(
-                    {
-                        "frame": int(frame),
-                        "track_id_a": a,
-                        "track_id_b": b,
-                        "pair_key": f"{a}||{b}",
-                        "distance": float(np.linalg.norm(ci - cj)),
-                    }
-                )
-    return pd.DataFrame(rows)
+    if df.empty:
+        return _empty_pairwise_distances()
+
+    left_cols = ["frame", "_track_key", *coord_cols]
+    left = df[left_cols].rename(
+        columns={
+            "_track_key": "track_id_a",
+            **{col: f"{col}__a" for col in coord_cols},
+        }
+    )
+    right = df[left_cols].rename(
+        columns={
+            "_track_key": "track_id_b",
+            **{col: f"{col}__b" for col in coord_cols},
+        }
+    )
+    pairs = left.merge(right, on="frame", how="inner", sort=False)
+    pairs = pairs[pairs["track_id_a"] < pairs["track_id_b"]].copy()
+    if pairs.empty:
+        return _empty_pairwise_distances()
+
+    coords_a = pairs[[f"{col}__a" for col in coord_cols]].to_numpy(dtype=float)
+    coords_b = pairs[[f"{col}__b" for col in coord_cols]].to_numpy(dtype=float)
+    out = pd.DataFrame(
+        {
+            "frame": pairs["frame"].astype(int).to_numpy(),
+            "track_id_a": pairs["track_id_a"].astype(str).to_numpy(),
+            "track_id_b": pairs["track_id_b"].astype(str).to_numpy(),
+            "distance": np.linalg.norm(coords_a - coords_b, axis=1),
+        }
+    )
+    out["pair_key"] = out["track_id_a"] + "||" + out["track_id_b"]
+    return out[["frame", "track_id_a", "track_id_b", "pair_key", "distance"]]
 
 
 def _contiguous_segments(close: pd.DataFrame, *, max_gap_frames: int) -> list[pd.DataFrame]:
@@ -445,6 +469,29 @@ def _dtw_distance(a: np.ndarray, b: np.ndarray) -> float:
     return float(cost[len(a), len(b)] / max(len(a), len(b), 1))
 
 
+def _passes_review_gate(
+    *,
+    min_distance: float,
+    duration_frames: int,
+    cfg: CrossingConfig,
+) -> bool:
+    if cfg.review_max_min_distance is None and cfg.review_min_duration_frames is None:
+        return False
+    if cfg.review_max_min_distance is not None:
+        if float(min_distance) > float(cfg.review_max_min_distance):
+            return False
+    if cfg.review_min_duration_frames is not None:
+        if int(duration_frames) < int(cfg.review_min_duration_frames):
+            return False
+    return True
+
+
+def _empty_pairwise_distances() -> pd.DataFrame:
+    return pd.DataFrame(
+        columns=["frame", "track_id_a", "track_id_b", "pair_key", "distance"]
+    )
+
+
 def _empty_crossing_events() -> pd.DataFrame:
     return pd.DataFrame(
         columns=[
@@ -458,6 +505,9 @@ def _empty_crossing_events() -> pd.DataFrame:
             "min_distance",
             "distance_threshold",
             "dtw_distance",
+            "review_candidate",
+            "review_max_min_distance",
+            "review_min_duration_frames",
             "coordinate_columns",
             "id_column",
         ]

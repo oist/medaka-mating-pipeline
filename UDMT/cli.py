@@ -16,6 +16,7 @@ from UDMT.bidirectional import (
 from UDMT.io import read_csv, write_jsonable_summary
 from UDMT.metrics import TrackQualityConfig, score_track_table
 from UDMT.refinement import RefinementConfig, refine_tracks_with_masks
+from UDMT.resolver import ResolverConfig, resolve_crossings
 from UDMT.tuning import candidates_from_csvs, rank_candidate_track_runs, ranking_to_frame
 
 
@@ -89,6 +90,44 @@ def build_parser() -> argparse.ArgumentParser:
     crossings.add_argument("--merge-gap", type=int, default=0)
     crossings.add_argument("--dtw-window", type=int, default=20)
     crossings.add_argument("--dtw-threshold", type=float, default=None)
+    crossings.add_argument(
+        "--review-max-min-distance",
+        type=float,
+        default=None,
+        help="Mark events whose minimum distance is at or below this value.",
+    )
+    crossings.add_argument(
+        "--review-min-duration",
+        type=int,
+        default=None,
+        help="Mark events lasting at least this many frames.",
+    )
+    crossings.add_argument(
+        "--review-only",
+        action="store_true",
+        help="Write only events that pass the optional review gates.",
+    )
+
+    resolve = sub.add_parser(
+        "resolve",
+        help="Read-only: score crossing events with medaka cues -> suspect/review flag.",
+    )
+    resolve.add_argument("--events", required=True, type=Path)
+    resolve.add_argument("--tracks-3d", required=True, type=Path)
+    resolve.add_argument("--identified", type=Path, help="*_3d_identified.csv for bind_score cue.")
+    resolve.add_argument("--pre-link", type=Path, help="*_best_pre_link.json for per-fish 3D reprojection-residual cue.")
+    resolve.add_argument("--output", required=True, type=Path)
+    resolve.add_argument("--summary", type=Path)
+    resolve.add_argument("--id-column", default="fish_id")
+    resolve.add_argument("--coordinate-columns", nargs="+", default=["X", "Y", "Z"])
+    resolve.add_argument("--window-pad", type=int, default=30)
+    resolve.add_argument("--margin-threshold", type=float, default=0.34)
+    resolve.add_argument(
+        "--review-only",
+        action="store_true",
+        dest="resolve_review_only",
+        help="Score only events flagged review_candidate in the events table.",
+    )
     return parser
 
 
@@ -160,20 +199,55 @@ def main(argv: list[str] | None = None) -> None:
             merge_gap_frames=args.merge_gap,
             dtw_window_frames=args.dtw_window,
             dtw_threshold=args.dtw_threshold,
+            review_max_min_distance=args.review_max_min_distance,
+            review_min_duration_frames=args.review_min_duration,
         )
         tracks = read_csv(args.tracks)
         events = detect_crossing_events(tracks, cfg)
+        n_detected = int(len(events))
+        n_review_candidates = (
+            int(events["review_candidate"].fillna(False).sum())
+            if "review_candidate" in events.columns
+            else 0
+        )
+        if args.review_only:
+            if "review_candidate" in events.columns:
+                events = events[events["review_candidate"].fillna(False)].copy()
+            else:
+                events = events.iloc[0:0].copy()
         _write_csv(events, args.events)
         if args.annotated is not None:
             _write_csv(annotate_crossing_rows(tracks, events, cfg), args.annotated)
         _emit_summary(
             {
-                "n_events": int(len(events)),
+                "n_detected_events": n_detected,
+                "n_review_candidates": n_review_candidates,
+                "n_written_events": int(len(events)),
+                "review_only": bool(args.review_only),
                 "events_csv": str(args.events),
                 "annotated_csv": None if args.annotated is None else str(args.annotated),
             },
             None,
         )
+        return
+
+    if args.command == "resolve":
+        identified = read_csv(args.identified) if args.identified is not None else None
+        decisions, summary = resolve_crossings(
+            read_csv(args.events),
+            read_csv(args.tracks_3d),
+            identified=identified,
+            pre_link=args.pre_link,
+            config=ResolverConfig(
+                id_column=args.id_column,
+                coordinate_columns=tuple(args.coordinate_columns),
+                window_pad_frames=args.window_pad,
+                margin_threshold=args.margin_threshold,
+                review_only=args.resolve_review_only,
+            ),
+        )
+        _write_csv(decisions, args.output)
+        _emit_summary(summary.to_dict(), args.summary)
         return
 
     raise SystemExit(f"Unknown command: {args.command}")

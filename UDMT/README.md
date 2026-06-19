@@ -120,10 +120,13 @@ python -m UDMT crossings \
   --id-column track_id \
   --coordinate-columns x y \
   --distance-threshold 35 \
-  --min-duration 2
+  --min-duration 2 \
+  --merge-gap 10
 ```
 
-Detect smooth crossing windows in 3D geometry tracks:
+Detect smooth crossing windows in 3D geometry tracks. For the validated K_1_2
+round5 3D tracks, start near 18 mm with a merge gap around 10 frames to keep
+nearby fragments together:
 
 ```bash
 python -m UDMT crossings \
@@ -132,8 +135,26 @@ python -m UDMT crossings \
   --annotated round5_260611_3d.udmt_crossing_annotated.csv \
   --id-column fish_id \
   --coordinate-columns X Y Z \
-  --distance-threshold 15 \
-  --min-duration 2
+  --distance-threshold 18 \
+  --min-duration 2 \
+  --merge-gap 10
+```
+
+Write a tighter review subset while preserving the same high-recall detector
+settings:
+
+```bash
+python -m UDMT crossings \
+  --tracks round5_260611_3d.csv \
+  --events round5_260611_3d.udmt_crossings.review.csv \
+  --id-column fish_id \
+  --coordinate-columns X Y Z \
+  --distance-threshold 18 \
+  --min-duration 2 \
+  --merge-gap 10 \
+  --review-max-min-distance 6 \
+  --review-min-duration 15 \
+  --review-only
 ```
 
 Then bind to 3D:
@@ -165,6 +186,30 @@ Then bind to 3D:
   and conservative repair.
 - `cli.py`: command-line wrapper.
 
+## K_1_2 Crossing Validation Notes
+
+The 3D crossing detector was checked on the full K_1_2 round5 track table
+against 40 reviewed montage crossings. The close-contact trigger covered all
+40 reviewed crossings at thresholds from 12 to 35 mm, confirming that it catches
+smooth swaps that the older speed-spike trigger misses.
+
+The remaining issue is precision: at 18 mm and merge-gap 3, the detector emits
+1198 per-pair events, many of which are real but mild or brief approaches. A
+larger merge gap around 10 reduces fragmentation (910 events) and the vectorized
+pair-distance path makes a full-video pass run in ~3.5 s.
+
+Review-gate finding (validated against the 40 reviewed crossings): make the gate
+**distance-primary**. `--review-max-min-distance 6` alone keeps **166** candidates
+and still covers **40/40** reviewed crossings; `--review-max-min-distance 3` keeps
+**68** at 40/40. Adding `--review-min-duration 15` (the AND form) drops one
+genuinely tight crossing — a 3-fish pile-up whose closest pair hit 2.26 mm but for
+only 9 frames — giving 39/40. Brief tight passes are real swap risks, so do **not**
+hard-filter the review set on duration; recommended starting settings are
+`--distance-threshold 18 --merge-gap 10 --review-max-min-distance 6` (duration off,
+or as a soft/secondary signal inside the resolver, not a recall gate). Treat event
+counts as per-pair windows, not one-to-one matches to montage centers; three-fish
+pile-ups create overlapping pair events.
+
 ## Implementation Cautions
 
 - This adapter does not train ST-Net and does not load official UDMT
@@ -173,7 +218,9 @@ Then bind to 3D:
   and reflection masks before trusting the output.
 - Speed spikes are not the right primary trigger for smooth medaka swaps.
   Use `python -m UDMT crossings` on 3D geometry tracks or top-camera tracks to
-  find close-contact windows even when kinematics remain smooth.
+  find close-contact windows even when kinematics remain smooth. Use the
+  optional review gates to triage tight, sustained candidates without changing
+  the underlying high-recall event table.
 - Bidirectional repair is conservative by default: it only modifies motion
   anomalies, or crossing rows when `--repair-crossings` is passed, after the
   forward/backward ID mapping is established. Normal consensus uses a tight
