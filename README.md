@@ -22,6 +22,13 @@ Through video recording and quantitative behavioral analysis before mating event
 ## Data layout (expected)
 See `docs/data_layout.md`.
 
+## Repository layout
+
+Active logic lives under `scripts/` (plus `sam2_id_experiment/` and `UDMT/`).
+Calibration data/models are committed under `calibration_results/` and `models/`.
+Retired/superseded code and old run logs are kept under `archive/` — see
+`archive/README.md` for what was moved and why.
+
 ## Script-first workflow
 
 If you prefer terminal-driven development over notebooks, start with
@@ -107,7 +114,7 @@ Most team members can simply open the repository folder in VS Code.
 
 - The Python extension will typically auto-detect the `.venv/` environment in the workspace root.
 - If it does not, run **Python: Select Interpreter** and choose the `.venv` interpreter.
-- Workspace defaults are provided in `.vscode/settings.json` (pytest + `src/` on the Python path).
+- Workspace defaults are provided in `.vscode/settings.json` (pytest configured for the repo root).
 
 ### Configure experiment
 

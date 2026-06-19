@@ -22,10 +22,9 @@ Suggested data layout on your external drive:
 
 Use the repository for:
 
-- `src/`: reusable library code
-- `scripts/`: command-line entry points and stage wrappers
+- `scripts/`: command-line entry points, stage wrappers, and reusable logic
 - `configs/`: committed shared config and gitignored local path config
-- `scripts/debug/`: one-off issue reproductions and diagnostics
+- `archive/`: retired code/logs kept for reference (see `archive/README.md`)
 
 ## Local path config
 
@@ -65,7 +64,7 @@ paths file, pass them explicitly with `--processed_dir` and `--model_folder`.
 
 - Reproduce bugs with small clips first.
 - Save intermediate CSV and JSON outputs instead of debugging only in memory.
-- Keep one-off reproductions in `scripts/debug/`.
+- Retired one-off reproductions are kept in `archive/scripts/debug/`.
 - Keep production-stage scripts deterministic and config-driven.
 - Prefer one clear CLI per stage over notebook-only logic.
 

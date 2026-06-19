@@ -21,17 +21,15 @@ scripts/                # All active logic lives here (not src/)
   sleap/                # SLEAP batch inference & export/visualization wrappers
   tracking/             # Two workflows: legacy clip-based CSV + new .slp-based
   reconstruction_3d/    # Preferred 3D reconstruction (incl. 3D-first tracker)
-  reconstruction/       # Legacy step1-step6 reconstruction flow (kept for back-compat)
   analysis/             # Behavioral metrics (placeholders) + render_*_video.py (working)
   visualization/        # rerun_viewer.py — interactive 3D + multiview Rerun viewer
   common/               # local_paths.py, experiment_metadata.py, build_catalog.py
-  debug/                # One-off issue reproductions
 sam2_id_experiment/     # SAM2/Detectron2 segmentation-assisted identity tools
-src/medaka_pipeline/    # Package scaffold — placeholders only, not used yet
 configs/                # YAML/TOML config (acquisition, sleap, paths)
 calibration_results/    # Checked-in calibration data & trained models
 tests/                  # pytest unit tests
 docs/                   # overview, calibration, data_layout, script_workflow, etc.
+archive/                # Retired code/logs kept for reference (see archive/README.md)
 ```
 
 ## Setup & Environment
@@ -194,8 +192,9 @@ python -m scripts.visualization.rerun_viewer <exp> --paths-config configs/paths.
   --start-frame 171800 --end-frame 176799
 ```
 
-`scripts/reconstruction/` (no `_3d`) is the older step1–step6 pipeline; prefer
-`scripts/reconstruction_3d/` for new work (per `docs/script_workflow.md`).
+The older step1–step6 pipeline now lives in `archive/scripts/reconstruction/`
+(retired; kept for back-compat with already-cut legacy clips). Use
+`scripts/reconstruction_3d/` for all new work (per `docs/script_workflow.md`).
 
 ## Calibration System
 
@@ -262,7 +261,7 @@ env vars (`MEDAKA_BUCKET_ROOT`, `NUM_CHUNKS`, `PARTITION`, model paths, etc.); s
 ## Important Conventions
 
 - **Language**: English is the primary language for code and docs (refactored from Japanese)
-- **Scripts over notebooks**: Reusable logic goes in `scripts/`, one-off exploration in `notebooks/`, one-off bug repros in `scripts/debug/`
+- **Scripts over notebooks**: Reusable logic goes in `scripts/`, one-off exploration in `notebooks/`. Retired one-off bug repros live in `archive/scripts/debug/`.
 - **Identity tracking**: 2D tracking assigns per-view IDs (a, b, c); 3D reconstruction unifies across views
 - **Frame alignment**: Ways 2 & 4 are rotated 180 degrees before merging calibration data
 - **Git**: Commits co-authored with Claude. Large binary files (.mp4, .h5, .slp) are gitignored.
@@ -285,7 +284,7 @@ rigid-object refinement.
 ## Working with This Repo
 
 - Always check `configs/paths.local.toml` exists before running pipeline scripts.
-- The `src/medaka_pipeline/` package is scaffold only — all real logic is in `scripts/`.
+- All real logic lives in `scripts/` (and `sam2_id_experiment/`, `UDMT/`). There is no `src/` package — the former `src/medaka_pipeline/` scaffold was removed.
 - Calibration results are committed to git; raw video data is not.
 - When modifying calibration scripts, verify against `calibration_results/cali_20251217_manual/` QC data.
 - Network drive paths (Z:, G:) vary by machine — never hardcode them.

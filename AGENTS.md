@@ -12,8 +12,8 @@ and visualization.
 - Prefer the newer `.slp`/HPC workflow for new tracking and reconstruction work:
   `scripts/hpc/` -> `scripts.tracking.main --merge-chunks` ->
   `scripts.reconstruction_3d.reconstruct_from_slp`.
-- `scripts/reconstruction/` is the older step1-step6 pipeline kept for
-  compatibility. Prefer `scripts/reconstruction_3d/` for new 3D work.
+- The older step1-step6 pipeline was retired to `archive/scripts/reconstruction/`
+  (kept for back-compat). Use `scripts/reconstruction_3d/` for all new 3D work.
 
 ## Setup And Commands
 
@@ -208,8 +208,8 @@ with the same biological ID count together.
 ## Code Style
 
 - English is the primary language for code, comments, docs, and CLI messages.
-- Keep reusable logic in `scripts/`; notebooks are for exploration, and
-  `scripts/debug/` is for one-off reproductions.
+- Keep reusable logic in `scripts/`; notebooks are for exploration. Retired
+  one-off reproductions live in `archive/scripts/debug/`.
 - Preserve existing script conventions and command-line entry point patterns.
 - Use structured config/loaders such as `scripts/common/local_paths.py` instead of
   ad hoc local path handling.

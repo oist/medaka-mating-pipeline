@@ -139,6 +139,7 @@ celerybeat.pid
 .envrc
 .venv
 .venv-detectron2/
+.venv-idtrackerai/
 env/
 venv/
 ENV/
