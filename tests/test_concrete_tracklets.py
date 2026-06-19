@@ -32,6 +32,20 @@ def test_edge_extension_tracks_separated_then_breaks_on_approach():
     assert st["coverage_frac_of_fish_frames"] > 0.5
 
 
+def test_edge_extension_smoothing_survives_single_frame_dip():
+    # two fish well separated, with ONE frame where the other dips close, then apart.
+    fd = {}
+    for f in range(20):
+        bx = 4.0 if f == 10 else 40.0          # single-frame separation dip at f=10
+        fd[f] = [(0.0, 0.0, 1.0), (bx, 0.0, 1.0)]
+    _, raw = build_tracklets_edge_extended(fd, num_fish=2, body_length=10.0, tau=2.0,
+                                           sigma0=2.0, nominal_speed=0.5, sep_smooth_window=1)
+    tr_sm, sm = build_tracklets_edge_extended(fd, num_fish=2, body_length=10.0, tau=2.0,
+                                              sigma0=2.0, nominal_speed=0.5, sep_smooth_window=5)
+    assert sm["n_fragments"] < raw["n_fragments"]     # smoothing absorbs the 1-frame dip
+    assert any(t["length"] == 20 for t in tr_sm)      # the static fish stays one tracklet
+
+
 def test_edge_extension_pairwise_break_keeps_third_fish():
     # A static; B drifts in to ~6 px around f=10-11 then back out; C far & static.
     fd = {}

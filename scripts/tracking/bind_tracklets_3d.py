@@ -173,7 +173,8 @@ def _build_view_tracklets(slp, args):
         tracklets, _ = build_tracklets_edge_extended(
             fd_centroid, num_fish=args.num_fish, body_length=bl,
             tau=args.stifd_tau, sigma0=args.sigma0, nominal_speed=mean_sp,
-            jump_bl=1.0, min_score=args.min_score, max_gap=args.max_gap)
+            jump_bl=1.0, min_score=args.min_score, max_gap=args.max_gap,
+            sep_smooth_window=args.smooth_window)
         return tracklets, bl, metric, swap
     ifd, _, sigma = ifd_and_stifd(frames_pose, speeds, metric, args.sigma0)
     if args.gate == "stifd":

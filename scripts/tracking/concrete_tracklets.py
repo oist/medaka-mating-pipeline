@@ -213,6 +213,7 @@ def build_tracklets_edge_extended(
     jump_bl: float = 1.0,
     min_score: float = 0.3,
     max_gap: int = 5,
+    sep_smooth_window: int = 5,
 ) -> tuple[list[dict], dict]:
     """Core-seed + per-tracklet velocity-standardized edge-extension.
 
@@ -228,6 +229,10 @@ def build_tracklets_edge_extended(
     otherwise. Break when stIFD_i < tau. So an uninvolved fish keeps tracking through a
     pairwise close approach -- unlike the frame-level gate, which breaks all tracks at
     once. frames_data: {frame: [(x, y, score), ...]} (positions = the bind anchor).
+
+    The break test uses a rolling MEDIAN of the recent per-tracklet stIFD over
+    `sep_smooth_window` frames, so a single-frame separation dip (localization jitter)
+    doesn't cause break/reseed flicker; set sep_smooth_window=1 to disable.
     """
     if nominal_speed is None:
         nominal_speed = _nominal_speed(frames_data)
@@ -284,12 +289,17 @@ def build_tracklets_edge_extended(
                     stifd = nod[i] / float(np.hypot(sig_t, sig_r))
                 else:
                     stifd = np.inf
-                if stifd >= tau and scores[i] >= min_score:
+                # rolling-median over the tracklet's recent stIFD -> no single-frame flicker
+                s = stifd if np.isfinite(stifd) else 1e3
+                window = (tr["seps"] + [s])[-sep_smooth_window:]
+                smoothed = float(np.median(window))
+                if smoothed >= tau and scores[i] >= min_score:
                     x, y = float(P[i][0]), float(P[i][1])
                     gap = max(1, f - tr["lf"])
                     tr["vel"] = ((x - tr["last"][0]) / gap, (y - tr["last"][1]) / gap)
                     tr["last"] = (x, y); tr["lf"] = f
                     tr["pts"].append((f, x, y, scores[i]))
+                    tr["seps"] = window
                     extended += 1
                 else:
                     close(tr); del active[t]; n_break += 1
@@ -302,7 +312,7 @@ def build_tracklets_edge_extended(
             if nod[i] / (np.sqrt(2.0) * (sigma0 + nominal_speed)) >= tau:
                 x, y = float(P[i][0]), float(P[i][1])
                 active[next_id] = {"id": next_id, "pts": [(f, x, y, scores[i])],
-                                   "last": (x, y), "lf": f, "vel": (0.0, 0.0)}
+                                   "last": (x, y), "lf": f, "vel": (0.0, 0.0), "seps": []}
                 next_id += 1; n_seed += 1; extended += 1
         if extended == num_fish:
             frames_full += 1
@@ -313,7 +323,8 @@ def build_tracklets_edge_extended(
     lens = np.array([t["length"] for t in tracklets]) if tracklets else np.array([0])
     covered = int(lens.sum())
     stats = {
-        "tau": tau, "sigma0": sigma0, "nominal_speed_px": round(float(nominal_speed), 2),
+        "tau": tau, "sigma0": sigma0, "sep_smooth_window": sep_smooth_window,
+        "nominal_speed_px": round(float(nominal_speed), 2),
         "total_frames": total, "n_fragments": len(tracklets), "n_seeds": n_seed,
         "all_tracked_frames": frames_full,
         "all_tracked_frac": round(frames_full / max(total, 1), 3),
