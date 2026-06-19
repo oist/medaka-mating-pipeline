@@ -208,8 +208,8 @@ with the same biological ID count together.
 ## Code Style
 
 - English is the primary language for code, comments, docs, and CLI messages.
-- Keep reusable logic in `scripts/`; notebooks are for exploration. Retired
-  one-off reproductions live in `archive/scripts/debug/`.
+- Keep reusable logic in `scripts/`. Retired exploratory notebooks live in
+  `archive/notebooks/` and one-off reproductions in `archive/scripts/debug/`.
 - Preserve existing script conventions and command-line entry point patterns.
 - Use structured config/loaders such as `scripts/common/local_paths.py` instead of
   ad hoc local path handling.

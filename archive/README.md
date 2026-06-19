@@ -16,8 +16,10 @@ Moved during the 2026-06-20 directory cleanup.
   legacy clip-CSV workflow). Moved together with its dependency.
 - `scripts/debug/` — one-off issue reproductions and diagnostics
   (`check_id_swap_428_431.py`, `qc_round5_*.py`, `summarize_5k_test.py`, …).
-- `notebooks/notebook` — stray scratch planning notes (original Japanese/Chinese
-  design jottings), no file extension.
+- `notebooks/` — the full set of exploratory Jupyter notebooks (`01_*`–`07_*`),
+  their `README.md`, and the stray `notebook` scratch file (original
+  Japanese/Chinese design jottings, no extension). Exploration only; not part of
+  the active pipeline.
 - `logs/` — run logs from the June 2026 idtracker.ai / top-view cleaning
   experiments (`clean_topview_full*.log`, `idtrackerai*.log`). Gitignored
   (`*.log`); not tracked.

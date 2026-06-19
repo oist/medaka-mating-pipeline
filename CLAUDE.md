@@ -261,7 +261,7 @@ env vars (`MEDAKA_BUCKET_ROOT`, `NUM_CHUNKS`, `PARTITION`, model paths, etc.); s
 ## Important Conventions
 
 - **Language**: English is the primary language for code and docs (refactored from Japanese)
-- **Scripts over notebooks**: Reusable logic goes in `scripts/`, one-off exploration in `notebooks/`. Retired one-off bug repros live in `archive/scripts/debug/`.
+- **Scripts over notebooks**: Reusable logic goes in `scripts/`. The old exploratory notebooks have been retired to `archive/notebooks/`, alongside one-off bug repros in `archive/scripts/debug/`.
 - **Identity tracking**: 2D tracking assigns per-view IDs (a, b, c); 3D reconstruction unifies across views
 - **Frame alignment**: Ways 2 & 4 are rotated 180 degrees before merging calibration data
 - **Git**: Commits co-authored with Claude. Large binary files (.mp4, .h5, .slp) are gitignored.
