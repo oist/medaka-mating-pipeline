@@ -1,0 +1,45 @@
+# Unified review-viewer manifest (machine paths are local, like paths.local.toml).
+# Run:  python -m scripts.analysis.review_viewer --manifest <this-file>.toml
+#
+# The viewer loads every method below, overlays each method's reprojected
+# identities on the 3 camera views (toggle which to draw, or split into one
+# column per method), steps through an event list, and records human ground
+# truth to `gt_out`. It never writes to the production 3D path.
+
+experiment   = "20251225_K_1_2_FCMC"
+model_folder = "calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models"
+fps          = 166.0
+window_s     = 1.5      # +/- seconds around each event center for the scrub range
+zoom_crop    = 500      # 0 = full frame; >0 = crop a square of this many px around the fish
+gt_out       = "<PATH>/k12.gt_review.csv"   # human ground-truth output (the only thing written)
+
+[videos]
+top   = "<PATH>/top_cam/cam0_top.mp4"
+side1 = "<PATH>/side1_cam/cam1_side.mp4"
+side2 = "<PATH>/side2_cam/cam2_side.mp4"
+
+# One [[methods]] block per result to compare. Each needs frame, <id_col>, X, Y, Z.
+# Optional per method (enable the "SLEAP preds" / "Seg masks" UI toggles):
+#   slp_dir      = "<PATH>/sleap_output/round5_260611/<exp>"  (expects top_cam.slp, side1_cam.slp, side2_cam.slp)
+#   masks_dir    = "<PATH>/masks"
+#   mask_pattern = "{frame:07d}.png"   # path inside masks_dir; may use {view} and {frame}
+# A top-level `slp_dir = ...` applies to every method that doesn't set its own.
+[[methods]]
+label   = "centroid"
+csv_3d  = "<PATH>/round5_260611_3d_identified.csv"
+id_col  = "final_fish_id"
+slp_dir = "<PATH>/sleap_output/round5_260611/<exp>"
+
+[[methods]]
+label  = "idtracker"
+csv_3d = "<PATH>/round5_260611_3d_identified_idtracker.csv"
+id_col = "final_fish_id"
+
+[events]
+# source = "rank_crossings"  -> tightest crossings of reference_method (uses n_events/close_mm)
+# source = "crossings"       -> a UDMT `crossings` CSV at `path`
+# source = "resolver"        -> a UDMT `resolve` decisions CSV at `path` (shows the suspect)
+source           = "resolver"
+path             = "<PATH>/k12.resolved_resid.csv"
+reference_method = "centroid"   # defines crossing ranking, female-ID radio, and color alignment
+review_only      = false        # if true and the CSV has review_candidate, keep only those

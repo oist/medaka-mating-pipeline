@@ -103,6 +103,15 @@ def main():
     ap.add_argument("--output", type=Path, required=True)
     ap.add_argument("--fps", type=float, default=FPS)
     ap.add_argument("--n-events", type=int, default=40)
+    ap.add_argument("--events-csv", type=Path, default=None,
+                    help="Render THESE events instead of auto-ranked crossings. Needs a "
+                         "'center' column or 'start'+'end' (center = midpoint); 'min_mm' "
+                         "optional for the banner. E.g. the resolver's hardcore_events_resolved.csv.")
+    ap.add_argument("--events-filter", default=None,
+                    help="pandas query() on --events-csv, e.g. \"verdict=='clear'\".")
+    ap.add_argument("--events-sort", default=None,
+                    help="sort --events-csv ascending by this column before taking n-events "
+                         "(e.g. min_mm -> closest-approach / riskiest first).")
     ap.add_argument("--window-s", type=float, default=1.5)
     ap.add_argument("--close-mm", type=float, default=18.0)
     ap.add_argument("--assign-max-dist", type=float, default=60.0)
@@ -132,9 +141,26 @@ def main():
     id_col = "final_fish_id" if "final_fish_id" in df.columns else "fish_id"
     win = int(args.window_s * args.fps)
 
-    events, ids = rank_crossings(df, id_col, args.close_mm, args.n_events, min_sep=win)
-    if not events:
-        raise SystemExit("no crossings below threshold")
+    if args.events_csv:
+        ev = pd.read_csv(args.events_csv)
+        if args.events_filter:
+            ev = ev.query(args.events_filter)
+        if "center" not in ev.columns:
+            ev = ev.assign(center=((ev["start"] + ev["end"]) // 2).astype(int))
+        if args.events_sort and args.events_sort in ev.columns:
+            ev = ev.sort_values(args.events_sort)
+        ev = ev.head(args.n_events)
+        events = [(int(r.center),
+                   float(r.min_mm) if "min_mm" in ev.columns and np.isfinite(r.min_mm) else np.nan)
+                  for r in ev.itertuples()]
+        events.sort()  # chronological for playback
+        ids = sorted(int(c) for c in df[id_col].dropna().unique())
+        if not events:
+            raise SystemExit("--events-csv produced no events after filter")
+    else:
+        events, ids = rank_crossings(df, id_col, args.close_mm, args.n_events, min_sep=win)
+        if not events:
+            raise SystemExit("no crossings below threshold")
     id_to_cidx = {fid: i for i, fid in enumerate(ids)}  # sorted -> distinct colors
 
     # montage frame list (chronological, de-duped) + per-frame event meta
