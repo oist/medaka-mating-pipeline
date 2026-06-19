@@ -496,7 +496,8 @@ def _build_gui_classes():
             self.info.setText(f"center f{center}  t={center/self.cfg.fps:.1f}s  "
                               f"min-dist={mm_s}{extra}{susp}")
             lo, hi = max(0, center - self.d.win), center + self.d.win
-            self.slider.blockSignals(True); self.slider.setRange(lo, hi); self.slider.setValue(center)
+            # open at the window START so you can play INTO the crossing (not at its peak)
+            self.slider.blockSignals(True); self.slider.setRange(lo, hi); self.slider.setValue(lo)
             self.slider.blockSignals(False)
             self.jump.blockSignals(True); self.jump.setCurrentIndex(i); self.jump.blockSignals(False)
             self._rebuild_female_buttons()
@@ -504,7 +505,7 @@ def _build_gui_classes():
             for b in self.suspect_group.buttons():
                 b.setVisible(bool(e["suspect"]))
             self._load_widgets(self.records.get(i, {}))
-            self._render(center); self._update_progress()
+            self._render(lo); self._update_progress()
 
         def _rebuild_female_buttons(self):
             for b in self._fem_buttons:
