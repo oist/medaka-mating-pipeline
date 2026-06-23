@@ -1,0 +1,39 @@
+# Tracklet -> 3-fish identity benchmark config (example).
+# Copy/edit per machine. Paths may be absolute or relative to the repo root.
+# Machine-specific drive letters belong HERE, never in code. The big artifacts
+# (3D csv, tracklet-bound CSVs) live outside git; point at wherever they are.
+
+[benchmark]
+experiment = "20251225_K_1_2_FCMC"
+run_tag    = "pilot"
+fps        = 166.0
+n_fish     = 3
+spike_mm   = 8.0          # 3D jump above this between adjacent frames = speed spike
+
+# Production geometry + bind output (required).
+csv_3d = "Z:/StephensU/medaka/reconstruction_3d/round5_260611/20251225_K_1_2_FCMC/round5_260611_3d_identified.csv"
+
+# Tracklet binder output dir (top_cam.tracklet_bound.csv etc + hardcore_events.csv).
+# Optional: tracklet_bind/hybrid are skipped (recorded unavailable) if missing.
+bind_dir = "C:/udmt_validation/tracklet_bind"
+
+# Resolver output (required for window selection + motion_resolver/hybrid).
+resolved_events_csv = "C:/udmt_validation/tracklet_bind/hardcore_events_resolved.csv"
+
+# Optional appearance classifier (idtracker.ai trajectories.csv). Leave blank to
+# record it as unavailable with reproduce-instructions.
+appearance_traj_csv = ""
+
+# Optional ground-truth event labels (k12.gt_review.csv style: center_frame, swap).
+# When present, GT scoring activates automatically.
+gt_csv = "C:/udmt_validation/k12.gt_review.csv"
+
+# Results root (outside git). Defaults to runs_dir from paths.local.toml if blank.
+out_dir = ""
+
+methods = ["geometry_3d", "tracklet_bind", "motion_resolver", "hybrid", "appearance_idtracker"]
+
+[benchmark.windows]
+pad_frames   = 500        # half-width around an event center
+n_suspect    = 4          # how many suspect_swap windows to include
+early_fp_end = 8000       # treat frames before this as the early/FP zone
