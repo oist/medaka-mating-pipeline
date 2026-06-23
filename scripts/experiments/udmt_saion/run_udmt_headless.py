@@ -266,9 +266,11 @@ def main():
     args = build_parser().parse_args()
     _headless_env(args.udmt_root)
     import cv2
-    # vis off so the per-frame loop never touches a Qt widget (tracker_multi.py:49)
+    # Visualization off so the per-frame loop never touches Qt widgets.
+    # Keep save_flag True: UDMT uses it to create the per-animal *_new.txt outputs.
     import udmt.gui.tabs.ST_Net.pytracking.evaluation.tracker_multi as tm
     tm.vis_flag = False
+    tm.save_flag = True
 
     if args.resume_final:
         model = args.final_model or _select_model(args.stem, f"{args.project}/models")

@@ -72,6 +72,30 @@ from ltr.models.bbreg.atom_iou_net import AtomIoUNet     # the model (runs forwa
 
 (Demonstrated on saion's login node: `cuda available: False`, no Qt, pure PrRoIPool.)
 
+## Local runner
+
+The repo also has a Windows-friendly runner that applies the same patching in Python,
+installs small runtime stubs for legacy optional packages (`jpeg4py`, `visdom`,
+`similaritymeasures`), handles torch>=2.6 legacy checkpoint loading, prepares UDMT's
+project folder contract, and calls ST-Net directly:
+
+```bash
+python -m UDMT.stnet.runner patch-clone --udmt-root Z:/StephensU/medaka/udmt/UDMT
+python -m UDMT.stnet.runner verify --udmt-root Z:/StephensU/medaka/udmt/UDMT --run-iou-forward --device cpu
+python -m UDMT.stnet.runner run-video \
+    --udmt-root Z:/StephensU/medaka/udmt/UDMT \
+    --video Z:/StephensU/medaka/medaka_202512/<experiment>/top_cam/cam0_top.mp4 \
+    --project runs/udmt_local/<stem> \
+    --stem <stem> \
+    --start-positions Z:/StephensU/medaka/udmt/bundle/init/top_cam_start_pos.txt \
+    --init-mask Z:/StephensU/medaka/udmt/bundle/init/top_cam_init_mask.png \
+    --repeat-init-mask \
+    --start-frame 176300 --frame-limit 5 --skip-tune --quick
+```
+
+For a real run, pass a per-frame `--mask-dir` instead of `--repeat-init-mask`; repeating the
+init mask is only a plumbing smoke test.
+
 ## Status & remaining work
 
 **Done + validated:** the keystone CUDA→PyTorch op (1e-6 / 1e-8 parity), and the GUI/relative-import

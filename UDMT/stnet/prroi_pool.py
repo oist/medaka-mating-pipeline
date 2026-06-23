@@ -65,7 +65,7 @@ def prroi_pool2d(features: torch.Tensor, rois: torch.Tensor,
     ph, pw = int(pooled_height), int(pooled_width)
     s = float(spatial_scale)
 
-    rois = rois.to(features.dtype)
+    rois = rois.to(device=features.device, dtype=features.dtype)
     batch_idx = rois[:, 0].long()
     # scale to feature coords and clamp to the valid grid (matches the CUDA op's boundary)
     x1 = (rois[:, 1] * s).clamp(0, W - 1)

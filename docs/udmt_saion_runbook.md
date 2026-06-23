@@ -146,10 +146,11 @@ Critical (verified):
 
 ## 4. Headless driver — `run_udmt_headless.py`
 
-Two module-level constants force a live Qt display on the per-frame hot path
-(`ST_Net/pytracking/evaluation/tracker_multi.py`): **`vis_flag=True` (line 49)** and
-**`save_flag=True` (line 48)** — set both `False`. `run_tracking` calls `argparse.parse_args()`
-(`run_tracker.py:107`) → neutralize `sys.argv`. Call the free functions:
+One module-level constant forces a live Qt display on the per-frame hot path
+(`ST_Net/pytracking/evaluation/tracker_multi.py`): **`vis_flag=True` (line 49)** —
+set it `False`. Keep **`save_flag=True`**: UDMT uses it to create the per-animal
+`*_new.txt` outputs that `post_process_results()` consumes. `run_tracking` calls
+`argparse.parse_args()` (`run_tracker.py:107`) → neutralize `sys.argv`. Call the free functions:
 - `udmt.gui.create_new_project(...)` (Qt-free, `__init__.py:23`)
 - `udmt.gui.tabs.ST_Net.pytracking.run_tracker.run_tracking(params)` (`:94`)
 - `udmt.gui.tabs.ST_Net.ltr.run_training.run_training_process(params)` (`:44`)
@@ -162,7 +163,7 @@ UDMT_ROOT="/opt/UDMT"; ST="%s/udmt/gui/tabs/ST_Net"%UDMT_ROOT
 sys.path[:0]=[UDMT_ROOT, ST]            # code mixes `udmt.gui...` AND bare `ltr...`/`pytracking...`
 sys.argv=[sys.argv[0]]                  # run_tracking reads argv
 import udmt.gui.tabs.ST_Net.pytracking.evaluation.tracker_multi as tm
-tm.vis_flag=False; tm.save_flag=False   # lines 49/48
+tm.vis_flag=False; tm.save_flag=True    # no Qt display; keep text outputs
 from udmt.gui import create_new_project
 from udmt.gui.tabs.ST_Net.pytracking.run_tracker import run_tracking
 from udmt.gui.tabs.ST_Net.ltr.run_training import run_training_process
@@ -208,7 +209,8 @@ Batch 8 / 352×352 / ResNet-50+transformer+DiMP is well under 16 GB; drop batch 
 pilot — the guide says 20 is overkill). Risks: (1) **PrRoIPooling JIT at runtime** — pre-warm into a
 shared `TORCH_EXTENSIONS_DIR` (gate 2); (2) **Detectron2 adapter correctness** — wrong centroid
 scale silently drops fish; merging contacting fish breaks ID-correction (gate 3 + eyeball frame 0);
-(3) **headless GUI couplings** — `vis_flag`/`save_flag` constants, `sys.argv`, `None` widgets (gate 4).
+(3) **headless GUI couplings** — `vis_flag`, `sys.argv`, `None` widgets (gate 4);
+keep `save_flag=True` so track text files are written.
 
 ## 8. Honest note — what this can/can't show
 Measures **DiMP/ST-Net per-target continuity**: does a self-trained appearance+motion tracker hold

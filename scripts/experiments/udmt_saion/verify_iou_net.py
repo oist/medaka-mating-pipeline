@@ -1,5 +1,7 @@
-"""Verify the full DiMP/ATOM IoU-Net (the only PrRoIPool consumer in TrDiMP) produces
-identical output with the pure-PyTorch PrRoIPool swapped in for the CUDA op.
+"""Verify DiMP/ATOM IoU-Net parity with pure-PyTorch PrRoIPool swapped in.
+
+This checks the IoU-Net module on synthetic features/proposals, not a checkpointed
+full-tracker run.
 
 Run on a GPU box with UDMT's ST_Net build (saion)::
 
