@@ -17,6 +17,7 @@ from UDMT.io import read_csv, write_jsonable_summary
 from UDMT.metrics import TrackQualityConfig, score_track_table
 from UDMT.refinement import RefinementConfig, refine_tracks_with_masks
 from UDMT.resolver import ResolverConfig, resolve_crossings
+from UDMT.tracking import TrackingConfig, track_forward_backward
 from UDMT.tuning import candidates_from_csvs, rank_candidate_track_runs, ranking_to_frame
 
 
@@ -36,6 +37,22 @@ def build_parser() -> argparse.ArgumentParser:
     select.add_argument("--summary", type=Path)
     select.add_argument("--table", type=Path)
     _add_quality_args(select)
+
+    track = sub.add_parser(
+        "track",
+        help="Tracking-by-segmentation: link mask centroids into individual tracks (fwd+bwd).",
+    )
+    track.add_argument("--masks", required=True, type=Path,
+                       help="mask-centroid CSV: frame + (x,y or centroid_x,centroid_y), optional area/score")
+    track.add_argument("--forward", required=True, type=Path)
+    track.add_argument("--backward", type=Path)
+    track.add_argument("--num-individuals", type=int, default=3)
+    track.add_argument("--max-jump-px", type=float, default=60.0)
+    track.add_argument("--max-jump-hard-cap-px", type=float, default=400.0)
+    track.add_argument("--max-gap-frames", type=int, default=30)
+    track.add_argument("--min-area", type=float, default=20.0)
+    track.add_argument("--max-area", type=float, default=None)
+    track.add_argument("--min-track-len", type=int, default=5)
 
     refine = sub.add_parser("refine", help="Refine track centers with mask centroids.")
     refine.add_argument("--tracks", required=True, type=Path)
@@ -147,6 +164,32 @@ def main(argv: list[str] | None = None) -> None:
         if args.table is not None:
             args.table.parent.mkdir(parents=True, exist_ok=True)
             ranking_to_frame(ranking).to_csv(args.table, index=False)
+        return
+
+    if args.command == "track":
+        cfg = TrackingConfig(
+            num_individuals=args.num_individuals,
+            max_jump_px=args.max_jump_px,
+            max_jump_hard_cap_px=args.max_jump_hard_cap_px,
+            max_gap_frames=args.max_gap_frames,
+            min_area=args.min_area,
+            max_area=args.max_area,
+            min_track_len=args.min_track_len,
+        )
+        fwd, bwd = track_forward_backward(read_csv(args.masks), cfg)
+        _write_csv(fwd, args.forward)
+        if args.backward is not None:
+            _write_csv(bwd, args.backward)
+        _emit_summary(
+            {
+                "forward_csv": str(args.forward),
+                "backward_csv": None if args.backward is None else str(args.backward),
+                "forward_tracks": int(fwd["track_id"].nunique()) if not fwd.empty else 0,
+                "backward_tracks": int(bwd["track_id"].nunique()) if not bwd.empty else 0,
+                "config": cfg.to_dict(),
+            },
+            None,
+        )
         return
 
     if args.command == "refine":
