@@ -234,3 +234,8 @@ data/derived/
 .omc/
 # Claude Code local working state
 .claude/
+
+# Generated progress-report artifacts (decks/plots/slide previews) — regenerate via report/<date>/build_report.py
+report/**/*.pptx
+report/**/*.png
+report/**/slide_previews*/
