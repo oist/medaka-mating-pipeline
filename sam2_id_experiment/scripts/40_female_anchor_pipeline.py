@@ -52,7 +52,10 @@ STAGES = ["slot-points", "detectron2", "link", "pool", "anchor"]
 
 # Machine-local defaults (the K_1_2-trained appearance models on this box). These
 # are scratch paths, not network drives, and are fully overridable by flag.
-DEFAULT_FEMALE_MODEL = r"C:\udmt_validation\segid\K_1_2\model_female\model.pt"
+# Default anchor is the SWAP-CORRECTED clean female model (script 44); the embedder
+# is the frozen self-supervised model used to align the target's windows.
+DEFAULT_FEMALE_MODEL = r"C:\udmt_validation\segid\K_1_2\model_female_clean\model.pt"
+DEFAULT_EMBEDDER = r"C:\udmt_validation\segid\K_1_2\model_resnet_full\model.pt"
 DEFAULT_DETECTRON_MODEL_DIR = REPO_ROOT / "outputs" / "20251225_K_1_2_FCMC" / "side_detectron2_model_firstprompt"
 DEFAULT_DETECTRON_VENV = REPO_ROOT / ".venv-detectron2" / "Scripts" / "python.exe"
 
@@ -241,8 +244,31 @@ def stage_anchor(pooled: Path, female_model: Path, identified_csv: Path,
     return json.loads(report_path.read_text(encoding="utf-8"))
 
 
+def stage_anchor_clean(pooled: Path, female_model: Path, embedder: Path, identified_csv: Path,
+                       work: Path, margin_threshold: float, force: bool) -> dict:
+    """Swap-corrected anchor (script 44): align the target's windows, apply the clean
+    female model, call the female, and write a whole-track sexed CSV that follows her
+    geometry slot through the linker's crossings (with per-row sex_confidence)."""
+    out_dir = work / "female_anchor"
+    report_path = out_dir / "female_anchor_clean_report.json"
+    if not force and report_path.exists():
+        print(f"[4 anchor-clean] skip (exists) -> {out_dir}")
+        return json.loads(report_path.read_text(encoding="utf-8"))
+    print(f"[4 anchor-clean] swap-corrected female anchor {female_model}")
+    run([
+        "sam2_id_experiment.scripts.44_apply_clean_female_anchor",
+        "--target-dataset", str(pooled),
+        "--model", str(female_model),
+        "--embedder", str(embedder),
+        "--out-dir", str(out_dir),
+        "--identified-3d-csv", str(identified_csv),
+        "--margin-threshold", str(margin_threshold),
+    ], out_dir / "anchor_clean.log", python=Path(sys.executable))
+    return json.loads(report_path.read_text(encoding="utf-8"))
+
+
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="Whole-length female-anchor pipeline (reproject -> Detectron2 -> 33 -> 34 -> 38).")
+    p = argparse.ArgumentParser(description="Whole-length female-anchor pipeline (reproject -> Detectron2 -> 33 -> 34 -> 44).")
     p.add_argument("experiment", help="e.g. 20251225_K_1_1_FCMC")
     p.add_argument("--paths-config", default="configs/paths.local.toml")
     p.add_argument("--round-tag", default="round5_260611")
@@ -252,6 +278,10 @@ def build_parser() -> argparse.ArgumentParser:
                    help="default: runs/female_anchor/<experiment>/<round_tag>")
     p.add_argument("--views", nargs="+", default=["side1_cam", "side2_cam"])
     p.add_argument("--female-model", default=DEFAULT_FEMALE_MODEL)
+    p.add_argument("--female-embedder", default=DEFAULT_EMBEDDER,
+                   help="frozen self-supervised embedder for window alignment (clean anchor)")
+    p.add_argument("--legacy-anchor", action="store_true",
+                   help="use the old per-slot 38 anchor (no swap correction) instead of the clean 44 anchor")
     p.add_argument("--detectron-model-dir", default=str(DEFAULT_DETECTRON_MODEL_DIR))
     p.add_argument("--detectron-venv", default=str(DEFAULT_DETECTRON_VENV))
     p.add_argument("--calibration-model-dir", default=None)
@@ -342,16 +372,21 @@ def main(argv: list[str] | None = None) -> None:
     if reached("pool"):
         print("[stop-after pool]"); return
 
-    report = stage_anchor(pooled, Path(args.female_model), identified_csv, work,
-                          args.margin_threshold, args.force)
-
-    # 38's report["female_prob"] is a per-slot dict (JSON keys are strings); pull
-    # out the scalar P(female) for the female's own slot for clean reporting.
-    prob_by_slot = report.get("female_prob") or {}
-    female_slot = report.get("female_fish_slot")
-    female_scalar_prob = None
-    if female_slot is not None:
-        female_scalar_prob = prob_by_slot.get(female_slot, prob_by_slot.get(str(female_slot)))
+    if args.legacy_anchor:
+        report = stage_anchor(pooled, Path(args.female_model), identified_csv, work,
+                              args.margin_threshold, args.force)
+        female_id = report.get("female_fish_id")
+        prob_by_slot = report.get("female_prob") or {}
+        female_slot = report.get("female_fish_slot")
+        female_scalar_prob = (prob_by_slot.get(female_slot, prob_by_slot.get(str(female_slot)))
+                              if female_slot is not None else None)
+    else:
+        report = stage_anchor_clean(pooled, Path(args.female_model), Path(args.female_embedder),
+                                    identified_csv, work, args.margin_threshold, args.force)
+        female_id = report.get("female_aligned_id")
+        prob_by_slot = report.get("female_prob_by_aligned_id") or {}
+        female_scalar_prob = (prob_by_slot.get(female_id, prob_by_slot.get(str(female_id)))
+                              if female_id is not None else None)
 
     # copy the sexed CSV next to the source recon CSV for downstream discoverability
     sexed_src = report.get("sexed_csv")
@@ -369,13 +404,17 @@ def main(argv: list[str] | None = None) -> None:
         "windows": windows, "views": args.views,
         "slot_points": slot_info,
         "female_model": str(args.female_model),
+        "anchor_method": "legacy_38" if args.legacy_anchor else "clean_44_swap_corrected",
         "female_call": {
-            "female_fish_id": report.get("female_fish_id"),
+            "female_fish_id": female_id,
             "female_prob": female_scalar_prob,
             "female_prob_by_slot": prob_by_slot,
             "confidence_margin": report.get("confidence_margin"),
             "ambiguous": report.get("ambiguous"),
-            "sex_by_slot": report.get("sex_by_slot"),
+            "sex_by_slot": report.get("sex_by_slot") or report.get("sex_by_aligned_id"),
+            "per_window_female_raw_global_id": report.get("per_window_female_raw_global_id"),
+            "sex_confidence_counts": report.get("sex_confidence_counts"),
+            "dropped_windows": report.get("dropped_windows"),
         },
         "sexed_csv_workdir": sexed_src,
         "sexed_csv_beside_recon": str(sexed_dst) if sexed_dst else None,
@@ -384,7 +423,7 @@ def main(argv: list[str] | None = None) -> None:
 
     print("\n" + "=" * 70)
     print("DONE")
-    print(f"  female fish : {report.get('female_fish_id')} "
+    print(f"  female fish : {female_id} "
           f"(margin {report.get('confidence_margin')}, ambiguous={report.get('ambiguous')})")
     print(f"  P(female)   : {female_scalar_prob}  (by slot: {prob_by_slot})")
     print(f"  sexed CSV   : {sexed_dst or sexed_src}")

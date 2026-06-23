@@ -121,6 +121,76 @@ weak appearance — exactly what the per-video clean-label + accumulation/biject
 fixes; (3) drop/down-weight window 176300; (4) expect a strong female anchor and a moderate
 male-male signal. The RAW-vs-REMAP alignment IS Phase 2's bijection step in miniature.
 
+## Hardened comparison RESULT (2026-06-23) — fine-tuned ResNet, overturns "female-only"
+
+Fine-tuned ResNet18 (not a frozen probe), trained ONLY on co-visible frames (all 3
+clean concrete-tracklet fish, 28,695 crops), leave-one-segment-out across the 3 good
+windows (145k/152k/285k; 176k auto-dropped, sep 0.02).
+
+| held-out segment | female RAW | female CORRECTED | 3-way | male-vs-male |
+|---|--:|--:|--:|--:|
+| 145k | 0.65 | 0.99 | 0.89 | 0.84 |
+| 152k | 0.72 | 0.99 | 0.94 | 0.93 |
+| 285k | 0.98 | 0.99 | 0.95 | 0.94 |
+| **MEAN** | **0.78** | **0.99** | **0.93** | **0.90** |
+
+- Female-vs-male **0.99** corrected vs **0.78** raw (raw swings 0.65–0.98 fold-to-fold =
+  the swap signature; corrected is rock-stable).
+- **Male-vs-male 0.90** on held-out segments — **overturns the prior "appearance is a
+  FEMALE ANCHOR only / males ~chance" conclusion.** That was a label-noise + bad-window
+  artifact; with clean co-visible labels + a fine-tuned model the 2 males ARE separable.
+  => full 3-fish individual ID per video looks viable (needed for M1-vs-M2 aggression).
+
+Caveats: (1) within-video (K_1_2) only — cross-video still expected to need per-video
+training; (2) labels are 3D-geometry-derived + appearance-aligned cross-window (mis-align
+would *deflate*, not inflate), independent manual GT on a held-out segment would seal it;
+(3) UNMASKED crops — rerun masked to confirm it's body appearance not background/position.
+
+## Cross-video RESULT (2026-06-23) — transfer WORKS once labels are clean (revises hypothesis)
+
+Trained the female-vs-male model on K_1_2 co-visible corrected labels, applied to
+K_1_1 / K_1_3 co-visible frames (slots aligned per target by appearance):
+
+| target | P(female) per slot | female call | margin (old broken ~0.02) | consistent across segments | per-video 3-way control |
+|---|---|---|--:|:--:|--:|
+| K_1_1 | 0.05 / 0.12 / **0.93** | slot 2 | **0.80** | yes (all segs) | 0.94 |
+| K_1_3 | 0.08 / 0.19 / **0.82** | slot 2 | **0.63** | yes (all segs) | 0.88 |
+
+**The clean K_1_2 model transfers** — confident, consistent female calls on both other
+recordings, vs the old model's chance (0.33/0.33/0.34, margin 0.02). So the production
+female-anchor (train K_1_2, apply elsewhere) IS viable; it was crippled by label noise,
+not a real transfer limit. Per-video control (0.94 / 0.88) confirms each video's own 3
+fish are separable too, so per-video training remains a robust fallback.
+
+**Caveat — no ground truth:** "slot 2" being *biologically* the female is unconfirmed
+(no manual GT for K_1_1/K_1_3). The high margin + cross-segment consistency are strong
+circumstantial evidence; seal it with a gravid-belly / body-size / manual check.
+
+## Productionized (2026-06-23) — committed clean pipeline
+
+- `src/id_model/window_align.py` (+ `tests/test_window_align.py`, 4 pass): co-visible
+  selection + appearance-bijection swap-correction + bad-window drop.
+- `43_build_corrected_segid_dataset.py`: K_1_2 28,695 co-visible -> 19,887 corrected
+  crops (176k dropped), drop-in for 37/35.
+- Retrain via existing `37`: **val 0.994 crop / 1.000 tracklet** (old model: 0.72 / 0.76).
+- `44_apply_clean_female_anchor.py`: aligns target windows, applies clean model, calls
+  the female. K_1_1 P(female)=0.92 margin 0.80; K_1_3 0.82 margin 0.64; both consistent,
+  not ambiguous. Emits **per-window female raw 3D-slot** (K_1_1 {139k:0,204k:1,268k:2,
+  333k:2}) — the mapping a swap-prone 3D track needs to be sexed correctly.
+
+WIRED INTO 40 (2026-06-23): `40_female_anchor_pipeline.py` now defaults to the clean
+model + `--female-embedder` and routes stage 4 through `44` (swap-corrected; old `38`
+behind `--legacy-anchor`). New tested helper `window_align.sex_track_from_window_anchors`
+follows the female's geometry slot across the track via the window anchors and labels
+per-row `sex_confidence` (high=in window, med=agreeing/edge span, low=between disagreeing
+windows = a linker swap in the gap). Validated on K_1_1: sexed CSV has **exactly 1 female
+/ frame** over 348,600 frames; confidence high 60k / med 627k / **low 358k** (the low rows
+are the swap-uncertain spans). 8 window_align tests + 19 touched-module tests pass.
+
+NEXT (the low-confidence spans): integrate `resolve_hardcore_events` to pin the exact
+linker-swap frames and convert `low` -> resolved sex, giving frame-precise whole-track sex.
+Then commit + (optional) visual gravid-belly GT check on the called female.
+
 ## Files
 
 - New: `43/44/45_*.py`, `src/id_model/per_video_id.py`,
