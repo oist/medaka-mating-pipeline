@@ -1,0 +1,8 @@
+# Segmentation-ID pilot, side1 view. See segpilot_top.yaml.
+experiment_name: 20251225_K_1_2_FCMC
+view: side1_cam
+video_path: Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/side1_cam/cam1_side.mp4
+output_dir: outputs/{experiment_name}/{view}_f132000_137000_segpilot
+start_frame: 132000
+end_frame: 137000
+n_animals_expected: 3

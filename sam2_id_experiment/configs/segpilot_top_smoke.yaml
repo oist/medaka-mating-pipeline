@@ -1,0 +1,9 @@
+# Smoke config: 100-frame Detectron2 inference to validate the command before the
+# full segmentation-ID pilot window. See FINDINGS / project memory.
+experiment_name: 20251225_K_1_2_FCMC
+view: top_cam
+video_path: Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/top_cam/cam0_top.mp4
+output_dir: outputs/{experiment_name}/{view}_f132000_137000_segpilot_smoke
+start_frame: 132000
+end_frame: 132100
+n_animals_expected: 3

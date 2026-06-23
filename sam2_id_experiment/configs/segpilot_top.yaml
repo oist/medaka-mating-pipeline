@@ -1,0 +1,11 @@
+# Segmentation-ID pilot: dense (stride-1) Detectron2 inference over a long
+# consecutive window with both clean periods and hard events (dwell@132284,
+# crossing@134598, suspect-swap@136198). Feeds the self-supervised appearance-ID
+# training loop. See project memory.
+experiment_name: 20251225_K_1_2_FCMC
+view: top_cam
+video_path: Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/top_cam/cam0_top.mp4
+output_dir: outputs/{experiment_name}/{view}_f132000_137000_segpilot
+start_frame: 132000
+end_frame: 137000
+n_animals_expected: 3

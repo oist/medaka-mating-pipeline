@@ -1,0 +1,7 @@
+experiment_name: 20251225_K_1_2_FCMC
+view: side1_cam
+video_path: Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/side1_cam/cam1_side.mp4
+output_dir: outputs/{experiment_name}/{view}_f145000_150000_segpilot
+start_frame: 145000
+end_frame: 150000
+n_animals_expected: 3

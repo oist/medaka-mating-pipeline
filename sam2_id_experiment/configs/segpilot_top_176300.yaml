@@ -1,0 +1,9 @@
+# Segmentation-ID pilot, TOP view on the clean tracklet-rich window 176300-181300
+# (matches the existing dense side masks; long side tracklets here). Dense stride-1.
+experiment_name: 20251225_K_1_2_FCMC
+view: top_cam
+video_path: Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/top_cam/cam0_top.mp4
+output_dir: outputs/{experiment_name}/{view}_f176300_181300_segpilot
+start_frame: 176300
+end_frame: 181300
+n_animals_expected: 3
