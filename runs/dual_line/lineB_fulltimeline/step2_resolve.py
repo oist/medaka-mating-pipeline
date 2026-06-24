@@ -19,6 +19,10 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
+REPO = HERE.parents[2]
+sys.path.insert(0, str(REPO))
+from sam2_id_experiment.src.id_model import per_frame_resolve as pfr  # noqa: E402
+
 NFRAMES = 348600
 MARGIN_THR = 0.30          # confident per-frame female-slot
 HIGH_DIST = 25             # frames: within this of a confident anchor -> high/med; else low
@@ -26,20 +30,12 @@ HIGH_DIST = 25             # frames: within this of a confident anchor -> high/m
 pf = pd.read_csv(HERE / "step2" / f"per_frame_female_0_{NFRAMES-1}.csv")
 sexed = pd.read_csv(HERE / "female_anchor" / "round5_260611_3d_identified_sexed.csv")
 
-# confident appearance anchors
-anc = pf[(pf.margin > MARGIN_THR) & (pf.female_slot >= 0)].sort_values("frame")
-af, asl = anc.frame.to_numpy(), anc.female_slot.to_numpy().astype(int)
+# confident appearance anchors -> frame-resolution female slot by nearest-preceding anchor
+af, asl = pfr.confident_anchors(pf.frame.to_numpy(), pf.female_slot.to_numpy(), pf.margin.to_numpy(), MARGIN_THR)
+spacing = int(np.median(np.diff(af))) if len(af) >= 2 else -1
 print(f"confident appearance anchors: {len(af)} / {len(pf)} sampled frames "
-      f"({len(af)/len(pf):.1%}); median spacing {int(np.median(np.diff(af)))} frames")
-
-# frame-resolution female slot by nearest-preceding confident anchor; distance to nearest anchor
-allf = np.arange(NFRAMES)
-prev = np.searchsorted(af, allf, side="right") - 1
-prev = np.clip(prev, 0, len(af) - 1)
-slot_ff = asl[prev]
-nearest_d = np.abs(allf - af[np.clip(np.searchsorted(af, allf), 0, len(af) - 1)])
-nearest_d = np.minimum(nearest_d, np.abs(allf - af[prev]))
-appconf = np.where(nearest_d <= HIGH_DIST, "high", "low")
+      f"({len(af)/len(pf):.1%}); median spacing {spacing} frames")
+slot_ff, appconf = pfr.forward_fill_slot(af, asl, NFRAMES, HIGH_DIST)
 
 # swaps = consecutive confident anchors that disagree (localized to the gap between them)
 chg = np.where(asl[1:] != asl[:-1])[0]

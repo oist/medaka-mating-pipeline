@@ -48,13 +48,14 @@ from sam2_id_experiment.src.config import VIEW_VIDEO_BASENAMES
 from sam2_id_experiment.src.id_model.reproject_slot_points import build_slot_points
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-STAGES = ["slot-points", "detectron2", "link", "pool", "anchor"]
+STAGES = ["slot-points", "detectron2", "link", "pool", "anchor", "per-frame-resolve"]
 
 # Machine-local defaults (the K_1_2-trained appearance models on this box). These
 # are scratch paths, not network drives, and are fully overridable by flag.
 # Default anchor is the SWAP-CORRECTED clean female model (script 44); the embedder
 # is the frozen self-supervised model used to align the target's windows.
 DEFAULT_FEMALE_MODEL = r"C:\udmt_validation\segid\K_1_2\model_female_clean\model.pt"
+DEFAULT_MALE_MODEL = r"C:\udmt_validation\segid\K_1_2\model_male_clean\model.pt"
 DEFAULT_EMBEDDER = r"C:\udmt_validation\segid\K_1_2\model_resnet_full\model.pt"
 DEFAULT_DETECTRON_MODEL_DIR = REPO_ROOT / "outputs" / "20251225_K_1_2_FCMC" / "side_detectron2_model_firstprompt"
 DEFAULT_DETECTRON_VENV = REPO_ROOT / ".venv-detectron2" / "Scripts" / "python.exe"
@@ -267,6 +268,34 @@ def stage_anchor_clean(pooled: Path, female_model: Path, embedder: Path, identif
     return json.loads(report_path.read_text(encoding="utf-8"))
 
 
+def stage_per_frame_resolve(experiment: str, paths_config: str, identified_csv: Path, slot_dir: Path,
+                            masks_dir: str, views: list[str], female_model: str, male_model: str,
+                            top_model: str | None, top_view: str, stride: int, work: Path,
+                            force: bool) -> str:
+    """Stage 5: per-frame appearance resolution of the whole 3-fish track (script 45). Supersedes the
+    window-anchor sexing — resolves every female + M1/M2 swap per frame (optionally fusing a top model).
+    Needs FULL-LENGTH Detectron2 masks (the saion fan-out) under ``masks_dir``."""
+    out_csv = identified_csv.with_name(identified_csv.stem + "_individual_id.csv")
+    if not force and out_csv.exists():
+        print(f"[5 per-frame-resolve] skip (exists) -> {out_csv}")
+        return str(out_csv)
+    cmd = ["sam2_id_experiment.scripts.45_per_frame_resolve", experiment,
+           "--paths-config", paths_config,
+           "--identified-3d-csv", str(identified_csv),
+           "--masks-dir", str(masks_dir),
+           "--slot-points-dir", str(slot_dir),
+           "--views", *views,
+           "--female-model", str(female_model),
+           "--male-model", str(male_model),
+           "--stride", str(stride),
+           "--out-csv", str(out_csv)]
+    if top_model:
+        cmd += ["--top-model", str(top_model), "--top-view", top_view]
+    print(f"[5 per-frame-resolve] resolving every frame -> {out_csv.name}")
+    run(cmd, work / "per_frame_resolve.log", python=Path(sys.executable))
+    return str(out_csv)
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Whole-length female-anchor pipeline (reproject -> Detectron2 -> 33 -> 34 -> 44).")
     p.add_argument("experiment", help="e.g. 20251225_K_1_1_FCMC")
@@ -297,6 +326,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--crop-size", type=int, default=128)
     p.add_argument("--score-thresh", type=float, default=0.5)
     p.add_argument("--margin-threshold", type=float, default=0.15)
+    # stage 5: per-frame appearance resolution (opt-in; needs full-length masks)
+    p.add_argument("--per-frame-resolve", action="store_true",
+                   help="stage 5: resolve every frame's F/M1/M2 with the per-frame appearance models "
+                        "(supersedes the window-anchor sexing); requires --masks-dir")
+    p.add_argument("--masks-dir", default=None, help="full-length Detectron2 masks (<view>.masks_<S>-<E>.h5) for stage 5")
+    p.add_argument("--male-model", default=DEFAULT_MALE_MODEL, help="M1/M2 classifier for stage 5")
+    p.add_argument("--top-model", default=None, help="optional top-view male model -> fuse to shrink the male-low core")
+    p.add_argument("--top-view", default="top_cam")
+    p.add_argument("--pfr-stride", type=int, default=10, help="per-frame-resolve sampling stride")
     p.add_argument("--force", action="store_true", help="re-run all stages")
     p.add_argument("--stop-after", choices=STAGES, default=None)
     p.add_argument("--dry-run", action="store_true", help="resolve+print plan, run nothing")
@@ -397,11 +435,21 @@ def main(argv: list[str] | None = None) -> None:
             import shutil
             shutil.copy2(sexed_src, sexed_dst)
 
+    # stage 5 (opt-in): per-frame appearance resolution of the whole track (supersedes window-anchor sexing)
+    per_frame_resolve_csv = None
+    if args.per_frame_resolve and args.stop_after != "anchor":
+        if not args.masks_dir:
+            raise SystemExit("--per-frame-resolve requires --masks-dir (full-length Detectron2 masks)")
+        per_frame_resolve_csv = stage_per_frame_resolve(
+            args.experiment, args.paths_config, identified_csv, slot_dir, args.masks_dir, args.views,
+            args.female_model, args.male_model, args.top_model, args.top_view, args.pfr_stride, work, args.force)
+
     manifest = {
         "experiment": args.experiment, "round_tag": args.round_tag,
         "generated_utc": datetime.now(timezone.utc).isoformat(),
         "identified_3d_csv": str(identified_csv),
         "windows": windows, "views": args.views,
+        "per_frame_resolve_csv": per_frame_resolve_csv,
         "slot_points": slot_info,
         "female_model": str(args.female_model),
         "anchor_method": "legacy_38" if args.legacy_anchor else "clean_44_swap_corrected",
@@ -427,6 +475,8 @@ def main(argv: list[str] | None = None) -> None:
           f"(margin {report.get('confidence_margin')}, ambiguous={report.get('ambiguous')})")
     print(f"  P(female)   : {female_scalar_prob}  (by slot: {prob_by_slot})")
     print(f"  sexed CSV   : {sexed_dst or sexed_src}")
+    if per_frame_resolve_csv:
+        print(f"  3-fish ID   : {per_frame_resolve_csv}  (per-frame F/M1/M2, supersedes window-anchor sexing)")
     print(f"  manifest    : {work / 'pipeline_manifest.json'}")
     print("=" * 70)
 
