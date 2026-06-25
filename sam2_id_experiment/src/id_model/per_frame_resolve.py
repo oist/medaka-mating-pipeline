@@ -212,6 +212,70 @@ def assemble_individual_labels(frames_arr, slots_arr, female_ff, beta_final, n_f
     return slot_label[np.asarray(frames_arr), np.asarray(slots_arr, dtype=int)]
 
 
+def _runs_of(mask):
+    """Maximal runs of True in a boolean array -> list of (start, end) inclusive."""
+    idx = np.where(np.asarray(mask))[0]
+    if not len(idx):
+        return []
+    splits = np.where(np.diff(idx) > 1)[0] + 1
+    return [(int(r[0]), int(r[-1])) for r in np.split(idx, splits)]
+
+
+def bridge_low_spans(slot_ff, conf, n_frames: int):
+    """Classify each low-confidence run by its bounding confident anchors (Goal 4 interpolation).
+
+    A run of non-"high" frames between two "high" anchors with the SAME slot is **bridged** — the
+    identity is certain (no swap occurred), it merely lacked a nearby confident frame. A run between
+    anchors with DIFFERENT slots is **ambiguous** (a swap happened somewhere in the gap). A run touching
+    the timeline start/end (only one bounding anchor) is **edge** (fillable by the nearest anchor).
+
+    ``slot_ff`` is the forward-filled slot (already = the preceding anchor's slot in each run). Returns
+    ``(id_source, runs)``: ``id_source`` is an (n_frames,) array in {"high","bridged","edge","ambiguous"};
+    ``runs`` is a list of ``(start, end, kind, before_slot, after_slot)``.
+    """
+    slot_ff = np.asarray(slot_ff, dtype=int)
+    conf = np.asarray(conf, dtype=object)
+    hi = conf == "high"
+    id_source = np.where(hi, "high", "ambiguous").astype(object)
+    runs = []
+    for (s, e) in _runs_of(~hi):
+        before = int(slot_ff[s - 1]) if s - 1 >= 0 and hi[s - 1] else -1
+        after = int(slot_ff[e + 1]) if e + 1 < n_frames and hi[e + 1] else -1
+        if before >= 0 and after >= 0:
+            kind = "bridged" if before == after else "ambiguous"
+        else:
+            kind = "edge"
+        id_source[s:e + 1] = kind
+        runs.append((s, e, kind, before, after))
+    return id_source, runs
+
+
+def localize_ambiguous_swaps(slot_ff, runs, pair_dist):
+    """Place the swap inside each **ambiguous** run at the frame of closest 3D approach between the two
+    slots involved (the crossing). ``pair_dist`` maps an unordered slot pair frozenset({a,b}) -> an
+    (n_frames,) distance array. Within a run [s,e] with before-slot ``a`` and after-slot ``b`` (a!=b),
+    forward-fill already set the whole run to ``a``; this sets [t*..e] to ``b`` where t* = argmin
+    distance(a,b) over [s,e]. Returns updated ``slot_ff`` (copy) and the list of localized swap frames.
+    """
+    slot_ff = np.asarray(slot_ff, dtype=int).copy()
+    swaps = []
+    for (s, e, kind, a, b) in runs:
+        if kind != "ambiguous" or a < 0 or b < 0 or a == b:
+            continue
+        key = frozenset((a, b))
+        if key not in pair_dist:
+            continue
+        seg = np.asarray(pair_dist[key])[s:e + 1]
+        finite = np.isfinite(seg)
+        if not finite.any():
+            continue
+        seg = np.where(finite, seg, np.inf)
+        tstar = s + int(np.argmin(seg))     # crossing = closest approach
+        slot_ff[tstar:e + 1] = b
+        swaps.append(tstar)
+    return slot_ff, swaps
+
+
 def female_dense_from_track(track: pd.DataFrame, n_frames: int, slot_col="app_female_slot"):
     """Dense per-frame female slot from an identified-3D table that already carries ``slot_col``."""
     female_ff = np.full(n_frames, -1, dtype=int)

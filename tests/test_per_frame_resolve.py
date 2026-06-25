@@ -105,6 +105,31 @@ def test_female_dense_from_track():
     assert ff[0] == 2 and ff[1] == 0
 
 
+def test_bridge_low_spans_classifies_runs():
+    # high 0-2, low 3-5, high 6-8, low 9-11, high 12-14, low 15-17 (edge at end)
+    conf = np.array(["high"] * 3 + ["low"] * 3 + ["high"] * 3 + ["low"] * 3 + ["high"] * 3 + ["low"] * 3, dtype=object)
+    slot_ff = np.array([0] * 12 + [1] * 6, dtype=int)   # anchors: slot0 up to frame 11, slot1 from 12
+    id_source, runs = pfr.bridge_low_spans(slot_ff, conf, n_frames=18)
+    assert id_source[0] == "high"
+    assert id_source[4] == "bridged"      # run 3-5 between slot0 anchors
+    assert id_source[10] == "ambiguous"   # run 9-11 between slot0 (@8) and slot1 (@12) -> swap
+    assert id_source[16] == "edge"        # run 15-17 has no confident anchor after
+    kinds = {(s, e): k for (s, e, k, _b, _a) in runs}
+    assert kinds[(3, 5)] == "bridged" and kinds[(9, 11)] == "ambiguous" and kinds[(15, 17)] == "edge"
+
+
+def test_localize_ambiguous_swaps_at_closest_approach():
+    conf = np.array(["high"] * 3 + ["low"] * 3 + ["high"] * 3 + ["low"] * 3 + ["high"] * 3 + ["low"] * 3, dtype=object)
+    slot_ff = np.array([0] * 12 + [1] * 6, dtype=int)
+    _id, runs = pfr.bridge_low_spans(slot_ff, conf, n_frames=18)
+    dist = np.full(18, 10.0)
+    dist[10] = 1.0                         # slots 0 and 1 cross at frame 10
+    out, swaps = pfr.localize_ambiguous_swaps(slot_ff, runs, {frozenset((0, 1)): dist})
+    assert swaps == [10]
+    assert out[9] == 0 and out[10] == 1 and out[11] == 1   # transition placed at the crossing
+    assert out[4] == 0                     # bridged run untouched
+
+
 def _toy_id_track(n=20):
     """M1=slot0, M2=slot1, F=slot2 for frames [0,9]; then M1/M2 SWAP slots for [10,19]."""
     rows = []
