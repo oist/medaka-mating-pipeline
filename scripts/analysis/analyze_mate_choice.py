@@ -5,12 +5,16 @@ following her slot swaps) AND the two males distinguished (M1/M2), behaviour can
 SPECIFIC male — which `compare_boris_trajectory` explicitly could not do ("males NOT distinguishable
 -> validated as a dyad, not per individual").
 
-Reads the interp 3-fish track (cols frame, geometry_slot, X, Y, Z, id_final). Computes, per male:
-  * female ASSOCIATION (time within courtship range of the female; preference index) — mate choice,
-  * COURTSHIP bouts (sustained female proximity),
+Reads the interp 3-fish track (cols frame, id_final ∈ {F,M1,M2}, X, Y, Z) and reports, per male:
+  * female ASSOCIATION (time within courtship range; preference index; sharpening to contact) — mate choice,
+  * TEMPORAL DYNAMICS — does the female's preference BUILD over time, or SWITCH between males?,
+  * COURTSHIP bouts (sustained female proximity) and a per-bout courtship-vs-aggression BREAKDOWN,
   * the SPAWN attribution (which male the female contacts at the spawn = the choice outcome),
   * male-male AGGRESSION bouts (close approach + speed spike; who initiates).
-Optionally cross-checks the BORIS ethogram (per-male m1tf/m2tf courtship, competitive events).
+Optionally cross-checks the BORIS ethogram (per-male m1tf/m2tf courtship).
+
+All metric logic lives in the shared, unit-tested `mate_choice_core` (also backs the
+`compute_courtship_metrics.py` / `compute_aggression_metrics.py` CLIs).
 
 Usage (K_1_2 defaults):
     .venv\\Scripts\\python.exe scripts\\analysis\\analyze_mate_choice.py
@@ -24,42 +28,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-FPS = 166.0
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from scripts.analysis import mate_choice_core as mc
+
+FPS = mc.FPS
 DEFAULT_TRACK = r"runs\dual_line\lineB_fulltimeline\step2\round5_260611_3d_individual_id_interp.csv"
 DEFAULT_BORIS = r"G:\.shortcut-targets-by-id\14OI1k7IaNOdC5yaC9GnYyCi2u-gfGLEs\OIST 1215-0122\boris_events\20251225_K_1_2_FCMC.csv"
 DEFAULT_SPAWN = 135888   # 818.6 s * 166 fps (BORIS spawn)
-
-
-def load_track(path):
-    t = pd.read_csv(path, usecols=["frame", "id_final", "X", "Y", "Z"])
-    piv = t.pivot_table(index="frame", columns="id_final", values=["X", "Y", "Z"])
-    n = int(piv.index.max()) + 1
-    piv = piv.reindex(range(n))
-    pos = {f: np.c_[piv["X"][f].to_numpy(), piv["Y"][f].to_numpy(), piv["Z"][f].to_numpy()] for f in ("F", "M1", "M2")}
-    return pos, n
-
-
-def dist(a, b):
-    bad = np.isnan(a).any(1) | np.isnan(b).any(1)
-    return np.where(bad, np.nan, np.sqrt(np.nansum((a - b) ** 2, axis=1)))
-
-
-def speed(a):
-    v = np.full(len(a), np.nan)
-    v[1:] = np.sqrt(np.sum(np.diff(a, axis=0) ** 2, axis=1)) * FPS
-    return v
-
-
-def runs_over(mask, min_len):
-    """contiguous True runs of length >= min_len -> list of (start, end) inclusive."""
-    idx = np.where(np.nan_to_num(mask, nan=0.0).astype(bool))[0]
-    if not len(idx):
-        return []
-    out, splits = [], np.where(np.diff(idx) > 1)[0] + 1
-    for r in np.split(idx, splits):
-        if len(r) >= min_len:
-            out.append((int(r[0]), int(r[-1])))
-    return out
 
 
 def main(argv=None):
@@ -67,107 +42,143 @@ def main(argv=None):
     ap.add_argument("--track", default=DEFAULT_TRACK)
     ap.add_argument("--boris", default=DEFAULT_BORIS)
     ap.add_argument("--spawn-frame", type=int, default=DEFAULT_SPAWN)
-    ap.add_argument("--court-mm", type=float, default=30.0, help="female-male courtship/association range")
-    ap.add_argument("--contact-mm", type=float, default=12.0)
-    ap.add_argument("--agg-mm", type=float, default=25.0, help="male-male close range for aggression")
-    ap.add_argument("--agg-speed", type=float, default=150.0, help="mm/s speed spike for an aggressive lunge")
-    ap.add_argument("--min-bout", type=int, default=33, help="frames (~0.2 s) for a sustained bout")
+    ap.add_argument("--court-mm", type=float, default=mc.BehaviourParams.court_mm)
+    ap.add_argument("--contact-mm", type=float, default=mc.BehaviourParams.contact_mm)
+    ap.add_argument("--agg-mm", type=float, default=mc.BehaviourParams.agg_mm)
+    ap.add_argument("--agg-speed", type=float, default=mc.BehaviourParams.agg_speed)
+    ap.add_argument("--min-bout", type=int, default=mc.BehaviourParams.min_bout)
+    ap.add_argument("--n-bins", type=int, default=mc.BehaviourParams.n_bins)
     ap.add_argument("--out-dir", default=r"runs\dual_line\lineB_fulltimeline\analysis")
     args = ap.parse_args(argv)
     out = Path(args.out_dir); out.mkdir(parents=True, exist_ok=True)
 
-    pos, n = load_track(args.track)
-    F, M1, M2 = pos["F"], pos["M1"], pos["M2"]
-    dFM1, dFM2, dMM = dist(F, M1), dist(F, M2), dist(M1, M2)
-    spdM1, spdM2 = speed(M1), speed(M2)
-    valid_f = ~np.isnan(dFM1) & ~np.isnan(dFM2)
+    p = mc.BehaviourParams(fps=FPS, court_mm=args.court_mm, contact_mm=args.contact_mm,
+                           agg_mm=args.agg_mm, agg_speed=args.agg_speed,
+                           min_bout=args.min_bout, n_bins=args.n_bins)
+    pos, n = mc.load_individual_track(args.track)
+    d = mc.compute_distances(pos, FPS)
 
-    # ---- female association / mate choice ----
-    court_M1, court_M2 = dFM1 < args.court_mm, dFM2 < args.court_mm
-    t1, t2 = np.nansum(court_M1) / FPS, np.nansum(court_M2) / FPS
-    closer_M1 = valid_f & (dFM1 < dFM2)
-    close_any = valid_f & (np.fmin(dFM1, dFM2) < args.court_mm)
-    pref_M1 = np.nansum(close_any & (dFM1 <= dFM2)); pref_M2 = np.nansum(close_any & (dFM2 < dFM1))
-    assoc_index = t1 / (t1 + t2) if (t1 + t2) else float("nan")   # >0.5 => prefers M1
+    assoc = mc.association_metrics(d, p)
+    cb = mc.courtship_bouts(d, p)
+    temporal_tbl, trend = mc.temporal_preference(d, p)
+    spawn = mc.spawn_attribution(d, p, args.spawn_frame)
+    agg_bouts = mc.aggression_bouts(d, p)
+    agg = mc.aggression_summary(agg_bouts)
+    breakdown = mc.behaviour_breakdown(d, p, courtship=cb, aggression=agg_bouts)
+    bouts_tbl = mc.bout_table(d, p, courtship=cb, aggression=agg_bouts)
 
-    # ---- courtship bouts per male ----
-    b1 = runs_over(court_M1, args.min_bout); b2 = runs_over(court_M2, args.min_bout)
-    bout_dur = lambda b: sum(e - s + 1 for s, e in b) / FPS
-
-    # ---- spawn attribution ----
-    w = slice(max(0, args.spawn_frame - args.min_bout), args.spawn_frame + args.min_bout)
-    sp_dFM1, sp_dFM2 = np.nanmedian(dFM1[w]), np.nanmedian(dFM2[w])
-    spawn_male = "M1" if sp_dFM1 <= sp_dFM2 else "M2"
-
-    # ---- male-male aggression bouts ----
-    agg_mask = (dMM < args.agg_mm) & (np.fmax(spdM1, spdM2) > args.agg_speed)
-    agg = runs_over(agg_mask, max(3, args.min_bout // 3))
-    init_M1 = sum(1 for s, e in agg if np.nanmean(spdM1[s:e + 1]) > np.nanmean(spdM2[s:e + 1]))
-
+    valid_f = assoc["valid_FM_frames"]
     lines = [f"# Per-male mate-choice analysis — {Path(args.track).name}", ""]
-    lines.append(f"Frames {n} ({n/FPS:.0f}s @ {FPS:.0f}fps); valid F-M frames {int(valid_f.sum())} "
-                 f"({valid_f.mean():.1%}).\n")
-    lines.append("## Female mate choice (association)")
-    lines.append(f"- Female within {args.court_mm:.0f} mm of **M1 {t1:.1f}s** vs **M2 {t2:.1f}s** "
-                 f"-> association index {assoc_index:.2f} ({'M1' if assoc_index>0.5 else 'M2'}-preferring).")
-    lines.append(f"- Of frames with a male in courtship range, female nearer **M1 {pref_M1/max(pref_M1+pref_M2,1):.1%}** "
-                 f"vs M2 {pref_M2/max(pref_M1+pref_M2,1):.1%}.")
-    lines.append(f"- Female closer to M1 overall: {np.nanmean(closer_M1.astype(float)):.1%} of valid frames.")
-    ratios = []
-    for thr in (30, 20, 12, 8):
-        a, b = np.nansum(dFM1 < thr) / FPS, np.nansum(dFM2 < thr) / FPS
-        ratios.append(f"<{thr}mm {max(a,b)/max(min(a,b),1e-6):.2f}x")
-    lines.append(f"- Preference SHARPENS toward contact ({' , '.join(ratios)} toward M1) — the stricter "
-                 f"(closer to an explicit display) the range, the stronger M1's dominance.")
-    lines.append(f"- Mean distance: d(F,M1) {np.nanmean(dFM1):.1f} mm, d(F,M2) {np.nanmean(dFM2):.1f} mm, "
-                 f"d(M1,M2) {np.nanmean(dMM):.1f} mm.\n")
-    lines.append("## Courtship bouts (sustained female proximity)")
-    lines.append(f"- M1: {len(b1)} bouts, {bout_dur(b1):.1f}s total. M2: {len(b2)} bouts, {bout_dur(b2):.1f}s total.\n")
-    lines.append("## Spawn (mate-choice outcome)")
-    lines.append(f"- At frame {args.spawn_frame} ({args.spawn_frame/FPS:.1f}s): median d(F,M1) {sp_dFM1:.1f} mm, "
-                 f"d(F,M2) {sp_dFM2:.1f} mm -> **female spawned with {spawn_male}** "
-                 f"({'contact' if min(sp_dFM1,sp_dFM2)<args.contact_mm else 'near'}).\n")
-    lines.append("## Male-male aggression")
-    lines.append(f"- {len(agg)} close+fast bouts (<{args.agg_mm:.0f} mm & >{args.agg_speed:.0f} mm/s); "
-                 f"M1 the faster (initiator) in {init_M1}/{max(len(agg),1)}.")
+    lines.append(f"Frames {n} ({n/FPS:.0f}s @ {FPS:.0f}fps); valid F-M frames {valid_f} "
+                 f"({valid_f/max(n,1):.1%}).\n")
 
-    # ---- optional BORIS cross-check ----
+    lines.append("## Female mate choice (association)")
+    lines.append(f"- Female within {p.court_mm:.0f} mm of **M1 {assoc['time_near_M1_s']:.1f}s** vs "
+                 f"**M2 {assoc['time_near_M2_s']:.1f}s** -> association index {assoc['association_index_M1']:.2f} "
+                 f"({assoc['preferred_male']}-preferring).")
+    tot_pref = max(assoc["pref_frames_M1"] + assoc["pref_frames_M2"], 1)
+    lines.append(f"- Of frames with a male in courtship range, female nearer "
+                 f"**M1 {assoc['pref_frames_M1']/tot_pref:.1%}** vs M2 {assoc['pref_frames_M2']/tot_pref:.1%}.")
+    lines.append(f"- Female closer to M1 overall: {assoc['closer_to_M1_frac']:.1%} of valid frames.")
+    sharp = assoc["sharpening_ratio_by_mm"]
+    lines.append(f"- Preference SHARPENS toward contact ("
+                 f"{' , '.join(f'<{k}mm {v:.2f}x' for k, v in sharp.items())} toward {assoc['preferred_male']}).")
+    lines.append(f"- Mean distance: d(F,M1) {assoc['mean_d_F_M1_mm']:.1f} mm, d(F,M2) {assoc['mean_d_F_M2_mm']:.1f} mm, "
+                 f"d(M1,M2) {assoc['mean_d_M1_M2_mm']:.1f} mm.\n")
+
+    lines.append("## Temporal dynamics (does the preference build or switch?)")
+    if "trend" in trend:
+        lines.append(f"- Per-bin (n={trend['n_bins_with_data']}) preference index goes from early "
+                     f"**{trend['early_pref_index_M1']:.2f}** to late **{trend['late_pref_index_M1']:.2f}** "
+                     f"(slope {trend['slope_per_bin']:+.3f}/bin) -> **{trend['trend']}** toward "
+                     f"{trend['overall_preferred_male']}.")
+        lines.append(f"- Early preference {'PREDICTS' if trend['early_predicts_choice'] else 'does NOT predict'} "
+                     f"the overall choice; {trend['n_switch_bins']} bin(s) favour the other male "
+                     f"({'no clean switch' if trend['n_switch_bins'] == 0 else 'a switch is present'}).\n")
+    else:
+        lines.append("- Insufficient in-range time to characterise the temporal trend.\n")
+
+    lines.append("## Courtship bouts (sustained female proximity)")
+    lines.append(f"- M1: {cb['M1']['n_bouts']} bouts, {cb['M1']['total_s']:.1f}s total. "
+                 f"M2: {cb['M2']['n_bouts']} bouts, {cb['M2']['total_s']:.1f}s total.\n")
+
+    lines.append("## Per-bout courtship-vs-aggression breakdown")
+    lines.append(f"- Courtship {breakdown['n_courtship_bouts']} bouts / {breakdown['courtship_total_s']:.1f}s "
+                 f"(M1 {breakdown['courtship_M1_s']:.1f}s, M2 {breakdown['courtship_M2_s']:.1f}s) vs "
+                 f"aggression {breakdown['n_aggression_bouts']} bouts / {breakdown['aggression_total_s']:.1f}s "
+                 f"-> courtship:aggression time {breakdown['courtship_to_aggression_ratio']}.\n")
+
+    if spawn is not None:
+        lines.append("## Spawn (mate-choice outcome)")
+        lines.append(f"- At frame {spawn['spawn_frame']} ({spawn['spawn_time_s']:.1f}s): median d(F,M1) "
+                     f"{spawn['median_d_F_M1_mm']:.1f} mm, d(F,M2) {spawn['median_d_F_M2_mm']:.1f} mm -> "
+                     f"**female spawned with {spawn['spawn_male']}** ({'contact' if spawn['contact'] else 'near'}).\n")
+
+    lines.append("## Male-male aggression")
+    lines.append(f"- {agg['n_bouts']} close+fast bouts (<{p.agg_mm:.0f} mm & >{p.agg_speed:.0f} mm/s), "
+                 f"{agg['total_s']:.1f}s total; M1 the faster (initiator) in "
+                 f"{agg['initiator_M1']}/{max(agg['n_bouts'],1)}.")
+
     boris_note = boris_cross_check(args.boris)
     if boris_note:
         lines += ["", "## BORIS ethogram cross-check"] + boris_note
 
     report = "\n".join(lines)
     (out / "mate_choice_report.md").write_text(report, encoding="utf-8")
-    pd.DataFrame({"frame": np.arange(n), "d_F_M1": dFM1, "d_F_M2": dFM2, "d_M1_M2": dMM,
-                  "court_M1": court_M1, "court_M2": court_M2}).to_csv(out / "mate_choice_per_frame.csv", index=False)
-    make_figure(dFM1, dFM2, court_M1, court_M2, args, out / "mate_choice.png")
+    pd.DataFrame({"frame": np.arange(n), "d_F_M1": d.dFM1, "d_F_M2": d.dFM2, "d_M1_M2": d.dMM,
+                  "court_M1": d.dFM1 < p.court_mm, "court_M2": d.dFM2 < p.court_mm}
+                 ).to_csv(out / "mate_choice_per_frame.csv", index=False)
+    temporal_tbl.to_csv(out / "mate_choice_temporal.csv", index=False)
+    bouts_tbl.to_csv(out / "mate_choice_bouts.csv", index=False)
+    make_figure(d, temporal_tbl, p, args.spawn_frame, out / "mate_choice.png")
     print(report)
-    print(f"\nwrote {out/'mate_choice_report.md'} and mate_choice.png")
+    print(f"\nwrote {out/'mate_choice_report.md'}, mate_choice.png, mate_choice_temporal.csv, mate_choice_bouts.csv")
 
 
-def make_figure(dFM1, dFM2, court_M1, court_M2, args, png):
+def make_figure(d: mc.Distances, temporal_tbl: pd.DataFrame, p: mc.BehaviourParams, spawn_frame, png):
     try:
         import matplotlib
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
     except Exception as exc:
         print(f"(figure skipped: {exc})"); return
-    n = len(dFM1); t = np.arange(n) / FPS
-    fig, ax = plt.subplots(2, 1, figsize=(14, 7), gridspec_kw=dict(height_ratios=[2, 1], hspace=0.25))
-    s = max(1, n // 4000)   # downsample for plotting
-    ax[0].plot(t[::s], dFM1[::s], lw=0.6, color="#1f77b4", label="d(F, M1)")
-    ax[0].plot(t[::s], dFM2[::s], lw=0.6, color="#d62728", label="d(F, M2)")
-    ax[0].axhline(args.court_mm, ls="--", color="gray", lw=0.8, label=f"courtship {args.court_mm:.0f} mm")
-    ax[0].axvline(args.spawn_frame / FPS, color="green", lw=1.2, label="spawn")
-    ax[0].set_ylabel("female-male distance (mm)"); ax[0].set_ylim(0, 200); ax[0].legend(loc="upper right", fontsize=8)
+    n = d.n; t = np.arange(n) / p.fps
+    fig, ax = plt.subplots(3, 1, figsize=(14, 9), gridspec_kw=dict(height_ratios=[2, 1, 1], hspace=0.35))
+    s = max(1, n // 4000)
+    ax[0].plot(t[::s], d.dFM1[::s], lw=0.6, color="#1f77b4", label="d(F, M1)")
+    ax[0].plot(t[::s], d.dFM2[::s], lw=0.6, color="#d62728", label="d(F, M2)")
+    ax[0].axhline(p.court_mm, ls="--", color="gray", lw=0.8, label=f"courtship {p.court_mm:.0f} mm")
+    if spawn_frame is not None and 0 <= spawn_frame < n:
+        ax[0].axvline(spawn_frame / p.fps, color="green", lw=1.2, label="spawn")
+    ax[0].set_ylabel("female-male distance (mm)"); ax[0].set_ylim(0, 200)
+    ax[0].legend(loc="upper right", fontsize=8)
     ax[0].set_title("Female-male distance over time (lower = associating)")
-    cum1 = np.nancumsum(np.nan_to_num(court_M1.astype(float))) / FPS
-    cum2 = np.nancumsum(np.nan_to_num(court_M2.astype(float))) / FPS
+
+    # `nan < court_mm` is already False, so the mask has no NaN -> plain cumsum (a missing
+    # frame counts as 'not in range', i.e. 0, which is the intended cumulative-time semantics).
+    cum1 = np.cumsum((d.dFM1 < p.court_mm).astype(float)) / p.fps
+    cum2 = np.cumsum((d.dFM2 < p.court_mm).astype(float)) / p.fps
     ax[1].plot(t[::s], cum1[::s], color="#1f77b4", label="M1")
     ax[1].plot(t[::s], cum2[::s], color="#d62728", label="M2")
-    ax[1].axvline(args.spawn_frame / FPS, color="green", lw=1.2)
-    ax[1].set_xlabel("time (s)"); ax[1].set_ylabel("cumulative\ncourtship time (s)")
-    ax[1].legend(loc="upper left", fontsize=8); ax[1].set_title("Cumulative time within courtship range of the female")
+    if spawn_frame is not None and 0 <= spawn_frame < n:
+        ax[1].axvline(spawn_frame / p.fps, color="green", lw=1.2)
+    ax[1].set_ylabel("cumulative\ncourtship time (s)"); ax[1].legend(loc="upper left", fontsize=8)
+    ax[1].set_title("Cumulative time within courtship range of the female")
+
+    # temporal preference trajectory (build vs switch)
+    tt = temporal_tbl.dropna(subset=["pref_index_M1"])
+    if len(tt):
+        bx = (tt["frame_lo"] + tt["frame_hi"]) / 2 / p.fps
+        ax[2].plot(bx, tt["pref_index_M1"], "-o", color="#6a3d9a", ms=4)
+        ax[2].axhline(0.5, ls="--", color="gray", lw=0.8)
+        ax[2].fill_between(bx, 0.5, tt["pref_index_M1"], where=tt["pref_index_M1"] >= 0.5,
+                           color="#1f77b4", alpha=0.25)
+        ax[2].fill_between(bx, 0.5, tt["pref_index_M1"], where=tt["pref_index_M1"] < 0.5,
+                           color="#d62728", alpha=0.25)
+    if spawn_frame is not None and 0 <= spawn_frame < n:
+        ax[2].axvline(spawn_frame / p.fps, color="green", lw=1.2)
+    ax[2].set_ylim(0, 1); ax[2].set_xlabel("time (s)"); ax[2].set_ylabel("pref index\n(M1 share)")
+    ax[2].set_title("Temporal preference: >0.5 favours M1 (blue), <0.5 favours M2 (red)")
     fig.savefig(png, dpi=110, bbox_inches="tight"); plt.close(fig)
 
 
