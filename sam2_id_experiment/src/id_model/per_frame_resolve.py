@@ -330,6 +330,66 @@ def dense_label_and_conf(track: pd.DataFrame, n_frames: int,
     return label_fs, conf
 
 
+_ID_CODE = {"F": 0, "M1": 1, "M2": 2}
+_ID_NAME = np.array(["F", "M1", "M2"], dtype=object)
+
+
+def debounce_teleport_swaps(id_at_slot, pos_at_slot, jump_mm: float = 60.0, max_flicker: int = 166):
+    """Revert physically-impossible brief id swaps in a resolved 3-fish track (motion continuity).
+
+    A correct ``id_final`` follows each physical fish, so its 3D position is continuous. A "teleport"
+    -- a fish's position jumping > ``jump_mm`` in a single frame (e.g. 200 mm at 166 fps = 33 m/s) --
+    only happens when two ids are confidently assigned to the WRONG geometry slots at a near-crossing.
+    This finds short runs (<= ``max_flicker`` frames) where the per-frame slot->id permutation deviates
+    from a value it both LEAVES and RETURNS to (a flicker) AND the deviation caused a teleport, and
+    reverts them to the bracketing permutation. Sustained (non-reverting) swaps are left untouched.
+
+    ``id_at_slot``: (n_frames, 3) int id code (0=F,1=M1,2=M2) per (frame, geometry_slot) -- assumed a
+    full permutation each frame (the track has exactly 1F+1M1+1M2/frame). ``pos_at_slot``:
+    (n_frames, 3, 3) xyz per (frame, slot), NaN where a slot has no finite 3D position. Returns the
+    corrected (n_frames, 3) ``id_at_slot`` and the list of reverted ``(start, end)`` spans (inclusive).
+    """
+    id_at_slot = np.asarray(id_at_slot, dtype=int)
+    pos_at_slot = np.asarray(pos_at_slot, dtype=float)
+    n = id_at_slot.shape[0]
+    pos_by_id = np.full((n, 3, 3), np.nan)            # position of each id per frame
+    rows = np.arange(n)
+    for c in range(3):
+        slot_c = np.argmax(id_at_slot == c, axis=1)
+        pos_by_id[:, c, :] = pos_at_slot[rows, slot_c, :]
+    perm = id_at_slot[:, 0] * 9 + id_at_slot[:, 1] * 3 + id_at_slot[:, 2]
+    bnd = np.r_[0, np.where(np.diff(perm) != 0)[0] + 1, n]   # run boundaries [bnd[i], bnd[i+1])
+    out = id_at_slot.copy()
+    reverted = []
+    for i in range(1, len(bnd) - 2):
+        s, e = int(bnd[i]), int(bnd[i + 1])
+        if perm[bnd[i - 1]] != perm[e] or (e - s) > max_flicker or s == 0:
+            continue                                  # not bracketed by the same perm / too long
+        jumps = np.linalg.norm(pos_by_id[s] - pos_by_id[s - 1], axis=1)
+        if not (np.nanmax(jumps) > jump_mm):          # entry was continuous -> a real change, keep
+            continue
+        out[s:e] = id_at_slot[bnd[i - 1]]             # revert to the bracketing permutation
+        reverted.append((s, e - 1))
+    return out, reverted
+
+
+def debounce_track_teleports(track, n_frames: int, id_col: str = "id_final",
+                             jump_mm: float = 60.0, max_flicker: int = 166):
+    """Apply :func:`debounce_teleport_swaps` to an individual-ID track DataFrame (cols ``frame``,
+    ``geometry_slot``, ``id_col``, ``X``, ``Y``, ``Z``). Returns ``(new_id_per_row, reverted_spans)``
+    where ``new_id_per_row`` is row-aligned to ``track`` (the corrected F/M1/M2 label)."""
+    fr = track.frame.to_numpy().astype(int)
+    sl = track.geometry_slot.to_numpy().astype(int)
+    id_at_slot = np.full((n_frames, 3), -1, dtype=int)
+    id_at_slot[fr, sl] = track[id_col].map(_ID_CODE).to_numpy()
+    pos_at_slot = np.full((n_frames, 3, 3), np.nan)
+    pos_at_slot[fr, sl, 0] = track.X.to_numpy()
+    pos_at_slot[fr, sl, 1] = track.Y.to_numpy()
+    pos_at_slot[fr, sl, 2] = track.Z.to_numpy()
+    corrected, reverted = debounce_teleport_swaps(id_at_slot, pos_at_slot, jump_mm, max_flicker)
+    return _ID_NAME[corrected[fr, sl]], reverted
+
+
 # --------------------------------------------------------------------------- #
 # Inference loop (I/O; produces the per-frame probability tables)             #
 # --------------------------------------------------------------------------- #

@@ -192,3 +192,46 @@ def test_appearance_swap_uncertain_when_no_confident_neighbour():
     conf[:] = "low"                                   # nothing confident nearby
     v, b, a = pfr.appearance_swap_across_event(0, 1, start=9, end=10, label_fs=label_fs, conf=conf)
     assert v == "uncertain" and b is None and a is None
+
+
+def test_debounce_reverts_teleport_flicker_not_sustained():
+    # 3 fish at slot x-positions 10/100/200 (well separated). Normal perm = [F,M1,M2] at slots 0/1/2.
+    n = 200
+    ids = np.tile([0, 1, 2], (n, 1))
+    pos = np.zeros((n, 3, 3))
+    pos[:, 0, 0] = 10.0; pos[:, 1, 0] = 100.0; pos[:, 2, 0] = 200.0
+    ids[50:60] = [1, 0, 2]            # brief flicker: F<->M1 swap (90 mm teleport), reverts at 60
+    ids[100:150] = [1, 0, 2]          # sustained swap, then a DIFFERENT perm follows -> not a flicker
+    ids[150:200] = [2, 1, 0]
+    out, rev = pfr.debounce_teleport_swaps(ids, pos)
+    assert (out[50:60] == [0, 1, 2]).all()           # flicker reverted to the bracketing perm
+    assert (50, 59) in rev
+    assert (out[100:150] == [1, 0, 2]).all()          # sustained (bracket differs) left untouched
+    assert (out[150:200] == [2, 1, 0]).all()
+
+
+def test_debounce_keeps_continuous_change_no_teleport():
+    # a perm change with NO teleport (fish positions continuous) must NOT be reverted
+    n = 100
+    ids = np.tile([0, 1, 2], (n, 1))
+    pos = np.zeros((n, 3, 3))
+    pos[:, 0, 0] = 10.0; pos[:, 1, 0] = 12.0; pos[:, 2, 0] = 200.0   # slots 0,1 only 2 mm apart
+    ids[40:50] = [1, 0, 2]            # swap F<->M1 but their positions differ by 2 mm (no teleport)
+    out, rev = pfr.debounce_teleport_swaps(ids, pos, jump_mm=60.0)
+    assert (out[40:50] == [1, 0, 2]).all() and not rev
+
+
+def test_debounce_track_wrapper_relabels_rows():
+    n = 120
+    xs = {0: 10.0, 1: 100.0, 2: 200.0}
+    rows = []
+    for f in range(n):
+        perm = [1, 0, 2] if 40 <= f < 50 else [0, 1, 2]   # flicker in [40,50)
+        for slot in range(3):
+            rows.append(dict(frame=f, geometry_slot=slot, id_final=["F", "M1", "M2"][perm[slot]],
+                             X=xs[slot], Y=0.0, Z=0.0))
+    df = pd.DataFrame(rows)
+    new_id, rev = pfr.debounce_track_teleports(df, n)
+    df = df.assign(fixed=new_id)
+    s0 = df[(df.geometry_slot == 0) & (df.frame >= 40) & (df.frame < 50)]
+    assert (s0.fixed == "F").all() and bool(rev)       # slot 0 restored to F across the flicker
