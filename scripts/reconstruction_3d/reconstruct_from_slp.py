@@ -167,7 +167,9 @@ def run_reconstruction_from_slp(
     )
     if fill_missing and points_by_frame:
         all_frames = sorted(points_by_frame.keys())
-        dfs_3d = ensure_all_frames_and_fill_spline(dfs_3d, all_frames)
+        # Respect the linker's gap policy: never bridge a gap the linker itself gave up
+        # on (prevents a transient detection from anchoring a long phantom interpolation).
+        dfs_3d = ensure_all_frames_and_fill_spline(dfs_3d, all_frames, max_gap_frames=max_gap_frames)
     csv_path = dfs_to_single_csv(dfs_3d, set_key=tag, output_dir=str(output_dir))
 
     png_path = None

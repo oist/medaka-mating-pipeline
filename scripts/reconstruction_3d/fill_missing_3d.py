@@ -72,10 +72,20 @@ def best_by_frame_to_dfs(
 def ensure_all_frames_and_fill_spline(
     dfs_3d: Dict[str, pd.DataFrame],
     all_frames: List[int],
+    max_gap_frames: int | None = None,
 ) -> Dict[str, pd.DataFrame]:
     """
     Expand each trajectory to `all_frames` and linearly interpolate internal
     gaps. Frames outside the observed range remain `NaN`.
+
+    `max_gap_frames`: do NOT interpolate across a gap longer than this many frames
+    between consecutive *observed* points — those frames stay `NaN` (a transient
+    detection then a long silence must not be bridged to the next, unrelated
+    detection — the cause of the entry-phantom artifact). `None` = no cap (legacy).
+
+    Every output frame carries an `is_interpolated` flag (True only where a value was
+    filled, i.e. finite-after-fill and not an originally-observed frame), so downstream
+    ID estimation can tell real geometry from interpolated and weight it accordingly.
     """
     if not all_frames:
         return dfs_3d
@@ -86,12 +96,15 @@ def ensure_all_frames_and_fill_spline(
         if df.empty:
             result[lb] = pd.DataFrame({
                 "frame": all_frames,
-                "X": np.nan, "Y": np.nan, "Z": np.nan,
+                "X": np.nan, "Y": np.nan, "Z": np.nan, "is_interpolated": False,
             })
             result[lb] = result[lb].sort_values("frame").reset_index(drop=True)
             continue
         if len(df) < 2:
-            result[lb] = df.copy()
+            out = df.copy()
+            if "is_interpolated" not in out.columns:
+                out["is_interpolated"] = False
+            result[lb] = out
             continue
         frames = df["frame"].values.astype(float)
         xyz = df[["X", "Y", "Z"]].values
@@ -102,7 +115,10 @@ def ensure_all_frames_and_fill_spline(
         frames = frames[sort_idx]
         xyz = xyz[sort_idx]
         if len(frames) < 2:
-            result[lb] = df.copy()
+            out = df.copy()
+            if "is_interpolated" not in out.columns:
+                out["is_interpolated"] = False
+            result[lb] = out
             continue
         f_min, f_max = float(frames.min()), float(frames.max())
         # Interpolate only inside the observed frame range.
@@ -110,12 +126,24 @@ def ensure_all_frames_and_fill_spline(
         interp_y = np.interp(all_frames_arr, frames, xyz[:, 1])
         interp_z = np.interp(all_frames_arr, frames, xyz[:, 2])
         out_of_range = (all_frames_arr < f_min) | (all_frames_arr > f_max)
-        interp_x = np.where(out_of_range, np.nan, interp_x)
-        interp_y = np.where(out_of_range, np.nan, interp_y)
-        interp_z = np.where(out_of_range, np.nan, interp_z)
+        observed = np.isin(all_frames_arr, frames)
+        # Frames sitting inside a gap longer than the cap are left NaN, not bridged.
+        in_big_gap = np.zeros(len(all_frames_arr), dtype=bool)
+        if max_gap_frames is not None:
+            li = np.clip(np.searchsorted(frames, all_frames_arr, side="right") - 1, 0, len(frames) - 1)
+            left = frames[li]
+            right = frames[np.clip(li + 1, 0, len(frames) - 1)]
+            gap = right - left
+            in_big_gap = (~observed) & (~out_of_range) & (gap > max_gap_frames)
+        nan_mask = out_of_range | in_big_gap
+        interp_x = np.where(nan_mask, np.nan, interp_x)
+        interp_y = np.where(nan_mask, np.nan, interp_y)
+        interp_z = np.where(nan_mask, np.nan, interp_z)
+        is_interp = (~observed) & (~nan_mask)
         out_df = pd.DataFrame({
             "frame": all_frames,
             "X": interp_x, "Y": interp_y, "Z": interp_z,
+            "is_interpolated": is_interp,
         })
         # Clip finite values to zero or above while preserving NaNs.
         for col in ["X", "Y", "Z"]:
@@ -137,17 +165,21 @@ def dfs_to_single_csv(
     for fish_id, df in dfs_3d.items():
         if df.empty:
             continue
+        has_interp = "is_interpolated" in df.columns
         for _, r in df.iterrows():
             x, y, z = float(r["X"]), float(r["Y"]), float(r["Z"])
             if ensure_non_negative and np.isfinite(x) and np.isfinite(y) and np.isfinite(z):
                 x, y, z = max(0, x), max(0, y), max(0, z)
-            rows.append({
+            row = {
                 "frame": int(r["frame"]),
                 "fish_id": fish_id,
                 "X": x,
                 "Y": y,
                 "Z": z,
-            })
+            }
+            if has_interp:
+                row["is_interpolated"] = bool(r["is_interpolated"])
+            rows.append(row)
     out_df = pd.DataFrame(rows)
     if out_df.empty:
         out_path = Path(output_dir) / f"{set_key}_3d.csv"

@@ -15,6 +15,7 @@ descending confidence score, and shortfalls are padded with NaN so the
 downstream permutation enumeration always has N candidates per view.
 """
 
+from itertools import combinations
 from pathlib import Path
 from typing import Dict, List, Tuple
 
@@ -22,6 +23,69 @@ import numpy as np
 
 
 VIEW_TO_CAM = {"top_cam": "cam0", "side1_cam": "cam1", "side2_cam": "cam2"}
+
+
+def _body_span(pts: np.ndarray) -> float:
+    """Max pairwise distance among an instance's finite nodes (its 2D body extent)."""
+    finite = pts[np.isfinite(pts).all(axis=1)]
+    if len(finite) < 2:
+        return 0.0
+    return max(float(np.hypot(*(a - b))) for a, b in combinations(finite, 2))
+
+
+def _pair_overlap(pa: np.ndarray, pb: np.ndarray) -> float:
+    """Min over {aligned, flipped} of the worst node-to-node distance between two
+    instances. Small (<~dup_dist) => the two instances are the SAME detection (a
+    duplicate, possibly with mouth/tail swapped), not two distinct fish.
+
+    Requires >=2 nodes finite in BOTH instances: a single shared keypoint is too weak
+    to declare a duplicate (two real fish can have one node near each other)."""
+    ok = np.isfinite(pa).all(axis=1) & np.isfinite(pb).all(axis=1)
+    if ok.sum() < 2:
+        return np.inf
+    a, b = pa[ok], pb[ok]
+    aligned = float(np.max(np.hypot(a[:, 0] - b[:, 0], a[:, 1] - b[:, 1])))
+    rb = b[::-1]
+    flipped = float(np.max(np.hypot(a[:, 0] - rb[:, 0], a[:, 1] - rb[:, 1])))
+    return min(aligned, flipped)
+
+
+def _drop_fp_instances(insts, *, min_span_px: float, dup_dist_px: float):
+    """Geometric false-positive rejection at ingestion (before any 3D use):
+
+    1. **Collapsed** — an instance with >=2 finite nodes whose body span < ``min_span_px``
+       (mouth and tail on nearly the same pixel, e.g. a duplicate landed on a real fish's
+       tail) is dropped *when a full-length instance also exists in the frame* (so a
+       genuinely head-on lone fish is preserved). A **single-node** instance (only mouth
+       OR only tail) is a real partial detection, NOT collapsed — it is kept.
+    2. **Duplicate / flipped** — for a pair with ``_pair_overlap`` < ``dup_dist_px``
+       (both endpoints nearly coincident in either orientation = the same fish twice),
+       drop the lower-score member.
+
+    Two *distinct* fish cannot have both endpoints coincide, so this never culls a real
+    second fish (validated against the K_1_2 instance-pair geometry)."""
+    def _score(inst):
+        s = getattr(inst, "score", None)
+        return float(s) if s is not None else np.nan
+    items = [(inst, inst.numpy(), _score(inst)) for inst in insts]
+    n = len(items)
+    if n <= 1:
+        return [it[0] for it in items]
+    spans = [_body_span(p) for _, p, _ in items]
+    n_finite = [int(np.isfinite(p).all(axis=1).sum()) for _, p, _ in items]
+    drop = [False] * n
+    if any(s >= min_span_px for s in spans):           # 1) collapsed extras (>=2 finite nodes only)
+        for i in range(n):
+            if n_finite[i] >= 2 and spans[i] < min_span_px:
+                drop[i] = True
+    for i in range(n):                                  # 2) duplicate / flipped
+        for j in range(i + 1, n):
+            if drop[i] or drop[j]:
+                continue
+            if _pair_overlap(items[i][1], items[j][1]) < dup_dist_px:
+                lo = i if items[i][2] <= items[j][2] else j
+                drop[lo] = True
+    return [items[k][0] for k in range(n) if not drop[k]]
 
 
 def _instance_point(
@@ -53,6 +117,9 @@ def load_points_by_frame(
     start_frame: int | None = None,
     end_frame: int | None = None,
     anchor_node: str | None = None,
+    filter_fp: bool = True,
+    min_span_px: float = 15.0,
+    dup_dist_px: float = 12.0,
 ) -> Dict[int, Dict[str, List[Tuple[float, float]]]]:
     """
     Parameters
@@ -106,8 +173,11 @@ def load_points_by_frame(
                 continue
             if end_frame is not None and fi > end_frame:
                 continue
+            insts = list(f.instances)
+            if filter_fp:
+                insts = _drop_fp_instances(insts, min_span_px=min_span_px, dup_dist_px=dup_dist_px)
             pts: list[tuple[float, float, float]] = []
-            for inst in f.instances:
+            for inst in insts:
                 x, y, score = _instance_point(
                     inst,
                     node_names=node_names,
