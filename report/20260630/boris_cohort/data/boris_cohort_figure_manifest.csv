@@ -1,0 +1,8 @@
+id,title,message,data
+B1,BORIS cohort scope,Manual ethogram coverage across the 23 user-provided observation CSVs.,boris_cohort_key_metrics.json
+B2,Ethogram time by experiment,"Courtship, competition and mating intensity vary strongly by trial.",boris_cohort_experiment_summary.csv
+B3,Behavior repertoire,The most time-consuming manually coded states are the strongest candidates for poster biology panels.,boris_cohort_behavior_summary.csv
+B4,Male-to-female asymmetry,"BORIS m1tf/m2tf labels provide an independent, manual asymmetry check for the individual-ID tracking results.",boris_cohort_experiment_summary.csv
+B5,Courtship versus male-male competition,Manual ethograms separate mate-choice-relevant female-directed behavior from competitive male-male behavior.,boris_cohort_experiment_summary.csv
+B6,Mating endpoints and wrap duration,Spawn and wrap annotations identify the behavioral endpoint and separate accepted from rejected wrap bouts.,boris_cohort_experiment_summary.csv; boris_cohort_events.csv
+B7,Timing of readiness and spawning,Ready and Spawn point events show where each manual observation places the decision window.,boris_cohort_experiment_summary.csv

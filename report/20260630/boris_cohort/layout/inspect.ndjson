@@ -1,0 +1,108 @@
+{"kind":"layout","layoutId":"6a587c9e-2ad6-4747-a64a-7ea11e927af2","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"ab007d6d-3511-4daf-91bc-6207ff21bc32","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/e7v0la","slide":1,"title":"Medaka BORIS cohort","textShapes":12}
+{"kind":"textbox","id":"sh/twra5gbq","slide":1,"textChars":19,"textLines":1}
+{"kind":"textbox","id":"sh/m58z25kb","slide":1,"textChars":54,"textLines":1}
+{"kind":"shape","id":"sh/bq1oryts","slide":1,"bbox":[52,260,1176,1.5]}
+{"kind":"textbox","id":"sh/4nap4r65","slide":1,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/t83itgfm","slide":1,"textChars":36,"textLines":1}
+{"kind":"textbox","id":"sh/mhk3q5o7","slide":1,"textChars":3,"textLines":1}
+{"kind":"textbox","id":"sh/b2hwfyxo","slide":1,"textChars":50,"textLines":1}
+{"kind":"textbox","id":"sh/4vmtwra5","slide":1,"textChars":2,"textLines":1}
+{"kind":"textbox","id":"sh/tgfmlkjm","slide":1,"textChars":42,"textLines":1}
+{"kind":"textbox","id":"sh/xc3ylc7u","slide":1,"textChars":3,"textLines":1}
+{"kind":"textbox","id":"sh/4r65wjud","slide":1,"textChars":32,"textLines":1}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":1,"textChars":101,"textLines":1}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":1,"textChars":92,"textLines":1}
+{"kind":"slide","id":"sl/rg1zd1","slide":2,"title":"B1 · Cohort Scope","textShapes":16}
+{"kind":"textbox","id":"sh/vy90je9c","slide":2,"textChars":17,"textLines":1}
+{"kind":"textbox","id":"sh/oj2t83it","slide":2,"textChars":40,"textLines":1}
+{"kind":"textbox","id":"sh/d4vmtwra","slide":2,"textChars":1,"textLines":1}
+{"kind":"shape","id":"sh/61032lsz","slide":2,"bbox":[52,146,1176,1.5]}
+{"kind":"shape","id":"sh/vmtwra5g","slide":2,"bbox":[52,174,250,170]}
+{"kind":"textbox","id":"sh/o7qpg3ex","slide":2,"textChars":8,"textLines":1}
+{"kind":"textbox","id":"sh/dsji5sne","slide":2,"textChars":9,"textLines":1}
+{"kind":"shape","id":"sh/6tovahoz","slide":2,"bbox":[344,174,250,170]}
+{"kind":"textbox","id":"sh/vahoza1g","slide":2,"textChars":8,"textLines":1}
+{"kind":"textbox","id":"sh/7qpg3ex0","slide":2,"textChars":11,"textLines":1}
+{"kind":"shape","id":"sh/i5sneloj","slide":2,"bbox":[636,174,250,170]}
+{"kind":"textbox","id":"sh/pwb2hwfy","slide":2,"textChars":8,"textLines":1}
+{"kind":"textbox","id":"sh/0bi9s36h","slide":2,"textChars":6,"textLines":1}
+{"kind":"shape","id":"sh/7y1kre1w","slide":2,"bbox":[928,174,250,170]}
+{"kind":"textbox","id":"sh/ed8v6psf","slide":2,"textChars":7,"textLines":1}
+{"kind":"textbox","id":"sh/p4r65wju","slide":2,"textChars":23,"textLines":1}
+{"kind":"shape","id":"sh/wjudg7ad","slide":2,"bbox":[52,392,552,224]}
+{"kind":"textbox","id":"sh/72x4nap4","slide":2,"textChars":35,"textLines":1}
+{"kind":"textbox","id":"sh/ih4byhgn","slide":2,"textChars":222,"textLines":5}
+{"kind":"shape","id":"sh/mtwra5gb","slide":2,"bbox":[680,392,540,224]}
+{"kind":"textbox","id":"sh/fepkzupw","slide":2,"textChars":26,"textLines":1}
+{"kind":"textbox","id":"sh/4zidonyd","slide":2,"textChars":196,"textLines":1}
+{"kind":"textbox","id":"sh/xkf6dcbu","slide":2,"textChars":108,"textLines":1}
+{"kind":"slide","id":"sl/9ax06o","slide":3,"title":"B2 · Experiment-Level Ethograms","textShapes":6}
+{"kind":"textbox","id":"sh/tovahoza","slide":3,"textChars":31,"textLines":1}
+{"kind":"textbox","id":"sh/ixczed8v","slide":3,"textChars":37,"textLines":1}
+{"kind":"textbox","id":"sh/bi9s36hc","slide":3,"textChars":1,"textLines":1}
+{"kind":"shape","id":"sh/0fepkzup","slide":3,"bbox":[52,146,1176,1.5]}
+{"kind":"shape","id":"sh/i9s36hcr","slide":3,"bbox":[780,178,440,416]}
+{"kind":"textbox","id":"sh/bulwval8","slide":3,"textChars":31,"textLines":1}
+{"kind":"textbox","id":"sh/0je9cvix","slide":3,"textChars":223,"textLines":1}
+{"kind":"textbox","id":"sh/t47y1kre","slide":3,"textChars":54,"textLines":1}
+{"kind":"chart","id":"ch/xczed8v6","slide":3,"name":"","chartType":"bar","bbox":[56,166,680,440]}
+{"kind":"slide","id":"sl/wgyc8w","slide":4,"title":"B3 · Behavior Repertoire","textShapes":6}
+{"kind":"textbox","id":"sh/7ed8bat4","slide":4,"textChars":24,"textLines":1}
+{"kind":"textbox","id":"sh/0z61032l","slide":4,"textChars":45,"textLines":1}
+{"kind":"textbox","id":"sh/pkzupwb2","slide":4,"textChars":1,"textLines":1}
+{"kind":"shape","id":"sh/ih4byhgn","slide":4,"bbox":[52,146,1176,1.5]}
+{"kind":"shape","id":"sh/0nuxc3yl","slide":4,"bbox":[780,178,440,416]}
+{"kind":"textbox","id":"sh/p8nqxs72","slide":4,"textChars":42,"textLines":1}
+{"kind":"textbox","id":"sh/ed8v6psf","slide":4,"textChars":252,"textLines":7}
+{"kind":"textbox","id":"sh/7y1kre1w","slide":4,"textChars":52,"textLines":1}
+{"kind":"chart","id":"ch/fil0rqd4","slide":4,"name":"","chartType":"bar","bbox":[72,160,690,464]}
+{"kind":"slide","id":"sl/fydy7b","slide":5,"title":"B4 · Manual Male-To-Female Asymmetry","textShapes":6}
+{"kind":"textbox","id":"sh/fil0rqd4","slide":5,"textChars":36,"textLines":1}
+{"kind":"textbox","id":"sh/83itgfml","slide":5,"textChars":38,"textLines":1}
+{"kind":"textbox","id":"sh/xobm58z2","slide":5,"textChars":1,"textLines":1}
+{"kind":"shape","id":"sh/m94fu18j","slide":5,"bbox":[52,146,1176,1.5]}
+{"kind":"shape","id":"sh/4fu18jqh","slide":5,"bbox":[780,178,440,416]}
+{"kind":"textbox","id":"sh/x0nuxc3y","slide":5,"textChars":34,"textLines":1}
+{"kind":"textbox","id":"sh/mlkjm1cf","slide":5,"textChars":313,"textLines":7}
+{"kind":"textbox","id":"sh/f6dcbulw","slide":5,"textChars":54,"textLines":1}
+{"kind":"chart","id":"ch/z61032ls","slide":5,"name":"","chartType":"bar","bbox":[58,166,688,430]}
+{"kind":"slide","id":"sl/u20i5w","slide":6,"title":"B5 · Courtship Versus Competition","textShapes":6}
+{"kind":"textbox","id":"sh/mhk3q5o7","slide":6,"textChars":33,"textLines":1}
+{"kind":"textbox","id":"sh/t83itgfm","slide":6,"textChars":48,"textLines":1}
+{"kind":"textbox","id":"sh/4nap4r65","slide":6,"textChars":1,"textLines":1}
+{"kind":"shape","id":"sh/bq1oryts","slide":6,"bbox":[52,146,1176,1.5]}
+{"kind":"shape","id":"sh/twra5gbq","slide":6,"bbox":[780,178,440,416]}
+{"kind":"textbox","id":"sh/4byhgn29","slide":6,"textChars":34,"textLines":1}
+{"kind":"textbox","id":"sh/bm58z25k","slide":6,"textChars":195,"textLines":1}
+{"kind":"textbox","id":"sh/m1cfa9w3","slide":6,"textChars":54,"textLines":1}
+{"kind":"chart","id":"ch/epkzupwb","slide":6,"name":"","chartType":"bar","bbox":[58,166,688,430]}
+{"kind":"slide","id":"sl/00boog","slide":7,"title":"B6 · Mating Endpoints","textShapes":6}
+{"kind":"textbox","id":"sh/hwfyxobm","slide":7,"textChars":21,"textLines":1}
+{"kind":"textbox","id":"sh/65wjudg7","slide":7,"textChars":57,"textLines":1}
+{"kind":"textbox","id":"sh/zqtcj6to","slide":7,"textChars":1,"textLines":1}
+{"kind":"shape","id":"sh/oza1gvy9","slide":7,"bbox":[52,146,1176,1.5]}
+{"kind":"shape","id":"sh/6xkf6dcb","slide":7,"bbox":[780,178,440,416]}
+{"kind":"textbox","id":"sh/zed8v6ps","slide":7,"textChars":51,"textLines":1}
+{"kind":"textbox","id":"sh/orytsvu9","slide":7,"textChars":151,"textLines":1}
+{"kind":"textbox","id":"sh/hcrmhk3q","slide":7,"textChars":82,"textLines":1}
+{"kind":"table","id":"tb/cbulwval","slide":7,"name":"","rows":13,"cols":5,"preview":"Experiment | Spawn (s) | Wraps | Accepted | Rejected","bbox":[62,176,680,382]}
+{"kind":"slide","id":"sl/jqyo7c","slide":8,"title":"B7 · Timing","textShapes":6}
+{"kind":"textbox","id":"sh/rytsvu9k","slide":8,"textChars":11,"textLines":1}
+{"kind":"textbox","id":"sh/gfmlkjm1","slide":8,"textChars":55,"textLines":1}
+{"kind":"textbox","id":"sh/90je9cvi","slide":8,"textChars":1,"textLines":1}
+{"kind":"shape","id":"sh/y1kre1w7","slide":8,"bbox":[52,146,1176,1.5]}
+{"kind":"shape","id":"sh/g7adsji5","slide":8,"bbox":[780,178,440,416]}
+{"kind":"textbox","id":"sh/9s36hcrm","slide":8,"textChars":42,"textLines":1}
+{"kind":"textbox","id":"sh/yxobm58z","slide":8,"textChars":186,"textLines":1}
+{"kind":"textbox","id":"sh/nih4byhg","slide":8,"textChars":54,"textLines":1}
+{"kind":"chart","id":"ch/3m94fu18","slide":8,"name":"","chartType":"bar","bbox":[58,166,688,430]}
+{"kind":"slide","id":"sl/gu96p5","slide":9,"title":"Selection Guide","textShapes":4}
+{"kind":"textbox","id":"sh/6xkf6dcb","slide":9,"textChars":15,"textLines":1}
+{"kind":"textbox","id":"sh/hk3q5o7q","slide":9,"textChars":55,"textLines":1}
+{"kind":"textbox","id":"sh/oza1gvy9","slide":9,"textChars":1,"textLines":1}
+{"kind":"shape","id":"sh/zqtcj6to","slide":9,"bbox":[52,146,1176,1.5]}
+{"kind":"textbox","id":"sh/hwfyxobm","slide":9,"textChars":55,"textLines":1}
+{"kind":"table","id":"tb/zupwb2hw","slide":9,"name":"","rows":6,"cols":3,"preview":"Need | Use from this deck | Pair with main poster kit","bbox":[70,176,1110,382]}
+{"kind":"notice","message":"Truncated: omitted 0 lines. Increase maxChars or narrow target."}

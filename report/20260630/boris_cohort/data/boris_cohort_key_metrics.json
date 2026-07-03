@@ -1,0 +1,185 @@
+{
+  "input_file_count": 23,
+  "parsed_file_count": 23,
+  "missing_files": [],
+  "raw_rows": 1793,
+  "parsed_events": 926,
+  "state_events": 867,
+  "point_events": 59,
+  "date_range": [
+    "20251220",
+    "20260112"
+  ],
+  "experiments_with_spawn": 15,
+  "total_observation_min": 645.3881500000001,
+  "total_courtship_min": 13.324866666666681,
+  "total_competitive_min": 19.9903,
+  "total_mating_min": 12.051349999999994,
+  "top_behaviors_by_duration": [
+    {
+      "category": "Competitive",
+      "behavior": "Display",
+      "total_s": 972.9390000000004,
+      "events": 156,
+      "experiments": 14
+    },
+    {
+      "category": "Mating",
+      "behavior": "Wrap",
+      "total_s": 723.0809999999997,
+      "events": 49,
+      "experiments": 16
+    },
+    {
+      "category": "Courtship",
+      "behavior": "Courtship",
+      "total_s": 589.8560000000011,
+      "events": 365,
+      "experiments": 19
+    },
+    {
+      "category": "Courtship",
+      "behavior": "Approach",
+      "total_s": 207.00299999999996,
+      "events": 16,
+      "experiments": 3
+    },
+    {
+      "category": "Competitive",
+      "behavior": "Chase",
+      "total_s": 161.7649999999997,
+      "events": 69,
+      "experiments": 12
+    },
+    {
+      "category": "Other",
+      "behavior": "Sneak",
+      "total_s": 91.80999999999995,
+      "events": 18,
+      "experiments": 9
+    },
+    {
+      "category": "Competitive",
+      "behavior": "Parallel Circling",
+      "total_s": 40.007999999999925,
+      "events": 24,
+      "experiments": 10
+    },
+    {
+      "category": "Competitive",
+      "behavior": "Dash",
+      "total_s": 24.706000000000074,
+      "events": 160,
+      "experiments": 18
+    },
+    {
+      "category": "Courtship",
+      "behavior": "Touch",
+      "total_s": 2.632999999999754,
+      "events": 10,
+      "experiments": 7
+    },
+    {
+      "category": "Other",
+      "behavior": "Ready",
+      "total_s": 0.0,
+      "events": 23,
+      "experiments": 23
+    },
+    {
+      "category": "Other",
+      "behavior": "Jerk",
+      "total_s": 0.0,
+      "events": 21,
+      "experiments": 8
+    },
+    {
+      "category": "Mating",
+      "behavior": "Spawn",
+      "total_s": 0.0,
+      "events": 15,
+      "experiments": 15
+    }
+  ],
+  "wrap_accepted_n": 23,
+  "wrap_rejected_n": 26,
+  "wrap_accepted_median_s": 25.740999999999985,
+  "wrap_rejected_median_s": 3.0035000000000878,
+  "spawn_experiments": [
+    {
+      "experiment": "20251220_E_1_1_FCMC",
+      "spawn_time_s": 1809.506,
+      "spawn_frame": 300378.0
+    },
+    {
+      "experiment": "20251220_E_1_2_FCMC",
+      "spawn_time_s": 2099.952,
+      "spawn_frame": 348592.0
+    },
+    {
+      "experiment": "20251220_E_1_3_FCMC",
+      "spawn_time_s": 784.181,
+      "spawn_frame": 130174.0
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "spawn_time_s": 495.711,
+      "spawn_frame": 82288.0
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "spawn_time_s": 818.572,
+      "spawn_frame": 135883.0
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "spawn_time_s": 732.542,
+      "spawn_frame": 121602.0
+    },
+    {
+      "experiment": "20251225_L_1_2_FCMC",
+      "spawn_time_s": 968.53,
+      "spawn_frame": 160776.0
+    },
+    {
+      "experiment": "20260106_H_1_1_FCMC",
+      "spawn_time_s": 1019.94,
+      "spawn_frame": 169310.0
+    },
+    {
+      "experiment": "20260106_H_1_2_FCMC",
+      "spawn_time_s": 517.102,
+      "spawn_frame": 85839.0
+    },
+    {
+      "experiment": "20260109_O_1_1_FCMC",
+      "spawn_time_s": 1213.934,
+      "spawn_frame": 201513.0
+    },
+    {
+      "experiment": "20260109_O_1_2_FCMC",
+      "spawn_time_s": 1641.681,
+      "spawn_frame": 272519.0
+    },
+    {
+      "experiment": "20260109_O_1_3_FCMC",
+      "spawn_time_s": 387.235,
+      "spawn_frame": 64281.0
+    },
+    {
+      "experiment": "20260112_I_2_1_FCMC",
+      "spawn_time_s": 1587.114,
+      "spawn_frame": 263461.0
+    },
+    {
+      "experiment": "20260112_I_2_2_FCMC",
+      "spawn_time_s": 1253.247,
+      "spawn_frame": 208039.0
+    },
+    {
+      "experiment": "20260112_I_2_3_FCMC",
+      "spawn_time_s": 809.536,
+      "spawn_frame": 134383.0
+    }
+  ]
+}
