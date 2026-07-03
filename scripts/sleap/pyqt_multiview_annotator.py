@@ -702,6 +702,46 @@ class ViewPane:
         line.setZValue(0.5)
         self.keypoint_items.append(line)
 
+    def add_arrow(self, p_tail, p_mouth, color_rgb, width=1.5,
+                  head_len=13.0, head_deg=26.0, tip_gap=10.0):
+        """Body-axis edge drawn as an arrow pointing tail -> mouth.
+
+        The arrowhead sits just short of the mouth marker (backed off by
+        ``tip_gap`` so it clears the keypoint circle). Because the head marks
+        the mouth end, a mouth<->tail flip reverses the arrow and is obvious at
+        a glance -- the main thing an annotator is hunting for at crossings.
+        Sizes are in scene (image-pixel) units so they scale with zoom like the
+        keypoints; the pen is cosmetic so the stroke stays crisp.
+        """
+        import math
+        QtCore, QtGui, QtWidgets = _qt()
+        xt, yt = float(p_tail[0]), float(p_tail[1])
+        xm, ym = float(p_mouth[0]), float(p_mouth[1])
+        pen = QtGui.QPen(QtGui.QColor(*color_rgb))
+        pen.setWidthF(width)
+        pen.setCosmetic(True)
+        dx, dy = xm - xt, ym - yt
+        L = math.hypot(dx, dy)
+        if L < 1e-6:
+            return
+        ux, uy = dx / L, dy / L
+        # Shorten the head geometry for very short (curled-fish) edges so the
+        # arrowhead never overshoots the tail.
+        tg = min(tip_gap, 0.4 * L)
+        hl = min(head_len, 0.5 * L)
+        tipx, tipy = xm - ux * tg, ym - uy * tg          # arrowhead apex
+        shaft = self.scene.addLine(xt, yt, tipx, tipy, pen)
+        shaft.setZValue(0.5)
+        self.keypoint_items.append(shaft)
+        ang = math.atan2(uy, ux)
+        ha = math.radians(head_deg)
+        for s in (+1.0, -1.0):
+            bx = tipx - hl * math.cos(ang + s * ha)
+            by = tipy - hl * math.sin(ang + s * ha)
+            barb = self.scene.addLine(tipx, tipy, bx, by, pen)
+            barb.setZValue(0.5)
+            self.keypoint_items.append(barb)
+
     # -------------------- internals --------------------
 
     def _set_label(self, name: str) -> None:
@@ -1022,6 +1062,29 @@ class MultiviewWindow:
 
         # Initial render.
         self._render_current()
+
+        # Safety net: the annotator otherwise only persists on Ctrl+S (no
+        # auto-save), so closing the window silently discards edits. Add a
+        # periodic quiet autosave plus a save when the app is about to quit;
+        # both write the same quick-save file that auto-resume reloads next
+        # open, so forgetting Ctrl+S no longer loses work.
+        QtCore, QtGui, QtWidgets = _qt()
+        self._autosave_timer = QtCore.QTimer(self.window)
+        self._autosave_timer.setInterval(120_000)  # 2 minutes
+        self._autosave_timer.timeout.connect(self._autosave_quiet)
+        self._autosave_timer.start()
+        _app = QtWidgets.QApplication.instance()
+        if _app is not None:
+            _app.aboutToQuit.connect(self._autosave_quiet)
+
+    def _autosave_quiet(self):
+        """Autosave (periodic + on app exit) so edits survive even if the user
+        never presses Ctrl+S. Silent on success; failures are surfaced/logged
+        by :meth:`_safe_save`. Writes the quick-save file auto-resume reloads.
+        """
+        if self.cur_group is None and not self._edited_groups:
+            return
+        self._safe_save("autosave", self.out_path, embed=False)
 
     def _install_global_key_filter(self):
         QtCore, QtGui, QtWidgets = _qt()
@@ -1734,7 +1797,9 @@ class MultiviewWindow:
                         label=("(hidden)" if not t_vis else None),
                     )
                 if m is not None and t is not None:
-                    pane.add_line(m, t, color_rgb=color, width=1.2)
+                    # Arrow tail -> mouth: a mouth/tail flip reverses it, so
+                    # swaps jump out at close-contact crossings.
+                    pane.add_arrow(t, m, color_rgb=color, width=1.5)
             # Pending mouth marker if mid-add.
             if (
                 self.add_mode == "place_tail"
