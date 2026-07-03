@@ -119,13 +119,36 @@ def draw_3d_panel(proj, base, pos, conf, body, f, tail_n, arrow_mm=16.0):
             cv2.circle(img, cp, 7, (0, 0, 0), -1, cv2.LINE_AA)
             cv2.circle(img, cp, 5, col, -1, cv2.LINE_AA)
         else:
-            cv2.circle(img, cp, 6, _fade(col, 0.5), 2, cv2.LINE_AA)
+            # gap-filled (predicted) frame: slightly-transparent FILLED marker (tail drawn solid above)
+            cv2.circle(img, cp, 5, _fade(col, 0.5), -1, cv2.LINE_AA)
         cv2.putText(img, name, (cp[0] + 9, cp[1] - 9), cv2.FONT_HERSHEY_DUPLEX, 0.7, (0, 0, 0), 3, cv2.LINE_AA)
         cv2.putText(img, name, (cp[0] + 9, cp[1] - 9), cv2.FONT_HERSHEY_DUPLEX, 0.7, col, 1, cv2.LINE_AA)
     return img
 
 
-def draw_2d_view(img, view, f, reproj, vis2d, scale):
+# raw-instance palette by within-frame instance index (0=primary ... ). BGR.
+RAW_PALETTE = [(150, 150, 150), (0, 0, 255), (255, 0, 255), (200, 200, 0)]  # gray, red, magenta, cyan
+
+
+def draw_raw_sleap(img, arr, scale, by_index=False):
+    """Overlay EVERY raw SLEAP instance in this view (no ID filtering) as a tail->mouth arrow
+    + node dots. Diagnostic: shows false-positive detections the resolved track does NOT use.
+    by_index=False -> all gray. by_index=True -> 1st instance gray, 2nd red, 3rd+ magenta/cyan
+    (instances are SLEAP-score-sorted, so the extra/spurious detection is the red/magenta one)."""
+    import cv2
+    if arr is None or len(arr) == 0:
+        return
+    for i, inst in enumerate(arr):                    # inst = (n_nodes, 2) src px; node0=mouth, node1=tail
+        col = RAW_PALETTE[min(i, len(RAW_PALETTE) - 1)] if by_index else RAW_PALETTE[0]
+        th = 1 if (not by_index or i == 0) else 2     # extra detections drawn thicker so they pop
+        pts = [(int(round(p[0] * scale)), int(round(p[1] * scale))) for p in inst if np.isfinite(p).all()]
+        if len(pts) >= 2:
+            cv2.arrowedLine(img, pts[-1], pts[0], col, th, cv2.LINE_AA, 0, 0.3)
+        for p in pts:
+            cv2.circle(img, p, 3 if (by_index and i > 0) else 2, col, -1, cv2.LINE_AA)
+
+
+def draw_2d_view(img, view, f, reproj, vis2d, scale, arrow_t=3):
     """Per fish in this view: if a SLEAP keypoint was matched (vis2d finite) draw its mouth->tail
     arrow (solid); else a faded hollow marker at the reprojected resolved position."""
     import cv2
@@ -139,8 +162,8 @@ def draw_2d_view(img, view, f, reproj, vis2d, scale):
             ipts = [(int(round(p[0] * scale)), int(round(p[1] * scale))) for p in kp if np.isfinite(p).all()]
             head = ipts[0]
             if len(ipts) >= 2:
-                cv2.arrowedLine(img, ipts[-1], head, (0, 0, 0), 5, cv2.LINE_AA, 0, 0.35)
-                cv2.arrowedLine(img, ipts[-1], head, col, 3, cv2.LINE_AA, 0, 0.35)
+                cv2.arrowedLine(img, ipts[-1], head, (0, 0, 0), arrow_t + 2, cv2.LINE_AA, 0, 0.35)
+                cv2.arrowedLine(img, ipts[-1], head, col, arrow_t, cv2.LINE_AA, 0, 0.35)
             else:
                 cv2.circle(img, head, 9, (0, 0, 0), -1, cv2.LINE_AA)
                 cv2.circle(img, head, 7, col, -1, cv2.LINE_AA)
@@ -281,6 +304,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--nvenc-cq", type=int, default=24)
     ap.add_argument("--codec", default="h264_nvenc")
     ap.add_argument("--workers", type=int, default=1)
+    ap.add_argument("--draw-raw-sleap", action="store_true",
+                    help="overlay ALL raw SLEAP instances (gray, no ID filtering) on top of the colored track")
+    ap.add_argument("--raw-by-index", action="store_true",
+                    help="color raw SLEAP instances by within-frame index: 1st gray, 2nd red, 3rd+ magenta")
+    ap.add_argument("--no-track-overlay", action="store_true",
+                    help="skip the colored resolved-track arrows in the 2D views (raw SLEAP only)")
+    ap.add_argument("--arrow-thickness", type=int, default=3, help="2D colored mouth->tail arrow line thickness")
     args = ap.parse_args(argv)
 
     if args.workers > 1:
@@ -336,7 +366,10 @@ def main(argv: list[str] | None = None) -> int:
                     raise StopIteration
                 frames[v] = item
             for v in VIEWS:
-                draw_2d_view(frames[v], v, f, reproj, vis2d, scale)
+                if not args.no_track_overlay:
+                    draw_2d_view(frames[v], v, f, reproj, vis2d, scale, arrow_t=args.arrow_thickness)
+                if args.draw_raw_sleap:
+                    draw_raw_sleap(frames[v], slp[v].get(f), scale, by_index=args.raw_by_index)
                 label_panel_top(frames[v], v, font_scale=0.8)
             p3d = draw_3d_panel(proj, base3d, pos, conf, body, f, tail_n)
             label_panel_top(p3d, f"3D  frame {f}", font_scale=0.8)
@@ -388,6 +421,10 @@ def _orchestrate(args) -> int:
                "--gate-px", str(args.gate_px), "--xyz-lim", str(args.xyz_lim[0]), str(args.xyz_lim[1]),
                "--elev", str(args.elev), "--azim", str(args.azim), "--ffmpeg", args.ffmpeg,
                "--nvenc-cq", str(args.nvenc_cq), "--codec", args.codec, "--workers", "1",
+               "--arrow-thickness", str(args.arrow_thickness),
+               *(["--draw-raw-sleap"] if args.draw_raw_sleap else []),
+               *(["--raw-by-index"] if args.raw_by_index else []),
+               *(["--no-track-overlay"] if args.no_track_overlay else []),
                "--node-names", *args.node_names]
         log = open(tmpdir / f"part_{i:03d}.log", "w")
         procs.append((subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT), log, part))
