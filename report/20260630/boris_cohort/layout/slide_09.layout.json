@@ -1,0 +1,824 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/gu96p5",
+    "id": "gu96p5",
+    "slide": 9,
+    "layoutId": "ab007d6d-3511-4daf-91bc-6207ff21bc32",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "6a587c9e-2ad6-4747-a64a-7ea11e927af2",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "ab007d6d-3511-4daf-91bc-6207ff21bc32",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "6a587c9e-2ad6-4747-a64a-7ea11e927af2",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "6a587c9e-2ad6-4747-a64a-7ea11e927af2",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/6xkf6dcb",
+      "id": "1",
+      "bbox": [
+        52,
+        28,
+        420,
+        28
+      ],
+      "geometry": "rect",
+      "text": "Selection Guide",
+      "textPreview": "Selection Guide",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#5B6472",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Selection Guide"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Selection Guide",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#5B6472",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Selection Guide",
+              "fontSize": 15,
+              "color": "#5B6472",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hk3q5o7q",
+      "id": "2",
+      "bbox": [
+        52,
+        64,
+        1040,
+        74
+      ],
+      "geometry": "rect",
+      "text": "How to combine this supplement with the main poster kit",
+      "textPreview": "How to combine this supplement with the main poster kit",
+      "resolvedFontSize": 36,
+      "resolvedTextStyle": {
+        "fontSize": 36,
+        "typeface": "+mn-lt",
+        "color": "#111827",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "How to combine this supplement with the main poster kit"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "How to combine this supplement with the main poster kit",
+          "resolvedTextStyle": {
+            "fontSize": 36,
+            "color": "#111827",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "How to combine this supplement with the main poster kit",
+              "fontSize": 36,
+              "color": "#111827",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/oza1gvy9",
+      "id": "3",
+      "bbox": [
+        1208,
+        34,
+        28,
+        26
+      ],
+      "geometry": "rect",
+      "text": "8",
+      "textPreview": "8",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#5B6472",
+        "alignment": "right",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "8"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "8",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#5B6472",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "8",
+              "fontSize": 15,
+              "color": "#5B6472",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/zqtcj6to",
+      "id": "4",
+      "bbox": [
+        52,
+        146,
+        1176,
+        1.5
+      ],
+      "geometry": "rect",
+      "fillColor": "#C8CDD5",
+      "lineColor": "#C8CDD5",
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "table",
+      "scope": "slide",
+      "aid": "tb/zupwb2hw",
+      "id": "5",
+      "bbox": [
+        70,
+        176,
+        1110,
+        382
+      ],
+      "text": "Need | Use from this deck | Pair with main poster kit\nShow cohort scope | B1 scope or B2 stacked ethogram | Section 1 setup / N=3 framing\nShow behavior repertoire | B3 behavior duration ranking | BORIS-vs-distance panel\nValidate chosen male manually | B4 m1tf/m2tf asymmetry | N=3 appearance mate-choice panels\nSeparate biology mechanisms | B5 courtship vs male-male | Courtship vs aggression N=3 plot\nChoose endpoint examples | B6/B7 spawn and wrap timing | Spawn close-up / trajectory zoom",
+      "textPreview": "Need | Use from this deck | Pair with main poster kit | Show cohort scope | B1 scope or B2 stacked ethogram | Section 1 setup / N=3 frami...",
+      "rows": 6,
+      "cols": 3,
+      "cells": [
+        {
+          "index": 1,
+          "row": 1,
+          "column": 1,
+          "bbox": [
+            70,
+            176,
+            370,
+            63.67
+          ],
+          "text": "Need",
+          "textPreview": "Need",
+          "fillColor": "#1677B9",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Need",
+              "resolvedTextStyle": {
+                "fontSize": 14,
+                "color": "#FFFFFF",
+                "bold": true
+              },
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Need",
+                  "fontSize": 14,
+                  "color": "#FFFFFF",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "row": 1,
+          "column": 2,
+          "bbox": [
+            440,
+            176,
+            370,
+            63.67
+          ],
+          "text": "Use from this deck",
+          "textPreview": "Use from this deck",
+          "fillColor": "#1677B9",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Use from this deck",
+              "resolvedTextStyle": {
+                "fontSize": 14,
+                "color": "#FFFFFF",
+                "bold": true
+              },
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Use from this deck",
+                  "fontSize": 14,
+                  "color": "#FFFFFF",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 3,
+          "row": 1,
+          "column": 3,
+          "bbox": [
+            810,
+            176,
+            370,
+            63.67
+          ],
+          "text": "Pair with main poster kit",
+          "textPreview": "Pair with main poster kit",
+          "fillColor": "#1677B9",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Pair with main poster kit",
+              "resolvedTextStyle": {
+                "fontSize": 14,
+                "color": "#FFFFFF",
+                "bold": true
+              },
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Pair with main poster kit",
+                  "fontSize": 14,
+                  "color": "#FFFFFF",
+                  "bold": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 4,
+          "row": 2,
+          "column": 1,
+          "bbox": [
+            70,
+            239.67,
+            370,
+            63.67
+          ],
+          "text": "Show cohort scope",
+          "textPreview": "Show cohort scope",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Show cohort scope",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Show cohort scope"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 5,
+          "row": 2,
+          "column": 2,
+          "bbox": [
+            440,
+            239.67,
+            370,
+            63.67
+          ],
+          "text": "B1 scope or B2 stacked ethogram",
+          "textPreview": "B1 scope or B2 stacked ethogram",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "B1 scope or B2 stacked ethogram",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "B1 scope or B2 stacked ethogram"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 6,
+          "row": 2,
+          "column": 3,
+          "bbox": [
+            810,
+            239.67,
+            370,
+            63.67
+          ],
+          "text": "Section 1 setup / N=3 framing",
+          "textPreview": "Section 1 setup / N=3 framing",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Section 1 setup / N=3 framing",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Section 1 setup / N=3 framing"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 7,
+          "row": 3,
+          "column": 1,
+          "bbox": [
+            70,
+            303.33,
+            370,
+            63.67
+          ],
+          "text": "Show behavior repertoire",
+          "textPreview": "Show behavior repertoire",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Show behavior repertoire",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Show behavior repertoire"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 8,
+          "row": 3,
+          "column": 2,
+          "bbox": [
+            440,
+            303.33,
+            370,
+            63.67
+          ],
+          "text": "B3 behavior duration ranking",
+          "textPreview": "B3 behavior duration ranking",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "B3 behavior duration ranking",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "B3 behavior duration ranking"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 9,
+          "row": 3,
+          "column": 3,
+          "bbox": [
+            810,
+            303.33,
+            370,
+            63.67
+          ],
+          "text": "BORIS-vs-distance panel",
+          "textPreview": "BORIS-vs-distance panel",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "BORIS-vs-distance panel",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "BORIS-vs-distance panel"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 10,
+          "row": 4,
+          "column": 1,
+          "bbox": [
+            70,
+            367,
+            370,
+            63.67
+          ],
+          "text": "Validate chosen male manually",
+          "textPreview": "Validate chosen male manually",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Validate chosen male manually",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Validate chosen male manually"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 11,
+          "row": 4,
+          "column": 2,
+          "bbox": [
+            440,
+            367,
+            370,
+            63.67
+          ],
+          "text": "B4 m1tf/m2tf asymmetry",
+          "textPreview": "B4 m1tf/m2tf asymmetry",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "B4 m1tf/m2tf asymmetry",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "B4 m1tf/m2tf asymmetry"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 12,
+          "row": 4,
+          "column": 3,
+          "bbox": [
+            810,
+            367,
+            370,
+            63.67
+          ],
+          "text": "N=3 appearance mate-choice panels",
+          "textPreview": "N=3 appearance mate-choice panels",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "N=3 appearance mate-choice panels",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "N=3 appearance mate-choice panels"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 13,
+          "row": 5,
+          "column": 1,
+          "bbox": [
+            70,
+            430.67,
+            370,
+            63.67
+          ],
+          "text": "Separate biology mechanisms",
+          "textPreview": "Separate biology mechanisms",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Separate biology mechanisms",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Separate biology mechanisms"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 14,
+          "row": 5,
+          "column": 2,
+          "bbox": [
+            440,
+            430.67,
+            370,
+            63.67
+          ],
+          "text": "B5 courtship vs male-male",
+          "textPreview": "B5 courtship vs male-male",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "B5 courtship vs male-male",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "B5 courtship vs male-male"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 15,
+          "row": 5,
+          "column": 3,
+          "bbox": [
+            810,
+            430.67,
+            370,
+            63.67
+          ],
+          "text": "Courtship vs aggression N=3 plot",
+          "textPreview": "Courtship vs aggression N=3 plot",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Courtship vs aggression N=3 plot",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Courtship vs aggression N=3 plot"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 16,
+          "row": 6,
+          "column": 1,
+          "bbox": [
+            70,
+            494.33,
+            370,
+            63.67
+          ],
+          "text": "Choose endpoint examples",
+          "textPreview": "Choose endpoint examples",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Choose endpoint examples",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Choose endpoint examples"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 17,
+          "row": 6,
+          "column": 2,
+          "bbox": [
+            440,
+            494.33,
+            370,
+            63.67
+          ],
+          "text": "B6/B7 spawn and wrap timing",
+          "textPreview": "B6/B7 spawn and wrap timing",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "B6/B7 spawn and wrap timing",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "B6/B7 spawn and wrap timing"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "index": 18,
+          "row": 6,
+          "column": 3,
+          "bbox": [
+            810,
+            494.33,
+            370,
+            63.67
+          ],
+          "text": "Spawn close-up / trajectory zoom",
+          "textPreview": "Spawn close-up / trajectory zoom",
+          "paragraphs": [
+            {
+              "index": 1,
+              "text": "Spawn close-up / trajectory zoom",
+              "runs": [
+                {
+                  "index": 1,
+                  "text": "Spawn close-up / trajectory zoom"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/hwfyxobm",
+      "id": "6",
+      "bbox": [
+        52,
+        672,
+        1176,
+        24
+      ],
+      "geometry": "rect",
+      "text": "Figure manifest: data/boris_cohort_figure_manifest.csv.",
+      "textPreview": "Figure manifest: data/boris_cohort_figure_manifest.csv.",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#5B6472",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Figure manifest: data/boris_cohort_figure_manifest.csv."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Figure manifest: data/boris_cohort_figure_manifest.csv.",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#5B6472",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Figure manifest: data/boris_cohort_figure_manifest.csv.",
+              "fontSize": 12,
+              "color": "#5B6472",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

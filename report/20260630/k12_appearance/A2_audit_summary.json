@@ -1,0 +1,84 @@
+{
+  "files": {
+    "interp": "round5_260611_3d_individual_id_interp.csv",
+    "debounced": "round5_260611_3d_individual_id_interp_debounced.csv"
+  },
+  "final_label_column": "id_final (and individual_id, identical distribution)",
+  "rows": 1045800,
+  "frames": 348600,
+  "rows_per_frame": 3,
+  "invariant_exactly_1F_1M1_1M2": {
+    "interp": {
+      "ok": 348600,
+      "violations": 0
+    },
+    "debounced": {
+      "ok": 348600,
+      "violations": 0
+    }
+  },
+  "coverage_id_conf_pct": {
+    "F": {
+      "high": 99.02,
+      "interp": 0.98,
+      "ambiguous": 0.0
+    },
+    "M1": {
+      "high": 98.42,
+      "interp": 1.49,
+      "ambiguous": 0.09
+    },
+    "M2": {
+      "high": 98.42,
+      "interp": 1.49,
+      "ambiguous": 0.09
+    }
+  },
+  "coverage_id_source_pct": {
+    "F": {
+      "high": 96.97,
+      "bridged": 2.05,
+      "edge": 0.98,
+      "motion_localized": 0.0,
+      "ambiguous": 0.0
+    },
+    "M1": {
+      "high": 88.25,
+      "bridged": 10.17,
+      "edge": 1.01,
+      "motion_localized": 0.48,
+      "ambiguous": 0.09
+    },
+    "M2": {
+      "high": 88.25,
+      "bridged": 10.17,
+      "edge": 1.01,
+      "motion_localized": 0.48,
+      "ambiguous": 0.09
+    }
+  },
+  "spawn_validation": {
+    "frame": 135888,
+    "time_s": 818.6,
+    "d_F_M1_mm": 6.63,
+    "d_F_M2_mm": 15.39,
+    "nearest_male": "M1",
+    "all_high_conf": true,
+    "window_135838_135938": {
+      "min_dFM1": 3.53,
+      "min_dFM2": 6.06,
+      "min_nearest_male": 3.53,
+      "max_nearest_male": 14.69
+    },
+    "verdict": "PASS \u2014 female within 6.63mm of M1 at spawn, well under 12mm wrap threshold; NO female-mislabel"
+  },
+  "swaps": {
+    "F_slot_changes": 430,
+    "M1_slot_changes": 528,
+    "M2_slot_changes": 326,
+    "M1_M2_direct_exchange": 168,
+    "F_M1_direct_exchange": 272,
+    "F_M2_direct_exchange": 70,
+    "note": "These count geometry_slot (final_fish_id) re-assignment per label; many are short flicker at crossings (F: 246/431 runs <0.5s). They are slot toggles, NOT validated identity errors."
+  }
+}

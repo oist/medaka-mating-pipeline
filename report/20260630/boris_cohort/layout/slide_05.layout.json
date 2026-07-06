@@ -1,0 +1,621 @@
+{
+  "schema": "openai.presentation.layout/v4",
+  "unit": "px",
+  "slide": {
+    "aid": "sl/fydy7b",
+    "id": "fydy7b",
+    "slide": 5,
+    "layoutId": "ab007d6d-3511-4daf-91bc-6207ff21bc32",
+    "layoutName": "Title Slide",
+    "layoutType": "title",
+    "masterLayoutId": "6a587c9e-2ad6-4747-a64a-7ea11e927af2",
+    "masterLayoutName": "Master",
+    "backgroundColor": "#FFFFFF",
+    "frame": {
+      "left": 0,
+      "top": 0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "theme": {
+    "colorSchemeName": "ChatGPT",
+    "colors": {
+      "accent1": "#156082",
+      "accent2": "#E97132",
+      "accent3": "#196B24",
+      "accent4": "#0F9ED5",
+      "accent5": "#A02B93",
+      "accent6": "#4EA72E",
+      "bg1": "#FFFFFF",
+      "bg2": "#000000",
+      "tx1": "#1F1F1F",
+      "tx2": "#FFFFFF",
+      "dk1": "#000000",
+      "lt1": "#FFFFFF",
+      "dk2": "#0E2841",
+      "lt2": "#E8E8E8",
+      "hlink": "#467886",
+      "folHlink": "#96607D"
+    },
+    "typefaces": [
+      "+mn-lt"
+    ]
+  },
+  "inheritedLayers": [
+    {
+      "scope": "layout",
+      "id": "ab007d6d-3511-4daf-91bc-6207ff21bc32",
+      "name": "Title Slide",
+      "type": "title",
+      "parentLayoutId": "6a587c9e-2ad6-4747-a64a-7ea11e927af2",
+      "elements": []
+    },
+    {
+      "scope": "master",
+      "id": "6a587c9e-2ad6-4747-a64a-7ea11e927af2",
+      "name": "Master",
+      "type": "master",
+      "elements": []
+    }
+  ],
+  "elements": [
+    {
+      "order": 1,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/fil0rqd4",
+      "id": "1",
+      "bbox": [
+        52,
+        28,
+        420,
+        28
+      ],
+      "geometry": "rect",
+      "text": "B4 · Manual Male-To-Female Asymmetry",
+      "textPreview": "B4 · Manual Male-To-Female Asymmetry",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#5B6472",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "B4 · Manual Male-To-Female Asymmetry"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "B4 · Manual Male-To-Female Asymmetry",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#5B6472",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "B4 · Manual Male-To-Female Asymmetry",
+              "fontSize": 15,
+              "color": "#5B6472",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 2,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/83itgfml",
+      "id": "2",
+      "bbox": [
+        52,
+        64,
+        1040,
+        74
+      ],
+      "geometry": "rect",
+      "text": "BORIS m1tf/m2tf duration by experiment",
+      "textPreview": "BORIS m1tf/m2tf duration by experiment",
+      "resolvedFontSize": 36,
+      "resolvedTextStyle": {
+        "fontSize": 36,
+        "typeface": "+mn-lt",
+        "color": "#111827",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "BORIS m1tf/m2tf duration by experiment"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "BORIS m1tf/m2tf duration by experiment",
+          "resolvedTextStyle": {
+            "fontSize": 36,
+            "color": "#111827",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "BORIS m1tf/m2tf duration by experiment",
+              "fontSize": 36,
+              "color": "#111827",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 3,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/xobm58z2",
+      "id": "3",
+      "bbox": [
+        1208,
+        34,
+        28,
+        26
+      ],
+      "geometry": "rect",
+      "text": "4",
+      "textPreview": "4",
+      "resolvedFontSize": 15,
+      "resolvedTextStyle": {
+        "fontSize": 15,
+        "typeface": "+mn-lt",
+        "color": "#5B6472",
+        "alignment": "right",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "4"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "4",
+          "resolvedTextStyle": {
+            "fontSize": 15,
+            "color": "#5B6472",
+            "alignment": "right"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "4",
+              "fontSize": 15,
+              "color": "#5B6472",
+              "alignment": "right"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 4,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/m94fu18j",
+      "id": "4",
+      "bbox": [
+        52,
+        146,
+        1176,
+        1.5
+      ],
+      "geometry": "rect",
+      "fillColor": "#C8CDD5",
+      "lineColor": "#C8CDD5",
+      "lineWidth": 0
+    },
+    {
+      "order": 5,
+      "kind": "chart",
+      "scope": "slide",
+      "aid": "ch/z61032ls",
+      "id": "5",
+      "bbox": [
+        58,
+        166,
+        688,
+        430
+      ],
+      "chartType": "bar"
+    },
+    {
+      "order": 6,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/4fu18jqh",
+      "id": "6",
+      "bbox": [
+        780,
+        178,
+        440,
+        416
+      ],
+      "geometry": "rect",
+      "fillColor": "#F8F9FB",
+      "lineColor": "#C8CDD5",
+      "lineWidth": 1
+    },
+    {
+      "order": 7,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/x0nuxc3y",
+      "id": "7",
+      "bbox": [
+        812,
+        212,
+        372,
+        92
+      ],
+      "geometry": "rect",
+      "text": "Independent manual asymmetry check",
+      "textPreview": "Independent manual asymmetry check",
+      "resolvedFontSize": 25,
+      "resolvedTextStyle": {
+        "fontSize": 25,
+        "typeface": "+mn-lt",
+        "color": "#111827",
+        "bold": true,
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 2,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Independent manual asymmetry"
+          },
+          {
+            "index": 2,
+            "text": "check"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Independent manual asymmetry check",
+          "resolvedTextStyle": {
+            "fontSize": 25,
+            "color": "#111827",
+            "bold": true,
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Independent manual asymmetry check",
+              "fontSize": 25,
+              "color": "#111827",
+              "bold": true,
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 8,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/mlkjm1cf",
+      "id": "8",
+      "bbox": [
+        812,
+        324,
+        372,
+        230
+      ],
+      "geometry": "rect",
+      "text": "The manual labels are annotator-defined, so they are not automatically the same as appearance M1/M2. But asymmetric male-to-female courtship is still a useful cross-check.\n\nLargest asymmetries:\n0109_O_1_3: 76.0x toward m1tf\n0109_O_1_1: 23.0x toward m1tf\n1225_K_1_3: 14.7x toward m2tf\n1225_K_1_1: 12.4x toward m2tf",
+      "textPreview": "The manual labels are annotator-defined, so they are not automatically the same as appearance M1/M2. But asymmetric male-to-female courts...",
+      "resolvedFontSize": 18,
+      "resolvedTextStyle": {
+        "fontSize": 18,
+        "typeface": "+mn-lt",
+        "color": "#5B6472",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 11,
+        "lines": [
+          {
+            "index": 1,
+            "text": "The manual labels are annotator-defined, so"
+          },
+          {
+            "index": 2,
+            "text": "they are not automatically the same as"
+          },
+          {
+            "index": 3,
+            "text": "appearance M1/M2. But asymmetric"
+          },
+          {
+            "index": 4,
+            "text": "male-to-female courtship is still a useful"
+          },
+          {
+            "index": 5,
+            "text": "cross-check."
+          },
+          {
+            "index": 6,
+            "text": ""
+          },
+          {
+            "index": 7,
+            "text": "Largest asymmetries:"
+          },
+          {
+            "index": 8,
+            "text": "0109_O_1_3: 76.0x toward m1tf"
+          },
+          {
+            "index": 9,
+            "text": "0109_O_1_1: 23.0x toward m1tf"
+          },
+          {
+            "index": 10,
+            "text": "1225_K_1_3: 14.7x toward m2tf"
+          },
+          {
+            "index": 11,
+            "text": "1225_K_1_1: 12.4x toward m2tf"
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "The manual labels are annotator-defined, so they are not automatically the same as appearance M1/M2. But asymmetric male-to-female courtship is still a useful cross-check.",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#5B6472",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "The manual labels are annotator-defined, so they are not automatically the same as appearance M1/M2. But asymmetric male-to-female courtship is still a useful cross-check.",
+              "fontSize": 18,
+              "color": "#5B6472",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 3,
+          "text": "Largest asymmetries:",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#5B6472",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Largest asymmetries:",
+              "fontSize": 18,
+              "color": "#5B6472",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 4,
+          "text": "0109_O_1_3: 76.0x toward m1tf",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#5B6472",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "0109_O_1_3: 76.0x toward m1tf",
+              "fontSize": 18,
+              "color": "#5B6472",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 5,
+          "text": "0109_O_1_1: 23.0x toward m1tf",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#5B6472",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "0109_O_1_1: 23.0x toward m1tf",
+              "fontSize": 18,
+              "color": "#5B6472",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 6,
+          "text": "1225_K_1_3: 14.7x toward m2tf",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#5B6472",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "1225_K_1_3: 14.7x toward m2tf",
+              "fontSize": 18,
+              "color": "#5B6472",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        },
+        {
+          "index": 7,
+          "text": "1225_K_1_1: 12.4x toward m2tf",
+          "resolvedTextStyle": {
+            "fontSize": 18,
+            "color": "#5B6472",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "1225_K_1_1: 12.4x toward m2tf",
+              "fontSize": 18,
+              "color": "#5B6472",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    },
+    {
+      "order": 9,
+      "kind": "shape",
+      "scope": "slide",
+      "aid": "sh/f6dcbulw",
+      "id": "9",
+      "bbox": [
+        52,
+        672,
+        1176,
+        24
+      ],
+      "geometry": "rect",
+      "text": "Figure B4 source: boris_cohort_experiment_summary.csv.",
+      "textPreview": "Figure B4 source: boris_cohort_experiment_summary.csv.",
+      "resolvedFontSize": 12,
+      "resolvedTextStyle": {
+        "fontSize": 12,
+        "typeface": "+mn-lt",
+        "color": "#5B6472",
+        "alignment": "left",
+        "insets": {
+          "top": 4.8,
+          "right": 9.6,
+          "bottom": 4.8,
+          "left": 9.6
+        }
+      },
+      "textLayout": {
+        "lineCount": 1,
+        "lines": [
+          {
+            "index": 1,
+            "text": "Figure B4 source: boris_cohort_experiment_summary.csv."
+          }
+        ]
+      },
+      "paragraphs": [
+        {
+          "index": 1,
+          "text": "Figure B4 source: boris_cohort_experiment_summary.csv.",
+          "resolvedTextStyle": {
+            "fontSize": 12,
+            "color": "#5B6472",
+            "alignment": "left"
+          },
+          "runs": [
+            {
+              "index": 1,
+              "text": "Figure B4 source: boris_cohort_experiment_summary.csv.",
+              "fontSize": 12,
+              "color": "#5B6472",
+              "alignment": "left"
+            }
+          ],
+          "marginLeft": 0
+        }
+      ],
+      "lineWidth": 0
+    }
+  ],
+  "composeRuns": []
+}

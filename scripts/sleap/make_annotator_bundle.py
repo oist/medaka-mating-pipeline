@@ -68,7 +68,10 @@ dependencies = [
     "joblib",
     "scikit-learn",
     "opencv-python",
-    "sleap-io",
+    # Pin to the version the pipeline + seeds are built/validated on. sleap-io
+    # 0.8.x re-keys re-embedded multi-view frames on the annotator's save,
+    # which corrupts auto-resume (side-view image/annotation mismatch).
+    "sleap-io==0.7.0",
     "PyQt5",
     # pyqt5-qt5 5.15.18 (current latest) ships only Linux/macOS wheels.
     # Pin the Windows side to the last release that has win_amd64 wheels.
@@ -86,7 +89,7 @@ scipy
 joblib
 scikit-learn
 opencv-python
-sleap-io
+sleap-io==0.7.0
 PyQt5
 """
 

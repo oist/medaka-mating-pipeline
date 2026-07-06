@@ -179,3 +179,117 @@ python -m scripts.tracking.main --paths-config configs/paths.local.toml <set_key
 
 and the downstream tracking / 3D reconstruction stages don't need any
 HPC-specific code changes.
+
+---
+
+# HPC batch Detectron2 inference (OIST saion) — dual-line "Line B"
+
+These scripts run the fine-tuned **Detectron2** instance-segmentation model
+full-length on saion, producing per-view mask `.h5` chunks for the appearance /
+2D identity line (Line B) of the dual-line tracker
+(`docs/dual_line_tracking_plan.md`). They are a **direct mirror** of the SLEAP
+trio above — same login-node submit → Slurm array → `/work` → copy-back model.
+
+```
+scripts/hpc/
+  detectron2_chunk.slurm              # Array worker. Runs 13_run_detectron2_segmentation on one frame range.
+  submit_detectron2_experiment.sh     # Submits up to 3 views × N chunks for ONE experiment.
+  merge_detectron2_chunks.sh          # Copies per-view mask chunks /work → /bucket (no merge).
+```
+
+Output per array task: `<view>.masks_<S>-<E>.h5` (the format
+`sam2_id_experiment/src/sam2_adapter/mask_io.iter_mask_instances_h5` reads, which
+`33_build_segid_dataset.py` consumes per window). Chunks stay separate, like the
+SLEAP `.slp` chunks.
+
+## The one real difference from SLEAP: there is no Detectron2 *module*
+
+SLEAP loads `module load sleap-nn`. Detectron2 has no saion modulefile, so you
+must build the environment **once** on a GPU node and point the worker at it:
+
+```bash
+# on a GPU node (interactive), matching the cluster CUDA/torch:
+conda create -n medaka_d2 python=3.11 -y && conda activate medaka_d2
+pip install torch --index-url https://download.pytorch.org/whl/cu121   # match node CUDA
+pip install 'git+https://github.com/facebookresearch/detectron2.git'
+pip install opencv-python h5py numpy pyyaml
+# sanity: python -c "import detectron2, torch; print(torch.cuda.is_available())"
+```
+
+Then pass the env to the submitter via either:
+
+| Variable | Purpose |
+| --- | --- |
+| `D2_PYTHON` | absolute path to that env's python, e.g. `/home/$USER/.conda/envs/medaka_d2/bin/python` (simplest — no activation needed) |
+| `D2_SETUP`  | a shell snippet eval'd on the node before running, e.g. `source ~/.conda/etc/profile.d/conda.sh && conda activate medaka_d2` |
+
+## Expected filesystem layout on saion
+
+```
+/bucket/StephensU/medaka/medaka_202512/
+    20251225_K_1_2_FCMC/{top_cam,side1_cam,side2_cam}/cam*.mp4
+/bucket/StephensU/medaka/medaka_202512/detectron2_models/
+    side_detectron2_model_firstprompt/{model_final.pth, detectron2_config.yaml}
+    # (rsync the local outputs/20251225_K_1_2_FCMC/side_detectron2_model_firstprompt/ here)
+/work/StephensU/<user>/medaka_detectron2/<experiment>/<view>/{cam*.mp4, <view>.masks_*.h5, chunks.txt, slurm_*.out}
+/bucket/StephensU/medaka/detectron2_output/<experiment>/{<view>.masks_*.h5, logs/}
+```
+
+## Quick start
+
+```bash
+ssh saion.oist.jp && cd ~/medaka-mating-pipeline
+
+# Preview — prints sbatch commands, submits nothing
+DRY_RUN=1 D2_PYTHON=/home/$USER/.conda/envs/medaka_d2/bin/python \
+    bash scripts/hpc/submit_detectron2_experiment.sh 20251225_K_1_2_FCMC
+
+# Actual submission (side views only; the trained model is the SIDE model)
+D2_PYTHON=/home/$USER/.conda/envs/medaka_d2/bin/python SKIP_VIEWS=top_cam \
+    bash scripts/hpc/submit_detectron2_experiment.sh 20251225_K_1_2_FCMC
+
+squeue -u $USER
+```
+
+`top_cam` is skipped automatically unless you set `TOP_D2_MODEL`/`TOP_D2_CONFIG`
+(only a side model is trained so far). Use `SKIP_VIEWS` to drop views explicitly.
+
+## Configuration (environment variables)
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `MEDAKA_BUCKET_ROOT` | `/bucket/StephensU/medaka/medaka_202512` | Input recordings root |
+| `MEDAKA_WORK_ROOT` | `/work/StephensU/makoto/medaka_detectron2` | Scratch for staged videos + mask chunks |
+| `MEDAKA_BUCKET_OUT` | `/bucket/StephensU/medaka/detectron2_output` | Where mask chunks land |
+| `SIDE_D2_MODEL` / `SIDE_D2_CONFIG` | `.../detectron2_models/side_detectron2_model_firstprompt/{model_final.pth,detectron2_config.yaml}` | Side Detectron2 weights + config |
+| `TOP_D2_MODEL` / `TOP_D2_CONFIG` | _(empty → top skipped)_ | Set to enable top_cam |
+| `NUM_CHUNKS` | `4` | Array tasks per view (frame split) |
+| `SCORE_THRESH` | `0.5` | Detectron2 ROI score threshold |
+| `FRAME_STRIDE` | `1` | Process every Nth frame (raise to shrink output / cost) |
+| `PARTITION` | `largegpu` | `largegpu` / `gpu` / `test-gpu` |
+| `TIME_LIMIT` | `12:00:00` | Per-task wall |
+| `D2_PYTHON` | `python` | Python with detectron2 (see above) |
+| `D2_SETUP` | _(empty)_ | Optional env-activation snippet |
+| `SKIP_VIEWS` | _(empty)_ | Space-separated views to skip |
+| `DRY_RUN` | `0` | `1` = print only; `2` = also skip frame probe |
+
+## Two things to watch
+
+1. **Mask `.h5` size.** Each frame stores full-resolution boolean masks
+   (gzipped). Full-length × 3 fish can be large; per-chunk files keep each
+   bounded, and `FRAME_STRIDE` trades temporal density for size. If storage is a
+   problem, encode masks as RLE in `mask_io` (not done yet).
+2. **Downstream crop framing (critical).** Line B's identity classifier was
+   trained on `33_build_segid_dataset` crops — the **mask bbox resized to 128,
+   unmasked**. Build inference crops the SAME way (`33._square_crop`, `mask=None`).
+   Do **not** feed it raw fixed-128px / background-masked crops
+   (`crop_from_mask`): the Phase-1a "appearance collapses" result was an artifact
+   of exactly that mismatch (re-probe `runs/dual_line/phase1b/`: matched crops
+   give female-vs-male AUC 0.982 on untrained windows; mismatched give ~0.5).
+3. **GPU driver vs torch CUDA (use `largegpu`).** The saion Detectron2 module
+   `detectron.2/0.6` (ReiterU; install script `saion_detectron2_module_install.sh`)
+   uses **torch cu121, which needs NVIDIA driver ≥525**. `largegpu` (A100, driver
+   595) is fine — and is the submit-script default. The `gpu` partition is
+   heterogeneous: some V100 nodes still have a CUDA-11.1 driver (too old →
+   `torch.cuda.is_available()` False). If you must use `gpu`, request a new-driver
+   node (`--gres=gpu:v100:1` got driver 570 in testing) or just stay on `largegpu`.

@@ -239,3 +239,9 @@ data/derived/
 report/**/*.pptx
 report/**/*.png
 report/**/slide_previews*/
+# Large regenerable per-frame / full-track CSVs from bake-off analysis (regenerate via the report scripts)
+report/**/*_remapped_idfinal_tracks.csv
+report/**/*_montage_track.csv
+report/**/mate_choice_per_frame.csv
+# JS tooling deps that leak into report dirs
+node_modules/

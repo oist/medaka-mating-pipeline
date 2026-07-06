@@ -39,7 +39,41 @@ import pandas as pd
 if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
+from sam2_id_experiment.src.id_model import per_frame_resolve as pfr
+
 SLOTS = ["ID_1", "ID_2", "ID_3"]
+
+
+def add_appearance_verdicts(rows, appearance_csv, *, id_col, conf_col, search):
+    """Adjudicate each event with the INDEPENDENT per-frame appearance ID track (Line B): does the
+    appearance individual_id of the event's slot pair stay put (no_swap) or exchange (swap) across the
+    event? Adds ``appearance_swap`` + ``appearance_note`` (agrees / CONTRADICTS / resolves / na) to each
+    row. Appearance ``swap`` where motion said ``clear`` is the high-value disagreement to review."""
+    track = pd.read_csv(appearance_csv)
+    n_frames = int(track["frame"].max()) + 1
+    label_fs, conf = pfr.dense_label_and_conf(track, n_frames, id_col=id_col, conf_col=conf_col)
+    for r in rows:
+        a, b = str(r["pair"]).split("|")
+        if a not in SLOTS or b not in SLOTS:        # tolerate non-ID_x event CSVs (skip appearance)
+            r["appearance_swap"], r["appearance_note"] = "uncertain", "na"
+            continue
+        sa, sb = SLOTS.index(a), SLOTS.index(b)
+        v, _before, _after = pfr.appearance_swap_across_event(
+            sa, sb, int(r["start"]), int(r["end"]), label_fs, conf, search=search)
+        r["appearance_swap"] = v
+        # motion asserts no-swap ONLY via velocity_consistent; near_miss is "no opinion", not a no-swap claim
+        motion_no_swap = r["reason"] == "velocity_consistent"
+        motion_swap = r["reason"] == "suspect_swap"
+        if v == "uncertain":
+            note = "na"
+        elif (v == "no_swap" and motion_no_swap) or (v == "swap" and motion_swap):
+            note = "agrees"
+        elif (v == "swap" and motion_no_swap) or (v == "no_swap" and motion_swap):
+            note = "CONTRADICTS"
+        else:                       # motion had no opinion (near_miss / ambiguous), appearance decisive
+            note = "resolves"
+        r["appearance_note"] = note
+    return rows
 
 
 def classify_event(pre_a, vel_a, pre_b, vel_b, post_a, post_b, gap, min_3d, max_step,
@@ -136,6 +170,14 @@ def build_parser():
     p.add_argument("--near-miss-mm", type=float, default=10.0, help="closest approach above this = barely met")
     p.add_argument("--short-frames", type=int, default=83, help="event < this = 'short pass' (~0.5s)")
     p.add_argument("--fps", type=float, default=166.0)
+    p.add_argument("--appearance-id-csv", default=None,
+                   help="optional Line-B individual-ID track (cols frame, geometry_slot, individual_id, "
+                        "<conf>); adds an independent appearance swap/no-swap verdict per event")
+    p.add_argument("--appearance-id-col", default="individual_id")
+    p.add_argument("--appearance-conf-col", default="male_conf",
+                   help="confidence column gating which appearance frames are trusted (e.g. male_conf_fused)")
+    p.add_argument("--appearance-search", type=int, default=300,
+                   help="max frames before/after an event to find a confident appearance neighbour")
     return p
 
 
@@ -153,6 +195,10 @@ def main(argv=None):
     th = dict(margin_mm=args.margin_mm, max_err_mm=args.max_err_mm,
               step_max_mm=args.step_max_mm, near_miss_mm=args.near_miss_mm)
     rows = resolve_events(events, xyz, frame_to_idx, window=args.window, **th)
+    if args.appearance_id_csv:
+        print(f"adding appearance verdicts from {args.appearance_id_csv} ...", flush=True)
+        rows = add_appearance_verdicts(rows, args.appearance_id_csv, id_col=args.appearance_id_col,
+                                       conf_col=args.appearance_conf_col, search=args.appearance_search)
     out = pd.DataFrame(rows)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(args.out, index=False)
@@ -173,6 +219,18 @@ def main(argv=None):
     if susp.any():
         cols = ["start", "end", "n_frames", "pair", "min_mm", "no_swap_err", "swap_err"]
         print(out[susp].sort_values("n_frames", ascending=False)[cols].head(12).to_string(index=False))
+
+    if "appearance_swap" in out.columns:
+        print("\n  === appearance (Line B) cross-check ===")
+        print("  appearance_swap:", dict(Counter(out["appearance_swap"])))
+        print("  appearance_note:", dict(Counter(out["appearance_note"])))
+        contra = out["appearance_note"] == "CONTRADICTS"
+        resolves = out["appearance_note"] == "resolves"
+        print(f"  CONTRADICTS motion (review first): {contra.sum()}; "
+              f"resolves a motion-ambiguous event: {resolves.sum()}")
+        if contra.any():
+            cols = ["start", "end", "n_frames", "pair", "verdict", "reason", "appearance_swap"]
+            print(out[contra].sort_values("n_frames", ascending=False)[cols].head(12).to_string(index=False))
     print(f"\nwrote -> {args.out}")
 
 
