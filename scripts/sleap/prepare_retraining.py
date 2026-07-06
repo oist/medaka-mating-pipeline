@@ -57,6 +57,7 @@ TEMPLATE_DIR = REPO_ROOT / "configs" / "sleap" / "training"
 TEMPLATE_FILES = {
     "centroid": TEMPLATE_DIR / "centroid.yaml",
     "centered_instance": TEMPLATE_DIR / "centered_instance.yaml",
+    "bottomup": TEMPLATE_DIR / "bottomup.yaml",
 }
 
 LOCAL_CACHE_ROOT = Path("C:/sleap_cache")

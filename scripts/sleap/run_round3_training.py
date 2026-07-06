@@ -29,7 +29,7 @@ from pathlib import Path
 
 
 VIEWS = ["top", "side"]
-KINDS = ["centroid", "centered_instance"]
+KINDS = ["centroid", "centered_instance", "bottomup"]
 
 
 def _count_labels(labels_slp: Path) -> int | None:

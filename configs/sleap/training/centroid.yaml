@@ -7,7 +7,7 @@ data_config:
   test_file_path: null
   provider: LabelsReader
   user_instances_only: true
-  data_pipeline_fw: torch_dataset_cache_img_memory
+  data_pipeline_fw: torch_dataset_cache_img_disk
   cache_img_path: C:\sleap_cache\retrain_20260508_side_centroid
   use_existing_imgs: false
   delete_cache_imgs_after_training: false

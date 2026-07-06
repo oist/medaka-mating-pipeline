@@ -19,7 +19,7 @@ data_config:
     max_height: null
     max_width: null
     scale: 1.0
-    crop_size: 448
+    crop_size: 512
     min_crop_size: 100
     crop_padding: null
   use_augmentations_train: true
@@ -94,11 +94,11 @@ model_config:
   total_params: null
 trainer_config:
   train_data_loader:
-    batch_size: 24
+    batch_size: 16
     num_workers: 12
     shuffle: true
   val_data_loader:
-    batch_size: 24
+    batch_size: 16
     num_workers: 12
     shuffle: false
   model_ckpt:
