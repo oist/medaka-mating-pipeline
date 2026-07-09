@@ -9,6 +9,7 @@ processed_dir = "G:\\path\\to\\shared_dataset_root\\processed"
 tracking_output_dir = "G:\\path\\to\\shared_dataset_root\\processed"
 calibration_model_dir = "G:\\path\\to\\shared_dataset_root\\calibration_model"
 reconstruction_output_dir = "G:\\path\\to\\shared_dataset_root\\reconstruction_3d"
+detectron2_output_dir = "G:\\path\\to\\shared_dataset_root\\detectron2_output"
 runs_dir = "G:\\path\\to\\shared_dataset_root\\runs"
 
 # Root directory containing per-experiment recording folders

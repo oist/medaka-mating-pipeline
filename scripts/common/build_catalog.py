@@ -43,6 +43,7 @@ from scripts.common.experiment_list import (
 )
 from scripts.common.experiment_metadata import MANIFEST_FILENAME, VIEWS
 from scripts.common.local_paths import choose_path, load_local_paths
+from scripts.common.pipeline_status import STAGE_ORDER, detect_pipeline_status
 
 
 DEFAULT_CATALOG_BASENAME = "catalog"
@@ -103,6 +104,28 @@ def attach_boris(manifest: dict, boris_dir: Path | None) -> dict:
         "behaviors": summary.behaviors,
         "subjects": summary.subjects,
     }
+    return manifest
+
+
+def attach_pipeline(
+    manifest: dict,
+    sleap_output_dir: Path | None,
+    detectron2_output_dir: Path | None,
+    reconstruction_output_dir: Path | None,
+) -> dict:
+    """Scan the stage output roots and add a `pipeline` section in-place."""
+    folder_name = manifest.get("folder_name", "")
+    if not folder_name:
+        return manifest
+    recorded = bool(manifest.get("views"))
+    status = detect_pipeline_status(
+        folder_name,
+        recorded=recorded,
+        sleap_output_dir=sleap_output_dir,
+        detectron2_output_dir=detectron2_output_dir,
+        reconstruction_output_dir=reconstruction_output_dir,
+    )
+    manifest["pipeline"] = status.to_dict()
     return manifest
 
 
@@ -169,6 +192,20 @@ def derive_convenience_fields(manifest: dict) -> dict:
     out["male2_desc"] = group_info.get("male2_desc")
     out["group_detail"] = group_info.get("detail")
 
+    pipeline = manifest.get("pipeline") or {}
+    sleap_infer = pipeline.get("sleap_infer") or {}
+    d2 = pipeline.get("detectron2") or {}
+    recon = pipeline.get("reconstruction_3d") or {}
+    out["furthest_stage"] = pipeline.get("furthest_stage")
+    out["stage_sleap_inferred"] = bool(sleap_infer.get("present"))
+    out["sleap_merged_views"] = sleap_infer.get("n_merged_views")
+    out["sleap_rounds"] = ";".join(sleap_infer.get("rounds") or [])
+    out["stage_detectron2"] = bool(d2.get("present"))
+    out["detectron2_views"] = d2.get("n_views")
+    out["stage_reconstructed_3d"] = bool(recon.get("has_3d_csv"))
+    out["stage_identified_3d"] = bool(recon.get("has_identified_csv"))
+    out["recon_configs"] = ";".join(recon.get("configs") or [])
+
     return out
 
 
@@ -198,6 +235,11 @@ def write_csv(manifests: list[dict], path: Path) -> None:
         "experiment.trial",
         "experiment.day",
         "experiment.paradigm",
+        "furthest_stage",
+        "stage_sleap_inferred",
+        "stage_detectron2",
+        "stage_reconstructed_3d",
+        "stage_identified_3d",
         "merged_all",
         "merged_top",
         "merged_side1",
@@ -226,11 +268,23 @@ def build_catalog(
     basename: str,
     boris_dir: Path | None = None,
     experiment_list_dir: Path | None = None,
+    sleap_output_dir: Path | None = None,
+    detectron2_output_dir: Path | None = None,
+    reconstruction_output_dir: Path | None = None,
+    write_html: bool = True,
 ) -> dict:
     manifests = collect_manifests(data_root)
     if boris_dir is not None:
         for m in manifests:
             attach_boris(m, boris_dir)
+
+    for m in manifests:
+        attach_pipeline(
+            m,
+            sleap_output_dir,
+            detectron2_output_dir,
+            reconstruction_output_dir,
+        )
 
     lay_eggs_df = None
     group_df = None
@@ -251,6 +305,19 @@ def build_catalog(
     write_jsonl(manifests, jsonl_path)
     write_csv(manifests, csv_path)
 
+    html_path: Path | None = None
+    if write_html:
+        from scripts.common.render_catalog_html import render_catalog_html
+
+        html_path = output_dir / f"{basename}.html"
+        render_catalog_html(manifests, html_path)
+
+    def _reached(m: dict, stage: str) -> bool:
+        furthest = (m.get("pipeline") or {}).get("furthest_stage")
+        if furthest not in STAGE_ORDER:
+            return False
+        return STAGE_ORDER.index(furthest) >= STAGE_ORDER.index(stage)
+
     merged_count = sum(1 for m in manifests if (m.get("sleap") or {}).get("views"))
     boris_count = sum(1 for m in manifests if m.get("boris"))
     expl_count = sum(1 for m in manifests if m.get("experiment_list"))
@@ -259,8 +326,15 @@ def build_catalog(
         "n_with_sleap": merged_count,
         "n_with_boris": boris_count,
         "n_with_experiment_list": expl_count,
+        "n_sleap_inferred": sum(1 for m in manifests if _reached(m, "sleap_inferred")),
+        "n_detectron2": sum(1 for m in manifests if _reached(m, "detectron2")),
+        "n_reconstructed_3d": sum(
+            1 for m in manifests if _reached(m, "reconstructed_3d")
+        ),
+        "n_identified_3d": sum(1 for m in manifests if _reached(m, "identified_3d")),
         "jsonl": jsonl_path,
         "csv": csv_path,
+        "html": html_path,
     }
 
 
@@ -292,6 +366,29 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help="Directory of cached Experiment List sheet CSVs. Defaults to "
              "experiment_list_dir from paths config; pass '' to skip.",
+    )
+    parser.add_argument(
+        "--sleap-output-dir",
+        default=None,
+        help="Root of per-experiment SLEAP output. Defaults to sleap_output_dir "
+             "from paths config; pass '' to skip SLEAP-stage detection.",
+    )
+    parser.add_argument(
+        "--detectron2-output-dir",
+        default=None,
+        help="Root of per-experiment Detectron2 mask output. Defaults to "
+             "<data_root>/detectron2_output; pass '' to skip.",
+    )
+    parser.add_argument(
+        "--reconstruction-output-dir",
+        default=None,
+        help="Root of 3D reconstruction output. Defaults to "
+             "reconstruction_output_dir from paths config; pass '' to skip.",
+    )
+    parser.add_argument(
+        "--no-html",
+        action="store_true",
+        help="Skip writing the browsable catalog.html dashboard.",
     )
     parser.add_argument("--paths-config", default=None)
     args = parser.parse_args(argv)
@@ -326,19 +423,53 @@ def main(argv: list[str] | None = None) -> None:
         )
         expl_dir = Path(expl_str) if expl_str else None
 
+    def _resolve_stage_dir(cli_value, config_value, default: Path | None):
+        if cli_value == "":
+            return None
+        chosen = choose_path(cli_value, config_value)
+        if chosen:
+            return Path(chosen)
+        return default
+
+    data_root = local.data_root if local else None
+    default_d2 = (data_root / "detectron2_output") if data_root else None
+
+    sleap_out_dir = _resolve_stage_dir(
+        args.sleap_output_dir, local.sleap_output_dir if local else None, None
+    )
+    d2_dir = _resolve_stage_dir(
+        args.detectron2_output_dir,
+        local.detectron2_output_dir if local else None,
+        default_d2,
+    )
+    recon_dir = _resolve_stage_dir(
+        args.reconstruction_output_dir,
+        local.reconstruction_output_dir if local else None,
+        None,
+    )
+
     summary = build_catalog(
         root,
         out_dir,
         args.basename,
         boris_dir=boris_dir,
         experiment_list_dir=expl_dir,
+        sleap_output_dir=sleap_out_dir,
+        detectron2_output_dir=d2_dir,
+        reconstruction_output_dir=recon_dir,
+        write_html=not args.no_html,
     )
     print(f"Wrote {summary['n_experiments']} experiments "
-          f"({summary['n_with_sleap']} with SLEAP merge info, "
-          f"{summary['n_with_boris']} with BORIS, "
+          f"({summary['n_with_boris']} with BORIS, "
           f"{summary['n_with_experiment_list']} with Experiment List):")
+    print(f"  pipeline reach: {summary['n_sleap_inferred']} SLEAP-inferred, "
+          f"{summary['n_detectron2']} Detectron2, "
+          f"{summary['n_reconstructed_3d']} 3D-reconstructed, "
+          f"{summary['n_identified_3d']} 3D-identified")
     print(f"  {summary['jsonl']}")
     print(f"  {summary['csv']}")
+    if summary.get("html"):
+        print(f"  {summary['html']}")
 
 
 if __name__ == "__main__":

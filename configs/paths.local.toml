@@ -12,6 +12,7 @@ sleap_output_dir          = "Z:\\StephensU\\medaka\\sleap_output"
 processed_dir             = "Z:\\StephensU\\medaka\\processed"
 tracking_output_dir       = "Z:\\StephensU\\medaka\\processed"
 reconstruction_output_dir = "Z:\\StephensU\\medaka\\reconstruction_3d"
+detectron2_output_dir     = "Z:\\StephensU\\medaka\\detectron2_output"
 runs_dir                  = "Z:\\StephensU\\medaka\\runs"
 
 # Calibration model (checked into repo; resolved relative to repo root)

@@ -21,6 +21,7 @@ class LocalPaths:
     tracking_output_dir: Path | None = None
     calibration_model_dir: Path | None = None
     reconstruction_output_dir: Path | None = None
+    detectron2_output_dir: Path | None = None
     runs_dir: Path | None = None
     medaka_data_dir: Path | None = None
     sleap_models_dir: Path | None = None
@@ -36,6 +37,7 @@ class LocalPaths:
             "tracking_output_dir": self.tracking_output_dir,
             "calibration_model_dir": self.calibration_model_dir,
             "reconstruction_output_dir": self.reconstruction_output_dir,
+            "detectron2_output_dir": self.detectron2_output_dir,
             "runs_dir": self.runs_dir,
             "medaka_data_dir": self.medaka_data_dir,
             "sleap_models_dir": self.sleap_models_dir,
@@ -80,6 +82,7 @@ def load_local_paths(config_path: str | Path | None = None) -> LocalPaths | None
         tracking_output_dir=_resolve_path(paths.get("tracking_output_dir")),
         calibration_model_dir=_resolve_path(paths.get("calibration_model_dir")),
         reconstruction_output_dir=_resolve_path(paths.get("reconstruction_output_dir")),
+        detectron2_output_dir=_resolve_path(paths.get("detectron2_output_dir")),
         runs_dir=_resolve_path(paths.get("runs_dir")),
         medaka_data_dir=_resolve_path(paths.get("medaka_data_dir")),
         sleap_models_dir=_resolve_path(paths.get("sleap_models_dir")),
