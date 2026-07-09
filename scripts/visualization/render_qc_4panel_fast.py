@@ -176,9 +176,10 @@ def draw_2d_view(img, view, f, reproj, vis2d, scale, arrow_t=3):
 
 # ----------------------------------------------------------------- threaded decode
 class Decoder(threading.Thread):
-    def __init__(self, path: Path, panel: int, start: int, end: int, qsize: int = 96):
+    def __init__(self, path: Path, panel: int, start: int, end: int, qsize: int = 96, step: int = 1):
         super().__init__(daemon=True)
         self.path, self.panel, self.f0, self.f1 = path, panel, start, end  # not self.start (Thread.start!)
+        self.step = max(1, int(step))
         self.q: "queue.Queue" = queue.Queue(maxsize=qsize)
         self.err: str | None = None
 
@@ -197,7 +198,11 @@ class Decoder(threading.Thread):
             if img.shape[0] != self.panel:
                 img = cv2.resize(img, (self.panel, self.panel), interpolation=cv2.INTER_AREA)
             self.q.put(img)
-            f += 1
+            # skip step-1 frames without decoding (grab is cheap) to land on the next strided frame
+            for _ in range(self.step - 1):
+                if not cap.grab():
+                    break
+            f += self.step
         cap.release()
         self.q.put(None)
 
@@ -291,6 +296,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--calib", default=DEFAULT_CALIB)
     ap.add_argument("--panel", type=int, default=600)
     ap.add_argument("--fps", type=int, default=60)
+    ap.add_argument("--frame-step", type=int, default=1,
+                    help="render every Nth source frame (10 = ~stride-10 watchable QC; 1 = no-skip)")
     ap.add_argument("--start-frame", type=int, default=0)
     ap.add_argument("--end-frame", type=int, default=None)
     ap.add_argument("--tail-seconds", type=float, default=5.0)
@@ -351,14 +358,16 @@ def main(argv: list[str] | None = None) -> int:
     cmd += ["-pix_fmt", "yuv420p", str(args.out)]
     enc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    decoders = {v: Decoder(args.video_dir / v / VIEW_CAM[v], panel, start, end) for v in VIEWS}
+    step = max(1, int(getattr(args, "frame_step", 1)))
+    decoders = {v: Decoder(args.video_dir / v / VIEW_CAM[v], panel, start, end, step=step) for v in VIEWS}
     for d in decoders.values():
         d.start()
 
+    n_planned = len(range(start, end + 1, step))
     canvas = np.empty((out_wh, out_wh, 3), np.uint8)
     t0 = time.time(); next_report = t0 + 5.0; n_done = 0
     try:
-        for f in range(start, end + 1):
+        for f in range(start, end + 1, step):
             frames = {}
             for v in VIEWS:
                 item = decoders[v].q.get()
@@ -382,7 +391,7 @@ def main(argv: list[str] | None = None) -> int:
             now = time.time()
             if now >= next_report:
                 rate = n_done / (now - t0)
-                print(f"  {n_done}/{end-start+1}  {rate:.1f} fps  ETA {(end-f)/max(rate,1e-9)/60:.1f} min", flush=True)
+                print(f"  {n_done}/{n_planned}  {rate:.1f} fps  ETA {(n_planned-n_done)/max(rate,1e-9)/60:.1f} min", flush=True)
                 next_report = now + 15.0
     except StopIteration:
         print("  (a decoder ran dry; stopping)", flush=True)
@@ -402,7 +411,10 @@ def _orchestrate(args) -> int:
     start = max(0, args.start_frame)
     end = args.end_frame if args.end_frame is not None else n_total - 1
     K = max(1, args.workers)
-    per = math.ceil((end - start + 1) / K)
+    step = max(1, int(getattr(args, "frame_step", 1)))
+    # snap per-chunk size to a whole number of strided frames so chunk boundaries
+    # land on the global stride grid (start + m*step) -> seamless concat, no dup/gap
+    per = math.ceil(math.ceil((end - start + 1) / K) / step) * step
     ranges, s = [], start
     while s <= end:
         ranges.append((s, min(s + per - 1, end))); s += per
@@ -416,7 +428,8 @@ def _orchestrate(args) -> int:
         cmd = [sys.executable, "-m", "scripts.visualization.render_qc_4panel_fast", args.experiment,
                "--slp-dir", str(args.slp_dir), "--track-csv", str(args.track_csv),
                "--video-dir", str(args.video_dir), "--out", str(part), "--calib", str(args.calib),
-               "--panel", str(args.panel), "--fps", str(args.fps), "--start-frame", str(cs), "--end-frame", str(ce),
+               "--panel", str(args.panel), "--fps", str(args.fps), "--frame-step", str(step),
+               "--start-frame", str(cs), "--end-frame", str(ce),
                "--tail-seconds", str(args.tail_seconds), "--source-fps", str(args.source_fps),
                "--gate-px", str(args.gate_px), "--xyz-lim", str(args.xyz_lim[0]), str(args.xyz_lim[1]),
                "--elev", str(args.elev), "--azim", str(args.azim), "--ffmpeg", args.ffmpeg,
