@@ -27,6 +27,11 @@ from typing import Dict, List, Tuple
 import numpy as np
 
 from scripts.reconstruction_3d.calibration import Calibration
+from scripts.reconstruction_3d.tracklet_first_assignment import (
+    ReconstructionCandidate,
+    candidate_identity,
+    select_global_candidate_set,
+)
 
 
 def _default_labels(num_individuals: int) -> List[str]:
@@ -47,10 +52,20 @@ def compute_best_assignments_per_frame(
     cal: Calibration,
     points_by_frame: Dict[int, Dict[str, List[Tuple[float, float]]]],
     *,
+    scoring_cal: Calibration | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
     num_individuals: int = 3,
     num_candidates: int = 6,
     recover_missing_cam0: bool = True,
+    recover_missing_views: bool | None = None,
+    max_residual_per_fish: float | None = None,
+    tracklet_nodes_by_frame: Dict[int, Dict[str, Dict[int, str]]] | None = None,
+    tracklet_identities: Dict[str, str] | None = None,
+    motion_weight: float = 0.0,
+    max_motion_mm: float | None = None,
+    max_motion_hard_cap_mm: float | None = None,
+    partial_view_penalty: float = 1_000_000.0,
+    global_max_states: int | None = 512,
 ) -> Dict[int, Dict]:
     """Pick the best ``num_individuals`` mutually-exclusive 3D triplets per frame.
 
@@ -85,7 +100,10 @@ def compute_best_assignments_per_frame(
 
     Unfilled fish slots get ``NaN`` xyz, ``inf`` error and ``-1`` perm index.
     """
-    if cal._model_xyz2im is None:
+    scoring_cal = scoring_cal or cal
+    if recover_missing_views is None:
+        recover_missing_views = recover_missing_cam0
+    if scoring_cal._model_xyz2im is None:
         raise RuntimeError(
             "Calibration must include XYZ_to_imCoords.joblib for "
             "compute_best_assignments_per_frame (we score by reprojection error)."
@@ -109,6 +127,7 @@ def compute_best_assignments_per_frame(
         tqdm = lambda x, **kw: x
 
     best_by_frame: Dict[int, Dict] = {}
+    last_xyz_by_identity: Dict[str, tuple[int, np.ndarray]] = {}
 
     for frame in tqdm(sorted(points_by_frame.keys()), desc="3D best-assign", unit="frame"):
         cams = points_by_frame[frame]
@@ -138,96 +157,135 @@ def compute_best_assignments_per_frame(
         # Batch reprojection error.
         err = np.full(N ** 3, np.inf, dtype=float)
         if valid.any():
-            reproj = cal._model_xyz2im.predict(xyz[valid])
+            scoring_xyz = scoring_cal._model_im2xyz.predict(ic[valid])
+            reproj = scoring_cal._model_xyz2im.predict(scoring_xyz)
             diff = ic[valid] - reproj
             err[valid] = np.sum(diff ** 2, axis=1)
 
-        # Greedy: pick K mutually-exclusive triplets in ascending cost.
-        # ``chosen`` rows: (cam0_idx, cam1_idx, cam2_idx, xyz, err, recovered)
-        order = np.argsort(err, kind="stable")
-        used_i: set[int] = set()
-        used_j: set[int] = set()
-        used_k: set[int] = set()
-        chosen: List[tuple[int, int, int, np.ndarray, float, bool]] = []
-        for r in order:
-            if not np.isfinite(err[r]):
-                break
-            i, j, k = idx_tab[r]
-            i_int, j_int, k_int = int(i), int(j), int(k)
-            if i_int in used_i or j_int in used_j or k_int in used_k:
-                continue
-            chosen.append((i_int, j_int, k_int, xyz[r].copy(), float(err[r]), False))
-            used_i.add(i_int)
-            used_j.add(j_int)
-            used_k.add(k_int)
-            if len(chosen) == K:
-                break
+        slot_nodes_frame = (tracklet_nodes_by_frame or {}).get(frame, {})
+        slot_nodes = [
+            slot_nodes_frame.get("cam0", {}),
+            slot_nodes_frame.get("cam1", {}),
+            slot_nodes_frame.get("cam2", {}),
+        ]
+        identities = tracklet_identities or {}
 
-        # Pass 2: cam0 recovery. If we couldn't fill all K fish from real
-        # triplets, try to recover any remaining fish whose top-down detection
-        # is missing but whose side views have leftover unused detections.
-        if (
-            recover_missing_cam0
-            and len(chosen) < K
-            and cal._model_xy_from_xz_yz is not None
-        ):
-            avail_j = np.array(
-                [j for j in range(N) if j not in used_j and np.all(np.isfinite(pts1[j]))],
-                dtype=int,
+        def _make_candidate(
+            slots: tuple[int, int, int],
+            point: np.ndarray,
+            residual: float,
+            *,
+            synthetic_view: int | None = None,
+        ) -> ReconstructionCandidate:
+            identity, conflict, evidence = candidate_identity(
+                slots, slot_nodes=slot_nodes, node_identities=identities
             )
-            avail_k = np.array(
-                [k for k in range(N) if k not in used_k and np.all(np.isfinite(pts2[k]))],
-                dtype=int,
-            )
-            if avail_j.size > 0 and avail_k.size > 0:
-                jjr, kkr = np.meshgrid(avail_j, avail_k, indexing="ij")
-                jjr = jjr.ravel()
-                kkr = kkr.ravel()
-
-                # Synthesise cam0 from (cam1, cam2): predict (xy) from (xz, yz).
-                pair_input = np.hstack([pts1[jjr], pts2[kkr]])  # (n_pairs, 4)
-                cam0_pred = np.asarray(cal._model_xy_from_xz_yz.predict(pair_input))
-                if cam0_pred.ndim == 1:
-                    cam0_pred = cam0_pred.reshape(-1, 2)
-
-                ic_r = np.empty((len(jjr), 6), dtype=float)
-                ic_r[:, 0:2] = cam0_pred
-                ic_r[:, 2:4] = pts1[jjr]
-                ic_r[:, 4:6] = pts2[kkr]
-                finite_r = np.all(np.isfinite(ic_r), axis=1)
-
-                xyz_r = np.full((len(jjr), 3), np.nan, dtype=float)
-                if finite_r.any():
-                    xyz_r[finite_r] = cal._model_im2xyz.predict(ic_r[finite_r])
-                finite_xyz_r = finite_r & np.all(np.isfinite(xyz_r), axis=1)
-
-                if low is not None and high is not None:
-                    in_box_r = np.all((xyz_r >= low) & (xyz_r <= high), axis=1)
-                    valid_r = finite_xyz_r & in_box_r
-                else:
-                    valid_r = finite_xyz_r
-
-                err_r = np.full(len(jjr), np.inf, dtype=float)
-                if valid_r.any():
-                    reproj_r = cal._model_xyz2im.predict(xyz_r[valid_r])
-                    err_r[valid_r] = np.sum((ic_r[valid_r] - reproj_r) ** 2, axis=1)
-
-                order_r = np.argsort(err_r, kind="stable")
-                for r in order_r:
-                    if len(chosen) == K:
-                        break
-                    if not np.isfinite(err_r[r]):
-                        break
-                    j_idx = int(jjr[r])
-                    k_idx = int(kkr[r])
-                    if j_idx in used_j or k_idx in used_k:
-                        continue
-                    # cam0_idx = -1 marks the cam0 detection as synthesised.
-                    chosen.append(
-                        (-1, j_idx, k_idx, xyz_r[r].copy(), float(err_r[r]), True)
+            motion_cost = 0.0
+            motion_rejected = False
+            if identity is not None and identity in last_xyz_by_identity:
+                last_frame, last_point = last_xyz_by_identity[identity]
+                distance = float(np.linalg.norm(point - last_point))
+                motion_cost = float(motion_weight * distance)
+                gap = max(1, int(frame - last_frame))
+                threshold = max_motion_mm * gap if max_motion_mm is not None else None
+                if max_motion_hard_cap_mm is not None:
+                    threshold = (
+                        max_motion_hard_cap_mm if threshold is None
+                        else min(threshold, max_motion_hard_cap_mm)
                     )
-                    used_j.add(j_idx)
-                    used_k.add(k_idx)
+                motion_rejected = threshold is not None and distance > threshold
+            return ReconstructionCandidate(
+                slots=slots,
+                xyz=tuple(float(v) for v in point),
+                residual=float(residual + (partial_view_penalty if synthetic_view is not None else 0.0)),
+                identity=identity,
+                synthetic_view=synthetic_view,
+                motion_cost=motion_cost,
+                identity_conflict=conflict,
+                motion_rejected=motion_rejected,
+                metadata={"identity_evidence": evidence, "raw_residual": float(residual)},
+            )
+
+        candidates: list[ReconstructionCandidate] = []
+        for r in np.where(valid & np.isfinite(err))[0]:
+            raw_error = float(err[r])
+            if max_residual_per_fish is not None and raw_error > max_residual_per_fish:
+                continue
+            slots = tuple(int(v) for v in idx_tab[r])
+            candidates.append(_make_candidate(slots, xyz[r], raw_error))
+
+        real_selection = select_global_candidate_set(
+            candidates, max_selected=K, max_states=global_max_states
+        )
+
+        # If three-view geometry cannot reconstruct all fish, add calibrated
+        # two-view hypotheses for whichever camera is absent.  Synthetic slots
+        # are -1 and therefore never consume a real detection.
+        if recover_missing_views and len(real_selection.selected) < K:
+            pts = (pts0, pts1, pts2)
+            helper = {
+                0: scoring_cal._model_xy_from_xz_yz,
+                1: scoring_cal._model_xz_from_xy_yz,
+                2: scoring_cal._model_yz_from_xz_xy,
+            }
+            for missing_view in range(3):
+                model = helper[missing_view]
+                if model is None:
+                    continue
+                observed = [view for view in range(3) if view != missing_view]
+                a_idx = np.where(np.isfinite(pts[observed[0]]).all(axis=1))[0]
+                b_idx = np.where(np.isfinite(pts[observed[1]]).all(axis=1))[0]
+                if not len(a_idx) or not len(b_idx):
+                    continue
+                aa, bb = np.meshgrid(a_idx, b_idx, indexing="ij")
+                aa, bb = aa.ravel(), bb.ravel()
+                # Pairwise helper feature order follows the calibration file
+                # names.  The cam2 helper is the one non-camera-order case:
+                # ``xz_xy_to_yz`` expects cam1 before cam0.
+                if missing_view == 2:
+                    pair_input = np.hstack([pts[1][bb], pts[0][aa]])
+                else:
+                    pair_input = np.hstack([pts[observed[0]][aa], pts[observed[1]][bb]])
+                predicted = np.asarray(model.predict(pair_input), dtype=float).reshape(-1, 2)
+                ic_p = np.empty((len(aa), 6), dtype=float)
+                slots_rows: list[tuple[int, int, int]] = []
+                for row, (a_slot, b_slot) in enumerate(zip(aa, bb)):
+                    triplet = np.full((3, 2), np.nan, dtype=float)
+                    triplet[observed[0]] = pts[observed[0]][a_slot]
+                    triplet[observed[1]] = pts[observed[1]][b_slot]
+                    triplet[missing_view] = predicted[row]
+                    ic_p[row] = triplet.ravel()
+                    slots = [-1, -1, -1]
+                    slots[observed[0]] = int(a_slot)
+                    slots[observed[1]] = int(b_slot)
+                    slots_rows.append(tuple(slots))
+                xyz_p = cal._model_im2xyz.predict(ic_p)
+                scoring_xyz_p = scoring_cal._model_im2xyz.predict(ic_p)
+                reproj_p = scoring_cal._model_xyz2im.predict(scoring_xyz_p)
+                err_p = np.sum((ic_p - reproj_p) ** 2, axis=1)
+                valid_p = np.isfinite(xyz_p).all(axis=1) & np.isfinite(err_p)
+                if low is not None and high is not None:
+                    valid_p &= np.all((xyz_p >= low) & (xyz_p <= high), axis=1)
+                for row in np.where(valid_p)[0]:
+                    raw_error = float(err_p[row])
+                    if max_residual_per_fish is not None and raw_error > max_residual_per_fish:
+                        continue
+                    candidates.append(
+                        _make_candidate(
+                            slots_rows[row], xyz_p[row], raw_error,
+                            synthetic_view=missing_view,
+                        )
+                    )
+
+        selection = select_global_candidate_set(
+            candidates, max_selected=K, max_states=global_max_states
+        )
+        chosen = list(selection.selected)
+        for candidate in chosen:
+            if candidate.identity is not None:
+                last_xyz_by_identity[candidate.identity] = (
+                    int(frame), np.asarray(candidate.xyz, dtype=float)
+                )
 
         groups = {lb: [float("nan")] * 3 for lb in labels}
         errors = {lb: float("inf") for lb in labels}
@@ -235,7 +293,13 @@ def compute_best_assignments_per_frame(
         perm_cam1 = [-1] * K
         perm_cam2 = [-1] * K
         recovered = [False] * K
-        for slot, (i, j, k, point, e, was_recovered) in enumerate(chosen):
+        synthetic_views = [-1] * K
+        source_id_hints: dict[int, str] = {}
+        for slot, candidate in enumerate(chosen):
+            i, j, k = candidate.slots
+            point = np.asarray(candidate.xyz, dtype=float)
+            e = float(candidate.metadata.get("raw_residual", candidate.residual))
+            was_recovered = candidate.synthetic_view is not None
             lb = labels[slot]
             groups[lb] = [float(point[0]), float(point[1]), float(point[2])]
             errors[lb] = e
@@ -243,6 +307,11 @@ def compute_best_assignments_per_frame(
             perm_cam1[slot] = j
             perm_cam2[slot] = k
             recovered[slot] = was_recovered
+            synthetic_views[slot] = (
+                int(candidate.synthetic_view) if candidate.synthetic_view is not None else -1
+            )
+            if candidate.identity is not None:
+                source_id_hints[slot] = candidate.identity
 
         best_by_frame[frame] = {
             "groups": groups,
@@ -251,6 +320,15 @@ def compute_best_assignments_per_frame(
             "perm_cam1": perm_cam1,
             "perm_cam2": perm_cam2,
             "recovered": recovered,
+            "synthetic_views": synthetic_views,
+            "source_id_hints": source_id_hints,
+            "selection_diagnostics": {
+                "alternatives_considered": selection.alternatives_considered,
+                "identity_conflicts": selection.rejected_identity_conflicts,
+                "motion_gate_rejections": selection.rejected_motion_gate,
+                "candidate_count": len(candidates),
+                "selection_kind": "global_tracklet_constrained",
+            },
             "dropped_high_residual": [],
         }
 

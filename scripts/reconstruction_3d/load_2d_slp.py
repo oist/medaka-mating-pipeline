@@ -109,6 +109,41 @@ def _instance_point(
     return float(centroid[0]), float(centroid[1]), float(score) if score is not None else np.nan
 
 
+def _instances_in_slot_order(
+    insts,
+    *,
+    node_names: list[str],
+    anchor_node: str | None = None,
+    filter_fp: bool = True,
+    min_span_px: float = 15.0,
+    dup_dist_px: float = 12.0,
+) -> list:
+    """Return instances in the exact candidate-slot order used downstream."""
+    candidates = list(insts)
+    if filter_fp:
+        candidates = _drop_fp_instances(
+            candidates,
+            min_span_px=min_span_px,
+            dup_dist_px=dup_dist_px,
+        )
+    sortable = []
+    for inst in candidates:
+        x, y, score = _instance_point(
+            inst,
+            node_names=node_names,
+            anchor_node=anchor_node,
+        )
+        if np.isfinite(x) and np.isfinite(y):
+            sortable.append((score, x, inst))
+    sortable.sort(
+        key=lambda item: (
+            -(item[0] if np.isfinite(item[0]) else -np.inf),
+            item[1],
+        )
+    )
+    return [item[2] for item in sortable]
+
+
 def load_points_by_frame(
     slp_paths: Dict[str, Path | str],
     *,
@@ -173,9 +208,14 @@ def load_points_by_frame(
                 continue
             if end_frame is not None and fi > end_frame:
                 continue
-            insts = list(f.instances)
-            if filter_fp:
-                insts = _drop_fp_instances(insts, min_span_px=min_span_px, dup_dist_px=dup_dist_px)
+            insts = _instances_in_slot_order(
+                f.instances,
+                node_names=node_names,
+                anchor_node=anchor_node,
+                filter_fp=filter_fp,
+                min_span_px=min_span_px,
+                dup_dist_px=dup_dist_px,
+            )
             pts: list[tuple[float, float, float]] = []
             for inst in insts:
                 x, y, score = _instance_point(
@@ -197,12 +237,8 @@ def load_points_by_frame(
         result[fi] = {}
         for view, cam in VIEW_TO_CAM.items():
             raw = per_view_frames.get(view, {}).get(fi, [])
-            # Keep the top-N by score, fill the rest with NaN.
-            raw_sorted = sorted(
-                raw,
-                key=lambda r: (-(r[2] if np.isfinite(r[2]) else -np.inf), r[0]),
-            )
-            keep = raw_sorted[:slots]
+            # Instances were already put in reconstruction slot order above.
+            keep = raw[:slots]
             points: list[Tuple[float, float]] = [(x, y) for (x, y, _s) in keep]
             while len(points) < slots:
                 points.append((np.nan, np.nan))

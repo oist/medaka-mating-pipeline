@@ -51,6 +51,7 @@ def run_reconstruction_from_slp(
     *,
     slp_dir: Path,
     model_folder: Path,
+    assignment_model_folder: Path | None = None,
     output_dir: Path,
     num_individuals: int = 3,
     num_candidates: int | None = None,
@@ -69,6 +70,10 @@ def run_reconstruction_from_slp(
     output_tag: str | None = None,
     save_best_json: bool = True,
     save_best_pre_link_json: bool = True,
+    tracklet_paths: dict[str, Path] | None = None,
+    silhouette_link_paths: dict[str, Path] | None = None,
+    appearance_csv: Path | None = None,
+    temporal_geometry_annotations: bool = False,
 ) -> dict:
     slp_paths = {
         view: slp_dir / f"{view}.slp" for view in VIEW_TO_CAM
@@ -89,8 +94,15 @@ def run_reconstruction_from_slp(
         )
 
     cal = Calibration(str(model_folder))
-    allow_permutations = bool(cal.has_geometric_scoring)
+    assignment_cal = (
+        Calibration(str(assignment_model_folder))
+        if assignment_model_folder is not None
+        else cal
+    )
+    allow_permutations = bool(assignment_cal.has_geometric_scoring)
 
+    tracklet_artifacts: dict[str, object] = {}
+    source_id_hints_by_frame: dict[int, dict[int, str]] | None = None
     if num_candidates is not None and num_candidates > num_individuals:
         # Each view exposes more candidates than fish: enumerate all triplets
         # through the calibration model, drop those outside xyz_bounds, and
@@ -103,24 +115,300 @@ def run_reconstruction_from_slp(
         best = compute_best_assignments_per_frame(
             cal,
             points_by_frame,
+            scoring_cal=assignment_cal,
             xyz_bounds=xyz_bounds,
             num_individuals=num_individuals,
             num_candidates=num_candidates,
+            max_residual_per_fish=max_residual_per_fish,
         )
-        if max_residual_per_fish is not None:
-            for info in best.values():
-                errors = info["errors"]
-                groups = info["groups"]
-                dropped = []
-                for lb, err in errors.items():
-                    if not np.isfinite(err) or err > max_residual_per_fish:
-                        groups[lb] = [float("nan")] * 3
-                        dropped.append(lb)
-                info["dropped_high_residual"] = dropped
+        if tracklet_paths:
+            import pandas as pd
+            from scripts.reconstruction_3d.multiview_tracklet_tracking import (
+                build_component_hints,
+                apply_targeted_appearance_fallback,
+                build_constrained_tracklet_graph,
+                build_identified_2d_rows,
+                build_observations,
+                label_components,
+                label_components_from_tracked_geometry,
+                load_silhouette_link_edges,
+                load_tracklet_slot_map,
+                propagate_component_labels_by_exclusion,
+            )
+            from scripts.reconstruction_3d.tracklet_first_assignment import (
+                build_detection_dispositions,
+            )
+
+            geometry_bootstrap_best = best
+            missing_views = set(VIEW_TO_CAM) - set(tracklet_paths)
+            if missing_views:
+                raise ValueError(
+                    "tracklet-first reconstruction requires all views; missing "
+                    + ", ".join(sorted(missing_views))
+                )
+            frames = sorted(points_by_frame)
+            slot_maps: dict[str, dict[int, dict[int, str]]] = {}
+            quality_maps = {}
+            meta_parts = []
+            slot_qc = {}
+            for view, tracklet_path in tracklet_paths.items():
+                slot_maps[view], quality_maps[view], meta, qc = load_tracklet_slot_map(
+                    view,
+                    slp_paths[view],
+                    Path(tracklet_path),
+                    start_frame=frames[0],
+                    end_frame=frames[-1],
+                )
+                meta_parts.append(meta)
+                slot_qc[view] = qc
+            node_meta = pd.concat(meta_parts, ignore_index=True)
+            observations = build_observations(
+                best,
+                slot_maps,
+                quality_maps,
+                num_individuals=num_individuals,
+                max_residual=max_residual_per_fish or float("inf"),
+                hardcore_mm=12.0,
+            )
+            silhouette_edge_parts = []
+            for view, link_path in (silhouette_link_paths or {}).items():
+                silhouette_edge_parts.append(
+                    load_silhouette_link_edges(view, Path(link_path))
+                )
+            silhouette_edges = (
+                pd.concat(silhouette_edge_parts, ignore_index=True)
+                if silhouette_edge_parts
+                else None
+            )
+            component, edges = build_constrained_tracklet_graph(
+                observations,
+                node_meta.node_id.astype(str).tolist(),
+                silhouette_edges=silhouette_edges,
+            )
+            appearance = pd.read_csv(appearance_csv) if appearance_csv else None
+            component_labels, component_sources, seed_frame = label_components(
+                best,
+                observations,
+                component,
+                num_individuals=num_individuals,
+                appearance=None,
+            )
+            propagated, exclusion_sources, identity_domains = (
+                propagate_component_labels_by_exclusion(
+                    slot_maps,
+                    component,
+                    component_labels,
+                    num_individuals=num_individuals,
+                )
+            )
+            component_labels.update(propagated)
+            component_sources.update(exclusion_sources)
+            appearance_labels, appearance_confidence, appearance_decisions = (
+                apply_targeted_appearance_fallback(
+                    appearance,
+                    component,
+                    identity_domains,
+                )
+            )
+            if appearance_labels:
+                component_labels.update(appearance_labels)
+                component_sources.update(
+                    {component_id: "appearance_fallback" for component_id in appearance_labels}
+                )
+                propagated, more_sources, identity_domains = (
+                    propagate_component_labels_by_exclusion(
+                        slot_maps,
+                        component,
+                        component_labels,
+                        num_individuals=num_individuals,
+                    )
+                )
+                component_labels.update(propagated)
+                component_sources.update(more_sources)
+            node_identities = {
+                node: component_labels[comp]
+                for node, comp in component.items()
+                if comp in component_labels
+            }
+            # Candidate slots are associated with concrete tracklets before the
+            # identity-aware global re-solve.
+            tracklet_nodes_by_frame: dict[int, dict[str, dict[int, str]]] = {}
+            for view, by_frame in slot_maps.items():
+                cam = VIEW_TO_CAM[view]
+                for frame, mapping in by_frame.items():
+                    tracklet_nodes_by_frame.setdefault(int(frame), {})[cam] = mapping
+            best = compute_best_assignments_per_frame(
+                cal,
+                points_by_frame,
+                scoring_cal=assignment_cal,
+                xyz_bounds=xyz_bounds,
+                num_individuals=num_individuals,
+                num_candidates=num_candidates,
+                max_residual_per_fish=max_residual_per_fish,
+                tracklet_nodes_by_frame=tracklet_nodes_by_frame,
+                tracklet_identities=node_identities,
+                motion_weight=1.0,
+                max_motion_mm=max_jump_mm,
+                max_motion_hard_cap_mm=max_jump_hard_cap_mm,
+            )
+            # Identity/motion constraints must never erase otherwise usable
+            # geometry.  If the constrained alternative search cannot match
+            # the bootstrap cardinality, retain that frame as geometry-only;
+            # reliable per-view biological identities remain in identified_2d
+            # and can reacquire on the next compatible frame.
+            for frame, bootstrap_info in geometry_bootstrap_best.items():
+                constrained_info = best[frame]
+                bootstrap_count = sum(
+                    np.isfinite(np.asarray(point, float)).all()
+                    for point in bootstrap_info.get("groups", {}).values()
+                )
+                constrained_count = sum(
+                    np.isfinite(np.asarray(point, float)).all()
+                    for point in constrained_info.get("groups", {}).values()
+                )
+                if constrained_count >= bootstrap_count:
+                    continue
+                fallback = {
+                    **bootstrap_info,
+                    "source_id_hints": {},
+                    "selection_diagnostics": {
+                        **dict(constrained_info.get("selection_diagnostics", {})),
+                        "selection_kind": "geometry_bootstrap_coverage_fallback",
+                        "constrained_count": int(constrained_count),
+                        "bootstrap_count": int(bootstrap_count),
+                        "alternative_search_exhausted": True,
+                    },
+                }
+                best[frame] = fallback
+            source_id_hints_by_frame = {
+                int(frame): {int(k): str(v) for k, v in info.get("source_id_hints", {}).items()}
+                for frame, info in best.items()
+                if info.get("source_id_hints")
+            }
+            final_observations = build_observations(
+                best,
+                slot_maps,
+                quality_maps,
+                num_individuals=num_individuals,
+                max_residual=max_residual_per_fish or float("inf"),
+                hardcore_mm=12.0,
+            )
+            # Derive annotation-only votes from the final source grouping, not
+            # the bootstrap grouping. Equivalent camera permutations can have
+            # identical XYZ but different source indices; voting on the final
+            # grouping keeps 2D annotations consistent with the delivered 3D.
+            if temporal_geometry_annotations:
+                annotation_tracked = apply_cross_frame_tracking(
+                    best,
+                    num_individuals=num_individuals,
+                    max_jump_mm=max_jump_mm,
+                    max_jump_hard_cap_mm=max_jump_hard_cap_mm,
+                    max_gap_frames=max_gap_frames,
+                    source_id_hints_by_frame=source_id_hints_by_frame,
+                    source_hints_override_motion_gate=False,
+                )
+                temporal_geometry_labels, temporal_geometry_decisions = (
+                    label_components_from_tracked_geometry(
+                        final_observations,
+                        component,
+                        annotation_tracked,
+                        component_labels,
+                        alignment_frame=seed_frame,
+                        min_frames=3,
+                        min_fraction=1.0,
+                    )
+                )
+            else:
+                temporal_geometry_labels = {}
+                temporal_geometry_decisions = pd.DataFrame()
+            # Temporal geometry votes are output annotations only. They improve
+            # coverage for disconnected 2D components but never become hard
+            # triangulation/source constraints.
+            temporal_geometry_labels = {
+                component_id: identity
+                for component_id, identity in temporal_geometry_labels.items()
+                if component_id not in component_labels
+            }
+            output_component_labels = {
+                **component_labels,
+                **temporal_geometry_labels,
+            }
+            output_component_sources = {
+                **component_sources,
+                **{
+                    component_id: "unanimous_temporal_geometry_vote_annotation"
+                    for component_id in temporal_geometry_labels
+                },
+            }
+            output_identity_domains = dict(identity_domains)
+            output_identity_domains.update(
+                {
+                    component_id: {identity}
+                    for component_id, identity in temporal_geometry_labels.items()
+                }
+            )
+            output_node_identities = {
+                node: output_component_labels[comp]
+                for node, comp in component.items()
+                if comp in output_component_labels
+            }
+            assignments = node_meta.copy()
+            assignments["component_id"] = assignments.node_id.map(component)
+            assignments["assigned_identity"] = assignments.node_id.map(output_node_identities).fillna("")
+            assignments["identity_source"] = assignments.component_id.map(output_component_sources).fillna("unresolved")
+            assignments["identity_domain"] = assignments.component_id.map(
+                lambda value: "|".join(sorted(output_identity_domains.get(value, set())))
+            )
+            assignments["appearance_confidence"] = assignments.component_id.map(
+                appearance_confidence
+            )
+            identified_2d = build_identified_2d_rows(
+                {view: Path(path) for view, path in tracklet_paths.items()},
+                component,
+                output_component_labels,
+                output_component_sources,
+                final_observations,
+                start_frame=frames[0],
+                end_frame=frames[-1],
+            )
+            dispositions = pd.DataFrame(
+                build_detection_dispositions(
+                    points_by_frame,
+                    best,
+                    slot_nodes_by_frame=tracklet_nodes_by_frame,
+                    node_identities=output_node_identities,
+                )
+            )
+            _hints, conflicts = build_component_hints(
+                final_observations,
+                component,
+                output_component_labels,
+                num_individuals=num_individuals,
+            )
+            tracklet_artifacts = {
+                "slot_qc": slot_qc,
+                "seed_frame": seed_frame,
+                "assignments": assignments,
+                "identified_2d": identified_2d,
+                "dispositions": dispositions,
+                "edges": edges,
+                "conflicts": conflicts,
+                "exclusion_labeled_components": len(exclusion_sources),
+                "geometry_bootstrap_best": geometry_bootstrap_best,
+                "appearance_decisions": appearance_decisions,
+                "temporal_geometry_decisions": temporal_geometry_decisions,
+                "temporal_geometry_labeled_components": len(temporal_geometry_labels),
+                "geometry_coverage_fallback_frames": sum(
+                    info.get("selection_diagnostics", {}).get("selection_kind")
+                    == "geometry_bootstrap_coverage_fallback"
+                    for info in best.values()
+                ),
+            }
     else:
         candidates = compute_candidates(
             cal,
             points_by_frame,
+            scoring_cal=assignment_cal,
             xyz_bounds=xyz_bounds,
             allow_permutations=allow_permutations,
             num_individuals=num_individuals,
@@ -140,10 +428,55 @@ def run_reconstruction_from_slp(
             max_jump_mm=max_jump_mm,
             max_jump_hard_cap_mm=max_jump_hard_cap_mm,
             max_gap_frames=max_gap_frames,
+            source_id_hints_by_frame=source_id_hints_by_frame,
+            source_hints_override_motion_gate=False,
         )
 
     output_dir.mkdir(parents=True, exist_ok=True)
     tag = output_tag or experiment_name
+
+    artifact_paths: dict[str, str] = {}
+    if tracklet_artifacts:
+        bootstrap_path = output_dir / f"{tag}_geometry_bootstrap_best_pre_link.json"
+        save_best_pre_link_json_to(
+            tracklet_artifacts["geometry_bootstrap_best"],
+            bootstrap_path,
+            num_individuals=num_individuals,
+        )
+        artifact_paths["geometry_bootstrap"] = str(bootstrap_path)
+        for key, suffix in (
+            ("assignments", "tracklet_assignments.csv"),
+            ("identified_2d", "identified_2d.csv"),
+            ("dispositions", "detection_dispositions.csv"),
+            ("edges", "cross_view_edges.csv"),
+            ("conflicts", "candidate_conflicts.csv"),
+            ("appearance_decisions", "appearance_decisions.csv"),
+            ("temporal_geometry_decisions", "temporal_geometry_decisions.csv"),
+        ):
+            path = output_dir / f"{tag}_{suffix}"
+            tracklet_artifacts[key].to_csv(path, index=False)
+            artifact_paths[key] = str(path)
+        summary = {
+            "seed_frame": int(tracklet_artifacts["seed_frame"]),
+            "slot_matching": tracklet_artifacts["slot_qc"],
+            "exclusion_labeled_components": int(
+                tracklet_artifacts["exclusion_labeled_components"]
+            ),
+            "temporal_geometry_labeled_components": int(
+                tracklet_artifacts["temporal_geometry_labeled_components"]
+            ),
+            "disposition_rows": int(len(tracklet_artifacts["dispositions"])),
+            "assigned_2d_only_rows": int(
+                (tracklet_artifacts["identified_2d"].observation_status == "assigned_2d_only").sum()
+            ),
+            "conflicts_reoptimized": int(len(tracklet_artifacts["conflicts"])),
+            "geometry_coverage_fallback_frames": int(
+                tracklet_artifacts["geometry_coverage_fallback_frames"]
+            ),
+        }
+        summary_path = output_dir / f"{tag}_tracklet_first_summary.json"
+        summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+        artifact_paths["summary"] = str(summary_path)
 
     pre_link_json_path: Path | None = None
     if save_best_pre_link_json:
@@ -191,6 +524,7 @@ def run_reconstruction_from_slp(
         "best_tracked": best_tracked,
         "num_frames": len(points_by_frame),
         "num_individuals": num_individuals,
+        "tracklet_artifacts": artifact_paths,
     }
 
 
@@ -249,6 +583,11 @@ def save_best_pre_link_json_to(
             "perm_cam1": list(info.get("perm_cam1", []) or []),
             "perm_cam2": list(info.get("perm_cam2", []) or []),
             "recovered": [bool(r) for r in (info.get("recovered") or [])],
+            "synthetic_views": [int(v) for v in (info.get("synthetic_views") or [])],
+            "source_id_hints": {
+                str(k): str(v) for k, v in (info.get("source_id_hints") or {}).items()
+            },
+            "selection_diagnostics": dict(info.get("selection_diagnostics") or {}),
             "dropped_high_residual": list(
                 info.get("dropped_high_residual", []) or []
             ),
@@ -284,6 +623,12 @@ def load_best_pre_link_json(path: Path) -> dict:
             "perm_cam0": list(info.get("perm_cam0") or list(range(n))),
             "perm_cam1": list(info["perm_cam1"]),
             "perm_cam2": list(info["perm_cam2"]),
+            "recovered": [bool(v) for v in info.get("recovered", [])],
+            "synthetic_views": [int(v) for v in info.get("synthetic_views", [])],
+            "source_id_hints": {
+                int(k): str(v) for k, v in info.get("source_id_hints", {}).items()
+            },
+            "selection_diagnostics": dict(info.get("selection_diagnostics", {})),
             "dropped_high_residual": list(info.get("dropped_high_residual", [])),
         }
     return out
@@ -344,6 +689,8 @@ def _save_best_tracked_json(
             "cam1_to_id": _view_map(cam1_label),
             "cam2_to_id": _view_map(cam2_label),
             "recovered": recovered_by_id,
+            "synthetic_views": list(info.get("synthetic_views", [])),
+            "id_anchor": [bool(v) for v in (info.get("id_anchor") or [])],
             "groups": {k: v for k, v in info.get("groups", {}).items()},
         }
 
@@ -380,6 +727,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--model-folder", default=None,
                         help="Overrides calibration_model_dir.")
+    parser.add_argument(
+        "--assignment-model-folder",
+        default=None,
+        help=(
+            "Optional calibration bundle used only for cross-camera candidate "
+            "completion and scoring. The --model-folder bundle still computes the "
+            "reported 3D coordinates. Use this to freeze production assignments "
+            "while testing a new triangulation model."
+        ),
+    )
     parser.add_argument("--output-dir", default=None,
                         help="Overrides reconstruction_output_dir.")
     parser.add_argument("--num-individuals", type=int, default=3,
@@ -390,7 +747,7 @@ def build_parser() -> argparse.ArgumentParser:
             "Per-view candidate count to load when SLEAP was run with "
             "more detections per frame than fish (e.g. -n 6 to recover real "
             "fish that would otherwise be displaced by reflections). When set "
-            "and > --num-individuals, triangulation switches to greedy "
+            "and > --num-individuals, triangulation switches to global "
             "mutually-exclusive triplet selection across N^3 candidate "
             "triplets (with xyz_bounds gating reflections). Default: same as "
             "--num-individuals (legacy behaviour)."
@@ -398,6 +755,43 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--start-frame", type=int, default=None)
     parser.add_argument("--end-frame", type=int, default=None)
+    parser.add_argument(
+        "--tracklets",
+        action="append",
+        default=[],
+        metavar="VIEW=CSV",
+        help=(
+            "Enable tracklet-first assignment with a concrete-tracklet CSV; "
+            "repeat for top_cam, side1_cam, and side2_cam."
+        ),
+    )
+    parser.add_argument(
+        "--appearance-csv",
+        type=Path,
+        default=None,
+        help="Optional high-confidence appearance evidence for unresolved components.",
+    )
+    parser.add_argument(
+        "--silhouette-links",
+        action="append",
+        default=[],
+        metavar="VIEW=CSV",
+        help=(
+            "Optional trusted silhouette fragment-link candidates; repeat for "
+            "each view with masks. Edges are accepted only after local 3D "
+            "endpoint/turn validation and graph cannot-link checks."
+        ),
+    )
+    parser.add_argument(
+        "--temporal-geometry-annotations",
+        action="store_true",
+        help=(
+            "EXPERIMENTAL: annotate disconnected 2D components from unanimous "
+            "final-geometry ID votes. These annotations never constrain 3D, "
+            "but geometry IDs may still differ from biological IDs across "
+            "swaps; disabled by default."
+        ),
+    )
     parser.add_argument(
         "--anchor-node",
         default="mouth",
@@ -541,10 +935,41 @@ def main(argv: list[str] | None = None) -> None:
         end = args.end_frame if args.end_frame is not None else "end"
         tag = f"{tag}_f{start}-{end}"
 
+    tracklet_paths: dict[str, Path] = {}
+    for spec in args.tracklets:
+        if "=" not in spec:
+            parser.error(f"--tracklets expects VIEW=CSV, got {spec!r}")
+        view, value = spec.split("=", 1)
+        if view not in VIEW_TO_CAM:
+            parser.error(f"unknown tracklet view {view!r}")
+        path = Path(value)
+        if not path.exists():
+            parser.error(f"tracklet CSV not found: {path}")
+        tracklet_paths[view] = path
+    if tracklet_paths and set(tracklet_paths) != set(VIEW_TO_CAM):
+        parser.error("--tracklets must be supplied once for all three camera views")
+
+    silhouette_link_paths: dict[str, Path] = {}
+    for spec in args.silhouette_links:
+        if "=" not in spec:
+            parser.error(f"--silhouette-links expects VIEW=CSV, got {spec!r}")
+        view, value = spec.split("=", 1)
+        if view not in VIEW_TO_CAM:
+            parser.error(f"unknown silhouette-link view {view!r}")
+        path = Path(value)
+        if not path.exists():
+            parser.error(f"silhouette-link CSV not found: {path}")
+        silhouette_link_paths[view] = path
+    if silhouette_link_paths and not tracklet_paths:
+        parser.error("--silhouette-links requires --tracklets")
+
     result = run_reconstruction_from_slp(
         experiment_name=args.experiment,
         slp_dir=slp_dir,
         model_folder=Path(model_folder),
+        assignment_model_folder=(
+            Path(args.assignment_model_folder) if args.assignment_model_folder else None
+        ),
         output_dir=Path(output_dir),
         num_individuals=args.num_individuals,
         num_candidates=args.num_candidates,
@@ -563,6 +988,10 @@ def main(argv: list[str] | None = None) -> None:
         output_tag=tag,
         save_best_json=not args.no_save_best_json,
         save_best_pre_link_json=not args.no_save_best_pre_link_json,
+        tracklet_paths=tracklet_paths or None,
+        silhouette_link_paths=silhouette_link_paths or None,
+        appearance_csv=args.appearance_csv,
+        temporal_geometry_annotations=args.temporal_geometry_annotations,
     )
 
     print()
@@ -575,6 +1004,8 @@ def main(argv: list[str] | None = None) -> None:
         print(f"best-tracked JSON: {result['best_json_path']}")
     if result["best_pre_link_json_path"]:
         print(f"pre-link JSON    : {result['best_pre_link_json_path']}")
+    for name, path in result.get("tracklet_artifacts", {}).items():
+        print(f"tracklet {name:10}: {path}")
 
     if args.bind_top_id:
         if args.top_tracks_csv is None:

@@ -314,6 +314,53 @@ Algorithm (Dynamics-of-dominance-style):
 
 Output: `<output_dir>/<tag>_3d.csv` with columns `frame, fish_id, X, Y, Z`.
 
+### 2.4a Tracklet-first multi-view identity
+
+The canonical N=6 path can associate concrete tracklets before final triplet
+selection by passing one `--tracklets view=csv` flag for every camera. It then:
+
+1. runs a geometry-only global bootstrap;
+2. constructs cross-view equality and same-view all-different constraints;
+3. propagates singleton identity domains (including two-known-implies-third);
+4. globally re-solves mutually exclusive real and calibrated two-view
+   hypotheses with identity and motion compatibility;
+5. preserves reliable identified 2D rows when no XYZ is available; and
+6. writes a disposition/reason row for every finite candidate slot.
+
+Conflicting concrete-tracklet evidence is rejected during candidate-set search;
+it is not converted directly to NaN. Real three-view sets are preferred over
+two-view completion. Synthetic reconstructions use `-1` for the missing view
+and retain `synthetic_views`/`recovered` provenance.
+
+Outputs in addition to the compatibility CSV/JSON are
+`*_tracklet_assignments.csv`, `*_identified_2d.csv`,
+`*_detection_dispositions.csv`, `*_cross_view_edges.csv`, and
+`*_tracklet_first_summary.json`.
+
+### 2.4b Legacy post-link multi-view pilot
+
+`multiview_tracklet_tracking` implements the stricter identity layer used after
+triangulation when the best-separated camera changes by scene:
+
+1. Build edge-extended concrete tracklets independently in every view with
+   `concrete_tracklets --mode edge-extended`.
+2. Match tracklet points back to the exact filtered SLEAP candidate slots.
+3. Join tracklets across cameras only after repeated low-residual 3D
+   co-observation. Simultaneous different-fish observations are cannot-link
+   constraints.
+4. Transfer component identities into the temporal 3D linker. A view that
+   remains concrete carries identity across a break in another view.
+5. Record cross-camera-inconsistent triplets without changing a concrete
+   tracklet identity. Unresolved components are written to `*_appearance_needed.csv`.
+   An optional appearance table (`view,tracklet_id,predicted_identity,confidence`)
+   can label those components without changing the geometric graph.
+
+The pilot writes `*_cross_view_edges.csv`, `*_tracklet_assignments.csv`,
+`*_hint_conflicts.csv`, `*_continuity_violations.csv`, and a JSON summary in
+addition to the normal 3D CSV and `best.json`. Expansion should require zero
+continuity violations for labeled components and should report the coverage
+cost of conservative triplet vetoes.
+
 **Key CLI flags**
 
 | Flag | Purpose | Example |
@@ -357,7 +404,7 @@ from binding a *different* fish onto the same ID). Loosen `--max-jump-mm` toward
 
 | Path | tqdm label | frame/s | 348k frames |
 | --- | --- | ---: | ---: |
-| `--num-candidates 6` (greedy triplet, **recommended**) | `3D best-assign` | ~500–660 | ~10 min |
+| `--num-candidates 6` (global constrained set, **recommended**) | `3D best-assign` | ~400–900 | ~10–15 min |
 | default (full 36-permutation) | `3D candidates` | ~10 | ~9.7 h |
 
 Prefer the `--num-candidates 6` path (see callout in §2.4). Both are

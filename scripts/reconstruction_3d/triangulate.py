@@ -30,6 +30,7 @@ def compute_candidates(
     cal: Calibration,
     points_by_frame: Dict[int, Dict[str, List[Tuple[float, float]]]],
     *,
+    scoring_cal: Calibration | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
     allow_permutations: bool = True,
     num_individuals: int | None = None,
@@ -41,6 +42,7 @@ def compute_candidates(
     When `allow_permutations=False`, the function keeps the incoming camera
     ordering and emits a single candidate per frame.
     """
+    scoring_cal = scoring_cal or cal
     low, high = (xyz_bounds or (None, None))[0], (xyz_bounds or (None, None))[1]
     candidates_by_frame: Dict[int, List[Dict]] = {}
 
@@ -84,7 +86,7 @@ def compute_candidates(
                     im0 = np.array(pts0[i], dtype=float)
                     im1 = np.array(pts1[j1], dtype=float)
                     im2 = np.array(pts2[j2], dtype=float)
-                    triplet = cal.complete_triplet(np.vstack([im0, im1, im2]))
+                    triplet = scoring_cal.complete_triplet(np.vstack([im0, im1, im2]))
                     if np.any(np.isnan(triplet)):
                         total_cost += np.inf
                         groups[label] = [np.nan, np.nan, np.nan]
@@ -103,7 +105,7 @@ def compute_candidates(
                             groups[label] = [np.nan, np.nan, np.nan]
                             errors[label] = float("inf")
                             continue
-                    err = cal.compute_triplet_registration_error(triplet)
+                    err = scoring_cal.compute_triplet_registration_error(triplet)
                     if np.isfinite(err):
                         total_cost += err
                         errors[label] = float(err)

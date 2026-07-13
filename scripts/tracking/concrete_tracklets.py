@@ -392,11 +392,22 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--slp", default=None)
     p.add_argument("--output", default=None, help="optional tracklets CSV")
     p.add_argument("--num-fish", type=int, default=3)
+    p.add_argument(
+        "--mode", choices=["frame-conservative", "edge-extended"],
+        default="frame-conservative",
+        help=(
+            "frame-conservative breaks every fish when any pair is ambiguous; "
+            "edge-extended breaks only the affected tracklet using velocity-standardized separation."
+        ),
+    )
     p.add_argument("--sep-bl", type=float, default=1.5, help="min inter-fish separation in body lengths")
     p.add_argument("--jump-bl", type=float, default=1.0, help="max per-frame link distance in body lengths")
     p.add_argument("--min-score", type=float, default=0.3)
     p.add_argument("--max-gap", type=int, default=0,
                    help="bridge up to this many non-close-contact dropout frames within a tracklet")
+    p.add_argument("--stifd-tau", type=float, default=2.0)
+    p.add_argument("--sigma0", type=float, default=2.0)
+    p.add_argument("--smooth-window", type=int, default=9)
     p.add_argument("--body-length", type=float, default=None, help="override estimated body length (px)")
     p.add_argument("--no-top-k", action="store_true", help="keep all detections (don't drop extras by score)")
     p.add_argument("--start-frame", type=int, default=0)
@@ -430,11 +441,24 @@ def main(argv: list[str] | None = None) -> None:
           f"frames_with_!= {args.num_fish}_raw_detections={n_wrong} "
           f"({100*n_wrong/max(len(frames_data),1):.0f}%)")
 
-    tracklets, stats = build_concrete_tracklets(
-        frames_data, num_fish=args.num_fish, body_length=bl,
-        sep_bl=args.sep_bl, jump_bl=args.jump_bl, min_score=args.min_score,
-        max_gap=args.max_gap,
-    )
+    if args.mode == "edge-extended":
+        tracklets, stats = build_tracklets_edge_extended(
+            frames_data,
+            num_fish=args.num_fish,
+            body_length=bl,
+            tau=args.stifd_tau,
+            sigma0=args.sigma0,
+            jump_bl=args.jump_bl,
+            min_score=args.min_score,
+            max_gap=args.max_gap,
+            sep_smooth_window=args.smooth_window,
+        )
+    else:
+        tracklets, stats = build_concrete_tracklets(
+            frames_data, num_fish=args.num_fish, body_length=bl,
+            sep_bl=args.sep_bl, jump_bl=args.jump_bl, min_score=args.min_score,
+            max_gap=args.max_gap,
+        )
     print("\n=== concrete tracklet stats ===")
     for k, v in stats.items():
         print(f"  {k}: {v}")
