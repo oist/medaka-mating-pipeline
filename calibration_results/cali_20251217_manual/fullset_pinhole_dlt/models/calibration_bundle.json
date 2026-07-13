@@ -1,0 +1,237 @@
+{
+  "model_type": "projective_dlt",
+  "camera_count": 3,
+  "training_pose_count": 67,
+  "training_marker_observations": 736,
+  "tank_bounds_mm": [
+    [
+      0.0,
+      192.0
+    ],
+    [
+      0.0,
+      192.0
+    ],
+    [
+      0.0,
+      192.0
+    ]
+  ],
+  "source_training_coordinates": "runs\\calib_fullset\\physics_bundle\\ball_training_coordinates.csv",
+  "source_geometry": "runs\\calib_12balls\\rigid_object_geometry.csv",
+  "source_base_model": "calibration_results\\cali_20251217_manual\\merged_rule_reassigned_beads_only\\models",
+  "unchanged_pairwise_helpers": [
+    "xy_yz_to_xz.joblib",
+    "xz_yz_to_xy.joblib",
+    "xz_xy_to_yz.joblib"
+  ],
+  "cameras": {
+    "cam0": {
+      "name": "cam0",
+      "fx": 2892.7705701077934,
+      "fy": 2893.2121819631693,
+      "cx": 607.2833659327788,
+      "cy": 684.2833017016695,
+      "k1": 0.0,
+      "k2": 0.0,
+      "rotation_vector": [
+        0.005168136232066271,
+        3.1235067143294537,
+        0.02753460685568805
+      ],
+      "camera_center": [
+        103.11493168951225,
+        102.05136713838735,
+        668.2319038754449
+      ],
+      "interface_normal": [
+        -0.012431994836857982,
+        -0.0105736173308954,
+        -0.999866813191095
+      ],
+      "interface_point": [
+        97.19363048017303,
+        97.01520247534404,
+        192.0
+      ],
+      "glass_thickness_mm": 0.0,
+      "index_air": 1.0003,
+      "index_glass": 1.52,
+      "index_water": 1.3325,
+      "layer_count": 0,
+      "p1": 0.0,
+      "p2": 0.0,
+      "k3": 0.0,
+      "k4": 0.0,
+      "k5": 0.0,
+      "k6": 0.0
+    },
+    "cam1": {
+      "name": "cam1",
+      "fx": 2945.902392368647,
+      "fy": 2906.9091112402507,
+      "cx": 620.2272543781172,
+      "cy": 718.4809031854866,
+      "k1": 0.0,
+      "k2": 0.0,
+      "rotation_vector": [
+        1.6072059740294822,
+        -0.00940254366005279,
+        0.0056736844226884225
+      ],
+      "camera_center": [
+        93.46019836723234,
+        -507.8767899899264,
+        91.53074174470822
+      ],
+      "interface_normal": [
+        0.004205675162715967,
+        0.9999637704908936,
+        0.00740067578410104
+      ],
+      "interface_point": [
+        95.59624055637283,
+        -5.684341886080802e-14,
+        95.28950938400006
+      ],
+      "glass_thickness_mm": 0.0,
+      "index_air": 1.0003,
+      "index_glass": 1.52,
+      "index_water": 1.3325,
+      "layer_count": 0,
+      "p1": 0.0,
+      "p2": 0.0,
+      "k3": 0.0,
+      "k4": 0.0,
+      "k5": 0.0,
+      "k6": 0.0
+    },
+    "cam2": {
+      "name": "cam2",
+      "fx": 2950.494634133702,
+      "fy": 2915.641600663751,
+      "cx": 593.6082924553053,
+      "cy": 632.5102715170096,
+      "k1": 0.0,
+      "k2": 0.0,
+      "rotation_vector": [
+        1.2087021909684326,
+        1.2064925799821034,
+        -1.2187853607836578
+      ],
+      "camera_center": [
+        699.9718448456503,
+        98.24558540586138,
+        83.88941277516146
+      ],
+      "interface_normal": [
+        -0.9997921201197705,
+        -0.003717257042685357,
+        0.02004740747561013
+      ],
+      "interface_point": [
+        192.0,
+        96.3569308748453,
+        94.07504872370066
+      ],
+      "glass_thickness_mm": 0.0,
+      "index_air": 1.0003,
+      "index_glass": 1.52,
+      "index_water": 1.3325,
+      "layer_count": 0,
+      "p1": 0.0,
+      "p2": 0.0,
+      "k3": 0.0,
+      "k4": 0.0,
+      "k5": 0.0,
+      "k6": 0.0
+    }
+  },
+  "heldout_evaluation": {
+    "n_poses": 13,
+    "n_markers": 136,
+    "kabsch_residual_mm": {
+      "mean": 0.6235091625508334,
+      "rms": 0.7198177138164511,
+      "median": 0.5508222060794984,
+      "p95": 1.3542046088154733,
+      "maximum": 2.0698052530620865
+    },
+    "pairwise_distance_error_mm": {
+      "mae": 0.5199183710392123,
+      "rms": 0.6815934476077357,
+      "p95": 1.4408281927133286,
+      "maximum": 2.9688844676352844,
+      "signed_bias": 0.1208269439524145
+    },
+    "ray_intersection_rms_mm": null,
+    "per_pose": [
+      {
+        "pose_id": "f10320",
+        "kabsch_rms_mm": 0.974706127945834,
+        "pairwise_mae_mm": 0.7457131798602573
+      },
+      {
+        "pose_id": "f16320",
+        "kabsch_rms_mm": 0.5705338481467586,
+        "pairwise_mae_mm": 0.44139969529454504
+      },
+      {
+        "pose_id": "f21520",
+        "kabsch_rms_mm": 0.5442998476879851,
+        "pairwise_mae_mm": 0.4119828046807238
+      },
+      {
+        "pose_id": "f21600",
+        "kabsch_rms_mm": 0.449636023418324,
+        "pairwise_mae_mm": 0.3289215654807256
+      },
+      {
+        "pose_id": "f21680",
+        "kabsch_rms_mm": 0.5930324973550526,
+        "pairwise_mae_mm": 0.4579700339712721
+      },
+      {
+        "pose_id": "f23200",
+        "kabsch_rms_mm": 0.6733187532258376,
+        "pairwise_mae_mm": 0.589417524865409
+      },
+      {
+        "pose_id": "f27840",
+        "kabsch_rms_mm": 0.9186319808724567,
+        "pairwise_mae_mm": 0.7500964504817915
+      },
+      {
+        "pose_id": "f27920",
+        "kabsch_rms_mm": 0.5246895816636613,
+        "pairwise_mae_mm": 0.4012299281984969
+      },
+      {
+        "pose_id": "f28000",
+        "kabsch_rms_mm": 0.9132717378949489,
+        "pairwise_mae_mm": 0.5622709413468321
+      },
+      {
+        "pose_id": "f31280",
+        "kabsch_rms_mm": 0.9860913178926133,
+        "pairwise_mae_mm": 0.6686213641380907
+      },
+      {
+        "pose_id": "f4720",
+        "kabsch_rms_mm": 0.5100330647136377,
+        "pairwise_mae_mm": 0.3385625792328682
+      },
+      {
+        "pose_id": "f4800",
+        "kabsch_rms_mm": 0.6661766784289485,
+        "pairwise_mae_mm": 0.5253360875882072
+      },
+      {
+        "pose_id": "f8080",
+        "kabsch_rms_mm": 0.766030442770726,
+        "pairwise_mae_mm": 0.6073119765013867
+      }
+    ]
+  },
+  "scope": "Held-out rigid-object metrics validate shape/scale. Round7 fish data can test downstream consistency and assignment robustness, but cannot provide absolute 3D accuracy without fish-position ground truth."
+}
