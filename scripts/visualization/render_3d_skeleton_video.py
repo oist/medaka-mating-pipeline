@@ -13,9 +13,9 @@ Pipeline
 --------
 1. Load `best.json` -> per-frame `cam{0,1,2}_to_id` (which detection slot in each
    view corresponds to which fish ID).
-2. Load each .slp once; sort instances per frame by descending score to match
-   the slot ordering used by `load_2d_slp.py`. Keep mouth + tail (x, y) per
-   instance instead of collapsing to centroid.
+2. Load each .slp once; apply the same detection filtering and slot ordering as
+   `load_2d_slp.py`. Keep mouth + tail (x, y) per instance instead of
+   collapsing the rendered keypoints to a centroid.
 3. For each rendered frame: look up the slot index per view per fish, build a
    (3, 2) imCoord triplet for mouth and for tail, and triangulate each via the
    calibration model.
@@ -53,6 +53,7 @@ VIEW_TO_CAM = {"top_cam": "cam0", "side1_cam": "cam1", "side2_cam": "cam2"}
 VIEW_TO_BEST_KEY = {"top_cam": "cam0_to_id", "side1_cam": "cam1_to_id",
                     "side2_cam": "cam2_to_id"}
 FISH_COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+TRIANGULATION_CACHE_SLOT_ORDER_VERSION = 2
 
 
 class SkeletonRenderer3D:
@@ -223,15 +224,51 @@ class SkeletonRenderer3D:
         self._plt.close(self.fig)
 
 
+def _instances_in_reconstruction_slot_order(
+    insts,
+    *,
+    node_names: list[str],
+    anchor_node: str | None = None,
+    filter_fp: bool = True,
+    min_span_px: float = 15.0,
+    dup_dist_px: float = 12.0,
+) -> list:
+    """Apply the reconstruction ingestion rules and return slot-ordered instances.
+
+    ``best.json`` stores indices into the candidate arrays produced by
+    :func:`scripts.reconstruction_3d.load_2d_slp.load_points_by_frame`.  The
+    renderer must therefore repeat that loader's filtering, finite-centroid
+    check, and score/X tie-break exactly before using those indices.
+    """
+    from scripts.reconstruction_3d.load_2d_slp import _instances_in_slot_order
+
+    return _instances_in_slot_order(
+        insts,
+        node_names=node_names,
+        anchor_node=anchor_node,
+        filter_fp=filter_fp,
+        min_span_px=min_span_px,
+        dup_dist_px=dup_dist_px,
+    )
+
+
 def load_slp_node_xy(
     slp_path: Path,
     node_names: tuple[str, ...] = ("mouth", "tail"),
+    *,
+    anchor_node: str | None = None,
+    filter_fp: bool = True,
+    min_span_px: float = 15.0,
+    dup_dist_px: float = 12.0,
+    start_frame: int | None = None,
+    end_frame: int | None = None,
 ) -> tuple[dict[int, np.ndarray], list[str]]:
-    """Load .slp and return ``{frame: (n_inst_sorted_by_score, n_nodes, 2)}``.
+    """Load .slp keypoints in the exact slot order used by reconstruction.
 
-    Instances per frame are sorted by descending instance score so the slot
-    index aligns with what `load_2d_slp.py` produced when reconstruct_from_slp
-    built its perm_camN lists.
+    The defaults mirror ``load_points_by_frame``: visible-node centroid for
+    sorting plus the production collapsed/duplicate detection filter. This is
+    required because ``best.json`` candidate indices refer to that filtered
+    ordering, not to the raw order of instances in the ``.slp`` file.
     """
     import sleap_io as sio
     labels = sio.load_slp(str(slp_path))
@@ -241,18 +278,26 @@ def load_slp_node_xy(
     out: dict[int, np.ndarray] = {}
     for lf in labels.labeled_frames:
         fi = int(lf.frame_idx)
-        items: list[tuple[float, np.ndarray]] = []
-        for inst in lf.instances:
+        if start_frame is not None and fi < start_frame:
+            continue
+        if end_frame is not None and fi > end_frame:
+            continue
+        insts = _instances_in_reconstruction_slot_order(
+            lf.instances,
+            node_names=sk_nodes,
+            anchor_node=anchor_node,
+            filter_fp=filter_fp,
+            min_span_px=min_span_px,
+            dup_dist_px=dup_dist_px,
+        )
+        items: list[np.ndarray] = []
+        for inst in insts:
             pts = inst.numpy()  # (n_nodes, 2)
             sel = pts[node_idx]  # (len(node_names), 2)
-            sc = getattr(inst, "score", None)
-            sc = float(sc) if sc is not None else float("nan")
-            items.append((sc, sel))
+            items.append(sel)
         if not items:
             continue
-        # Descending score, NaN scores go last.
-        items.sort(key=lambda kv: -(kv[0] if np.isfinite(kv[0]) else -np.inf))
-        arr = np.stack([v for _, v in items], axis=0)
+        arr = np.stack(items, axis=0)
         out[fi] = arr
     return out, sk_nodes
 
@@ -309,6 +354,15 @@ def build_triangulation(
                 except Exception:
                     continue
                 out[fi_out, k, n_i] = xyz
+            # A calibrated two-view completion has valid biological 3D but no
+            # raw slot in its synthetic camera, so node-wise triangulation
+            # above correctly cannot build a skeleton.  Preserve the 3D point
+            # as a degenerate two-node marker so trajectory tails remain
+            # visible and the camera overlays can label it as synthetic.
+            if not np.isfinite(out[fi_out, k]).any():
+                point = np.asarray((info.get("groups") or {}).get(fid, []), dtype=float)
+                if point.shape == (3,) and np.isfinite(point).all():
+                    out[fi_out, k, :, :] = point
     return out
 
 
@@ -445,13 +499,26 @@ def main(argv: list[str] | None = None) -> int:
     print()
 
     cache = args.triangulation_npz
+    cache_loaded = False
     if cache and cache.exists():
         print(f"Loading triangulation cache: {cache}")
         data = np.load(cache, allow_pickle=False)
-        arr = data["xyz"]
-        frame_indices = data["frames"].tolist()
-        fish_ids = [str(x) for x in data["fish_ids"]]
-    else:
+        cache_version = (
+            int(np.asarray(data["slot_order_version"]).reshape(-1)[0])
+            if "slot_order_version" in data.files
+            else 1
+        )
+        if cache_version == TRIANGULATION_CACHE_SLOT_ORDER_VERSION:
+            arr = data["xyz"]
+            frame_indices = data["frames"].tolist()
+            fish_ids = [str(x) for x in data["fish_ids"]]
+            cache_loaded = True
+        else:
+            print(
+                f"  stale cache slot-order version {cache_version}; "
+                "recomputing with reconstruction-aligned slots."
+            )
+    if not cache_loaded:
         print(f"Loading best.json ...")
         with args.best_json.open("r", encoding="utf-8") as fh:
             best_payload = json.load(fh)
@@ -498,6 +565,9 @@ def main(argv: list[str] | None = None) -> int:
                 cache, xyz=arr,
                 frames=np.array(frame_indices, dtype=np.int64),
                 fish_ids=np.array(fish_ids),
+                slot_order_version=np.array(
+                    [TRIANGULATION_CACHE_SLOT_ORDER_VERSION], dtype=np.int64
+                ),
             )
             print(f"  cached -> {cache}")
 
