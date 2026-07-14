@@ -47,4 +47,13 @@ current frame, `s` saves, and `q` quits.
 With `--update-config`, the script writes the selected prompts into the config
 and switches `sam2.runner` to `sam2_video_predictor`.
 
+For fin-inclusive image annotation with immediate SAM2 previews, separate body/fin
+masks, review decisions, and complete provenance, see
+[`FIN_ANNOTATION_GUI.md`](FIN_ANNOTATION_GUI.md). This workflow writes to new run
+directories and does not modify the existing prompt configs or mask datasets.
+
+For non-clustering appearance retraining from clean geometry-derived same/different
+pairs, leakage-safe evaluation, and global-fragment integration, see
+[`GEOMETRY_CONTRASTIVE_ID.md`](GEOMETRY_CONTRASTIVE_ID.md).
+
 Data-contract smoke tests use synthetic masks and do not require SAM2.
