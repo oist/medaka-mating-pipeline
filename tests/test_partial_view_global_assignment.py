@@ -1,5 +1,3 @@
-from types import SimpleNamespace
-
 import numpy as np
 import pytest
 
@@ -8,24 +6,32 @@ from scripts.reconstruction_3d.triangulate_extra_candidates import (
 )
 
 
-class _Zeros:
-    def __init__(self, width):
-        self.width = width
+class _ZeroBackend:
+    backend_name = "polynomial"
+    score_unit = "px^2"
 
-    def predict(self, values):
-        return np.zeros((len(values), self.width), dtype=float)
+    def evaluate_hypotheses(self, observations, *, profile):
+        observations = np.asarray(observations, dtype=float)
+        leading = observations.shape[:-2]
+        enough = np.isfinite(observations).all(axis=-1).sum(axis=-1) >= 2
+        xyz = np.zeros((*leading, 3), dtype=float)
+        scores = np.zeros(leading, dtype=float)
+        xyz[~enough] = np.nan
+        scores[~enough] = np.inf
+        return xyz, scores
+
+    def triangulate(self, observations):
+        return self.evaluate_hypotheses(
+            observations, profile="production_fast"
+        )[0]
+
+    def score_hypotheses(self, observations, *, profile):
+        return self.evaluate_hypotheses(observations, profile=profile)[1]
 
 
 @pytest.mark.parametrize("missing_view", [0, 1, 2])
 def test_six_candidate_path_completes_any_missing_camera(missing_view):
-    helpers = [_Zeros(2), _Zeros(2), _Zeros(2)]
-    cal = SimpleNamespace(
-        _model_im2xyz=_Zeros(3),
-        _model_xyz2im=_Zeros(6),
-        _model_xy_from_xz_yz=helpers[0] if missing_view == 0 else None,
-        _model_xz_from_xy_yz=helpers[1] if missing_view == 1 else None,
-        _model_yz_from_xz_xy=helpers[2] if missing_view == 2 else None,
-    )
+    cal = _ZeroBackend()
     cameras = {}
     for view in range(3):
         count = 2 if view == missing_view else 3
@@ -37,11 +43,12 @@ def test_six_candidate_path_completes_any_missing_camera(missing_view):
         {7: cameras},
         num_individuals=3,
         num_candidates=3,
-        max_residual_per_fish=1000,
-        partial_view_penalty=1_000_000,
+        max_hypothesis_score=1000,
+        partial_view_penalty_score_units=1_000_000,
         global_max_states=None,
     )[7]
     assert all(np.isfinite(best["groups"][label]).all() for label in ("a", "b", "c"))
     assert best["synthetic_views"].count(missing_view) == 1
+    assert best["missing_views"] == best["synthetic_views"]
     synthetic_source = best["synthetic_views"].index(missing_view)
     assert best[f"perm_cam{missing_view}"][synthetic_source] == -1

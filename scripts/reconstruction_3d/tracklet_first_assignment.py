@@ -14,6 +14,8 @@ testable without loading videos, ``.slp`` files, or joblib models.
 """
 
 from dataclasses import dataclass, field
+from functools import lru_cache
+from itertools import combinations
 from typing import Iterable, Mapping, Sequence
 
 import numpy as np
@@ -65,6 +67,79 @@ def _resource_masks(candidate: ReconstructionCandidate) -> tuple[int, int, int]:
     return tuple(0 if slot < 0 else 1 << int(slot) for slot in candidate.slots)
 
 
+@lru_cache(maxsize=32)
+def _triple_indices(count: int) -> np.ndarray:
+    """Cached i<j<k index table for vectorized three-candidate search."""
+    if count < 3:
+        return np.empty((0, 3), dtype=np.intp)
+    return np.fromiter(
+        (index for triple in combinations(range(count), 3) for index in triple),
+        dtype=np.intp,
+        count=3 * (count * (count - 1) * (count - 2) // 6),
+    ).reshape(-1, 3)
+
+
+def _select_up_to_three_vectorized(
+    viable: Sequence[ReconstructionCandidate],
+    *,
+    max_selected: int,
+) -> tuple[tuple[ReconstructionCandidate, ...], int]:
+    """Exact cardinality-first search over a prepared candidate frontier.
+
+    Production reconstructs at most three fish. A vectorized pairwise
+    compatibility matrix avoids the Python state×candidate loop of the generic
+    dynamic program while retaining the same slot and identity constraints.
+    """
+    count = len(viable)
+    if count == 0 or max_selected <= 0:
+        return (), 0
+    costs = np.asarray([candidate.cost for candidate in viable], dtype=float)
+    masks = np.asarray([_resource_masks(candidate) for candidate in viable], dtype=np.uint64)
+    identities = sorted({c.identity for c in viable if c.identity is not None})
+    identity_code = {identity: index for index, identity in enumerate(identities)}
+    codes = np.asarray(
+        [identity_code.get(candidate.identity, -1) for candidate in viable],
+        dtype=int,
+    )
+    compatible = np.all(
+        (masks[:, None, :] & masks[None, :, :]) == 0,
+        axis=2,
+    )
+    compatible &= (codes[:, None] < 0) | (codes[None, :] < 0) | (
+        codes[:, None] != codes[None, :]
+    )
+    np.fill_diagonal(compatible, False)
+    considered = count
+    best_indices: tuple[int, ...] = (int(np.argmin(costs)),)
+
+    if max_selected >= 2:
+        pair_mask = np.triu(compatible, k=1)
+        considered += int(np.count_nonzero(pair_mask))
+        if np.any(pair_mask):
+            pair_cost = costs[:, None] + costs[None, :]
+            pair_cost[~pair_mask] = np.inf
+            i, j = np.unravel_index(int(np.argmin(pair_cost)), pair_cost.shape)
+            best_indices = (int(i), int(j))
+
+    if max_selected >= 3:
+        triples = _triple_indices(count)
+        triple_compatible = (
+            compatible[triples[:, 0], triples[:, 1]]
+            & compatible[triples[:, 0], triples[:, 2]]
+            & compatible[triples[:, 1], triples[:, 2]]
+        )
+        n_compatible = int(np.count_nonzero(triple_compatible))
+        considered += n_compatible
+        if n_compatible:
+            viable_triples = triples[triple_compatible]
+            triple_costs = costs[viable_triples].sum(axis=1)
+            best_indices = tuple(
+                int(value) for value in viable_triples[int(np.argmin(triple_costs))]
+            )
+
+    return tuple(viable[index] for index in best_indices), considered
+
+
 def select_global_candidate_set(
     candidates: Sequence[ReconstructionCandidate],
     *,
@@ -113,6 +188,19 @@ def select_global_candidate_set(
         viable = [viable[i] for i in sorted(chosen_indices, key=lambda i: viable[i].cost)]
     identities = sorted({c.identity for c in viable if c.identity is not None})
     identity_bit = {identity: 1 << i for i, identity in enumerate(identities)}
+
+    if max_selected <= 3:
+        selected, considered = _select_up_to_three_vectorized(
+            viable, max_selected=max_selected
+        )
+        return SelectionResult(
+            selected=tuple(
+                sorted(selected, key=lambda c: (c.identity or "~", c.cost))
+            ),
+            alternatives_considered=int(considered),
+            rejected_identity_conflicts=sum(bool(c.identity_conflict) for c in candidates),
+            rejected_motion_gate=sum(bool(c.motion_rejected) for c in candidates),
+        )
 
     # (mask0, mask1, mask2, identity_mask) -> (cost, chosen tuple)
     states: dict[tuple[int, int, int, int], tuple[float, tuple[ReconstructionCandidate, ...]]] = {

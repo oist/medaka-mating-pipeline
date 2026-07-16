@@ -13,10 +13,10 @@ cam0 anchor assumption no longer holds: any of the 6 cam0 detections might be
 a reflection.
 
 This module batch-scores all (cam0_i, cam1_j, cam2_k) triplets (default 6^3 =
-216 per frame) through the calibration's ``imCoords_to_XYZ`` model, drops
-triplets whose 3D point falls outside the tank cube (``xyz_bounds``), and
-greedily picks ``num_individuals`` mutually-exclusive triplets minimising
-reprojection error.
+216 per frame) through the selected public calibration backend, drops triplets
+whose 3D point falls outside the tank cube (``xyz_bounds``), and globally
+selects ``num_individuals`` mutually-exclusive triplets. Two-view hypotheses
+keep the absent camera row as NaN; each backend owns its reconstruction policy.
 
 Output shape matches what ``select_best_all_frames`` returns, so this can
 plug directly into the existing cross-frame tracker.
@@ -58,14 +58,17 @@ def compute_best_assignments_per_frame(
     num_candidates: int = 6,
     recover_missing_cam0: bool = True,
     recover_missing_views: bool | None = None,
+    max_hypothesis_score: float | None = None,
     max_residual_per_fish: float | None = None,
     tracklet_nodes_by_frame: Dict[int, Dict[str, Dict[int, str]]] | None = None,
     tracklet_identities: Dict[str, str] | None = None,
     motion_weight: float = 0.0,
     max_motion_mm: float | None = None,
     max_motion_hard_cap_mm: float | None = None,
-    partial_view_penalty: float = 1_000_000.0,
+    partial_view_penalty_score_units: float = 1_000_000.0,
+    partial_view_penalty: float | None = None,
     global_max_states: int | None = 512,
+    evaluation_batch_frames: int = 256,
 ) -> Dict[int, Dict]:
     """Pick the best ``num_individuals`` mutually-exclusive 3D triplets per frame.
 
@@ -73,16 +76,13 @@ def compute_best_assignments_per_frame(
 
     1. *Real triplets* — enumerate every (cam0_i, cam1_j, cam2_k) combination
        across all valid detections, triangulate, drop those outside
-       ``xyz_bounds``, greedily pick the ``num_individuals`` mutually-exclusive
-       triplets with the lowest reprojection error.
-    2. *Cam0 recovery* (when ``recover_missing_cam0=True``) — if fewer than
-       ``num_individuals`` real triplets were viable, the top-down (cam0)
-       detection is presumed missing for the leftover fish. For each
-       still-unused (cam1_j, cam2_k) pair, predict the synthetic cam0
-       coordinate via ``Calibration.compute_XY_imcoords_from_XZ_YZ``,
-       triangulate the completed triplet, score by reprojection error, and
-       greedily fill remaining fish slots. Recovered fish carry
-       ``perm_cam0[slot] = -1`` to mark the cam0 detection as synthetic.
+       ``xyz_bounds``, then globally select the mutually-exclusive set with the
+       lowest declared backend score.
+    2. *Two-view recovery* — if fewer than ``num_individuals`` three-view
+       hypotheses are viable, enumerate pairs for each absent camera. The
+       absent row remains NaN. Refractive calibration intersects the two real
+       rays directly; polynomial calibration may use its legacy pairwise
+       helper internally. Recovered fish carry ``perm_camN[slot] = -1``.
 
     Returns a per-frame dict in the same shape as ``select_best_all_frames``::
 
@@ -93,7 +93,8 @@ def compute_best_assignments_per_frame(
             "perm_cam0":  [i_a, i_b, i_c],   # cam0 detection indices, -1 if recovered
             "perm_cam1":  [j_a, j_b, j_c],   # cam1 detection indices used
             "perm_cam2":  [k_a, k_b, k_c],   # cam2 detection indices used
-            "recovered":  [bool, bool, bool],  # True iff cam0 was synthesised
+            "recovered":  [bool, bool, bool],  # True iff one camera was absent
+            "missing_views": [int, int, int],  # absent camera index, else -1
             "dropped_high_residual": [],
           }
         }
@@ -103,11 +104,32 @@ def compute_best_assignments_per_frame(
     scoring_cal = scoring_cal or cal
     if recover_missing_views is None:
         recover_missing_views = recover_missing_cam0
-    if scoring_cal._model_xyz2im is None:
-        raise RuntimeError(
-            "Calibration must include XYZ_to_imCoords.joblib for "
-            "compute_best_assignments_per_frame (we score by reprojection error)."
+    if max_hypothesis_score is not None and max_residual_per_fish is not None:
+        raise ValueError(
+            "Use max_hypothesis_score or legacy max_residual_per_fish, not both"
         )
+    if max_residual_per_fish is not None:
+        if scoring_cal.score_unit != "px^2":
+            raise ValueError(
+                "max_residual_per_fish is a legacy pixel-squared gate and cannot "
+                f"be used with {scoring_cal.backend_name!r} scores in "
+                f"{scoring_cal.score_unit}; use max_hypothesis_score"
+            )
+        max_hypothesis_score = max_residual_per_fish
+    if partial_view_penalty is not None:
+        partial_view_penalty_score_units = float(partial_view_penalty)
+    if evaluation_batch_frames < 1:
+        raise ValueError("evaluation_batch_frames must be at least one")
+    # Scikit/joblib polynomial predictors can differ in their final floating
+    # bits when BLAS sees a different row batch. Keep their historical
+    # per-frame evaluation shape for strict reproducibility. Refractive ray
+    # construction/solving is row-independent and exactly batch-stable.
+    effective_batch_frames = (
+        evaluation_batch_frames
+        if cal.backend_name == "refractive"
+        and scoring_cal.backend_name == "refractive"
+        else 1
+    )
 
     low_high = xyz_bounds
     low = low_high[0] if low_high is not None else None
@@ -116,6 +138,22 @@ def compute_best_assignments_per_frame(
     K = num_individuals
     N = num_candidates
     labels = _default_labels(K)
+
+    def _evaluate(observations: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """Vectorized XYZ + scoring, fused when one backend can share rays."""
+        if scoring_cal is cal and hasattr(cal, "evaluate_hypotheses"):
+            xyz_values, score_values = cal.evaluate_hypotheses(
+                observations, profile="production_fast"
+            )
+        else:
+            xyz_values = cal.triangulate(observations)
+            score_values = scoring_cal.score_hypotheses(
+                observations, profile="production_fast"
+            )
+        return (
+            np.asarray(xyz_values, dtype=float),
+            np.asarray(score_values, dtype=float),
+        )
 
     # (N^3, 3) index table over all (i,j,k) triplets.
     ii, jj, kk = np.meshgrid(np.arange(N), np.arange(N), np.arange(N), indexing="ij")
@@ -128,24 +166,67 @@ def compute_best_assignments_per_frame(
 
     best_by_frame: Dict[int, Dict] = {}
     last_xyz_by_identity: Dict[str, tuple[int, np.ndarray]] = {}
+    frames = sorted(points_by_frame)
 
-    for frame in tqdm(sorted(points_by_frame.keys()), desc="3D best-assign", unit="frame"):
-        cams = points_by_frame[frame]
-        pts0 = _pad_to_n(cams.get("cam0", []), N)
-        pts1 = _pad_to_n(cams.get("cam1", []), N)
-        pts2 = _pad_to_n(cams.get("cam2", []), N)
+    def _full_evaluations():
+        """Yield per-frame full-view evaluations from bounded frame batches."""
+        for chunk_start in range(0, len(frames), effective_batch_frames):
+            chunk_frames = frames[
+                chunk_start : chunk_start + effective_batch_frames
+            ]
+            points_chunk: list[tuple[np.ndarray, np.ndarray, np.ndarray]] = []
+            observations_chunk = np.empty(
+                (len(chunk_frames), N ** 3, 3, 2), dtype=float
+            )
+            for local_index, frame in enumerate(chunk_frames):
+                cams = points_by_frame[frame]
+                pts0 = _pad_to_n(cams.get("cam0", []), N)
+                pts1 = _pad_to_n(cams.get("cam1", []), N)
+                pts2 = _pad_to_n(cams.get("cam2", []), N)
+                points_chunk.append((pts0, pts1, pts2))
+                observations_chunk[local_index, :, 0] = pts0[idx_tab[:, 0]]
+                observations_chunk[local_index, :, 1] = pts1[idx_tab[:, 1]]
+                observations_chunk[local_index, :, 2] = pts2[idx_tab[:, 2]]
+            finite_chunk = np.isfinite(observations_chunk).all(axis=(2, 3))
+            xyz_chunk = np.full(
+                (len(chunk_frames), N ** 3, 3), np.nan, dtype=float
+            )
+            score_chunk = np.full(
+                (len(chunk_frames), N ** 3), np.inf, dtype=float
+            )
+            if np.any(finite_chunk):
+                flat_observations = observations_chunk.reshape(-1, 3, 2)
+                flat_finite = finite_chunk.ravel()
+                evaluated_xyz, evaluated_scores = _evaluate(
+                    flat_observations[flat_finite]
+                )
+                xyz_chunk.reshape(-1, 3)[flat_finite] = evaluated_xyz
+                score_chunk.ravel()[flat_finite] = evaluated_scores
+            for local_index, frame in enumerate(chunk_frames):
+                yield (
+                    frame,
+                    *points_chunk[local_index],
+                    observations_chunk[local_index],
+                    finite_chunk[local_index],
+                    xyz_chunk[local_index],
+                    score_chunk[local_index],
+                )
 
-        # (N^3, 6) image-coord matrix per triplet, in cam0/cam1/cam2 order.
-        ic = np.empty((N ** 3, 6), dtype=float)
-        ic[:, 0:2] = pts0[idx_tab[:, 0]]
-        ic[:, 2:4] = pts1[idx_tab[:, 1]]
-        ic[:, 4:6] = pts2[idx_tab[:, 2]]
-        finite_in = np.all(np.isfinite(ic), axis=1)
-
-        # Batch triangulation (skip rows with NaN coords to keep the predictor sane).
-        xyz = np.full((N ** 3, 3), np.nan, dtype=float)
-        if finite_in.any():
-            xyz[finite_in] = cal._model_im2xyz.predict(ic[finite_in])
+    evaluation_iterator = tqdm(
+        _full_evaluations(), total=len(frames), desc="3D best-assign", unit="frame"
+    )
+    for (
+        frame,
+        pts0,
+        pts1,
+        pts2,
+        observations,
+        finite_in,
+        xyz,
+        all_scores,
+    ) in evaluation_iterator:
+        # Full three-view hypotheses. Missing-view hypotheses are enumerated
+        # separately below so their absent source slot stays explicit.
         finite_xyz = finite_in & np.all(np.isfinite(xyz), axis=1)
 
         if low is not None and high is not None:
@@ -154,13 +235,11 @@ def compute_best_assignments_per_frame(
         else:
             valid = finite_xyz
 
-        # Batch reprojection error.
+        # The scoring backend declares the unit; geometry and scoring may be
+        # deliberately different when assignments are frozen to another model.
         err = np.full(N ** 3, np.inf, dtype=float)
         if valid.any():
-            scoring_xyz = scoring_cal._model_im2xyz.predict(ic[valid])
-            reproj = scoring_cal._model_xyz2im.predict(scoring_xyz)
-            diff = ic[valid] - reproj
-            err[valid] = np.sum(diff ** 2, axis=1)
+            err[valid] = all_scores[valid]
 
         slot_nodes_frame = (tracklet_nodes_by_frame or {}).get(frame, {})
         slot_nodes = [
@@ -197,19 +276,34 @@ def compute_best_assignments_per_frame(
             return ReconstructionCandidate(
                 slots=slots,
                 xyz=tuple(float(v) for v in point),
-                residual=float(residual + (partial_view_penalty if synthetic_view is not None else 0.0)),
+                residual=float(
+                    residual
+                    + (
+                        partial_view_penalty_score_units
+                        if synthetic_view is not None
+                        else 0.0
+                    )
+                ),
                 identity=identity,
                 synthetic_view=synthetic_view,
                 motion_cost=motion_cost,
                 identity_conflict=conflict,
                 motion_rejected=motion_rejected,
-                metadata={"identity_evidence": evidence, "raw_residual": float(residual)},
+                metadata={
+                    "identity_evidence": evidence,
+                    "raw_residual": float(residual),
+                    "score_unit": scoring_cal.score_unit,
+                    "triangulation_backend": cal.backend_name,
+                    "scoring_backend": scoring_cal.backend_name,
+                    "scoring_profile": "production_fast",
+                    "observed_view_count": 2 if synthetic_view is not None else 3,
+                },
             )
 
         candidates: list[ReconstructionCandidate] = []
         for r in np.where(valid & np.isfinite(err))[0]:
             raw_error = float(err[r])
-            if max_residual_per_fish is not None and raw_error > max_residual_per_fish:
+            if max_hypothesis_score is not None and raw_error > max_hypothesis_score:
                 continue
             slots = tuple(int(v) for v in idx_tab[r])
             candidates.append(_make_candidate(slots, xyz[r], raw_error))
@@ -221,17 +315,12 @@ def compute_best_assignments_per_frame(
         # If three-view geometry cannot reconstruct all fish, add calibrated
         # two-view hypotheses for whichever camera is absent.  Synthetic slots
         # are -1 and therefore never consume a real detection.
-        if recover_missing_views and len(real_selection.selected) < K:
+        needs_partial_recovery = (
+            recover_missing_views and len(real_selection.selected) < K
+        )
+        if needs_partial_recovery:
             pts = (pts0, pts1, pts2)
-            helper = {
-                0: scoring_cal._model_xy_from_xz_yz,
-                1: scoring_cal._model_xz_from_xy_yz,
-                2: scoring_cal._model_yz_from_xz_xy,
-            }
             for missing_view in range(3):
-                model = helper[missing_view]
-                if model is None:
-                    continue
                 observed = [view for view in range(3) if view != missing_view]
                 a_idx = np.where(np.isfinite(pts[observed[0]]).all(axis=1))[0]
                 b_idx = np.where(np.isfinite(pts[observed[1]]).all(axis=1))[0]
@@ -239,36 +328,22 @@ def compute_best_assignments_per_frame(
                     continue
                 aa, bb = np.meshgrid(a_idx, b_idx, indexing="ij")
                 aa, bb = aa.ravel(), bb.ravel()
-                # Pairwise helper feature order follows the calibration file
-                # names.  The cam2 helper is the one non-camera-order case:
-                # ``xz_xy_to_yz`` expects cam1 before cam0.
-                if missing_view == 2:
-                    pair_input = np.hstack([pts[1][bb], pts[0][aa]])
-                else:
-                    pair_input = np.hstack([pts[observed[0]][aa], pts[observed[1]][bb]])
-                predicted = np.asarray(model.predict(pair_input), dtype=float).reshape(-1, 2)
-                ic_p = np.empty((len(aa), 6), dtype=float)
+                observations_p = np.full((len(aa), 3, 2), np.nan, dtype=float)
+                observations_p[:, observed[0], :] = pts[observed[0]][aa]
+                observations_p[:, observed[1], :] = pts[observed[1]][bb]
                 slots_rows: list[tuple[int, int, int]] = []
-                for row, (a_slot, b_slot) in enumerate(zip(aa, bb)):
-                    triplet = np.full((3, 2), np.nan, dtype=float)
-                    triplet[observed[0]] = pts[observed[0]][a_slot]
-                    triplet[observed[1]] = pts[observed[1]][b_slot]
-                    triplet[missing_view] = predicted[row]
-                    ic_p[row] = triplet.ravel()
+                for a_slot, b_slot in zip(aa, bb):
                     slots = [-1, -1, -1]
                     slots[observed[0]] = int(a_slot)
                     slots[observed[1]] = int(b_slot)
                     slots_rows.append(tuple(slots))
-                xyz_p = cal._model_im2xyz.predict(ic_p)
-                scoring_xyz_p = scoring_cal._model_im2xyz.predict(ic_p)
-                reproj_p = scoring_cal._model_xyz2im.predict(scoring_xyz_p)
-                err_p = np.sum((ic_p - reproj_p) ** 2, axis=1)
+                xyz_p, err_p = _evaluate(observations_p)
                 valid_p = np.isfinite(xyz_p).all(axis=1) & np.isfinite(err_p)
                 if low is not None and high is not None:
                     valid_p &= np.all((xyz_p >= low) & (xyz_p <= high), axis=1)
                 for row in np.where(valid_p)[0]:
                     raw_error = float(err_p[row])
-                    if max_residual_per_fish is not None and raw_error > max_residual_per_fish:
+                    if max_hypothesis_score is not None and raw_error > max_hypothesis_score:
                         continue
                     candidates.append(
                         _make_candidate(
@@ -277,8 +352,12 @@ def compute_best_assignments_per_frame(
                         )
                     )
 
-        selection = select_global_candidate_set(
-            candidates, max_selected=K, max_states=global_max_states
+        selection = (
+            select_global_candidate_set(
+                candidates, max_selected=K, max_states=global_max_states
+            )
+            if needs_partial_recovery
+            else real_selection
         )
         chosen = list(selection.selected)
         for candidate in chosen:
@@ -320,6 +399,7 @@ def compute_best_assignments_per_frame(
             "perm_cam1": perm_cam1,
             "perm_cam2": perm_cam2,
             "recovered": recovered,
+            "missing_views": synthetic_views,
             "synthetic_views": synthetic_views,
             "source_id_hints": source_id_hints,
             "selection_diagnostics": {
@@ -328,7 +408,18 @@ def compute_best_assignments_per_frame(
                 "motion_gate_rejections": selection.rejected_motion_gate,
                 "candidate_count": len(candidates),
                 "selection_kind": "global_tracklet_constrained",
+                "triangulation_backend": cal.backend_name,
+                "scoring_backend": scoring_cal.backend_name,
+                "scoring_profile": "production_fast",
+                "score_unit": scoring_cal.score_unit,
+                "max_hypothesis_score": max_hypothesis_score,
+                "partial_view_penalty": partial_view_penalty_score_units,
+                "partial_view_penalty_unit": scoring_cal.score_unit,
             },
+            "score_unit": scoring_cal.score_unit,
+            "triangulation_backend": cal.backend_name,
+            "scoring_backend": scoring_cal.backend_name,
+            "scoring_profile": "production_fast",
             "dropped_high_residual": [],
         }
 

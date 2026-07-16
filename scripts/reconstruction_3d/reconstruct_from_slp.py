@@ -6,9 +6,9 @@ Three-view 3D reconstruction + identity tracking, driven by merged SLEAP
 
 For each frame:
     1. Collect up to `num_individuals` predicted 2D points per view.
-    2. Enumerate every (cam1_perm × cam2_perm) assignment, triangulate each
-       candidate triplet via the calibration model, and score it by the
-       triplet's registration error (reprojection loss across views).
+    2. Enumerate cross-view assignments, triangulate each hypothesis through
+       the resolved public calibration backend, and score it in that backend's
+       declared unit (px^2 for polynomial, mm^2 for refractive geometry).
     3. Pick the minimum-cost candidate per frame.
     4. Link the chosen 3D points across frames with a Hungarian NN pass.
     5. Write `<experiment>_3d.csv` with columns [frame, fish_id, X, Y, Z].
@@ -46,12 +46,139 @@ from scripts.reconstruction_3d.select_best import select_best_all_frames
 from scripts.reconstruction_3d.triangulate import compute_candidates
 
 
+def _resolve_score_gate(
+    scoring_cal: Calibration,
+    *,
+    max_residual_per_fish: float | None,
+    max_residual_px2: float | None,
+    max_ray_residual_mm2: float | None,
+) -> tuple[float | None, str, str | None]:
+    """Resolve exactly one score gate without converting between units."""
+    provided = [
+        ("--max-residual-per-fish", max_residual_per_fish, "px^2"),
+        ("--max-residual-px2", max_residual_px2, "px^2"),
+        ("--max-ray-residual-mm2", max_ray_residual_mm2, "mm^2"),
+    ]
+    selected = [(name, value, unit) for name, value, unit in provided if value is not None]
+    if len(selected) > 1:
+        raise ValueError(
+            "Score gates are mutually exclusive; received "
+            + ", ".join(name for name, _, _ in selected)
+        )
+    if not selected:
+        return None, scoring_cal.score_unit, None
+    name, value, unit = selected[0]
+    if unit != scoring_cal.score_unit:
+        raise ValueError(
+            f"{name} is declared in {unit}, but resolved scoring backend "
+            f"{scoring_cal.backend_name!r} reports {scoring_cal.score_unit}. "
+            "Select the matching backend-specific gate; thresholds are never "
+            "converted between pixels and millimetres."
+        )
+    return float(value), unit, name
+
+
+def _json_ready(value):
+    """Return a JSON-safe copy of backend provenance (including Path values)."""
+    return json.loads(json.dumps(value, default=str))
+
+
+def _calibration_metadata(
+    geometry_cal: Calibration,
+    scoring_cal: Calibration,
+    *,
+    score_gate: float | None,
+    score_gate_unit: str,
+    score_gate_option: str | None,
+    scoring_profile: str,
+) -> dict[str, object]:
+    def score_definition(calibration: Calibration) -> str:
+        profiles = calibration.provenance.get("score_profiles", {})
+        profile_info = (
+            profiles.get(scoring_profile) if isinstance(profiles, dict) else None
+        )
+        provenance_definition = (
+            profile_info.get("definition")
+            if isinstance(profile_info, dict)
+            else None
+        ) or calibration.provenance.get("score_definition")
+        if provenance_definition:
+            return str(provenance_definition)
+        if calibration.backend_name == "refractive":
+            return (
+                "mean squared perpendicular distance from the triangulated XYZ "
+                "to each observed refracted ray"
+            )
+        return "sum_squared_reprojection_error_over_3_cameras"
+
+    return _json_ready(
+        {
+            "schema_version": 1,
+            "camera_order": ["cam0", "cam1", "cam2"],
+            "triangulation": {
+                "backend": geometry_cal.backend_name,
+                "score_unit": geometry_cal.score_unit,
+                "score_definition": score_definition(geometry_cal),
+                "provenance": geometry_cal.provenance,
+                "capabilities": geometry_cal.capabilities,
+            },
+            "assignment_scoring": {
+                "backend": scoring_cal.backend_name,
+                "score_unit": scoring_cal.score_unit,
+                "score_definition": score_definition(scoring_cal),
+                "scoring_profile": scoring_profile,
+                "provenance": scoring_cal.provenance,
+                "capabilities": scoring_cal.capabilities,
+            },
+            "score_gate": {
+                "value": score_gate,
+                "unit": score_gate_unit,
+                "cli_option": score_gate_option,
+            },
+            "missing_view_policy": {
+                "observation_marker": "NaN camera row",
+                "refractive": "direct intersection of the two observed refracted rays",
+                "polynomial": "legacy pairwise-helper completion inside polynomial backend",
+                "silent_cross_backend_fallback": False,
+            },
+            "projection": {
+                "backend": geometry_cal.backend_name,
+                "unit": "px",
+                "capability": bool(geometry_cal.capabilities.get("projection", False)),
+                "provenance": geometry_cal.provenance,
+                "legacy_projection_fallback_configured": False,
+                "silent_cross_backend_fallback": False,
+            },
+        }
+    )
+
+
+def _print_calibration_resolution(metadata: dict[str, object]) -> None:
+    geometry = metadata["triangulation"]
+    scoring = metadata["assignment_scoring"]
+    gate = metadata["score_gate"]
+    print(
+        "[calibration] triangulation backend="
+        f"{geometry['backend']} score_unit={geometry['score_unit']} "
+        f"provenance={json.dumps(geometry['provenance'], sort_keys=True)}"
+    )
+    print(
+        "[calibration] assignment scoring backend="
+        f"{scoring['backend']} score_unit={scoring['score_unit']} "
+        f"profile={scoring['scoring_profile']} "
+        f"definition={scoring['score_definition']} "
+        f"gate={gate['value']} {gate['unit']}"
+    )
+
+
 def run_reconstruction_from_slp(
     experiment_name: str,
     *,
     slp_dir: Path,
     model_folder: Path,
+    calibration_backend: str = "auto",
     assignment_model_folder: Path | None = None,
+    assignment_calibration_backend: str | None = None,
     output_dir: Path,
     num_individuals: int = 3,
     num_candidates: int | None = None,
@@ -60,9 +187,16 @@ def run_reconstruction_from_slp(
     anchor_node: str | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
     max_residual_per_fish: float | None = None,
+    max_residual_px2: float | None = None,
+    max_ray_residual_mm2: float | None = None,
     max_jump_mm: float | None = None,
     max_jump_hard_cap_mm: float | None = None,
     max_gap_frames: int | None = None,
+    motion_velocity_prediction_weight: float = 0.0,
+    motion_tangent_weight: float = 0.0,
+    motion_acceleration_weight: float = 0.0,
+    motion_uncertainty_growth_per_frame: float = 0.25,
+    max_motion_gap_frames: int | None = None,
     first_frame_id_only: bool = False,
     fill_missing: bool = True,
     shift_to_positive: bool = True,
@@ -93,22 +227,47 @@ def run_reconstruction_from_slp(
             f"{start_frame}..{end_frame})."
         )
 
-    cal = Calibration(str(model_folder))
+    cal = Calibration(str(model_folder), backend=calibration_backend)
     assignment_cal = (
-        Calibration(str(assignment_model_folder))
+        Calibration(
+            str(assignment_model_folder),
+            backend=assignment_calibration_backend or "auto",
+        )
         if assignment_model_folder is not None
         else cal
     )
-    allow_permutations = bool(assignment_cal.has_geometric_scoring)
+    score_gate, score_gate_unit, score_gate_option = _resolve_score_gate(
+        assignment_cal,
+        max_residual_per_fish=max_residual_per_fish,
+        max_residual_px2=max_residual_px2,
+        max_ray_residual_mm2=max_ray_residual_mm2,
+    )
+    scoring_profile = (
+        "production_fast"
+        if num_candidates is not None and num_candidates > num_individuals
+        else "legacy_combined"
+    )
+    calibration_metadata = _calibration_metadata(
+        cal,
+        assignment_cal,
+        score_gate=score_gate,
+        score_gate_unit=score_gate_unit,
+        score_gate_option=score_gate_option,
+        scoring_profile=scoring_profile,
+    )
+    _print_calibration_resolution(calibration_metadata)
+    allow_permutations = bool(
+        assignment_cal.capabilities.get("hypothesis_scoring", True)
+    )
 
     tracklet_artifacts: dict[str, object] = {}
     source_id_hints_by_frame: dict[int, dict[int, str]] | None = None
     if num_candidates is not None and num_candidates > num_individuals:
         # Each view exposes more candidates than fish: enumerate all triplets
         # through the calibration model, drop those outside xyz_bounds, and
-        # greedily pick `num_individuals` mutually-exclusive triplets minimising
-        # reprojection error. Skips select_best_all_frames since the picker is
-        # already producing a single optimal candidate per frame.
+        # globally pick `num_individuals` mutually-exclusive triplets minimising
+        # the scoring backend's declared metric. Skips select_best_all_frames
+        # since the picker already produces one optimal set per frame.
         from scripts.reconstruction_3d.triangulate_extra_candidates import (
             compute_best_assignments_per_frame,
         )
@@ -119,7 +278,7 @@ def run_reconstruction_from_slp(
             xyz_bounds=xyz_bounds,
             num_individuals=num_individuals,
             num_candidates=num_candidates,
-            max_residual_per_fish=max_residual_per_fish,
+            max_hypothesis_score=score_gate,
         )
         if tracklet_paths:
             import pandas as pd
@@ -167,7 +326,7 @@ def run_reconstruction_from_slp(
                 slot_maps,
                 quality_maps,
                 num_individuals=num_individuals,
-                max_residual=max_residual_per_fish or float("inf"),
+                max_residual=score_gate if score_gate is not None else float("inf"),
                 hardcore_mm=12.0,
             )
             silhouette_edge_parts = []
@@ -244,7 +403,7 @@ def run_reconstruction_from_slp(
                 xyz_bounds=xyz_bounds,
                 num_individuals=num_individuals,
                 num_candidates=num_candidates,
-                max_residual_per_fish=max_residual_per_fish,
+                max_hypothesis_score=score_gate,
                 tracklet_nodes_by_frame=tracklet_nodes_by_frame,
                 tracklet_identities=node_identities,
                 motion_weight=1.0,
@@ -290,7 +449,7 @@ def run_reconstruction_from_slp(
                 slot_maps,
                 quality_maps,
                 num_individuals=num_individuals,
-                max_residual=max_residual_per_fish or float("inf"),
+                max_residual=score_gate if score_gate is not None else float("inf"),
                 hardcore_mm=12.0,
             )
             # Derive annotation-only votes from the final source grouping, not
@@ -417,7 +576,7 @@ def run_reconstruction_from_slp(
             candidates,
             xyz_bounds=xyz_bounds,
             num_individuals=num_individuals,
-            max_residual_per_fish=max_residual_per_fish,
+            max_residual_per_fish=score_gate,
         )
     if first_frame_id_only:
         best_tracked = apply_first_frame_id_only(best)
@@ -428,6 +587,13 @@ def run_reconstruction_from_slp(
             max_jump_mm=max_jump_mm,
             max_jump_hard_cap_mm=max_jump_hard_cap_mm,
             max_gap_frames=max_gap_frames,
+            velocity_prediction_weight=motion_velocity_prediction_weight,
+            flow_weight=motion_tangent_weight,
+            acceleration_weight=motion_acceleration_weight,
+            motion_uncertainty_growth_per_frame=(
+                motion_uncertainty_growth_per_frame
+            ),
+            max_motion_gap_frames=max_motion_gap_frames,
             source_id_hints_by_frame=source_id_hints_by_frame,
             source_hints_override_motion_gate=False,
         )
@@ -435,13 +601,20 @@ def run_reconstruction_from_slp(
     output_dir.mkdir(parents=True, exist_ok=True)
     tag = output_tag or experiment_name
 
-    artifact_paths: dict[str, str] = {}
+    provenance_path = output_dir / f"{tag}_reconstruction_provenance.json"
+    provenance_path.write_text(
+        json.dumps(calibration_metadata, indent=2) + "\n", encoding="utf-8"
+    )
+    artifact_paths: dict[str, str] = {
+        "calibration_provenance": str(provenance_path)
+    }
     if tracklet_artifacts:
         bootstrap_path = output_dir / f"{tag}_geometry_bootstrap_best_pre_link.json"
         save_best_pre_link_json_to(
             tracklet_artifacts["geometry_bootstrap_best"],
             bootstrap_path,
             num_individuals=num_individuals,
+            calibration_metadata=calibration_metadata,
         )
         artifact_paths["geometry_bootstrap"] = str(bootstrap_path)
         for key, suffix in (
@@ -482,14 +655,20 @@ def run_reconstruction_from_slp(
     if save_best_pre_link_json:
         pre_link_json_path = output_dir / f"{tag}_best_pre_link.json"
         save_best_pre_link_json_to(
-            best, pre_link_json_path, num_individuals=num_individuals
+            best,
+            pre_link_json_path,
+            num_individuals=num_individuals,
+            calibration_metadata=calibration_metadata,
         )
 
     best_json_path: Path | None = None
     if save_best_json:
         best_json_path = output_dir / f"{tag}_best.json"
         _save_best_tracked_json(
-            best_tracked, best_json_path, num_individuals=num_individuals
+            best_tracked,
+            best_json_path,
+            num_individuals=num_individuals,
+            calibration_metadata=calibration_metadata,
         )
 
     dfs_3d = best_by_frame_to_dfs(
@@ -525,6 +704,7 @@ def run_reconstruction_from_slp(
         "num_frames": len(points_by_frame),
         "num_individuals": num_individuals,
         "tracklet_artifacts": artifact_paths,
+        "calibration": calibration_metadata,
     }
 
 
@@ -533,7 +713,11 @@ def _src_labels(num_individuals: int) -> list[str]:
 
 
 def save_best_pre_link_json_to(
-    best: dict, path: Path, *, num_individuals: int
+    best: dict,
+    path: Path,
+    *,
+    num_individuals: int,
+    calibration_metadata: dict[str, object] | None = None,
 ) -> None:
     """
     Per-frame pre-link artifact: the chosen min-cost candidate before any
@@ -583,6 +767,14 @@ def save_best_pre_link_json_to(
             "perm_cam1": list(info.get("perm_cam1", []) or []),
             "perm_cam2": list(info.get("perm_cam2", []) or []),
             "recovered": [bool(r) for r in (info.get("recovered") or [])],
+            "missing_views": [
+                int(v)
+                for v in (
+                    info.get("missing_views")
+                    or info.get("synthetic_views")
+                    or []
+                )
+            ],
             "synthetic_views": [int(v) for v in (info.get("synthetic_views") or [])],
             "source_id_hints": {
                 str(k): str(v) for k, v in (info.get("source_id_hints") or {}).items()
@@ -591,10 +783,15 @@ def save_best_pre_link_json_to(
             "dropped_high_residual": list(
                 info.get("dropped_high_residual", []) or []
             ),
+            "score_unit": info.get("score_unit"),
+            "triangulation_backend": info.get("triangulation_backend"),
+            "scoring_backend": info.get("scoring_backend"),
+            "scoring_profile": info.get("scoring_profile"),
         }
     payload = {
         "num_individuals": num_individuals,
         "src_labels": src,
+        "calibration": _json_ready(calibration_metadata or {}),
         "frames": out,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -624,18 +821,32 @@ def load_best_pre_link_json(path: Path) -> dict:
             "perm_cam1": list(info["perm_cam1"]),
             "perm_cam2": list(info["perm_cam2"]),
             "recovered": [bool(v) for v in info.get("recovered", [])],
+            "missing_views": [
+                int(v)
+                for v in info.get(
+                    "missing_views", info.get("synthetic_views", [])
+                )
+            ],
             "synthetic_views": [int(v) for v in info.get("synthetic_views", [])],
             "source_id_hints": {
                 int(k): str(v) for k, v in info.get("source_id_hints", {}).items()
             },
             "selection_diagnostics": dict(info.get("selection_diagnostics", {})),
             "dropped_high_residual": list(info.get("dropped_high_residual", [])),
+            "score_unit": info.get("score_unit"),
+            "triangulation_backend": info.get("triangulation_backend"),
+            "scoring_backend": info.get("scoring_backend"),
+            "scoring_profile": info.get("scoring_profile"),
         }
     return out
 
 
 def _save_best_tracked_json(
-    best_tracked: dict, path: Path, *, num_individuals: int
+    best_tracked: dict,
+    path: Path,
+    *,
+    num_individuals: int,
+    calibration_metadata: dict[str, object] | None = None,
 ) -> None:
     """
     Write a compact per-frame mapping usable by the multiview visualiser:
@@ -689,6 +900,9 @@ def _save_best_tracked_json(
             "cam1_to_id": _view_map(cam1_label),
             "cam2_to_id": _view_map(cam2_label),
             "recovered": recovered_by_id,
+            "missing_views": list(
+                info.get("missing_views", info.get("synthetic_views", []))
+            ),
             "synthetic_views": list(info.get("synthetic_views", [])),
             "id_anchor": [bool(v) for v in (info.get("id_anchor") or [])],
             "groups": {k: v for k, v in info.get("groups", {}).items()},
@@ -697,6 +911,7 @@ def _save_best_tracked_json(
     payload = {
         "num_individuals": num_individuals,
         "id_labels": id_labels,
+        "calibration": _json_ready(calibration_metadata or {}),
         "frames": out,
     }
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -728,6 +943,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model-folder", default=None,
                         help="Overrides calibration_model_dir.")
     parser.add_argument(
+        "--calibration-backend",
+        choices=("auto", "refractive", "polynomial"),
+        default="auto",
+        help=(
+            "Triangulation backend policy. 'auto' prefers a complete refractive "
+            "camera bundle and otherwise recognizes legacy polynomial/joblib "
+            "folders (default: auto)."
+        ),
+    )
+    parser.add_argument(
         "--assignment-model-folder",
         default=None,
         help=(
@@ -735,6 +960,15 @@ def build_parser() -> argparse.ArgumentParser:
             "completion and scoring. The --model-folder bundle still computes the "
             "reported 3D coordinates. Use this to freeze production assignments "
             "while testing a new triangulation model."
+        ),
+    )
+    parser.add_argument(
+        "--assignment-calibration-backend",
+        choices=("auto", "refractive", "polynomial"),
+        default=None,
+        help=(
+            "Backend policy for --assignment-model-folder. Defaults to auto; "
+            "ignored when no separate assignment folder is supplied."
         ),
     )
     parser.add_argument("--output-dir", default=None,
@@ -817,9 +1051,28 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--max-residual-per-fish", type=float, default=None,
         help=(
-            "Per-fish registration-error threshold (pixel^2 units). Points "
+            "Legacy alias for --max-residual-px2 (polynomial backend only). "
+            "Points "
             "from the winning candidate whose error exceeds this are set to "
             "NaN. Default: no threshold."
+        ),
+    )
+    parser.add_argument(
+        "--max-residual-px2",
+        type=float,
+        default=None,
+        help=(
+            "Per-fish polynomial hypothesis-score gate in px^2. Rejected if "
+            "the resolved assignment backend reports another score unit."
+        ),
+    )
+    parser.add_argument(
+        "--max-ray-residual-mm2",
+        type=float,
+        default=None,
+        help=(
+            "Per-fish refractive ray-consistency score gate in mm^2. Rejected "
+            "if the resolved assignment backend reports another score unit."
         ),
     )
     parser.add_argument(
@@ -843,6 +1096,46 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Retire an ID whose last valid 3D position is older than this "
             "many frames. Default: never retire."
+        ),
+    )
+    motion = parser.add_argument_group("optional cross-frame motion costs")
+    motion.add_argument(
+        "--motion-velocity-prediction-weight",
+        type=float,
+        default=0.0,
+        help=(
+            "Weight for distance from each ID's constant-velocity predicted "
+            "position. Opt-in; default 0 preserves the validated linker."
+        ),
+    )
+    motion.add_argument(
+        "--motion-tangent-weight",
+        type=float,
+        default=0.0,
+        help="Weight for motion-direction discontinuity (1-cosine; default 0).",
+    )
+    motion.add_argument(
+        "--motion-acceleration-weight",
+        type=float,
+        default=0.0,
+        help="Weight for acceleration discontinuity (default 0).",
+    )
+    motion.add_argument(
+        "--motion-uncertainty-growth-per-frame",
+        type=float,
+        default=0.25,
+        help=(
+            "Attenuate motion priors across gaps as "
+            "1/(1+growth*(gap-1)); default 0.25."
+        ),
+    )
+    motion.add_argument(
+        "--max-motion-gap-frames",
+        type=int,
+        default=None,
+        help=(
+            "Stop applying velocity/tangent/acceleration priors beyond this "
+            "gap while retaining the normal distance gate."
         ),
     )
     parser.add_argument(
@@ -967,9 +1260,11 @@ def main(argv: list[str] | None = None) -> None:
         experiment_name=args.experiment,
         slp_dir=slp_dir,
         model_folder=Path(model_folder),
+        calibration_backend=args.calibration_backend,
         assignment_model_folder=(
             Path(args.assignment_model_folder) if args.assignment_model_folder else None
         ),
+        assignment_calibration_backend=args.assignment_calibration_backend,
         output_dir=Path(output_dir),
         num_individuals=args.num_individuals,
         num_candidates=args.num_candidates,
@@ -978,9 +1273,20 @@ def main(argv: list[str] | None = None) -> None:
         anchor_node=None if args.use_visible_node_centroid else args.anchor_node,
         xyz_bounds=tuple(args.xyz_bounds) if args.xyz_bounds else None,
         max_residual_per_fish=args.max_residual_per_fish,
+        max_residual_px2=args.max_residual_px2,
+        max_ray_residual_mm2=args.max_ray_residual_mm2,
         max_jump_mm=args.max_jump_mm,
         max_jump_hard_cap_mm=args.max_jump_hard_cap_mm,
         max_gap_frames=args.max_gap_frames,
+        motion_velocity_prediction_weight=(
+            args.motion_velocity_prediction_weight
+        ),
+        motion_tangent_weight=args.motion_tangent_weight,
+        motion_acceleration_weight=args.motion_acceleration_weight,
+        motion_uncertainty_growth_per_frame=(
+            args.motion_uncertainty_growth_per_frame
+        ),
+        max_motion_gap_frames=args.max_motion_gap_frames,
         first_frame_id_only=args.first_frame_id_only,
         fill_missing=not args.no_fill_missing,
         shift_to_positive=not args.no_shift_to_positive,
@@ -1015,7 +1321,7 @@ def main(argv: list[str] | None = None) -> None:
         from scripts.reconstruction_3d.bind_topcam_id import bind
         exp_3d_csv = Path(result["csv_path"])
         out_csv = exp_3d_csv.with_name(exp_3d_csv.stem + "_identified.csv")
-        calib = Calibration(str(model_folder))
+        calib = Calibration(str(model_folder), backend=args.calibration_backend)
         bind(
             exp_3d_csv=exp_3d_csv,
             top_tracks_csv=args.top_tracks_csv,

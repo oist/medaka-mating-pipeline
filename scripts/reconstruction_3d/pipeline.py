@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Dict, List, Tuple
+import json
 
 from scripts.reconstruction_3d.calibration import Calibration
 from scripts.reconstruction_3d.load_2d import run_load_2d
@@ -17,6 +18,10 @@ from scripts.reconstruction_3d.fill_missing_3d import (
     ensure_all_frames_and_fill_spline,
 )
 from scripts.reconstruction_3d.visualize_3d import run_plot
+from scripts.reconstruction_3d.reconstruct_from_slp import (
+    _calibration_metadata,
+    _print_calibration_resolution,
+)
 
 
 def run_pipeline(
@@ -24,6 +29,7 @@ def run_pipeline(
     set_key: str,
     model_folder: str,
     *,
+    calibration_backend: str = "auto",
     output_dir: str | None = None,
     xyz_bounds: Tuple[float, float] | None = None,
     use_fish_id: bool | None = None,
@@ -38,9 +44,18 @@ def run_pipeline(
     Reconstruct 3D points across views, track identities across frames, and
     optionally export the result as CSV plus a trajectory plot.
     """
-    cal = Calibration(model_folder)
+    cal = Calibration(model_folder, backend=calibration_backend)
+    calibration_metadata = _calibration_metadata(
+        cal,
+        cal,
+        score_gate=None,
+        score_gate_unit=cal.score_unit,
+        score_gate_option=None,
+        scoring_profile="legacy_combined",
+    )
+    _print_calibration_resolution(calibration_metadata)
     if allow_permutations is None:
-        allow_permutations = bool(cal.has_geometric_scoring)
+        allow_permutations = bool(cal.capabilities.get("hypothesis_scoring", True))
     points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=use_fish_id)
     candidates_by_frame = compute_candidates(
         cal,
@@ -60,9 +75,12 @@ def run_pipeline(
         out_dir = Path(output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         if save_best_json:
-            import json
             with (out_dir / f"{set_key}_best.json").open("w", encoding="utf-8") as f:
                 json.dump({str(k): v for k, v in best_tracked.items()}, f, indent=2, ensure_ascii=False)
+        provenance_path = out_dir / f"{set_key}_reconstruction_provenance.json"
+        provenance_path.write_text(
+            json.dumps(calibration_metadata, indent=2) + "\n", encoding="utf-8"
+        )
 
         dfs_3d = best_by_frame_to_dfs(
             best_tracked,
@@ -82,6 +100,7 @@ def run_pipeline(
         "best_tracked": best_tracked,
         "csv_path": csv_path,
         "png_path": png_path,
+        "calibration": calibration_metadata,
     }
 
 

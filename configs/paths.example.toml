@@ -7,7 +7,9 @@ raw_data_dir = "G:\\path\\to\\shared_dataset_root\\raw"
 sleap_output_dir = "G:\\path\\to\\shared_dataset_root\\sleap_output"
 processed_dir = "G:\\path\\to\\shared_dataset_root\\processed"
 tracking_output_dir = "G:\\path\\to\\shared_dataset_root\\processed"
-calibration_model_dir = "G:\\path\\to\\shared_dataset_root\\calibration_model"
+# Checked-in fixed-interface physical calibration. With
+# --calibration-backend auto this resolves to the refractive backend.
+calibration_model_dir = "calibration_results\\fixed_refractive_192x192x186"
 reconstruction_output_dir = "G:\\path\\to\\shared_dataset_root\\reconstruction_3d"
 detectron2_output_dir = "G:\\path\\to\\shared_dataset_root\\detectron2_output"
 runs_dir = "G:\\path\\to\\shared_dataset_root\\runs"

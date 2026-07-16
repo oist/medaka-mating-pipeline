@@ -1,0 +1,84 @@
+{
+  "schema_version": "fixed_refractive_calibration_manifest_v1",
+  "backend": "refractive",
+  "camera_order": [
+    "cam0",
+    "cam1",
+    "cam2"
+  ],
+  "view_order": [
+    "top_cam",
+    "side1_cam",
+    "side2_cam"
+  ],
+  "coordinate_order": "[cam0_x, cam0_y, cam1_x, cam1_y, cam2_x, cam2_y]",
+  "world_units": "mm",
+  "hypothesis_score_unit": "mm^2",
+  "physical_geometry": {
+    "inside_x_span_mm": 192.0,
+    "inside_y_span_mm": 192.0,
+    "water_height_from_inside_floor_mm": 186.0,
+    "glass_thickness_mm": 4.0,
+    "validation_temperature_range_c": [
+      25.0,
+      26.0
+    ],
+    "index_air": 1.0003,
+    "index_water": 1.3325,
+    "index_glass": 1.52,
+    "interfaces": "fixed measured interfaces"
+  },
+  "model_files": [
+    {
+      "camera": "cam0",
+      "view": "top_cam",
+      "path": "cam0_bundle_refractive.json",
+      "sha256": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c"
+    },
+    {
+      "camera": "cam1",
+      "view": "side1_cam",
+      "path": "cam1_bundle_refractive.json",
+      "sha256": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0"
+    },
+    {
+      "camera": "cam2",
+      "view": "side2_cam",
+      "path": "cam2_bundle_refractive.json",
+      "sha256": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+    }
+  ],
+  "validation": {
+    "training_point_to_ray": {
+      "n": 16392,
+      "rms_mm": 0.46965529445637616,
+      "median_mm": 0.22475098224457063,
+      "p95_mm": 0.6622518065751778
+    },
+    "heldout_wet10_point_to_ray": {
+      "n": 2100,
+      "rms_mm": 0.23671497861839846,
+      "median_mm": 0.1680775806741424,
+      "p95_mm": 0.4480294912528536
+    },
+    "heldout_wet20_point_to_ray": {
+      "n": 1440,
+      "rms_mm": 0.42976692201253475,
+      "median_mm": 0.30254994090904186,
+      "p95_mm": 0.6768580611873589
+    },
+    "heldout_rigid_three_view_kabsch": {
+      "poses": 13,
+      "rms_mm": 0.7922249983637248,
+      "median_mm": 0.5432333295628832,
+      "p95_mm": 1.563369814536657
+    }
+  },
+  "source": {
+    "promotion_date": "2026-07-15",
+    "source_directory": "runs/calib_fullset/physics_bundle_fixed_192x192x186",
+    "fit_summary": "bundle_adjustment_summary.json",
+    "wet_holdout_summary": "heldout_wet_checkerboard_consistency.json"
+  },
+  "guardrail": "Held-out rigid-object results validate shape and scale. A training cube pose fixes the world gauge, so the manifest does not claim absolute surveyed-marker accuracy. Fish trajectory comparisons test assignment and continuity separately from absolute calibration."
+}

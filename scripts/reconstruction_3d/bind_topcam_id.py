@@ -24,6 +24,7 @@ final_fish_id.
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -48,6 +49,7 @@ def bind(
     bind_distance: float = 60.0,
     require_min_frames: int = 500,
 ) -> pd.DataFrame:
+    calib.require_capability("projection")
     geom = pd.read_csv(exp_3d_csv)
     top = pd.read_csv(top_tracks_csv)
 
@@ -59,6 +61,21 @@ def bind(
         raise ValueError(f"{exp_3d_csv} missing columns: {missing_g}")
     if missing_t:
         raise ValueError(f"{top_tracks_csv} missing columns: {missing_t}")
+
+    # The forward projector is vectorized. Project the geometry table in large
+    # chunks once, rather than paying Python/solver overhead once per frame.
+    geometry_xyz = geom[["X", "Y", "Z"]].to_numpy(dtype=float)
+    geometry_valid = np.isfinite(geometry_xyz).all(axis=1)
+    geometry_top_px = np.full((len(geom), 2), np.nan, dtype=float)
+    valid_rows = np.flatnonzero(geometry_valid)
+    projection_chunk_size = 100_000
+    for start in range(0, len(valid_rows), projection_chunk_size):
+        rows_chunk = valid_rows[start : start + projection_chunk_size]
+        projected = np.asarray(calib.project_world(geometry_xyz[rows_chunk]), dtype=float)
+        geometry_top_px[rows_chunk] = projected[:, 0, :]
+    geom = geom.copy()
+    geom["_projected_top_x"] = geometry_top_px[:, 0]
+    geom["_projected_top_y"] = geometry_top_px[:, 1]
 
     top = top.copy()
     top["bind_identity_key"] = _bind_identity_keys(top)
@@ -75,12 +92,8 @@ def bind(
     rows: list[dict] = []
     for fi, gf in geom.groupby("frame"):
         gf = gf.reset_index(drop=True)
-        xyz = gf[["X", "Y", "Z"]].to_numpy(dtype=float)
-        valid_mask = np.isfinite(xyz).all(axis=1)
-
-        proj = np.full((len(gf), 2), np.nan)
-        if valid_mask.any():
-            proj[valid_mask] = calib.project_world_to_view(xyz[valid_mask], "top_cam")
+        proj = gf[["_projected_top_x", "_projected_top_y"]].to_numpy(dtype=float)
+        projection_valid_mask = np.isfinite(proj).all(axis=1)
 
         tf = top_by_frame.get(int(fi))
         if tf is None or len(tf) == 0:
@@ -110,8 +123,10 @@ def bind(
         top_bind_keys = _optional_column(tf, "bind_identity_key", default="")
 
         cost = np.full((len(gf), len(tf)), 1e9, dtype=float)
-        if valid_mask.any():
-            cost[valid_mask] = cdist(proj[valid_mask], top_xy)
+        if projection_valid_mask.any():
+            cost[projection_valid_mask] = cdist(
+                proj[projection_valid_mask], top_xy
+            )
         cost_for_lap = cost.copy()
         cost_for_lap[cost_for_lap > bind_distance] = 1e9
         row_ind, col_ind = linear_sum_assignment(cost_for_lap)
@@ -203,7 +218,29 @@ def bind(
 
     out_csv.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(out_csv, index=False)
+    projection_provenance_path = out_csv.with_name(
+        f"{out_csv.stem}_projection_provenance.json"
+    )
+    projection_provenance = {
+        "schema_version": 1,
+        "projection_backend": calib.backend_name,
+        "camera": "cam0",
+        "view": "top_cam",
+        "camera_order": ["cam0", "cam1", "cam2"],
+        "projection_unit": "px",
+        "bind_gate": {"value": float(bind_distance), "unit": "px"},
+        "calibration_provenance": calib.provenance,
+        "legacy_projection_fallback_configured": False,
+        "silent_cross_backend_fallback": False,
+        "projection_chunk_size": projection_chunk_size,
+    }
+    projection_provenance_path.write_text(
+        json.dumps(projection_provenance, indent=2, default=str) + "\n",
+        encoding="utf-8",
+    )
+    df.attrs["projection_provenance_path"] = str(projection_provenance_path)
     print(f"[bind] wrote {out_csv}")
+    print(f"[bind] projection provenance: {projection_provenance_path}")
     return df
 
 
@@ -277,6 +314,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--paths-config", default=None)
     p.add_argument("--calibration-model-dir", default=None,
                    help="Calibration model folder; defaults to paths.local.toml entry.")
+    p.add_argument(
+        "--calibration-backend",
+        choices=("auto", "refractive", "polynomial"),
+        default="auto",
+        help=(
+            "Projection backend policy. Auto prefers valid refractive assets "
+            "and otherwise recognizes legacy polynomial/joblib folders."
+        ),
+    )
     return p
 
 
@@ -289,7 +335,11 @@ def main(argv: list[str] | None = None) -> None:
     )
     if model_dir is None:
         raise SystemExit("calibration_model_dir required (paths.local.toml or --calibration-model-dir)")
-    calib = Calibration(model_dir)
+    calib = Calibration(model_dir, backend=args.calibration_backend)
+    print(
+        f"[calibration] projection backend={calib.backend_name} unit=px "
+        f"provenance={json.dumps(calib.provenance, default=str, sort_keys=True)}"
+    )
     bind(
         exp_3d_csv=args.exp_3d_csv,
         top_tracks_csv=args.top_tracks_csv,

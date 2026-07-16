@@ -7,37 +7,30 @@ from scripts.reconstruction_3d.triangulate_extra_candidates import (
 )
 
 
-class _GeometryForward:
-    def predict(self, values):
-        values = np.asarray(values, dtype=float)
-        return values[:, [0, 2, 4]]
-
-
-class _ScoringForward:
-    def predict(self, values):
-        return np.zeros((len(values), 3), dtype=float)
-
-
-class _ZeroProjection:
-    def predict(self, values):
-        return np.zeros((len(values), 6), dtype=float)
-
-
-class _MustNotRun:
-    def predict(self, values):
-        raise AssertionError("geometry reverse model must not score assignments")
-
-
 class _CalibrationStub:
-    def __init__(self, forward, reverse):
-        self._model_im2xyz = forward
-        self._model_xyz2im = reverse
-        self._model_xy_from_xz_yz = None
+    backend_name = "stub"
+    score_unit = "px^2"
+
+    def __init__(self, *, scoring: bool):
+        self.scoring = scoring
+
+    def triangulate(self, observations):
+        if self.scoring:
+            raise AssertionError("scoring backend must not supply delivered XYZ")
+        observations = np.asarray(observations, dtype=float)
+        return observations[..., :, 0]
+
+    def score_hypotheses(self, observations, *, profile):
+        if not self.scoring:
+            raise AssertionError("geometry backend must not score assignments")
+        assert profile == "production_fast"
+        observations = np.asarray(observations, dtype=float)
+        return np.nansum(observations**2, axis=(-2, -1))
 
 
 def test_extra_candidate_scoring_can_be_frozen_to_a_second_calibration() -> None:
-    geometry = _CalibrationStub(_GeometryForward(), _MustNotRun())
-    scoring = _CalibrationStub(_ScoringForward(), _ZeroProjection())
+    geometry = _CalibrationStub(scoring=False)
+    scoring = _CalibrationStub(scoring=True)
     points = {
         0: {
             "cam0": [(1.0, 0.0), (20.0, 0.0)],

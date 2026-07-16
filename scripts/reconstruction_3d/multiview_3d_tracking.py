@@ -7,6 +7,7 @@ caller applies additional cross-video logic.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -25,6 +26,10 @@ from scripts.reconstruction_3d.fill_missing_3d import (
     ensure_all_frames_and_fill_spline,
 )
 from scripts.reconstruction_3d.visualize_3d import run_plot
+from scripts.reconstruction_3d.reconstruct_from_slp import (
+    _calibration_metadata,
+    _print_calibration_resolution,
+)
 
 TRACK_IDS = ["ID_1", "ID_2", "ID_3"]
 _SRC = ["a", "b", "c"]
@@ -154,6 +159,7 @@ def run_full_pipeline(
     set_key: str,
     *,
     model_folder: Optional[str] = None,
+    calibration_backend: str = "auto",
     output_dir: Optional[str] = None,
     xyz_bounds: Optional[Tuple[float, float]] = None,
     use_fish_id: bool | None = None,
@@ -167,10 +173,20 @@ def run_full_pipeline(
     2D -> 3D reconstruction -> 3D tracking -> optional interpolation -> export.
     """
     points_by_frame = run_load_2d(processed_dir, set_key, use_fish_id=use_fish_id)
+    calibration_metadata: dict[str, object] | None = None
     if model_folder:
-        cal = Calibration(model_folder)
+        cal = Calibration(model_folder, backend=calibration_backend)
+        calibration_metadata = _calibration_metadata(
+            cal,
+            cal,
+            score_gate=None,
+            score_gate_unit=cal.score_unit,
+            score_gate_option=None,
+            scoring_profile="legacy_combined",
+        )
+        _print_calibration_resolution(calibration_metadata)
         if allow_permutations is None:
-            allow_permutations = bool(cal.has_geometric_scoring)
+            allow_permutations = bool(cal.capabilities.get("hypothesis_scoring", True))
         candidates_by_frame = compute_candidates(
             cal,
             points_by_frame,
@@ -190,6 +206,10 @@ def run_full_pipeline(
 
     out = Path(output_dir or processed_dir)
     out.mkdir(parents=True, exist_ok=True)
+    if calibration_metadata is not None:
+        (out / f"{set_key}_reconstruction_provenance.json").write_text(
+            json.dumps(calibration_metadata, indent=2) + "\n", encoding="utf-8"
+        )
     csv_path = None
     png_path = None
 
@@ -207,6 +227,7 @@ def run_full_pipeline(
         "best_tracked": best_tracked,
         "csv_path": csv_path,
         "png_path": png_path,
+        "calibration": calibration_metadata,
     }
 
 
@@ -246,6 +267,12 @@ def main():
     p.add_argument("--processed_dir", required=True, help="Directory containing the *_processed.csv files")
     p.add_argument("--set_key", required=True, help="Clip set key")
     p.add_argument("--model_folder", default=None, help="Calibration model directory; if omitted use no-calibration mode")
+    p.add_argument(
+        "--calibration-backend",
+        choices=("auto", "refractive", "polynomial"),
+        default="auto",
+        help="Calibration backend policy when --model_folder is provided.",
+    )
     p.add_argument("--output_dir", default=None)
     p.add_argument(
         "--xyz_bounds",
@@ -278,6 +305,7 @@ def main():
         processed_dir=args.processed_dir,
         set_key=args.set_key,
         model_folder=args.model_folder,
+        calibration_backend=args.calibration_backend,
         output_dir=args.output_dir,
         xyz_bounds=xyz_bounds,
         use_fish_id=args.use_fish_id,

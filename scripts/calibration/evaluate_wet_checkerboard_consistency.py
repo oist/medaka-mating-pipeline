@@ -50,7 +50,9 @@ def _summarize(values: np.ndarray) -> DistanceSummary:
     )
 
 
-def _fit_pose(group: pd.DataFrame, cameras: Sequence[FlatPortCamera]) -> tuple[np.ndarray, dict[str, object]]:
+def _fit_pose(
+    group: pd.DataFrame, cameras: Sequence[FlatPortCamera]
+) -> tuple[np.ndarray, np.ndarray, dict[str, object]]:
     pose_id = str(group["pose_id"].iloc[0])
     initial = _checkerboard_pose_initializations(group, cameras).get(f"board:{pose_id}")
     if initial is None:
@@ -84,7 +86,7 @@ def _fit_pose(group: pd.DataFrame, cameras: Sequence[FlatPortCamera]) -> tuple[n
         max_nfev=250,
     )
     distances = np.linalg.norm(residual(result.x).reshape(-1, 3), axis=1)
-    return distances, {
+    return distances, camera_indices, {
         "pose_id": pose_id,
         "n_rays": int(len(distances)),
         "rms_mm": float(np.sqrt(np.mean(distances**2))),
@@ -146,15 +148,22 @@ def main(argv: Sequence[str] | None = None) -> int:
         _, heldout_ids = _split_pose_ids(data["pose_id"].tolist())
         heldout = data[data["pose_id"].isin(heldout_ids)].copy()
         all_distances: list[np.ndarray] = []
+        distances_by_camera: dict[str, list[np.ndarray]] = {
+            camera: [] for camera in CAMERA_INDEX
+        }
         per_pose: list[dict[str, object]] = []
         failures: list[str] = []
         for pose_id, group in heldout.groupby("pose_id", sort=True):
             try:
-                distances, details = _fit_pose(group, cameras)
+                distances, camera_indices, details = _fit_pose(group, cameras)
             except (ValueError, np.linalg.LinAlgError) as error:
                 failures.append(f"{pose_id}: {error}")
                 continue
             all_distances.append(distances)
+            for camera, index in CAMERA_INDEX.items():
+                mask = camera_indices == index
+                if np.any(mask):
+                    distances_by_camera[camera].append(distances[mask])
             per_pose.append(details)
         if not all_distances:
             raise RuntimeError(f"No held-out poses could be evaluated for {label}")
@@ -163,6 +172,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             "heldout_poses_requested": int(len(heldout_ids)),
             "heldout_poses_evaluated": int(len(per_pose)),
             "heldout_ray_distances": asdict(_summarize(np.concatenate(all_distances))),
+            "heldout_ray_distances_by_camera": {
+                camera: asdict(_summarize(np.concatenate(values)))
+                for camera, values in distances_by_camera.items()
+                if values
+            },
             "per_pose": per_pose,
             "failures": failures,
             "selected_pose_image_coverage": _image_coverage(

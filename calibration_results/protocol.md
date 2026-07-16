@@ -2,6 +2,14 @@
 
 ## Overview
 
+> **Current production status (2026-07-15):** the polynomial workflow below is
+> retained for historical reproduction. Future SLEAP→3D runs default to the
+> validated fixed-interface physical calibration in
+> `fixed_refractive_192x192x186/`. Its manifest records the measured 192 × 192 mm
+> inside span, 186 mm water height, 4 mm glass, refractive indices, camera order,
+> exact asset hashes, and independent residual summaries. Select the polynomial
+> joblib backend explicitly when reproducing older results.
+
 This document describes the bead-based calibration procedure used to map
 multi-camera 2D pixel coordinates to 3D world coordinates for medaka
 mating behaviour tracking. The calibration trains a polynomial regression
@@ -413,10 +421,22 @@ calibration_results/cali_20251217_manual/
         qc_rigid_with_corners/                         # Rigid-refined QC (with corners)
 ```
 
-### Model used for 3D reconstruction
+### Models used for 3D reconstruction
+
+The standard configuration now points to
+`calibration_results/fixed_refractive_192x192x186/`, which contains three small
+flat-port camera JSON files and `calibration_manifest.json`. With
+`--calibration-backend auto`, reconstruction resolves this to the refractive
+backend. Two-view frames directly intersect the two observed refracted rays.
+Scores are mean squared point-to-ray distances in `mm^2`.
+
+The polynomial models below remain supported with
+`--calibration-backend polynomial --model-folder <legacy-model-dir>`. Their
+registration score is in `px^2`; residual gates are not transferable between
+the two backends.
 
 The reconstruction pipeline (`scripts/reconstruction_3d/calibration.py`)
-loads `imCoords_to_XYZ.joblib` from a configurable model folder. Two
+can load `imCoords_to_XYZ.joblib` from a configurable model folder. Two
 rigid-refined models are available:
 
 - `models_rigid/` (beads only, 191 inlier points, 0.60 mm mean 3D

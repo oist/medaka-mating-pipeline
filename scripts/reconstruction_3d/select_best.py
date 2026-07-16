@@ -75,7 +75,14 @@ def select_best_all_frames(
             "groups": groups_out,
             "perm_cam1": list(chosen["perm_cam1"]),
             "perm_cam2": list(chosen["perm_cam2"]),
+            "recovered": [bool(v) for v in chosen.get("recovered", [])],
+            "missing_views": [int(v) for v in chosen.get("missing_views", [])],
+            "synthetic_views": [int(v) for v in chosen.get("synthetic_views", [])],
             "errors": dict(errors),
+            "score_unit": chosen.get("score_unit"),
+            "triangulation_backend": chosen.get("triangulation_backend"),
+            "scoring_backend": chosen.get("scoring_backend"),
+            "scoring_profile": chosen.get("scoring_profile"),
             "dropped_high_residual": dropped_labels,
         }
     return best_by_frame

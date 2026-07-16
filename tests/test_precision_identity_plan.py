@@ -19,6 +19,18 @@ from scripts.sleap.mine_training_frames import apply_force_include, write_report
 
 
 class _IdentityProjectionCalibration:
+    backend_name = "test_projection"
+    provenance = {"source": "unit_test"}
+
+    def require_capability(self, capability: str) -> None:
+        assert capability == "projection"
+
+    def project_world(self, xyz: np.ndarray) -> np.ndarray:
+        xyz = np.asarray(xyz, dtype=float)
+        return np.stack(
+            [xyz[:, :2], xyz[:, [0, 2]], xyz[:, [1, 2]]], axis=1
+        )
+
     def project_world_to_view(self, xyz: np.ndarray, view: str) -> np.ndarray:
         xyz = np.asarray(xyz, dtype=float)
         if view == "top_cam":

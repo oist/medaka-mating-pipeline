@@ -90,11 +90,11 @@ to attach a `final_fish_id`. Track on the **default visible-node centroid**
 .venv/Scripts/python.exe -m scripts.reconstruction_3d.reconstruct_from_slp \
     <experiment> \
     --paths-config configs/paths.local.toml \
+    --calibration-backend auto \
     --sleap-subdir round4_260520 \
     --num-candidates 6 \
     --use-visible-node-centroid \
     --xyz-bounds -20 220 --no-shift-to-positive \
-    --max-residual-per-fish 5000 \
     --max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100 \
     --num-individuals 3 \
     --bind-top-id \
@@ -103,14 +103,28 @@ to attach a `final_fish_id`. Track on the **default visible-node centroid**
     --output-tag round4_260520
 ```
 
+- **Calibration policy**: `--calibration-backend auto` resolves the checked-in
+  `calibration_model_dir` to the validated fixed-interface refractive backend.
+  The resolved backend, score unit, and exact model files are printed and saved
+  in reconstruction provenance. For a legacy reproduction, pass
+  `--calibration-backend polynomial --model-folder
+  calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models`.
+  A residual gate is backend-specific: use `--max-residual-px2` for polynomial
+  scores and `--max-ray-residual-mm2` for refractive mean squared point-to-ray
+  distances. Never carry the historical polynomial value `5000 px^2` into a
+  refractive run; `--max-residual-per-fish` is only a deprecated polynomial
+  alias.
 - **ALWAYS pass `--num-candidates 6`** when the `.slp` came from
   `--max-instances 6` inference. It is the path behind every validated round4
   metric and is ~60x faster. Why it matters:
   - With `--num-candidates 6` (> `--num-individuals 3`) the script uses the
-    greedy mutually-exclusive triplet selector
+    global mutually-exclusive candidate-set selector
     (`triangulate_extra_candidates.py`, tqdm label **"3D best-assign"**,
-    ~500-660 frame/s, ~10 min for 348k frames). This recovers reflection-
-    displaced fish via `--xyz-bounds` gating.
+    typically ~400-900 frame/s). The selector rate measures candidate scoring
+    after coordinates are loaded; remote `.slp` loading/decoding and output I/O
+    are separate. Allow roughly 10-15 min end-to-end for 348k frames on the
+    current production storage path. This recovers reflection-displaced fish
+    via `--xyz-bounds` gating.
   - Omitting it falls back to the default full-permutation path
     (`triangulate.py`, tqdm label **"3D candidates"**, ~10 frame/s, ~9.7 h) -
     both far slower **and a different algorithm** that does not match the
@@ -134,10 +148,13 @@ to attach a `final_fish_id`. Track on the **default visible-node centroid**
   merged `.slp` live directly under `<experiment>/`.
 
 **QC both outputs** (per experiment):
-- From the pre-link JSON (`<tag>_best_pre_link.json`): all-3-fish-valid coverage
-  (frames where all three `groups` are finite) and the per-fish residual
-  distribution (`errors`, px^2). These are pre-fill; the final `_3d.csv` is
-  spline-gap-filled.
+- From the pre-link JSON (`<tag>_best_pre_link.json`): confirm calibration
+  provenance and score unit, all-3-fish-valid coverage (frames where all three
+  `groups` are finite), the per-fish residual distribution (`errors`, in the
+  saved backend unit), and `synthetic_views` missing-camera provenance. Older
+  JSONs without calibration or synthetic-view provenance must be reported as
+  legacy/unknown rather than treated as an empty cohort. These are pre-fill;
+  the final `_3d.csv` is spline-gap-filled.
 - From `<tag>_3d.csv` / `<tag>_3d_identified.csv`: 3D speed-spike rate (large
   per-frame jumps = residual ID swaps), the `bind_source` split
   (`top_cam_2d` vs `geometry_only`), the `bind_score` distribution, and that
@@ -186,10 +203,14 @@ with the same biological ID count together.
 
 ## Calibration Notes
 
-- Production calibration uses learned polynomial regression from multi-view pixel
-  coordinates to 3D world coordinates, with refraction implicitly absorbed.
-- Current checked-in calibration assets are under
-  `calibration_results/cali_20251217_manual/`.
+- The default calibration for future SLEAP→3D runs is the fixed-interface
+  refractive model under
+  `calibration_results/fixed_refractive_192x192x186/`. Its small manifest fixes
+  camera/view order, physical geometry, score units, source hashes, and held-out
+  validation metrics.
+- The learned polynomial/joblib calibration remains available under
+  `calibration_results/cali_20251217_manual/` for historical reproducibility.
+  Select it explicitly; no backend silently falls back to another geometry.
 - When editing calibration scripts, verify behavior against the checked-in QC data
   where feasible.
 - For new precision refinement, prefer filming a moved rigid object with 6+

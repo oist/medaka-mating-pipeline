@@ -64,6 +64,62 @@ class BundleDiagnostics:
     geometric_rms_mm: float
 
 
+def summarize_bundle_ray_residuals(
+    cameras: Sequence[FlatPortCamera],
+    poses: dict[str, PoseState],
+    observation_data: tuple[
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        np.ndarray,
+        list[str],
+    ],
+) -> dict[str, object]:
+    """Summarize unweighted point-to-ray distances for the fitted bundle."""
+
+    camera_index, observation_pose, object_points, pixels, _weights, pose_names = (
+        observation_data
+    )
+    world = np.empty_like(object_points)
+    pose_kind = np.empty(len(object_points), dtype=object)
+    for pose_index, name in enumerate(pose_names):
+        mask = observation_pose == pose_index
+        rotation = cv2.Rodrigues(poses[name].rotation_vector)[0]
+        world[mask] = (rotation @ object_points[mask].T).T + poses[name].translation
+        pose_kind[mask] = name.split(":", 1)[0]
+
+    distances = np.empty(len(object_points), dtype=float)
+    for index, camera in enumerate(cameras):
+        mask = camera_index == index
+        residual = camera.point_to_ray_residuals(pixels[mask], world[mask])
+        distances[mask] = np.linalg.norm(residual, axis=1)
+
+    def summarize(mask: np.ndarray) -> dict[str, float | int]:
+        values = distances[mask]
+        return {
+            "n": int(len(values)),
+            "mean_mm": float(np.mean(values)),
+            "rms_mm": float(np.sqrt(np.mean(values**2))),
+            "median_mm": float(np.median(values)),
+            "p95_mm": float(np.percentile(values, 95)),
+            "maximum_mm": float(np.max(values)),
+        }
+
+    by_camera: dict[str, object] = {}
+    for index, view in enumerate(CAMERA_VIEWS):
+        camera_mask = camera_index == index
+        by_camera[view] = {
+            "all": summarize(camera_mask),
+            **{
+                kind: summarize(camera_mask & (pose_kind == kind))
+                for kind in ("ball", "board")
+                if np.any(camera_mask & (pose_kind == kind))
+            },
+        }
+    return {"all": summarize(np.ones(len(distances), dtype=bool)), "by_camera": by_camera}
+
+
 def _normal_basis(normal: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     normal = normalize_vectors(np.asarray(normal).reshape(1, 3))[0]
     reference = np.array([0.0, 0.0, 1.0])
@@ -408,8 +464,23 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--glass-thickness-mm", type=float, default=4.0)
     parser.add_argument("--index-glass", type=float, default=1.52)
     parser.add_argument("--index-water", type=float, default=1.3325)
+    parser.add_argument("--temperature-c", type=float, default=25.0)
     parser.add_argument("--ball-cluster-gap-frames", type=int, default=120)
     parser.add_argument("--max-nfev", type=int, default=300)
+    parser.add_argument(
+        "--physical-geometry-measured",
+        action="store_true",
+        help="record that tank span, water height, and glass thickness were measured",
+    )
+    parser.add_argument(
+        "--interface-mode",
+        choices=("fixed", "refine"),
+        default="refine",
+        help=(
+            "fixed keeps the measured interface planes unchanged; refine runs the "
+            "legacy soft-prior interface-correction stage"
+        ),
+    )
     return parser
 
 
@@ -483,18 +554,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         initial_cameras, poses, observation_data,
         anchor_pose=anchor_pose, release_interface=False, max_nfev=args.max_nfev,
     )
-    stage2_cameras, _stage2_poses, stage2 = fit_bundle_stage(
-        stage1_cameras, stage1_poses, observation_data,
-        anchor_pose=anchor_pose, release_interface=True, max_nfev=args.max_nfev,
-    )
-    for camera in stage2_cameras:
+    if args.interface_mode == "refine":
+        final_cameras, final_poses, stage2 = fit_bundle_stage(
+            stage1_cameras, stage1_poses, observation_data,
+            anchor_pose=anchor_pose, release_interface=True, max_nfev=args.max_nfev,
+        )
+    else:
+        final_cameras = stage1_cameras
+        final_poses = stage1_poses
+        stage2 = None
+    for camera in final_cameras:
         camera.to_json(args.output_dir / f"{camera.name}_bundle_refractive.json")
 
     predictors = {
         "base_regression": _regression_predictor(args.base_regression_model),
         "refined_regression": _regression_predictor(args.refined_regression_model),
         "pinhole_dlt": _ray_predictor(pinhole_cameras),
-        "flat_refractive": _ray_predictor(stage2_cameras),
+        "flat_refractive": _ray_predictor(final_cameras),
     }
     marker_tables = []
     pair_tables = []
@@ -524,10 +600,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         "physical_inputs": {
             "inner_span_mm": args.inner_span_mm,
             "glass_thickness_mm": args.glass_thickness_mm,
-            "temperature_c": 25.0,
+            "temperature_c": args.temperature_c,
             "index_water": args.index_water,
             "index_glass_assumed": args.index_glass,
-            "water_height_mm_provisional": args.water_height_mm,
+            "water_height_mm": args.water_height_mm,
+            "water_height_mm_provisional": (
+                None if args.physical_geometry_measured else args.water_height_mm
+            ),
+            "physical_geometry_measured": bool(args.physical_geometry_measured),
+            "interface_mode": args.interface_mode,
         },
         "synchronization": {
             "source": "shared external frame trigger",
@@ -548,11 +629,21 @@ def main(argv: Sequence[str] | None = None) -> int:
             "observations": int(len(observation_data[0])),
             "object_poses": int(len(observation_data[-1])),
             "stage1_fixed_interfaces": asdict(stage1),
-            "stage2_interface_corrections": asdict(stage2),
+            "stage2_interface_corrections": (
+                asdict(stage2) if stage2 is not None else {"status": "disabled"}
+            ),
+            "final_training_ray_residuals": summarize_bundle_ray_residuals(
+                final_cameras, final_poses, observation_data
+            ),
         },
         "heldout_models": summaries,
-        "fitted_cameras": {camera.name: asdict(camera) for camera in stage2_cameras},
+        "fitted_cameras": {camera.name: asdict(camera) for camera in final_cameras},
         "guardrail": (
+            "Tank span, water height, and glass thickness are measured and the interfaces are fixed. "
+            "Held-out cube shape/scale metrics are valid; one training cube pose still fixes the "
+            "world gauge, so absolute surveyed-marker accuracy is not claimed."
+            if args.physical_geometry_measured
+            else
             "Held-out cube shape/scale metrics are valid. Absolute Z remains provisional because "
             "water height was not measured, and one training cube pose fixes the otherwise free gauge."
         ),

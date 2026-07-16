@@ -4,7 +4,8 @@ Build 3D candidates from the three-view 2D points.
 For each frame, the pipeline enumerates permutations across the three views and
 produces multiple candidate groups of three 3D points.
 
-- Missing 2D values produce `NaN` 3D points.
+- Exactly one missing camera is delegated to the backend's two-view policy;
+  fewer than two finite views produce `NaN` 3D points.
 - Invalid or out-of-bounds 3D predictions are rejected as `NaN`.
 - Candidate selection happens later in `select_best.py`.
 """
@@ -74,52 +75,71 @@ def compute_candidates(
             identity_perm = tuple(range(n))
             perms1 = [identity_perm]
             perms2 = [identity_perm]
-        frame_candidates = []
+        permutation_pairs = [
+            (perm1, perm2) for perm1 in perms1 for perm2 in perms2
+        ]
+        observations = np.empty((len(permutation_pairs), n, 3, 2), dtype=float)
+        pts0_array = np.asarray(pts0, dtype=float)
+        pts1_array = np.asarray(pts1, dtype=float)
+        pts2_array = np.asarray(pts2, dtype=float)
+        observations[:, :, 0, :] = pts0_array
+        for candidate_index, (perm1, perm2) in enumerate(permutation_pairs):
+            observations[candidate_index, :, 1, :] = pts1_array[list(perm1)]
+            observations[candidate_index, :, 2, :] = pts2_array[list(perm2)]
 
-        for perm1 in perms1:
-            for perm2 in perms2:
-                groups = {}
-                errors: Dict[str, float] = {}
-                total_cost = 0.0
-                for i, label in enumerate(labels):
-                    j1, j2 = perm1[i], perm2[i]
-                    im0 = np.array(pts0[i], dtype=float)
-                    im1 = np.array(pts1[j1], dtype=float)
-                    im2 = np.array(pts2[j2], dtype=float)
-                    triplet = scoring_cal.complete_triplet(np.vstack([im0, im1, im2]))
-                    if np.any(np.isnan(triplet)):
-                        total_cost += np.inf
-                        groups[label] = [np.nan, np.nan, np.nan]
-                        errors[label] = float("inf")
-                        continue
-                    xyz = cal.compute_XYZ_from_imageCoord_triplet(triplet)
-                    # Invalid or out-of-bounds predictions are left as NaN.
-                    if np.any(np.isnan(xyz)) or np.any(np.isinf(xyz)):
-                        total_cost += np.inf
-                        groups[label] = [np.nan, np.nan, np.nan]
-                        errors[label] = float("inf")
-                        continue
-                    if low is not None and high is not None:
-                        if np.any(xyz < low) or np.any(xyz > high):
-                            total_cost += np.inf
-                            groups[label] = [np.nan, np.nan, np.nan]
-                            errors[label] = float("inf")
-                            continue
-                    err = scoring_cal.compute_triplet_registration_error(triplet)
-                    if np.isfinite(err):
-                        total_cost += err
-                        errors[label] = float(err)
-                    else:
-                        total_cost += np.inf
-                        errors[label] = float("inf")
-                    groups[label] = [float(xyz[0]), float(xyz[1]), float(xyz[2])]
-                frame_candidates.append({
+        flat_observations = observations.reshape(-1, 3, 2)
+        if scoring_cal is cal and hasattr(cal, "evaluate_hypotheses"):
+            flat_xyz, flat_errors = cal.evaluate_hypotheses(
+                flat_observations, profile="legacy_combined"
+            )
+        else:
+            flat_xyz = cal.triangulate(flat_observations)
+            flat_errors = scoring_cal.score_hypotheses(
+                flat_observations, profile="legacy_combined"
+            )
+        xyz_all = np.asarray(flat_xyz, dtype=float).reshape(len(permutation_pairs), n, 3)
+        error_all = np.asarray(flat_errors, dtype=float).reshape(len(permutation_pairs), n)
+        enough_views = (
+            np.isfinite(observations).all(axis=-1).sum(axis=-1) >= 2
+        )
+        valid_xyz = enough_views & np.isfinite(xyz_all).all(axis=-1)
+        if low is not None and high is not None:
+            valid_xyz &= np.all((xyz_all >= low) & (xyz_all <= high), axis=-1)
+        error_all = np.where(valid_xyz & np.isfinite(error_all), error_all, np.inf)
+
+        frame_candidates = []
+        for candidate_index, (perm1, perm2) in enumerate(permutation_pairs):
+            groups = {}
+            errors: Dict[str, float] = {}
+            missing_views: list[int] = []
+            for fish_index, label in enumerate(labels):
+                missing = np.flatnonzero(
+                    ~np.isfinite(observations[candidate_index, fish_index]).all(axis=-1)
+                )
+                missing_views.append(int(missing[0]) if len(missing) == 1 else -1)
+                if not valid_xyz[candidate_index, fish_index]:
+                    groups[label] = [np.nan, np.nan, np.nan]
+                    errors[label] = float("inf")
+                    continue
+                point = xyz_all[candidate_index, fish_index]
+                groups[label] = [float(point[0]), float(point[1]), float(point[2])]
+                errors[label] = float(error_all[candidate_index, fish_index])
+            total_cost = float(sum(errors.values()))
+            frame_candidates.append({
                     "groups": groups,
                     "perm_cam1": list(perm1),
                     "perm_cam2": list(perm2),
-                    "cost": float(total_cost),
+                    "recovered": [value >= 0 for value in missing_views],
+                    "missing_views": missing_views,
+                    # Historical key retained for older downstream readers.
+                    "synthetic_views": missing_views,
+                    "cost": total_cost,
                     "errors": errors,
-                })
+                    "score_unit": scoring_cal.score_unit,
+                    "triangulation_backend": cal.backend_name,
+                    "scoring_backend": scoring_cal.backend_name,
+                    "scoring_profile": "legacy_combined",
+            })
         candidates_by_frame[frame] = frame_candidates
 
     return candidates_by_frame

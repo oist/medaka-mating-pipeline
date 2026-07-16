@@ -25,6 +25,7 @@ from scipy.optimize import least_squares
 
 
 EPSILON = 1e-12
+DEFAULT_MAX_RAY_SYSTEM_CONDITION = 1.0e10
 
 
 def normalize_vectors(vectors: np.ndarray) -> np.ndarray:
@@ -187,6 +188,131 @@ class FlatPortCamera:
         )
         return origins, water_directions
 
+    def project(self, world_points: np.ndarray, *, iterations: int = 48) -> np.ndarray:
+        """Project water-side world points to pixels through the flat port.
+
+        The inverse flat-interface problem is one dimensional because all
+        interfaces are parallel.  Snell's invariant ``n * sin(theta)`` is
+        solved in a vectorized bisection, avoiding a per-point nonlinear
+        optimizer.  Invalid/non-finite points and points on the camera side of
+        the final interface are returned as ``NaN`` rows.
+        """
+        points = np.asarray(world_points, dtype=float)
+        if points.shape[-1:] != (3,):
+            raise ValueError(
+                f"world_points must have trailing shape (3,), got {points.shape}"
+            )
+        leading_shape = points.shape[:-1]
+        flat = points.reshape(-1, 3)
+        projected = np.full((len(flat), 2), np.nan, dtype=float)
+        finite = np.all(np.isfinite(flat), axis=1)
+        if not np.any(finite):
+            return projected.reshape(leading_shape + (2,))
+
+        center = np.asarray(self.camera_center, dtype=float)
+        offsets = flat[finite] - center
+
+        if self.layer_count == 0:
+            air_directions = normalize_vectors(offsets)
+            valid_geometry = np.ones(len(offsets), dtype=bool)
+        else:
+            normal = normalize_vectors(
+                np.asarray(self.interface_normal, dtype=float).reshape(1, 3)
+            )[0]
+            interface_point = np.asarray(self.interface_point, dtype=float)
+            distance_air = float((interface_point - center) @ normal)
+            normal_distance = offsets @ normal
+            distance_glass = self.glass_thickness_mm if self.layer_count == 2 else 0.0
+            distance_water = normal_distance - distance_air - distance_glass
+            lateral = offsets - normal_distance[:, None] * normal
+            lateral_distance = np.linalg.norm(lateral, axis=1)
+            valid_geometry = (
+                (distance_air > EPSILON)
+                & (distance_water >= -1.0e-9)
+                & (normal_distance > EPSILON)
+            )
+            air_directions = np.full_like(offsets, np.nan)
+            if np.any(valid_geometry):
+                rho = lateral_distance[valid_geometry]
+                water_depth = np.maximum(distance_water[valid_geometry], 0.0)
+                low = np.zeros(len(rho), dtype=float)
+                # Air has the lowest index in the supported camera-in-air
+                # configuration, so approaching n_air makes lateral travel
+                # unbounded and brackets every finite target displacement.
+                indices = [self.index_air, self.index_water]
+                if self.layer_count == 2:
+                    indices.append(self.index_glass)
+                high = np.full(len(rho), min(indices) * (1.0 - 1.0e-12))
+
+                def lateral_travel(invariant: np.ndarray) -> np.ndarray:
+                    def tangent(index: float) -> np.ndarray:
+                        sine = np.clip(invariant / float(index), 0.0, 1.0 - 1.0e-15)
+                        return sine / np.sqrt(np.maximum(1.0 - sine**2, EPSILON))
+
+                    travel = distance_air * tangent(self.index_air)
+                    if self.layer_count == 2:
+                        travel = travel + distance_glass * tangent(self.index_glass)
+                    return travel + water_depth * tangent(self.index_water)
+
+                for _ in range(iterations):
+                    middle = 0.5 * (low + high)
+                    move_low = lateral_travel(middle) < rho
+                    low = np.where(move_low, middle, low)
+                    high = np.where(move_low, high, middle)
+
+                invariant = 0.5 * (low + high)
+                sin_air = np.clip(invariant / self.index_air, 0.0, 1.0)
+                cos_air = np.sqrt(np.maximum(1.0 - sin_air**2, 0.0))
+                lateral_unit = np.zeros((len(rho), 3), dtype=float)
+                non_axial = rho > EPSILON
+                valid_lateral = lateral[valid_geometry]
+                lateral_unit[non_axial] = (
+                    valid_lateral[non_axial] / rho[non_axial, None]
+                )
+                air_directions[valid_geometry] = (
+                    cos_air[:, None] * normal
+                    + sin_air[:, None] * lateral_unit
+                )
+
+        # ``rotation_matrix`` maps row-vector camera directions to world
+        # directions in ``backproject``; transpose it for the inverse map.
+        camera_directions = air_directions @ self.rotation_matrix.T
+        in_front = valid_geometry & (camera_directions[:, 2] > EPSILON)
+        local_pixels = np.full((len(offsets), 2), np.nan, dtype=float)
+        if np.any(in_front):
+            normalized = camera_directions[in_front, :2] / camera_directions[in_front, 2:3]
+            x = normalized[:, 0]
+            y = normalized[:, 1]
+            radius_squared = x**2 + y**2
+            numerator = (
+                1.0
+                + self.k1 * radius_squared
+                + self.k2 * radius_squared**2
+                + self.k3 * radius_squared**3
+            )
+            denominator = (
+                1.0
+                + self.k4 * radius_squared
+                + self.k5 * radius_squared**2
+                + self.k6 * radius_squared**3
+            )
+            radial = numerator / denominator
+            distorted_x = (
+                x * radial
+                + 2.0 * self.p1 * x * y
+                + self.p2 * (radius_squared + 2.0 * x**2)
+            )
+            distorted_y = (
+                y * radial
+                + self.p1 * (radius_squared + 2.0 * y**2)
+                + 2.0 * self.p2 * x * y
+            )
+            local_pixels[in_front, 0] = self.fx * distorted_x + self.cx
+            local_pixels[in_front, 1] = self.fy * distorted_y + self.cy
+
+        projected[finite] = local_pixels
+        return projected.reshape(leading_shape + (2,))
+
     def point_to_ray_residuals(
         self, image_points: np.ndarray, world_points: np.ndarray
     ) -> np.ndarray:
@@ -205,17 +331,38 @@ class FlatPortCamera:
         return cls(**json.loads(path.read_text(encoding="utf-8")))
 
 
-def triangulate_rays(origins: np.ndarray, directions: np.ndarray) -> tuple[np.ndarray, float]:
-    """Least-squares closest point to two or more 3D rays."""
+def triangulate_rays(
+    origins: np.ndarray,
+    directions: np.ndarray,
+    *,
+    max_condition_number: float = DEFAULT_MAX_RAY_SYSTEM_CONDITION,
+) -> tuple[np.ndarray, float]:
+    """Least-squares closest point to two or more non-degenerate 3D rays.
+
+    Parallel and near-parallel configurations do not constrain a unique 3D
+    point.  They raise ``ValueError`` instead of returning a misleading
+    pseudoinverse solution with a small residual.
+    """
     origins = np.asarray(origins, dtype=float).reshape(-1, 3)
     directions = normalize_vectors(np.asarray(directions, dtype=float).reshape(-1, 3))
     if len(origins) < 2:
         raise ValueError("at least two rays are required")
+    if not np.all(np.isfinite(origins)) or not np.all(np.isfinite(directions)):
+        raise ValueError("ray origins and directions must be finite")
     identity = np.eye(3)
     projectors = identity[None, :, :] - directions[:, :, None] * directions[:, None, :]
     system = np.sum(projectors, axis=0)
+    eigenvalues = np.linalg.eigvalsh(system)
+    if eigenvalues[0] <= EPSILON:
+        raise ValueError("ray intersection is rank deficient (parallel rays)")
+    condition_number = float(eigenvalues[-1] / eigenvalues[0])
+    if not np.isfinite(condition_number) or condition_number > max_condition_number:
+        raise ValueError(
+            "ray intersection is ill-conditioned "
+            f"(condition number {condition_number:.6g} > {max_condition_number:.6g})"
+        )
     right_hand_side = np.sum(projectors @ origins[:, :, None], axis=0).reshape(3)
-    point = np.linalg.lstsq(system, right_hand_side, rcond=None)[0]
+    point = np.linalg.solve(system, right_hand_side)
     distances = np.linalg.norm((projectors @ (point - origins)[:, :, None]).squeeze(-1), axis=1)
     return point, float(np.sqrt(np.mean(distances**2)))
 

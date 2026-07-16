@@ -1,5 +1,42 @@
 # 3D Reconstruction
 
+The canonical full-run entry point is `reconstruct_from_slp`. Future runs use
+the validated fixed-interface refractive calibration by default through
+`configs/paths.local.toml` and `--calibration-backend auto`:
+
+```powershell
+python -m scripts.reconstruction_3d.reconstruct_from_slp EXPERIMENT `
+  --paths-config configs/paths.local.toml `
+  --calibration-backend auto `
+  --sleap-subdir ROUND_TAG --num-candidates 6 `
+  --use-visible-node-centroid --xyz-bounds -20 220 `
+  --no-shift-to-positive --num-individuals 3
+```
+
+`auto` prefers valid `cam0/1/2_bundle_refractive.json` assets and still
+recognizes historical joblib-only folders. Every run prints and persists the
+resolved backend, exact files, capabilities, and hypothesis-score unit. Fixed
+refractive scores are in `mm^2`; polynomial registration scores are in `px^2`.
+Use `--max-ray-residual-mm2` only with refractive calibration and
+`--max-residual-px2` only with polynomial calibration. The old
+`--max-residual-per-fish` spelling is a deprecated polynomial-only alias. Never
+reuse a threshold across those units.
+
+For an explicit legacy reproduction:
+
+```powershell
+python -m scripts.reconstruction_3d.reconstruct_from_slp EXPERIMENT `
+  --paths-config configs/paths.local.toml `
+  --calibration-backend polynomial `
+  --model-folder calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models
+```
+
+The refractive backend intersects the two or three observed rays directly and
+projects XYZ through the same flat-port geometry for top-ID binding. It never
+silently synthesizes a missing view or falls back to polynomial geometry.
+
+The older processed-CSV entry point below remains for compatibility.
+
 Use this stage after `scripts/tracking/` has written the three
 `*_player1/2/3_processed.csv` files for a clip.
 
@@ -27,7 +64,8 @@ Data expectations:
 - `player2` = side1 / `cam1`
 - `player3` = side2 / `cam2`
 - processed CSVs should include `frame`, `x`, `y`, with optional `fish_id` and `score`
-- calibration model directory must contain `imCoords_to_XYZ.joblib`
+- polynomial calibration directories must contain `imCoords_to_XYZ.joblib`;
+  refractive directories contain all three `cam*_bundle_refractive.json` files
 - if available, `XYZ_to_imCoords.joblib` improves reprojection scoring
 - if available, `xy_yz_to_xz.joblib`, `xz_yz_to_xy.joblib`, and `xz_xy_to_yz.joblib`
   are used for pairwise consistency scoring and one-view recovery

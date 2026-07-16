@@ -93,3 +93,5 @@ def test_compute_candidates_recovers_one_missing_view_with_helper_models(tmp_pat
     assert np.allclose(groups["b"], [4.0, 5.0, 6.0])
     assert np.allclose(groups["c"], [7.0, 8.0, 9.0])
     assert np.isfinite(candidates[0][0]["cost"])
+    assert candidates[0][0]["missing_views"] == [1, -1, -1]
+    assert candidates[0][0]["recovered"] == [True, False, False]
