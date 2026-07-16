@@ -34,6 +34,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--checkpoint", default="checkpoints/sam2_hiera_large.pt")
     p.add_argument("--device", default="cuda")
     p.add_argument("--display-scale", type=float, default=0.75)
+    p.add_argument(
+        "--auto-zoom-padding",
+        type=float,
+        default=2.5,
+        help="Selected-fish bounding-box padding used for automatic focus (default: 2.5x).",
+    )
+    p.add_argument("--no-auto-zoom", action="store_true", help="Keep the full-frame view when candidates change.")
     p.add_argument("--start-index", type=int, default=0)
     p.add_argument("--dry-run", action="store_true")
     return p
@@ -178,6 +185,10 @@ class Annotator:
         self.region = "body"
         self.states = {name: RegionState() for name in REGIONS}
         self.instance_select_mode = False
+        self.zoom = 1.0
+        self.view_center: tuple[float, float] | None = None
+        self._pan_anchor: tuple[int, int, float, float] | None = None
+        self.overlays_visible = True
         self.status = ""
         self.load_current()
 
@@ -213,7 +224,14 @@ class Annotator:
             self.states["body"].labels.append(1)
         self.region = "body"
         self.instance_select_mode = False
-        self.status = "Loaded candidate. Add points, then P to preview."
+        self.overlays_visible = True
+        if self.view_center is None:
+            height, width = self.image.shape[:2]
+            self.view_center = (width / 2.0, height / 2.0)
+        self._clamp_view_center()
+        focused = self.focus_selected_instance()
+        focus_note = " Auto-focused selected fish." if focused else ""
+        self.status = f"Loaded candidate.{focus_note} Add points, then P to preview."
 
     def preview(self) -> None:
         box = _bbox(self.selected_mask) if self.selected_mask is not None else None
@@ -248,44 +266,147 @@ class Annotator:
                 distances.append(float(np.hypot(xs.mean() - x, ys.mean() - y)) if len(xs) else np.inf)
             self.selected_mask_index = int(np.argmin(distances))
         self.instance_select_mode = False
-        self.status = f"Selected Detectron2 instance {self.selected_instance_id()}."
+        focused = self.focus_selected_instance()
+        focus_note = " and auto-focused" if focused else ""
+        self.status = f"Selected Detectron2 instance {self.selected_instance_id()}{focus_note}."
 
     def selected_instance_id(self) -> int | None:
         if not self.frame_masks:
             return None
         return int(self.frame_masks[self.selected_mask_index]["instance_id"])
 
+    def _display_size(self) -> tuple[int, int]:
+        height, width = self.image.shape[:2]
+        scale = max(0.05, float(self.args.display_scale))
+        return max(1, int(round(width * scale))), max(1, int(round(height * scale)))
+
+    def _view_size(self) -> tuple[float, float]:
+        height, width = self.image.shape[:2]
+        return width / self.zoom, height / self.zoom
+
+    def _clamp_view_center(self) -> None:
+        height, width = self.image.shape[:2]
+        view_width, view_height = self._view_size()
+        center_x, center_y = self.view_center or (width / 2.0, height / 2.0)
+        half_width = view_width / 2.0
+        half_height = view_height / 2.0
+        center_x = width / 2.0 if view_width >= width else min(max(center_x, half_width), width - half_width)
+        center_y = height / 2.0 if view_height >= height else min(max(center_y, half_height), height - half_height)
+        self.view_center = (center_x, center_y)
+
+    def _view_bounds(self) -> tuple[int, int, int, int]:
+        height, width = self.image.shape[:2]
+        view_width = max(1, int(round(width / self.zoom)))
+        view_height = max(1, int(round(height / self.zoom)))
+        center_x, center_y = self.view_center or (width / 2.0, height / 2.0)
+        x0 = min(max(0, int(round(center_x - view_width / 2.0))), width - view_width)
+        y0 = min(max(0, int(round(center_y - view_height / 2.0))), height - view_height)
+        return x0, y0, x0 + view_width, y0 + view_height
+
+    def _display_to_image_float(self, x: int, y: int) -> tuple[float, float]:
+        display_width, display_height = self._display_size()
+        x0, y0, x1, y1 = self._view_bounds()
+        image_x = x0 + (float(x) / display_width) * (x1 - x0)
+        image_y = y0 + (float(y) / display_height) * (y1 - y0)
+        return image_x, image_y
+
+    def _display_to_image(self, x: int, y: int) -> tuple[int, int]:
+        image_x, image_y = self._display_to_image_float(x, y)
+        return int(round(image_x)), int(round(image_y))
+
+    def _image_to_display_float(self, x: float, y: float) -> tuple[float, float]:
+        display_width, display_height = self._display_size()
+        x0, y0, x1, y1 = self._view_bounds()
+        display_x = (float(x) - x0) * display_width / (x1 - x0)
+        display_y = (float(y) - y0) * display_height / (y1 - y0)
+        return display_x, display_y
+
+    def focus_selected_instance(self) -> bool:
+        if bool(getattr(self.args, "no_auto_zoom", False)) or self.selected_mask is None:
+            return False
+        box = _bbox(self.selected_mask)
+        if box is None:
+            return False
+        x0, y0, x1, y1 = [float(value) for value in box]
+        box_width = max(1.0, x1 - x0 + 1.0)
+        box_height = max(1.0, y1 - y0 + 1.0)
+        height, width = self.image.shape[:2]
+        padding = max(1.1, float(getattr(self.args, "auto_zoom_padding", 2.5)))
+        self.zoom = min(8.0, max(1.0, min(width / (box_width * padding), height / (box_height * padding))))
+        self.view_center = ((x0 + x1) / 2.0, (y0 + y1) / 2.0)
+        self._clamp_view_center()
+        return True
+
+    def set_zoom(self, zoom: float, anchor: tuple[int, int] | None = None) -> None:
+        new_zoom = min(8.0, max(1.0, float(zoom)))
+        if abs(new_zoom - self.zoom) < 1e-9:
+            return
+        anchor_image = self._display_to_image_float(*anchor) if anchor is not None else None
+        self.zoom = new_zoom
+        if anchor is not None and anchor_image is not None:
+            display_width, display_height = self._display_size()
+            height, width = self.image.shape[:2]
+            fraction_x = min(1.0, max(0.0, anchor[0] / display_width))
+            fraction_y = min(1.0, max(0.0, anchor[1] / display_height))
+            view_width, view_height = width / self.zoom, height / self.zoom
+            self.view_center = (
+                anchor_image[0] + (0.5 - fraction_x) * view_width,
+                anchor_image[1] + (0.5 - fraction_y) * view_height,
+            )
+        self._clamp_view_center()
+        self.status = f"Zoom {self.zoom:.2f}x. Mouse wheel zooms; middle-drag pans; 0 resets."
+
     def draw(self) -> np.ndarray:
         canvas = self.image.copy()
-        if self.selected_mask is not None:
+        if self.overlays_visible and self.selected_mask is not None:
             overlay = np.zeros_like(canvas)
             overlay[self.selected_mask] = (0, 210, 255)
             canvas = self.cv2.addWeighted(canvas, 1.0, overlay, 0.22, 0.0)
         colors = {"body": (255, 110, 20), "fins": (220, 50, 220)}
         for name, state in self.states.items():
-            if state.mask is not None:
+            if self.overlays_visible and state.mask is not None:
                 overlay = np.zeros_like(canvas)
                 overlay[state.mask] = colors[name]
                 canvas = self.cv2.addWeighted(canvas, 1.0, overlay, 0.32, 0.0)
-            for (x, y), label in zip(state.points, state.labels):
-                color = (40, 230, 40) if label == 1 else (30, 30, 240)
-                self.cv2.circle(canvas, (round(x), round(y)), 7, color, -1)
-                self.cv2.circle(canvas, (round(x), round(y)), 9, (255, 255, 255), 1)
+        x0, y0, x1, y1 = self._view_bounds()
+        display_width, display_height = self._display_size()
+        crop = canvas[y0:y1, x0:x1]
+        interpolation = self.cv2.INTER_AREA if crop.shape[1] >= display_width else self.cv2.INTER_LINEAR
+        canvas = self.cv2.resize(crop, (display_width, display_height), interpolation=interpolation)
+        if self.overlays_visible:
+            for state in self.states.values():
+                for (x, y), label in zip(state.points, state.labels):
+                    display_x, display_y = self._image_to_display_float(x, y)
+                    if 0 <= display_x < display_width and 0 <= display_y < display_height:
+                        self._draw_prompt_marker(canvas, round(display_x), round(display_y), int(label))
         header = (
             f"{self.index + 1}/{len(self.rows)} {self.row['view']} frame={self.row['frame']} "
-            f"sample={self.row['sample_id']} D2={self.selected_instance_id()} region={self.region}"
+            f"sample={self.row['sample_id']} D2={self.selected_instance_id()} region={self.region} zoom={self.zoom:.2f}x"
         )
-        hint = "L/R click +/- | B body F fins | P preview | U undo | I select D2 | 1 clean 2 ambiguous 3 reject | N/PgDn next"
+        hint = "H raw/overlay | wheel or +/- zoom | middle-drag pan | L/R prompt +/- | B/F region | P preview | 1/2/3 save"
         for y, text in [(28, header), (56, hint), (84, self.status)]:
             self.cv2.putText(canvas, text, (12, y), self.cv2.FONT_HERSHEY_SIMPLEX, 0.58, (255, 255, 255), 3)
             self.cv2.putText(canvas, text, (12, y), self.cv2.FONT_HERSHEY_SIMPLEX, 0.58, (10, 10, 10), 1)
-        return self.cv2.resize(
-            canvas,
-            None,
-            fx=float(self.args.display_scale),
-            fy=float(self.args.display_scale),
-            interpolation=self.cv2.INTER_AREA,
+        return canvas
+
+    def _draw_prompt_marker(self, canvas: np.ndarray, x: int, y: int, label: int) -> None:
+        color = (40, 230, 40) if label == 1 else (30, 30, 240)
+        segments = (
+            ((x - 5, y), (x - 2, y)),
+            ((x + 2, y), (x + 5, y)),
+            ((x, y - 5), (x, y - 2)),
+            ((x, y + 2), (x, y + 5)),
         )
+        for start, end in segments:
+            self.cv2.line(canvas, start, end, (255, 255, 255), 3, self.cv2.LINE_AA)
+            self.cv2.line(canvas, start, end, color, 1, self.cv2.LINE_AA)
+
+    def toggle_overlays(self) -> None:
+        self.overlays_visible = not self.overlays_visible
+        if self.overlays_visible:
+            self.status = "Overlays restored; annotation state was unchanged."
+        else:
+            self.status = "Raw-image preview: overlays hidden; annotation state is unchanged. Press H to restore."
 
     def save(self, decision: str) -> Path:
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%fZ")
@@ -378,9 +499,32 @@ class Annotator:
         self.index = (self.index + step) % len(self.rows)
         self.load_current()
 
-    def mouse(self, event: int, x: int, y: int, _flags: int, _param) -> None:
-        x = int(round(x / float(self.args.display_scale)))
-        y = int(round(y / float(self.args.display_scale)))
+    def mouse(self, event: int, x: int, y: int, flags: int, _param) -> None:
+        if event == self.cv2.EVENT_MOUSEWHEEL:
+            if hasattr(self.cv2, "getMouseWheelDelta"):
+                delta = int(self.cv2.getMouseWheelDelta(flags))
+            else:
+                delta = int(flags >> 16)
+            self.set_zoom(self.zoom * (1.25 if delta > 0 else 0.8), anchor=(x, y))
+            return
+        if event == self.cv2.EVENT_MBUTTONDOWN:
+            center_x, center_y = self.view_center
+            self._pan_anchor = (x, y, center_x, center_y)
+            return
+        if event == self.cv2.EVENT_MOUSEMOVE and self._pan_anchor is not None:
+            start_x, start_y, center_x, center_y = self._pan_anchor
+            display_width, display_height = self._display_size()
+            view_width, view_height = self._view_size()
+            self.view_center = (
+                center_x - (x - start_x) * view_width / display_width,
+                center_y - (y - start_y) * view_height / display_height,
+            )
+            self._clamp_view_center()
+            return
+        if event == self.cv2.EVENT_MBUTTONUP:
+            self._pan_anchor = None
+            return
+        x, y = self._display_to_image(x, y)
         if not (0 <= x < self.image.shape[1] and 0 <= y < self.image.shape[0]):
             return
         if self.instance_select_mode and event == self.cv2.EVENT_LBUTTONDOWN:
@@ -402,7 +546,15 @@ class Annotator:
                 low = key & 0xFF
                 if low in {ord("q"), 27}:
                     break
-                if low == ord("b"):
+                if low in {ord("+"), ord("=")}:
+                    self.set_zoom(self.zoom * 1.25)
+                elif low in {ord("-"), ord("_")}:
+                    self.set_zoom(self.zoom * 0.8)
+                elif low == ord("0"):
+                    self.set_zoom(1.0)
+                elif low == ord("h"):
+                    self.toggle_overlays()
+                elif low == ord("b"):
                     self.region = "body"
                 elif low == ord("f"):
                     self.region = "fins"
@@ -438,7 +590,9 @@ class Annotator:
                     self.move(-1)
                 elif low == ord("x") and self.frame_masks:
                     self.selected_mask_index = (self.selected_mask_index + 1) % len(self.frame_masks)
-                    self.status = f"Selected Detectron2 instance {self.selected_instance_id()}."
+                    focused = self.focus_selected_instance()
+                    focus_note = " and auto-focused" if focused else ""
+                    self.status = f"Selected Detectron2 instance {self.selected_instance_id()}{focus_note}."
         finally:
             self.cv2.destroyAllWindows()
 
@@ -461,6 +615,8 @@ def main(argv: list[str] | None = None) -> None:
         "sam_model_cfg": args.sam_model_cfg,
         "checkpoint": str(Path(args.checkpoint).resolve()),
         "device": args.device,
+        "auto_zoom": not args.no_auto_zoom,
+        "auto_zoom_padding": args.auto_zoom_padding,
     }
     if args.dry_run:
         print(json.dumps(summary, indent=2))

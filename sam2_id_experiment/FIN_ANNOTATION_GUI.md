@@ -44,7 +44,16 @@ at a different image and mask HDF5.
 ## Controls
 
 - `I`, then left-click: select an existing Detectron2 instance; `X` cycles instances.
+- Mouse wheel or `+` / `-`: zoom around the cursor or view center; `0` resets to fit.
+- Middle-button drag: pan while zoomed.
+- Each candidate automatically centers and zooms on its selected Detectron2 fish. Use
+  `--no-auto-zoom` to disable this or `--auto-zoom-padding` to change the context margin.
+- `H`: toggle a raw-image preview by hiding every mask and prompt marker. This changes
+  only display visibility; all annotation state remains untouched. New candidates
+  restore overlays automatically.
 - Left/right click: positive/negative SAM2 point; `U` undoes; `R` clears the active region.
+- Prompt locations are shown as small, fixed-size crosshairs with an open center so
+  the exact source pixel remains visible while zoomed.
 - `B` / `F`: edit body or fins separately; `P` previews SAM2; `[` / `]` selects another SAM proposal.
 - `1` / `2` / `3`: save as clean / ambiguous / reject, then advance.
 - `N` or Page Down: next candidate; Page Up: previous; `Q` or Escape: quit.
