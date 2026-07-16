@@ -259,18 +259,20 @@ Pass `--crop-only` if you only want the old crop-by-crop view.
 ```bash
 python -m scripts.reconstruction_3d.reconstruct_from_slp 20251220_D_1_1_FCMC \
     --paths-config configs/paths.local.toml \
+    --calibration-backend auto \
     --sleap-subdir round4_260520 \
     --num-candidates 6 \
     --use-visible-node-centroid \
     --xyz-bounds -20 220 --no-shift-to-positive \
-    --max-residual-per-fish 5000 \
     --max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100 \
     --num-individuals 3 \
     --bind-top-id \
     --top-tracks-csv <sleap_output_dir>/20251220_D_1_1_FCMC/round4_260520/top_cam.tracks.csv
 ```
 
-The round4 production run uses **`--use-visible-node-centroid`** (centroid of the
+`--calibration-backend auto` prefers the checked-in fixed-interface refractive
+assets and records the resolved backend, exact model files, capabilities, and
+score unit. The round4 production run uses **`--use-visible-node-centroid`** (centroid of the
 visible mouth+tail nodes — invariant to round4 mouth↔tail swaps), the ID-link
 thresholds **`--max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100`**,
 and **`--bind-top-id`** (with the Stage 2.3 `top_cam.tracks.csv`) to emit
@@ -279,9 +281,10 @@ and **`--bind-top-id`** (with the Stage 2.3 `top_cam.tracks.csv`) to emit
 tracks CSV. Omit `--start-frame/--end-frame` for a full-length run.
 
 > **Always pass `--num-candidates 6` for `.slp` produced with
-> `--max-instances 6` inference** (the standard now). It selects the greedy
-> mutually-exclusive triplet path (`triangulate_extra_candidates.py`, tqdm
-> **"3D best-assign"**, ~500-660 frame/s — full length ~10 min) and recovers
+> `--max-instances 6` inference** (the standard now). It selects the global
+> mutually-exclusive candidate-set path (`triangulate_extra_candidates.py`, tqdm
+> **"3D best-assign"**, typically ~400-900 frame/s after coordinates are
+> loaded) and recovers
 > reflection-displaced fish via `--xyz-bounds` gating. **Omitting it silently
 > falls back to the default full-permutation path** (`triangulate.py`, tqdm
 > **"3D candidates"**, ~10 frame/s — full length ~9.7 h), which is both far
@@ -296,19 +299,27 @@ Algorithm (Dynamics-of-dominance-style):
 1. **Per-frame candidate enumeration** — for each frame, enumerate every
    assignment of `num_individuals` detections from cam0, cam1, cam2
    (`N! × N!` permutations). Triangulate each triplet through the
-   calibration model and score it by the triplet registration error
-   (reprojection loss summed across pair-to-third models).
-2. **Best candidate per frame** — pick the minimum-cost assignment whose
-   points stay inside `--xyz-bounds`.
+   selected calibration backend and score it in that backend's declared unit.
+   The refractive backend directly intersects observed rays, including every
+   two-view missing-camera case; it does not synthesize a polynomial third view.
+2. **Best candidate set per frame** — globally select the maximum-cardinality,
+   minimum-cost mutually exclusive set whose points stay inside `--xyz-bounds`.
+   The selector is not greedy: one locally cheap triplet cannot consume a slot
+   needed by a lower-cost complete set.
 3. **Per-fish residual filter** — any fish whose individual registration
-   error exceeds `--max-residual-per-fish` is marked NaN for that frame,
+   error exceeds the backend-specific gate is marked NaN for that frame. Use
+   `--max-residual-px2` for polynomial `px^2` scores or
+   `--max-ray-residual-mm2` for fixed-refractive `mm^2` scores,
    even when the overall candidate wins. Drops geometrically implausible
    individual matches without discarding the whole frame.
 4. **Temporal linking** — Hungarian NN over 3D positions, using each ID's
    **last valid** point (survives short NaN gaps). `--max-jump-mm` rejects
    matches whose per-frame distance × gap exceeds the threshold;
    `--max-gap-frames` retires IDs missing too long so a re-appearing fish
-   can re-seed an orphaned slot.
+   can re-seed an orphaned slot. Optional velocity-prediction, tangent, and
+   acceleration costs are available through the `--motion-*` flags. They are
+   computed for the complete frame before any fish state is updated and default
+   to zero, preserving the validated position-only linker.
 5. **Gap fill** — linearly interpolate NaN frames inside each trajectory's
    observed range.
 
@@ -365,10 +376,16 @@ cost of conservative triplet vetoes.
 
 | Flag | Purpose | Example |
 | --- | --- | --- |
+| `--calibration-backend` | Resolve `auto`, `refractive`, or `polynomial`; provenance is persisted | `auto` |
 | `--xyz-bounds LOW HIGH` | Reject triangulations outside this cube at candidate selection | `-20 220` |
-| `--max-residual-per-fish` | Pixel²-sum threshold for individual reprojection error | `5000` |
+| `--max-residual-px2` | Optional polynomial registration-score gate (`px^2`) | `5000` for legacy round4 reproduction |
+| `--max-ray-residual-mm2` | Optional refractive mean-squared point-to-ray gate (`mm^2`) | omit unless validated |
 | `--max-jump-mm` | Per-frame velocity gate for ID linking | `30` |
 | `--max-gap-frames` | Retire IDs unseen this long (allows re-seed) | `100` |
+| `--motion-velocity-prediction-weight` | Soft constant-velocity prediction cost (opt-in) | `0` |
+| `--motion-tangent-weight` | Soft direction-discontinuity cost (opt-in) | `0` |
+| `--motion-acceleration-weight` | Soft acceleration-discontinuity cost (opt-in) | `0` |
+| `--max-motion-gap-frames` | Disable motion priors, but not distance gating, across longer gaps | `20` |
 | `--num-individuals` | Number of fish slots end-to-end | `3` |
 | `--start-frame / --end-frame` | Inclusive frame range | `171800 176799` |
 | `--first-frame-id-only` | Skip Hungarian NN; fix IDs from first valid frame only | — |
@@ -377,9 +394,9 @@ cost of conservative triplet vetoes.
 
 **Picking residual and jump thresholds**
 
-The per-fish registration error sums squared pixel residuals across the
-three pair-to-third reprojections (6 terms). For medaka with the current
-calibration:
+Residual values are not portable across backends. The polynomial adapter reports
+the historical summed squared pixel registration error (`px^2`). Its round4
+distribution was:
 
 | Quantile | Per-fish error (px²) |
 | ---: | ---: |
@@ -389,8 +406,12 @@ calibration:
 | p95 | 48,068 |
 | p99 | 245,126 |
 
-Clear bimodality between "good fits" (<1k) and "broken fits" (>10k) — default
-`--max-residual-per-fish 5000` rejects ~5–10% of per-fish assignments.
+Clear bimodality between "good fits" (<1k) and "broken fits" (>10k); the legacy
+explicit polynomial gate `--max-residual-px2 5000` rejected ~5–10% of per-fish
+assignments (`--max-residual-per-fish` remains only as its deprecated alias).
+The refractive adapter reports mean squared point-to-ray
+distance (`mm^2`). Do not reuse `5000`: omit the gate until an `mm^2` threshold
+has been validated on tuning episodes, then record the chosen unit and value.
 
 `--max-jump-mm` gates ID linking per-frame; pair it with `--max-jump-hard-cap-mm`
 so the effective threshold at a gap of N frames is `min(max_jump_mm*N,
@@ -404,11 +425,21 @@ from binding a *different* fish onto the same ID). Loosen `--max-jump-mm` toward
 
 | Path | tqdm label | frame/s | 348k frames |
 | --- | --- | ---: | ---: |
-| `--num-candidates 6` (global constrained set, **recommended**) | `3D best-assign` | ~400–900 | ~10–15 min |
+| `--num-candidates 6` (global constrained set, **recommended**) | `3D best-assign` | ~400–900 | ~10–15 min end-to-end |
 | default (full 36-permutation) | `3D candidates` | ~10 | ~9.7 h |
 
 Prefer the `--num-candidates 6` path (see callout in §2.4). Both are
-single-core, so independent experiments can run in parallel.
+single-core, so independent experiments can run in parallel. The tqdm
+`frame/s` value is selector compute after candidate coordinates are loaded;
+remote `.slp` loading/decoding and final output I/O are outside that rate and
+explain why the full 348k-frame wall time is longer.
+
+For conservative post-link repair of appearance-derived `F/M1/M2` labels, see
+[MOTION_IDENTITY_REPAIR.md](../../sam2_id_experiment/MOTION_IDENTITY_REPAIR.md).
+For source-frame human review of hidden swaps in the anonymous geometry slots,
+including pair-swap events, deliberately unlabeled intervals, and conservative
+clean-tracklet export, see
+[GEOMETRY_SWAP_REVIEW.md](../analysis/GEOMETRY_SWAP_REVIEW.md).
 
 ### 2.5 Related scripts
 

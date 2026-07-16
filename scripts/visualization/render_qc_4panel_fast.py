@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-"""Fast 2x2 QC video: 3 camera views + a 3D trajectory panel, driven entirely by the
-resolved dual-line 3-fish track so identity is CONSISTENT across all four panels.
+"""Fast 2x2 QC video: 3 camera views + a 3D trajectory panel.
 
 Full-length, no-skip QC on this PC: threaded CPU decode + cv2-only drawing + a single GPU
 **NVENC** encode pipe (no matplotlib, no libx264); `--workers K` splits the timeline into K
 chunks rendered in parallel (each its own NVENC session) then `ffmpeg -c copy` concat.
 
-Identity = the interp track's ``id_final`` in {F,M1,M2} (one source of truth):
+Identity defaults to the interp track's ``id_final`` in {F,M1,M2}. Anonymous
+geometry tracks can instead use, for example, ``--id-column fish_id --identity
+ID_1=G1 --identity ID_2=G2 --identity ID_3=G3``:
   * Each fish's resolved 3D position is REPROJECTED into every view (calibration) and matched
     to the nearest SLEAP keypoint -> draw that fish's pose coloured by id_final. (Using the
     reprojected resolved track, NOT best.json instance indices which swap sort-order at
@@ -15,9 +16,9 @@ Identity = the interp track's ``id_final`` in {F,M1,M2} (one source of truth):
   * 3D panel: each fish's position + a 5 s motion tail + a **body-axis arrow** = the triangulated
     tail->mouth direction (mouth/tail 3D recovered from the matched per-view keypoints), i.e. where
     the fish is FACING, not where it is moving.
-  * Confidence: a confident anchor (id_conf=high) draws SOLID; a gap-filled / occluded fish draws
-    a FADED hollow marker (in 2D, at the reprojected position when no SLEAP keypoint is nearby) ->
-    both panels show the same fish set without the "extra fish" confusion.
+  * Confidence: ``id_conf=high`` draws SOLID. Geometry-only CSVs use
+    ``is_interpolated`` instead, so gap-filled positions are faded while measured
+    positions remain solid.
 
 F=red, M1=blue, M2=orange. Layout: top_cam (NW) / side1_cam (NE) / side2_cam (SW) / 3D (SE).
 """
@@ -38,19 +39,80 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from scripts.visualization.render_4panel_video import _hex_to_bgr, label_panel_top  # noqa: E402
-from scripts.visualization.render_3d_skeleton_video import load_slp_node_xy  # noqa: E402
 
 VIEWS = ("top_cam", "side1_cam", "side2_cam")           # = cam0, cam1, cam2 (calibration triplet order)
 VIEW_CAM = {"top_cam": "cam0_top.mp4", "side1_cam": "cam1_side.mp4", "side2_cam": "cam2_side.mp4"}
-ID_NAMES = ("F", "M1", "M2")
-ID_HEX = {"F": "#E03030", "M1": "#1f77b4", "M2": "#ff9500"}  # female red, M1 blue, M2 orange
+DEFAULT_IDENTITIES = {"F": "F", "M1": "M1", "M2": "M2"}
+IDENTITY_PALETTE = ("#E03030", "#1f77b4", "#ff9500", "#2ca02c", "#9467bd", "#8c564b")
+ID_NAMES = tuple(DEFAULT_IDENTITIES.values())
+ID_HEX = {name: IDENTITY_PALETTE[index] for index, name in enumerate(ID_NAMES)}
 ID_BGR = {k: _hex_to_bgr(v) for k, v in ID_HEX.items()}
 SRC_W = 1200
 DEFAULT_CALIB = "calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models"
 
 
+def load_indexed_slp_node_xy(
+    slp_path: Path,
+    *,
+    node_names: tuple[str, ...],
+    start_frame: int,
+    end_frame: int,
+) -> tuple[dict[int, np.ndarray], list[str]]:
+    """Load only the requested raw SLEAP frames through the HDF5 frame index.
+
+    Short held-out renders previously loaded the complete 348k-frame SLP once
+    per clip. The review GUI's indexed reader keeps the raw predicted
+    instances while making runtime proportional to the requested episode.
+    """
+    from scripts.analysis.geometry_swap_review import IndexedSlpPredictions
+
+    source = IndexedSlpPredictions(
+        slp_path,
+        node_names=node_names,
+        cache_size=max(1, end_frame - start_frame + 1),
+    )
+    try:
+        frames = {
+            frame: instances
+            for frame in range(int(start_frame), int(end_frame) + 1)
+            if (instances := source.get(frame)) is not None
+        }
+    finally:
+        source.close()
+    return frames, list(node_names)
+
+
 def _fade(color, alpha):
     return tuple(int(255 - (255 - c) * alpha) for c in color)
+
+
+def parse_identity_specs(specs: list[str] | None) -> dict[str, str]:
+    """Parse ordered SOURCE=DISPLAY identity specifications."""
+    if not specs:
+        return dict(DEFAULT_IDENTITIES)
+    mapping: dict[str, str] = {}
+    for spec in specs:
+        if "=" not in spec:
+            raise ValueError(f"--identity expects SOURCE=DISPLAY, got {spec!r}")
+        source, display = (part.strip() for part in spec.split("=", 1))
+        if not source or not display:
+            raise ValueError(f"--identity expects SOURCE=DISPLAY, got {spec!r}")
+        if source in mapping:
+            raise ValueError(f"duplicate source identity {source!r}")
+        mapping[source] = display
+    if len(set(mapping.values())) != len(mapping):
+        raise ValueError("--identity display labels must be unique")
+    return mapping
+
+
+def configure_identities(identity_map: dict[str, str]) -> None:
+    global ID_NAMES, ID_HEX, ID_BGR
+    ID_NAMES = tuple(identity_map.values())
+    ID_HEX = {
+        name: IDENTITY_PALETTE[index % len(IDENTITY_PALETTE)]
+        for index, name in enumerate(ID_NAMES)
+    }
+    ID_BGR = {key: _hex_to_bgr(value) for key, value in ID_HEX.items()}
 
 
 # ----------------------------------------------------------------- 3D projector
@@ -148,9 +210,64 @@ def draw_raw_sleap(img, arr, scale, by_index=False):
             cv2.circle(img, p, 3 if (by_index and i > 0) else 2, col, -1, cv2.LINE_AA)
 
 
-def draw_2d_view(img, view, f, reproj, vis2d, scale, arrow_t=3):
-    """Per fish in this view: if a SLEAP keypoint was matched (vis2d finite) draw its mouth->tail
-    arrow (solid); else a faded hollow marker at the reprojected resolved position."""
+def visible_node_centroids(instances: np.ndarray) -> np.ndarray:
+    """Return one centroid per instance using only nodes with finite x and y."""
+    array = np.asarray(instances, dtype=float)
+    if array.ndim != 3 or array.shape[-1] != 2:
+        raise ValueError("instances must have shape (instances, nodes, 2)")
+    visible = np.isfinite(array).all(axis=2)
+    counts = visible.sum(axis=1)
+    summed = np.where(visible[..., None], array, 0.0).sum(axis=1)
+    centers = np.full((len(array), 2), np.nan, dtype=float)
+    valid = counts > 0
+    centers[valid] = summed[valid] / counts[valid, None]
+    return centers
+
+
+def match_projected_identities_to_instances(
+    projected_by_identity: dict[str, np.ndarray],
+    instances: np.ndarray,
+    gate_px: float,
+) -> dict[str, int]:
+    """Greedily match projected geometry centroids to SLEAP instance centroids."""
+    centers = visible_node_centroids(instances)
+    pairs: list[tuple[float, str, int]] = []
+    for identity, projected in projected_by_identity.items():
+        point = np.asarray(projected, dtype=float)
+        if not np.isfinite(point).all():
+            continue
+        for instance_index, center in enumerate(centers):
+            if np.isfinite(center).all():
+                distance = float(np.linalg.norm(point - center))
+                pairs.append((distance, identity, instance_index))
+    pairs.sort(key=lambda item: (item[0], item[1], item[2]))
+    assigned: dict[str, int] = {}
+    used_instances: set[int] = set()
+    for distance, identity, instance_index in pairs:
+        if distance > gate_px:
+            break
+        if identity in assigned or instance_index in used_instances:
+            continue
+        assigned[identity] = instance_index
+        used_instances.add(instance_index)
+    return assigned
+
+
+def draw_2d_view(
+    img,
+    view,
+    f,
+    reproj,
+    vis2d,
+    scale,
+    arrow_t=3,
+    center_only=False,
+):
+    """Draw a colored identity only at a matched raw SLEAP mouth.
+
+    The reprojected 3D centroid is used only to select the raw instance. It is
+    deliberately never drawn as the 2D identity center.
+    """
     import cv2
     for name in ID_NAMES:
         rp = reproj[name][view][f]
@@ -158,18 +275,19 @@ def draw_2d_view(img, view, f, reproj, vis2d, scale, arrow_t=3):
             continue
         col = ID_BGR[name]
         kp = vis2d[name][view][f]   # (n_nodes, 2) source px, NaN if unmatched
-        if np.isfinite(kp).any():
-            ipts = [(int(round(p[0] * scale)), int(round(p[1] * scale))) for p in kp if np.isfinite(p).all()]
-            head = ipts[0]
-            if len(ipts) >= 2:
-                cv2.arrowedLine(img, ipts[-1], head, (0, 0, 0), arrow_t + 2, cv2.LINE_AA, 0, 0.35)
-                cv2.arrowedLine(img, ipts[-1], head, col, arrow_t, cv2.LINE_AA, 0, 0.35)
-            else:
-                cv2.circle(img, head, 9, (0, 0, 0), -1, cv2.LINE_AA)
-                cv2.circle(img, head, 7, col, -1, cv2.LINE_AA)
+        if len(kp) == 0 or not np.isfinite(kp[0]).all():
+            continue
+        head = tuple(np.round(kp[0] * scale).astype(int))
+        if center_only:
+            cv2.circle(img, head, 6, (0, 0, 0), -1, cv2.LINE_AA)
+            cv2.circle(img, head, 4, col, -1, cv2.LINE_AA)
+        elif len(kp) >= 2 and np.isfinite(kp[1]).all():
+            tail = tuple(np.round(kp[1] * scale).astype(int))
+            cv2.arrowedLine(img, tail, head, (0, 0, 0), arrow_t + 2, cv2.LINE_AA, 0, 0.35)
+            cv2.arrowedLine(img, tail, head, col, arrow_t, cv2.LINE_AA, 0, 0.35)
         else:
-            head = (int(round(rp[0] * scale)), int(round(rp[1] * scale)))
-            cv2.circle(img, head, 7, _fade(col, 0.45), 2, cv2.LINE_AA)
+            cv2.circle(img, head, 9, (0, 0, 0), -1, cv2.LINE_AA)
+            cv2.circle(img, head, 7, col, -1, cv2.LINE_AA)
         cv2.putText(img, name, (head[0] + 10, head[1] - 10), cv2.FONT_HERSHEY_DUPLEX, 0.6, (0, 0, 0), 3, cv2.LINE_AA)
         cv2.putText(img, name, (head[0] + 10, head[1] - 10), cv2.FONT_HERSHEY_DUPLEX, 0.6, col, 1, cv2.LINE_AA)
 
@@ -208,25 +326,62 @@ class Decoder(threading.Thread):
 
 
 # --------------------------------------------------------------------- loaders
-def load_track(csv_path: Path, n_frames: int):
+def _truthy(values):
     import pandas as pd
-    cols = ["frame", "id_final", "X", "Y", "Z"]
-    df = pd.read_csv(csv_path)
-    cf = "id_conf" if "id_conf" in df.columns else None
-    df = df[cols + ([cf] if cf else [])]
+    if pd.api.types.is_bool_dtype(values):
+        return values.fillna(False).astype(bool).to_numpy()
+    return (
+        values.fillna(False)
+        .astype(str)
+        .str.lower()
+        .isin({"1", "true", "yes", "y"})
+        .to_numpy()
+    )
+
+
+def load_track(
+    csv_path: Path,
+    n_frames: int,
+    *,
+    id_column: str = "id_final",
+    identity_map: dict[str, str] | None = None,
+):
+    import pandas as pd
+    identity_map = dict(identity_map or DEFAULT_IDENTITIES)
+    header = pd.read_csv(csv_path, nrows=0).columns
+    required = {"frame", id_column, "X", "Y", "Z"}
+    missing = required - set(header)
+    if missing:
+        raise ValueError(f"track CSV is missing columns: {sorted(missing)}")
+    confidence_columns = [
+        column for column in ("id_conf", "is_interpolated") if column in header
+    ]
+    df = pd.read_csv(
+        csv_path,
+        usecols=["frame", id_column, "X", "Y", "Z", *confidence_columns],
+        low_memory=False,
+    )
+    df["_source_identity"] = df[id_column].astype(str)
+    df["_display_identity"] = df["_source_identity"].map(identity_map)
     pos = {k: np.full((n_frames, 3), np.nan) for k in ID_NAMES}
     conf = {k: np.zeros(n_frames, bool) for k in ID_NAMES}
     for name in ID_NAMES:
-        sub = df[df.id_final == name]
+        sub = df[df["_display_identity"] == name]
         fr = sub.frame.to_numpy().astype(int)
         good = (fr >= 0) & (fr < n_frames)
         pos[name][fr[good]] = sub[["X", "Y", "Z"]].to_numpy()[good]
-        conf[name][fr[good]] = (sub[cf].to_numpy()[good] == "high") if cf else True
+        if "id_conf" in sub:
+            confident = sub["id_conf"].astype(str).str.lower().eq("high").to_numpy()
+        elif "is_interpolated" in sub:
+            confident = ~_truthy(sub["is_interpolated"])
+        else:
+            confident = np.ones(len(sub), dtype=bool)
+        conf[name][fr[good]] = confident[good]
     return pos, conf
 
 
 def reproject_track(pos, cal, start, end):
-    n = len(pos["F"])
+    n = len(next(iter(pos.values())))
     reproj = {name: {v: np.full((n, 2), np.nan) for v in VIEWS} for name in ID_NAMES}
     sl = slice(start, end + 1)
     for name in ID_NAMES:
@@ -252,25 +407,16 @@ def precompute_overlay(reproj, slp, cal, start, end, n, gate):
             arr = sv.get(f)
             if arr is None or len(arr) == 0:
                 continue
-            mouth = arr[:, 0]
-            present = [(name, rpv[name][f]) for name in ID_NAMES if np.isfinite(rpv[name][f]).all()]
-            pairs = []
-            for fi, (_n, p) in enumerate(present):
-                for ki in range(len(mouth)):
-                    if np.isfinite(mouth[ki]).all():
-                        pairs.append((float(np.hypot(p[0] - mouth[ki, 0], p[1] - mouth[ki, 1])), fi, ki))
-            pairs.sort()
-            assigned, used = {}, set()
-            for dist, fi, ki in pairs:
-                if fi in assigned or ki in used or dist > gate:
-                    continue
-                assigned[fi] = ki; used.add(ki)
-            for fi, (name, _p) in enumerate(present):
-                if fi in assigned:
-                    vis2d[name][v][f] = arr[assigned[fi]]   # (mouth, tail) source px
+            projected = {
+                name: rpv[name][f]
+                for name in ID_NAMES
+                if np.isfinite(rpv[name][f]).all()
+            }
+            assigned = match_projected_identities_to_instances(projected, arr, gate)
+            for name, instance_index in assigned.items():
+                vis2d[name][v][f] = arr[instance_index]   # (mouth, tail) source px
 
     body = {name: np.full((n, 3), np.nan) for name in ID_NAMES}
-    model = cal._model_im2xyz  # batched 6D(cam0,cam1,cam2 xy)->XYZ; same model project_world_to_view inverts
     for name in ID_NAMES:
         M = np.stack([vis2d[name][v][:, 0, :] for v in VIEWS], axis=1)   # (n,3,2) mouth
         T = np.stack([vis2d[name][v][:, 1, :] for v in VIEWS], axis=1)   # (n,3,2) tail
@@ -278,8 +424,12 @@ def precompute_overlay(reproj, slp, cal, start, end, n, gate):
         idx = np.where(ok)[0]
         if len(idx) == 0:
             continue
-        m3d = model.predict(M[idx].reshape(len(idx), 6))
-        t3d = model.predict(T[idx].reshape(len(idx), 6))
+        # Keep renderer geometry on the same public calibration backend as the
+        # position track. This is a real three-view triangulation for both the
+        # refractive and legacy polynomial adapters; never reach into joblib
+        # model internals or silently switch geometry here.
+        m3d = np.asarray(cal.triangulate(M[idx]), dtype=float)
+        t3d = np.asarray(cal.triangulate(T[idx]), dtype=float)
         d = m3d - t3d
         nrm = np.linalg.norm(d, axis=1, keepdims=True)
         body[name][idx] = np.where(nrm > 1e-6, d / nrm, np.nan)
@@ -291,6 +441,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("experiment")
     ap.add_argument("--slp-dir", type=Path, required=True)
     ap.add_argument("--track-csv", type=Path, required=True)
+    ap.add_argument("--id-column", default="id_final",
+                    help="Track CSV column containing source identities.")
+    ap.add_argument("--identity", action="append", default=[], metavar="SOURCE=DISPLAY",
+                    help="Source ID and displayed label; repeat in desired color order.")
     ap.add_argument("--video-dir", type=Path, required=True)
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--calib", default=DEFAULT_CALIB)
@@ -312,13 +466,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--codec", default="h264_nvenc")
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--draw-raw-sleap", action="store_true",
-                    help="overlay ALL raw SLEAP instances (gray, no ID filtering) on top of the colored track")
+                    help="draw ALL raw SLEAP instances in gray beneath mouth-centered colored IDs")
     ap.add_argument("--raw-by-index", action="store_true",
                     help="color raw SLEAP instances by within-frame index: 1st gray, 2nd red, 3rd+ magenta")
     ap.add_argument("--no-track-overlay", action="store_true",
                     help="skip the colored resolved-track arrows in the 2D views (raw SLEAP only)")
     ap.add_argument("--arrow-thickness", type=int, default=3, help="2D colored mouth->tail arrow line thickness")
     args = ap.parse_args(argv)
+
+    try:
+        identity_map = parse_identity_specs(args.identity)
+    except ValueError as error:
+        ap.error(str(error))
+    configure_identities(identity_map)
 
     if args.workers > 1:
         return _orchestrate(args)
@@ -331,16 +491,32 @@ def main(argv: list[str] | None = None) -> int:
     gate = args.gate_px
     tail_n = int(round(args.tail_seconds * args.source_fps))
     print(f"{args.experiment}  frames {start}..{end}  panel {panel}  fps {args.fps}  codec {args.codec}", flush=True)
+    print(f"identity column {args.id_column}: {identity_map}", flush=True)
 
     print("loading track + reprojecting ...", flush=True)
-    pos, conf = load_track(args.track_csv, n_total)
+    pos, conf = load_track(
+        args.track_csv,
+        n_total,
+        id_column=args.id_column,
+        identity_map=identity_map,
+    )
     from scripts.reconstruction_3d.calibration import Calibration
     cal = Calibration(str(args.calib))
+    print(
+        f"calibration backend {cal.backend_name} score_unit={cal.score_unit} "
+        f"models={cal.provenance.get('model_files')}",
+        flush=True,
+    )
     reproj = reproject_track(pos, cal, start, end)
     slp = {}
     for v in VIEWS:
-        print(f"loading {v}.slp ...", flush=True)
-        slp[v], _ = load_slp_node_xy(args.slp_dir / f"{v}.slp", node_names=tuple(args.node_names))
+        print(f"loading indexed {v}.slp frames {start}..{end} ...", flush=True)
+        slp[v], _ = load_indexed_slp_node_xy(
+            args.slp_dir / f"{v}.slp",
+            node_names=tuple(args.node_names),
+            start_frame=start,
+            end_frame=end,
+        )
     print("matching keypoints + triangulating body axis ...", flush=True)
     vis2d, body = precompute_overlay(reproj, slp, cal, start, end, n_total, gate)
 
@@ -375,10 +551,19 @@ def main(argv: list[str] | None = None) -> int:
                     raise StopIteration
                 frames[v] = item
             for v in VIEWS:
-                if not args.no_track_overlay:
-                    draw_2d_view(frames[v], v, f, reproj, vis2d, scale, arrow_t=args.arrow_thickness)
                 if args.draw_raw_sleap:
                     draw_raw_sleap(frames[v], slp[v].get(f), scale, by_index=args.raw_by_index)
+                if not args.no_track_overlay:
+                    draw_2d_view(
+                        frames[v],
+                        v,
+                        f,
+                        reproj,
+                        vis2d,
+                        scale,
+                        arrow_t=args.arrow_thickness,
+                        center_only=args.draw_raw_sleap,
+                    )
                 label_panel_top(frames[v], v, font_scale=0.8)
             p3d = draw_3d_panel(proj, base3d, pos, conf, body, f, tail_n)
             label_panel_top(p3d, f"3D  frame {f}", font_scale=0.8)
@@ -427,6 +612,7 @@ def _orchestrate(args) -> int:
         parts.append(part)
         cmd = [sys.executable, "-m", "scripts.visualization.render_qc_4panel_fast", args.experiment,
                "--slp-dir", str(args.slp_dir), "--track-csv", str(args.track_csv),
+               "--id-column", str(args.id_column),
                "--video-dir", str(args.video_dir), "--out", str(part), "--calib", str(args.calib),
                "--panel", str(args.panel), "--fps", str(args.fps), "--frame-step", str(step),
                "--start-frame", str(cs), "--end-frame", str(ce),
@@ -438,6 +624,7 @@ def _orchestrate(args) -> int:
                *(["--draw-raw-sleap"] if args.draw_raw_sleap else []),
                *(["--raw-by-index"] if args.raw_by_index else []),
                *(["--no-track-overlay"] if args.no_track_overlay else []),
+               *[item for spec in args.identity for item in ("--identity", spec)],
                "--node-names", *args.node_names]
         log = open(tmpdir / f"part_{i:03d}.log", "w")
         procs.append((subprocess.Popen(cmd, stdout=log, stderr=subprocess.STDOUT), log, part))
