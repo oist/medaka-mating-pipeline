@@ -1,0 +1,7 @@
+item,item1,item2,item3,item4,item5,item6
+item1,self,compatible,compatible,compatible via item3,compatible via item3,compatible via item3/5
+item2,compatible,self,compatible; tested,compatible via item3; tested,exact-three infeasible,compatible via item3; tested
+item3,compatible,compatible; tested,self,compatible; tested,compatible; tested,compatible; tested
+item4,compatible via item3,compatible via item3; tested,compatible; tested,self,compatible; tested,compatible; tested
+item5,compatible via item3,exact-three infeasible,compatible; tested,compatible; tested,self,technically redundant under offline global solve; tested
+item6,compatible via item3/5,compatible via item3; tested,compatible; tested,compatible; tested,technically redundant under offline global solve; tested,self

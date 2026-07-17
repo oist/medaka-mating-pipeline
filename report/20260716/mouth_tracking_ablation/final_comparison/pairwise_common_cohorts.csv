@@ -1,0 +1,13 @@
+left_method,right_method,cohort,method,count,best_fixed_id,best_fixed_accuracy,observed_switch_count
+current_centroid,mouth_2d_tracklet_first,common_mapped,current_centroid,27,ID_1,0.4444444444444444,8
+current_centroid,mouth_2d_tracklet_first,common_mapped,mouth_2d_tracklet_first,27,ID_1,0.5925925925925926,4
+current_centroid,mouth_2d_tracklet_first,common_strict,current_centroid,24,ID_1,0.4166666666666667,8
+current_centroid,mouth_2d_tracklet_first,common_strict,mouth_2d_tracklet_first,24,ID_1,0.5416666666666666,4
+current_centroid,mouth_only_3d,common_mapped,current_centroid,298,ID_1,0.43288590604026844,26
+current_centroid,mouth_only_3d,common_mapped,mouth_only_3d,298,ID_1,0.5234899328859061,11
+current_centroid,mouth_only_3d,common_strict,current_centroid,267,ID_1,0.45318352059925093,25
+current_centroid,mouth_only_3d,common_strict,mouth_only_3d,267,ID_1,0.5168539325842697,11
+mouth_2d_tracklet_first,mouth_only_3d,common_mapped,mouth_2d_tracklet_first,27,ID_1,0.5925925925925926,4
+mouth_2d_tracklet_first,mouth_only_3d,common_mapped,mouth_only_3d,27,ID_1,0.7037037037037037,2
+mouth_2d_tracklet_first,mouth_only_3d,common_strict,mouth_2d_tracklet_first,24,ID_1,0.5416666666666666,4
+mouth_2d_tracklet_first,mouth_only_3d,common_strict,mouth_only_3d,24,ID_1,0.6666666666666666,2

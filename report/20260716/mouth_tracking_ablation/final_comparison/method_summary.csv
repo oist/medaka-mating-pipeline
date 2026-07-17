@@ -1,0 +1,4 @@
+method,anchor,eligible_gt,mapped_gt,mapped_best_fixed_accuracy,mapped_switches,strict_gt,strict_best_fixed_accuracy,strict_switches,all_three_observed_frame_share,jump_over_8mm_share,evaluable_mixed_events,preserved_mixed_events
+current_centroid,centroid,300,299,0.431438127090301,26,274,0.4489051094890511,25,0.9784509466437177,0.0,4,0
+mouth_only_3d,mouth,300,298,0.5234899328859061,11,268,0.5186567164179104,11,0.981592082616179,0.0,4,3
+mouth_2d_tracklet_first,mouth,27,27,0.5925925925925926,4,24,0.5416666666666666,4,0.998199509653693,0.0,4,3

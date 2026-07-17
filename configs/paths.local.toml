@@ -15,8 +15,11 @@ reconstruction_output_dir = "Z:\\StephensU\\medaka\\reconstruction_3d"
 detectron2_output_dir     = "Z:\\StephensU\\medaka\\detectron2_output"
 runs_dir                  = "Z:\\StephensU\\medaka\\runs"
 
-# Calibration model (checked into repo; resolved relative to repo root)
-calibration_model_dir = "calibration_results\\cali_20251217_manual\\merged_rule_reassigned_beads_only\\models"
+# Default calibration (checked into repo; resolved relative to repo root).
+# --calibration-backend auto resolves this directory to the fixed-interface
+# refractive backend. For a reproducibility run, pass --calibration-backend
+# polynomial together with the legacy model directory explicitly.
+calibration_model_dir = "calibration_results\\fixed_refractive_192x192x186"
 
 # Raw recording root: each subfolder is one experiment with top_cam/, side1_cam/, side2_cam/.
 medaka_data_dir = "Z:\\StephensU\\medaka\\medaka_202512"

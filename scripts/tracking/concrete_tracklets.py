@@ -337,13 +337,19 @@ def build_tracklets_edge_extended(
 
 
 def _load_frames_data(slp_path: Path, *, num_fish: int, top_k: bool,
-                      start_frame: int, end_frame: int | None):
-    """Load per-frame detections (centroid + score) and estimate body length."""
+                      start_frame: int, end_frame: int | None,
+                      anchor_node: str | None = None):
+    """Load detections at one required node or the visible-node centroid."""
     import sleap_io as sio
     labels = sio.load_slp(str(slp_path))
     nodes = [n.name for n in labels.skeletons[0].nodes]
     mouth_i = nodes.index("mouth") if "mouth" in nodes else 0
     tail_i = nodes.index("tail") if "tail" in nodes else (1 if len(nodes) > 1 else 0)
+    if anchor_node is not None and anchor_node not in nodes:
+        raise ValueError(
+            f"anchor node {anchor_node!r} not found in SLEAP skeleton {nodes}"
+        )
+    anchor_i = nodes.index(anchor_node) if anchor_node is not None else None
 
     frames_data: dict[int, list[tuple[float, float, float]]] = {}
     bls: list[float] = []
@@ -359,10 +365,15 @@ def _load_frames_data(slp_path: Path, *, num_fish: int, top_k: bool,
             mask = np.isfinite(pn).all(axis=1)
             if not mask.any():
                 continue
-            centroid = pn[mask].mean(axis=0)
+            if anchor_i is not None:
+                point = pn[anchor_i]
+                if not np.isfinite(point).all():
+                    continue
+            else:
+                point = pn[mask].mean(axis=0)
             score = getattr(inst, "score", None)
             score = float(score) if score is not None and np.isfinite(score) else 0.0
-            dets.append((float(centroid[0]), float(centroid[1]), score))
+            dets.append((float(point[0]), float(point[1]), score))
             if mouth_i < len(pn) and tail_i < len(pn):
                 m, t = pn[mouth_i], pn[tail_i]
                 if np.isfinite(m).all() and np.isfinite(t).all():
@@ -409,6 +420,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--sigma0", type=float, default=2.0)
     p.add_argument("--smooth-window", type=int, default=9)
     p.add_argument("--body-length", type=float, default=None, help="override estimated body length (px)")
+    p.add_argument(
+        "--anchor-node",
+        default=None,
+        help="Track on this required SLEAP node instead of the visible-node centroid.",
+    )
     p.add_argument("--no-top-k", action="store_true", help="keep all detections (don't drop extras by score)")
     p.add_argument("--start-frame", type=int, default=0)
     p.add_argument("--end-frame", type=int, default=None)
@@ -435,9 +451,11 @@ def main(argv: list[str] | None = None) -> None:
     frames_data, bl_est, n_wrong = _load_frames_data(
         slp_path, num_fish=args.num_fish, top_k=not args.no_top_k,
         start_frame=args.start_frame, end_frame=args.end_frame,
+        anchor_node=args.anchor_node,
     )
     bl = args.body_length if args.body_length else bl_est
     print(f"frames={len(frames_data)}  body_length~{bl:.1f}px  "
+          f"anchor={args.anchor_node or 'visible_node_centroid'}  "
           f"frames_with_!= {args.num_fish}_raw_detections={n_wrong} "
           f"({100*n_wrong/max(len(frames_data),1):.0f}%)")
 

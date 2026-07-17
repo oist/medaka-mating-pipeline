@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "experiment": "20251225_K_1_2_FCMC",
+  "round_tag": "round7_260704",
+  "seed": 20260717,
+  "final_candidate": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\full_optimized_baseline_v2\\optimized_baseline_v2_3d.csv",
+    "sha256": "340078e8e2c6c09c8177fd717daf44a054faad116380f83f65bbbd8b34de5d0b",
+    "runtime_seconds": 575.5548323999974,
+    "peak_rss_bytes": 3613310976,
+    "decision": "scientifically rejected; retain as inspectable experimental result"
+  },
+  "production_recommendation": {
+    "method": "historical strict-mouth full output",
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260716\\mouth_tracking_ablation\\full\\mouth_only_3d\\mouth_only_3d_3d.csv",
+    "reason": "better female-GT accuracy, fewer observed female changes, better direct all-three coverage"
+  },
+  "component_decisions": {
+    "1": "retain execution infrastructure; reject integrated candidate",
+    "2": "reject current thresholds",
+    "3": "defer; 113 restart segments are not three biological IDs",
+    "4": "defer; neutral but no selected-link benefit",
+    "5": "defer; same optimum, slower, lex tie bug, 1000-frame infeasible",
+    "6": "defer; blanking/horizon pass, policy semantics fail"
+  },
+  "interaction_conclusion": {
+    "production_bundle": "none of the experimental scientific bundles",
+    "item1_item2": "runtime-synergistic at low single-run confidence; quality mixed with unresolved seam",
+    "item1_item3": "runtime super-additive cost; output-independent",
+    "item1_item4": "runtime super-additive cost; output-redundant",
+    "item1_item5": "startup-dominated apparent runtime sub-additivity; normalized output-independent",
+    "item1_item6": "runtime approximately additive; normalized output-independent",
+    "item5_item6": "startup-dominated implementation no-op; not evidence that active deferral is scientifically redundant",
+    "other_runtime_formulas": "NA where T0/Ti/Tj/Tij do not share one graph/cohort/timing boundary"
+  },
+  "female_gt_limitation": "The GUI ledger identifies only the female and cannot independently detect male-to-male swaps.",
+  "validation": {
+    "schema_version": 1,
+    "focused_tests": {
+      "command": "$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; .venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp .pytest_tmp_final_confirmation tests\\test_candidate_cache.py tests\\test_windowed_tracklet_stitching.py",
+      "passed": 18,
+      "failed": 0,
+      "seconds": 1.86
+    },
+    "full_repository_tests": {
+      "command": "$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; .venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp .pytest_tmp_full_final",
+      "passed": 615,
+      "failed": 0,
+      "warnings": 3,
+      "seconds": 33.75,
+      "warning_note": "Expected missing-polynomial-projection-model RuntimeWarnings in isolated calibration fixtures; no windowed-stitching warning or failure."
+    },
+    "integrity_checks": {
+      "top_level_json_files_parsed": 6,
+      "top_level_csv_files_parsed": 7,
+      "pairwise_rows": 15,
+      "individual_rows": 6,
+      "final_candidate_sha256": "340078e8e2c6c09c8177fd717daf44a054faad116380f83f65bbbd8b34de5d0b",
+      "git_diff_check": "pass; line-ending notices only for unrelated pre-existing tracked changes"
+    },
+    "female_gt_limitation": "Only the female is labeled; tests and reported female metrics cannot independently detect male-to-male swaps."
+  },
+  "hardware_benchmark": {
+    "schema_version": "windowed_tracklet_hardware_benchmark_v1",
+    "fragment_file": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\full_optimized_baseline\\fragments.parquet",
+    "fragment_file_sha256": "fcb13ee820fc1708fc2716830a602c9faf302b6b1511614bdf7f6ab9c6726dee",
+    "seed": 20260717,
+    "repeats": 7,
+    "endpoint_pairs": 1000000,
+    "solve_batch_size": 250000,
+    "dtype": "float64",
+    "environment": {
+      "platform": "Windows-11-10.0.26200-SP0",
+      "physical_cpu_count": 16,
+      "logical_cpu_count": 32,
+      "ram_bytes": 137359667200,
+      "torch": "2.10.0+cu130",
+      "cuda_runtime": "13.0",
+      "cuda_available": true,
+      "gpu": "NVIDIA GeForce RTX 5070 Ti"
+    },
+    "cpu": {
+      "endpoint_seconds_median": 0.07979070002329536,
+      "endpoint_seconds_samples": [
+        0.08164220000617206,
+        0.08013660000870004,
+        0.08775360000436194,
+        0.0736478999897372,
+        0.07534920002217405,
+        0.07718510000267997,
+        0.07979070002329536
+      ],
+      "endpoint_pairs_per_second": 12532788.905324107,
+      "solve_seconds_median": 0.06498210001154803,
+      "solve_seconds_samples": [
+        0.06498210001154803,
+        0.06495130000985228,
+        0.06496010001865216,
+        0.06470200000330806,
+        0.06557599999359809,
+        0.06686469999840483,
+        0.06669350000447594
+      ],
+      "solves_per_second": 3847213.308827697
+    },
+    "cuda": {
+      "available": true,
+      "endpoint_kernel_seconds_median": 0.0004944000102113932,
+      "endpoint_kernel_seconds_samples": [
+        0.0004936000041197985,
+        0.0004967999993823469,
+        0.0004973000031895936,
+        0.0004944000102113932,
+        0.0004882999928668141,
+        0.0004911000141873956,
+        0.0004952999879606068
+      ],
+      "endpoint_kernel_pairs_per_second": 2022653679.9067311,
+      "endpoint_transfer_seconds_median": 0.008549600024707615,
+      "endpoint_transfer_seconds_samples": [
+        0.00840059999609366,
+        0.008724599989363924,
+        0.00839470000937581,
+        0.008706299995537847,
+        0.008346399990841746,
+        0.008986699976958334,
+        0.008549600024707615
+      ],
+      "endpoint_transfer_pairs_per_second": 116964536.01456036,
+      "solve_kernel_seconds_median": 0.000990300002740696,
+      "solve_kernel_seconds_samples": [
+        0.0010042999929282814,
+        0.0009917000134009868,
+        0.000991599983535707,
+        0.0009901000012177974,
+        0.0009871000074781477,
+        0.0009880999859888107,
+        0.000990300002740696
+      ],
+      "solve_kernel_per_second": 252448752.20449832,
+      "endpoint_max_abs_difference": 1.7763568394002505e-15,
+      "solve_max_abs_difference": 2.1316282072803006e-14
+    }
+  },
+  "artifacts": {
+    "individual_results.csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\individual_results.csv",
+    "pairwise_combination_results.csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\pairwise_combination_results.csv",
+    "higher_order_bundle_results.csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\higher_order_bundle_results.csv",
+    "runtime_breakdown.csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\runtime_breakdown.csv",
+    "quality_metrics.csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\quality_metrics.csv",
+    "cohort_quality_metrics.csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\cohort_quality_metrics.csv",
+    "compatibility_matrix.csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\compatibility_matrix.csv",
+    "artifact_manifest.json": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\artifact_manifest.json"
+  }
+}

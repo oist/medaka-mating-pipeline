@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "coordinate_fairness": "Each method is reprojected against the corresponding mouth or visible-node centroid of the same manually selected SLEAP instance.",
+  "gate_px": 80.0,
+  "strict_gate_px": 8.0,
+  "methods": {
+    "current_centroid": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round7_260704_refractive\\round7_260704_refractive_3d.csv",
+      "anchor": "centroid",
+      "id_column": "fish_id",
+      "track_qc": {
+        "frame_min": 0,
+        "frame_max": 348599,
+        "frame_count": 348600,
+        "identity_count": 3,
+        "identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "finite_row_share": 0.9936144578313253,
+        "observed_noninterpolated_row_share": 0.9888707209791547,
+        "all_three_finite_frame_share": 0.9895467584624211,
+        "all_three_observed_frame_share": 0.9784509466437177,
+        "consecutive_jump_mm": {
+          "count": 1039114,
+          "median": 0.2988087737899596,
+          "p95": 1.4204226284145267,
+          "p99": 5.094449099493079,
+          "max": 7.999897570478294
+        },
+        "jump_over_8mm_count": 0,
+        "jump_over_8mm_share": 0.0
+      },
+      "female_gt": {
+        "eligible_confirmed_female_annotations": 300,
+        "mapping_status_counts": {
+          "agree": 285,
+          "disagree": 1,
+          "one_view": 14
+        },
+        "mapped": {
+          "count": 299,
+          "identity_counts": {
+            "ID_1": 129,
+            "ID_2": 68,
+            "ID_3": 102
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.431438127090301,
+          "observed_run_count": 27,
+          "observed_switch_count": 26
+        },
+        "strict_two_view": {
+          "count": 274,
+          "identity_counts": {
+            "ID_1": 123,
+            "ID_2": 61,
+            "ID_3": 90
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.4489051094890511,
+          "observed_run_count": 26,
+          "observed_switch_count": 25
+        }
+      },
+      "mixed_event_results": {
+        "event_count": 4,
+        "evaluable_events": 4,
+        "preserved_events": 0
+      }
+    },
+    "mouth_only_3d": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260716\\mouth_tracking_ablation\\full\\mouth_only_3d\\mouth_only_3d_3d.csv",
+      "anchor": "mouth",
+      "id_column": "fish_id",
+      "track_qc": {
+        "frame_min": 0,
+        "frame_max": 348599,
+        "frame_count": 348600,
+        "identity_count": 3,
+        "identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "finite_row_share": 0.9934299101166572,
+        "observed_noninterpolated_row_share": 0.9899866131191433,
+        "all_three_finite_frame_share": 0.989776247848537,
+        "all_three_observed_frame_share": 0.981592082616179,
+        "consecutive_jump_mm": {
+          "count": 1038920,
+          "median": 0.330864202877006,
+          "p95": 1.1344472694800698,
+          "p99": 2.20193353739555,
+          "max": 7.999974396752231
+        },
+        "jump_over_8mm_count": 0,
+        "jump_over_8mm_share": 0.0
+      },
+      "female_gt": {
+        "eligible_confirmed_female_annotations": 300,
+        "mapping_status_counts": {
+          "agree": 284,
+          "disagree": 2,
+          "one_view": 14
+        },
+        "mapped": {
+          "count": 298,
+          "identity_counts": {
+            "ID_1": 156,
+            "ID_2": 58,
+            "ID_3": 84
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.5234899328859061,
+          "observed_run_count": 12,
+          "observed_switch_count": 11
+        },
+        "strict_two_view": {
+          "count": 268,
+          "identity_counts": {
+            "ID_1": 139,
+            "ID_2": 51,
+            "ID_3": 78
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.5186567164179104,
+          "observed_run_count": 12,
+          "observed_switch_count": 11
+        }
+      },
+      "mixed_event_results": {
+        "event_count": 4,
+        "evaluable_events": 4,
+        "preserved_events": 3
+      }
+    },
+    "mouth_2d_tracklet_first": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260716\\mouth_tracking_ablation\\windows\\mouth_tracklet_first_four_events_3d.csv",
+      "anchor": "mouth",
+      "id_column": "fish_id",
+      "track_qc": {
+        "frame_min": 71000,
+        "frame_max": 280000,
+        "frame_count": 26104,
+        "identity_count": 3,
+        "identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "finite_row_share": 1.0,
+        "observed_noninterpolated_row_share": 0.9992849116355093,
+        "all_three_finite_frame_share": 1.0,
+        "all_three_observed_frame_share": 0.998199509653693,
+        "consecutive_jump_mm": {
+          "count": 78300,
+          "median": 0.3476215748869569,
+          "p95": 1.1241568819212995,
+          "p99": 1.868989621664475,
+          "max": 7.927761941351376
+        },
+        "jump_over_8mm_count": 0,
+        "jump_over_8mm_share": 0.0
+      },
+      "female_gt": {
+        "eligible_confirmed_female_annotations": 27,
+        "mapping_status_counts": {
+          "agree": 27
+        },
+        "mapped": {
+          "count": 27,
+          "identity_counts": {
+            "ID_1": 16,
+            "ID_2": 2,
+            "ID_3": 9
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.5925925925925926,
+          "observed_run_count": 5,
+          "observed_switch_count": 4
+        },
+        "strict_two_view": {
+          "count": 24,
+          "identity_counts": {
+            "ID_1": 13,
+            "ID_2": 2,
+            "ID_3": 9
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.5416666666666666,
+          "observed_run_count": 5,
+          "observed_switch_count": 4
+        }
+      },
+      "mixed_event_results": {
+        "event_count": 4,
+        "evaluable_events": 4,
+        "preserved_events": 3
+      }
+    }
+  }
+}

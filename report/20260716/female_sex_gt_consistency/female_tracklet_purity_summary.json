@@ -1,0 +1,452 @@
+{
+  "definition": "A female-labeled tracklet is mixed when it is the selected female at one annotation frame but a different geometry ID is selected as female at another annotation frame while the same clean tracklet is active.",
+  "all_mapped": {
+    "subset": "all_mapped",
+    "annotation_count": 298,
+    "active_tracklet_evidence_rows": 894,
+    "observed_tracklet_count": 557,
+    "female_labeled_tracklet_count": 162,
+    "female_tracklets_with_one_annotation_frame": 93,
+    "female_tracklets_with_multiple_annotation_frames": 69,
+    "mixed_female_nonfemale_tracklet_count": 4,
+    "mixed_female_nonfemale_tracklet_share": 0.024691358024691357,
+    "female_tracklets_with_more_than_two_female_id_assignments": 0,
+    "maximum_distinct_female_geometry_ids_in_one_female_tracklet": 2
+  },
+  "strict_two_view_8px": {
+    "subset": "strict_two_view_8px",
+    "annotation_count": 265,
+    "active_tracklet_evidence_rows": 795,
+    "observed_tracklet_count": 498,
+    "female_labeled_tracklet_count": 145,
+    "female_tracklets_with_one_annotation_frame": 84,
+    "female_tracklets_with_multiple_annotation_frames": 61,
+    "mixed_female_nonfemale_tracklet_count": 4,
+    "mixed_female_nonfemale_tracklet_share": 0.027586206896551724,
+    "female_tracklets_with_more_than_two_female_id_assignments": 0,
+    "maximum_distinct_female_geometry_ids_in_one_female_tracklet": 2
+  },
+  "tracklet_segmentation_diagnostics": {
+    "source_mode": "refractive_geometry_segments",
+    "geometry_id_column": "fish_id",
+    "geometry_ids": [
+      "ID_1",
+      "ID_2",
+      "ID_3"
+    ],
+    "max_local_jump_mm": 8.0,
+    "over_threshold_jump_count": 0,
+    "over_threshold_jump_distance_distribution_mm": {
+      "count": 0,
+      "min": null,
+      "p25": null,
+      "median": null,
+      "p75": null,
+      "max": null
+    },
+    "segment_counts_by_geometry_id": {
+      "ID_1": 936,
+      "ID_2": 1005,
+      "ID_3": 988
+    },
+    "label_status_counts": {
+      "clean": 1034161,
+      "interpolated": 4961,
+      "missing": 6678
+    }
+  },
+  "limitations": [
+    "Female GT distinguishes F from not-F but does not distinguish the two males.",
+    "A single positive annotation cannot prove purity over the full tracklet.",
+    "Sparse annotations can miss identity changes between sampled frames."
+  ],
+  "mixed_tracklets": [
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "tracklet_start_frame": 271384,
+      "tracklet_end_frame": 278939,
+      "tracklet_length_frames": 7556,
+      "observed_annotation_frames": 7,
+      "female_observation_count": 4,
+      "nonfemale_observation_count": 3,
+      "female_geometry_ids_observed_in_span": "ID_1;ID_2",
+      "distinct_female_geometry_id_count": 2,
+      "mixed_female_nonfemale": true,
+      "more_than_two_female_id_assignments": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "tracklet_start_frame": 173997,
+      "tracklet_end_frame": 181132,
+      "tracklet_length_frames": 7136,
+      "observed_annotation_frames": 6,
+      "female_observation_count": 4,
+      "nonfemale_observation_count": 2,
+      "female_geometry_ids_observed_in_span": "ID_1;ID_2",
+      "distinct_female_geometry_id_count": 2,
+      "mixed_female_nonfemale": true,
+      "more_than_two_female_id_assignments": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_3:S000328",
+      "geometry_source_id": "ID_3",
+      "tracklet_start_frame": 72163,
+      "tracklet_end_frame": 73228,
+      "tracklet_length_frames": 1066,
+      "observed_annotation_frames": 2,
+      "female_observation_count": 1,
+      "nonfemale_observation_count": 1,
+      "female_geometry_ids_observed_in_span": "ID_2;ID_3",
+      "distinct_female_geometry_id_count": 2,
+      "mixed_female_nonfemale": true,
+      "more_than_two_female_id_assignments": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_3:S000516",
+      "geometry_source_id": "ID_3",
+      "tracklet_start_frame": 96567,
+      "tracklet_end_frame": 98072,
+      "tracklet_length_frames": 1506,
+      "observed_annotation_frames": 2,
+      "female_observation_count": 1,
+      "nonfemale_observation_count": 1,
+      "female_geometry_ids_observed_in_span": "ID_1;ID_3",
+      "distinct_female_geometry_id_count": 2,
+      "mixed_female_nonfemale": true,
+      "more_than_two_female_id_assignments": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "tracklet_start_frame": 271384,
+      "tracklet_end_frame": 278939,
+      "tracklet_length_frames": 7556,
+      "observed_annotation_frames": 6,
+      "female_observation_count": 4,
+      "nonfemale_observation_count": 2,
+      "female_geometry_ids_observed_in_span": "ID_1;ID_2",
+      "distinct_female_geometry_id_count": 2,
+      "mixed_female_nonfemale": true,
+      "more_than_two_female_id_assignments": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "tracklet_start_frame": 173997,
+      "tracklet_end_frame": 181132,
+      "tracklet_length_frames": 7136,
+      "observed_annotation_frames": 6,
+      "female_observation_count": 4,
+      "nonfemale_observation_count": 2,
+      "female_geometry_ids_observed_in_span": "ID_1;ID_2",
+      "distinct_female_geometry_id_count": 2,
+      "mixed_female_nonfemale": true,
+      "more_than_two_female_id_assignments": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_3:S000328",
+      "geometry_source_id": "ID_3",
+      "tracklet_start_frame": 72163,
+      "tracklet_end_frame": 73228,
+      "tracklet_length_frames": 1066,
+      "observed_annotation_frames": 2,
+      "female_observation_count": 1,
+      "nonfemale_observation_count": 1,
+      "female_geometry_ids_observed_in_span": "ID_2;ID_3",
+      "distinct_female_geometry_id_count": 2,
+      "mixed_female_nonfemale": true,
+      "more_than_two_female_id_assignments": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_3:S000516",
+      "geometry_source_id": "ID_3",
+      "tracklet_start_frame": 96567,
+      "tracklet_end_frame": 98072,
+      "tracklet_length_frames": 1506,
+      "observed_annotation_frames": 2,
+      "female_observation_count": 1,
+      "nonfemale_observation_count": 1,
+      "female_geometry_ids_observed_in_span": "ID_1;ID_3",
+      "distinct_female_geometry_id_count": 2,
+      "mixed_female_nonfemale": true,
+      "more_than_two_female_id_assignments": false
+    }
+  ],
+  "mixed_tracklet_frame_evidence": [
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 271809,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 273617,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 275099,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 275753,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 276840,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 277726,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 278182,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 174316,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 175332,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 175927,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 177242,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 179435,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 180515,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_3:S000328",
+      "geometry_source_id": "ID_3",
+      "frame": 72371,
+      "consensus_geometry_id": "ID_3",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_3:S000328",
+      "geometry_source_id": "ID_3",
+      "frame": 73027,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_3:S000516",
+      "geometry_source_id": "ID_3",
+      "frame": 96612,
+      "consensus_geometry_id": "ID_3",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "all_mapped",
+      "clean_tracklet_id": "R3D:ID_3:S000516",
+      "geometry_source_id": "ID_3",
+      "frame": 97802,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 273617,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 275099,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 275753,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 276840,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 277726,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_1:S000839",
+      "geometry_source_id": "ID_1",
+      "frame": 278182,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 174316,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 175332,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 175927,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 177242,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 179435,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_2:S000730",
+      "geometry_source_id": "ID_2",
+      "frame": 180515,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_3:S000328",
+      "geometry_source_id": "ID_3",
+      "frame": 72371,
+      "consensus_geometry_id": "ID_3",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_3:S000328",
+      "geometry_source_id": "ID_3",
+      "frame": 73027,
+      "consensus_geometry_id": "ID_2",
+      "tracklet_is_female": false
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_3:S000516",
+      "geometry_source_id": "ID_3",
+      "frame": 96612,
+      "consensus_geometry_id": "ID_3",
+      "tracklet_is_female": true
+    },
+    {
+      "subset": "strict_two_view_8px",
+      "clean_tracklet_id": "R3D:ID_3:S000516",
+      "geometry_source_id": "ID_3",
+      "frame": 97802,
+      "consensus_geometry_id": "ID_1",
+      "tracklet_is_female": false
+    }
+  ],
+  "tracklets_with_more_than_two_id_assignments": []
+}

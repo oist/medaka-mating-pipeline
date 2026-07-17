@@ -28,7 +28,10 @@ from scripts.reconstruction_3d.fill_missing_3d import (
     dfs_to_single_csv,
     ensure_all_frames_and_fill_spline,
 )
-from scripts.reconstruction_3d.load_2d_slp import _instances_in_slot_order
+from scripts.reconstruction_3d.load_2d_slp import (
+    _instance_point,
+    _instances_in_slot_order,
+)
 from scripts.reconstruction_3d.reconstruct_from_slp import (
     _save_best_tracked_json,
     load_best_pre_link_json,
@@ -98,6 +101,8 @@ def load_tracklet_slot_map(
     start_frame: int,
     end_frame: int,
     match_distance_px: float = 5.0,
+    anchor_node: str | None = None,
+    require_anchor_node: bool = False,
 ) -> tuple[dict[int, dict[int, str]], dict[int, float], pd.DataFrame, dict]:
     """Map concrete tracklet rows onto the exact filtered candidate slots."""
     import sleap_io as sio
@@ -127,14 +132,23 @@ def load_tracklet_slot_map(
         if tf is None:
             continue
         ordered = _instances_in_slot_order(
-            lf.instances, node_names=node_names, anchor_node=None
+            lf.instances,
+            node_names=node_names,
+            anchor_node=anchor_node,
+            require_anchor_node=require_anchor_node,
         )
         slot_xy = np.full((len(ordered), 2), np.nan)
         for i, inst in enumerate(ordered):
             points = np.asarray(inst.numpy(), float)
+            x, y, _score = _instance_point(
+                inst,
+                node_names=node_names,
+                anchor_node=anchor_node,
+                require_anchor_node=require_anchor_node,
+            )
+            if np.isfinite((x, y)).all():
+                slot_xy[i] = (x, y)
             finite = np.isfinite(points).all(axis=1)
-            if finite.any():
-                slot_xy[i] = points[finite].mean(axis=0)
             if finite.sum() >= 2:
                 body_lengths.append(float(np.max(
                     np.linalg.norm(points[finite, None, :] - points[None, finite, :], axis=2)
@@ -174,6 +188,8 @@ def load_tracklet_slot_map(
         "matched_fraction": float(matched_rows / max(len(table), 1)),
         "tracklets": int(table["node_id"].nunique()),
         "body_length_px": body_length,
+        "anchor_node": anchor_node or "visible_node_centroid",
+        "require_anchor_node": bool(require_anchor_node),
     }
     return slot_map, separation_bl, meta, qc
 

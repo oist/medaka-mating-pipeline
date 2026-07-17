@@ -1,0 +1,230 @@
+{
+  "annotation": {
+    "ambiguous_count": 1,
+    "annotator_values": [
+      "YOUR_NAME"
+    ],
+    "candidate_frame_offset_distribution": {
+      "count": 301,
+      "max": 2.0,
+      "median": 0.0,
+      "min": 0.0,
+      "p90": 0.0,
+      "p95": 0.0
+    },
+    "candidate_frames_missing_from_ledger": [],
+    "candidate_frames_represented_count": 300,
+    "candidate_queue_frame_count": 300,
+    "confirmed_female_count": 300,
+    "deterministic_annotation_id_match_count": 301,
+    "duplicate_annotation_id_count": 0,
+    "duplicate_key_count": 0,
+    "exact_candidate_frame_count": 300,
+    "frame_max": 348388,
+    "frame_min": 4439,
+    "non_candidate_origins_in_ledger": [],
+    "offset_from_candidate_frame_count": 1,
+    "row_count": 301,
+    "unique_frame_count": 301
+  },
+  "audit": {
+    "action_counts": {
+      "add": 303,
+      "edit": 9,
+      "undo": 2
+    },
+    "audit_annotation_id_count": 301,
+    "canonical_row_count": 301,
+    "canonical_rows_with_latest_audit_match": 301,
+    "event_count": 314
+  },
+  "experiment": "20251225_K_1_2_FCMC",
+  "generated_at_utc": "2026-07-16T10:52:35.828690+00:00",
+  "identity_consistency": {
+    "adjacent_mapped_annotation_pair_count": 297,
+    "best_fixed_geometry_id": "ID_1",
+    "best_fixed_geometry_id_accuracy": 0.43288590604026844,
+    "best_fixed_geometry_id_error_rate": 0.5671140939597316,
+    "geometry_id_counts": [
+      {
+        "annotation_count": 129,
+        "geometry_id": "ID_1",
+        "share": 0.43288590604026844
+      },
+      {
+        "annotation_count": 68,
+        "geometry_id": "ID_2",
+        "share": 0.22818791946308725
+      },
+      {
+        "annotation_count": 101,
+        "geometry_id": "ID_3",
+        "share": 0.3389261744966443
+      }
+    ],
+    "observed_id_switch_count": 26,
+    "observed_run_count": 27,
+    "observed_switch_rate_per_adjacent_annotation_pair": 0.08754208754208755
+  },
+  "mapping": {
+    "disagree_count": 2,
+    "mapped_consensus_count": 298,
+    "mapped_consensus_share_of_confirmed": 0.9933333333333333,
+    "one_view_count": 15,
+    "reprojection_by_view": [
+      {
+        "click_to_pose_max_px": 12.283229095883934,
+        "click_to_pose_median_px": 1.460591647424133,
+        "click_to_pose_over_8px_count": 4,
+        "click_to_pose_p95_px": 5.512861673970486,
+        "mapped_selection_count": 294,
+        "reprojection_max_px": 22.31102726244696,
+        "reprojection_median_px": 1.864692112881427,
+        "reprojection_over_8px_count": 11,
+        "reprojection_p95_px": 6.091933665953711,
+        "view": "side1"
+      },
+      {
+        "click_to_pose_max_px": 11.931419384901327,
+        "click_to_pose_median_px": 1.2549438961515906,
+        "click_to_pose_over_8px_count": 4,
+        "click_to_pose_p95_px": 4.934905289088157,
+        "mapped_selection_count": 291,
+        "reprojection_max_px": 74.438425099629,
+        "reprojection_median_px": 2.1018611736107804,
+        "reprojection_over_8px_count": 11,
+        "reprojection_p95_px": 5.493386063785428,
+        "view": "side2"
+      }
+    ],
+    "selected_xyz_finite_count": 298,
+    "selected_xyz_noninterpolated_count": 298,
+    "two_view_agree_count": 283,
+    "two_view_agree_share": 0.9433333333333334
+  },
+  "sensitivity": {
+    "strict_two_view_best_fixed_accuracy": 0.44150943396226416,
+    "strict_two_view_best_fixed_geometry_id": "ID_1",
+    "strict_two_view_count": 265,
+    "strict_two_view_definition": "confirmed F; side views agree; both selected-pose reprojection distances and click-to-pose distances are <= 8 px",
+    "strict_two_view_geometry_id_counts": [
+      {
+        "annotation_count": 117,
+        "geometry_id": "ID_1",
+        "share": 0.44150943396226416
+      },
+      {
+        "annotation_count": 59,
+        "geometry_id": "ID_2",
+        "share": 0.22264150943396227
+      },
+      {
+        "annotation_count": 89,
+        "geometry_id": "ID_3",
+        "share": 0.33584905660377357
+      }
+    ],
+    "strict_two_view_observed_run_count": 26,
+    "strict_two_view_observed_switch_count": 25,
+    "very_strict_best_fixed_accuracy": 0.4497991967871486,
+    "very_strict_best_fixed_geometry_id": "ID_1",
+    "very_strict_count": 249,
+    "very_strict_definition": "strict two-view subset plus candidate-level maximum reprojection distance <= 8 px across all fish and all three views",
+    "very_strict_geometry_id_counts": [
+      {
+        "annotation_count": 112,
+        "geometry_id": "ID_1",
+        "share": 0.4497991967871486
+      },
+      {
+        "annotation_count": 56,
+        "geometry_id": "ID_2",
+        "share": 0.2248995983935743
+      },
+      {
+        "annotation_count": 81,
+        "geometry_id": "ID_3",
+        "share": 0.3253012048192771
+      }
+    ],
+    "very_strict_observed_run_count": 24,
+    "very_strict_observed_switch_count": 23
+  },
+  "source_consistency": {
+    "annotation_geometry_path_values": [
+      "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round7_260704_refractive\\round7_260704_refractive_3d.csv"
+    ],
+    "candidate_csv_sha256_matches_summary": true,
+    "candidate_match_gate_px": 80.0,
+    "candidate_rows_over_supplied_8px_gate": 32,
+    "candidate_rows_over_supplied_8px_gate_share": 0.10666666666666667,
+    "candidate_summary_geometry_size_matches_current": true,
+    "candidate_summary_provenance_sha256": "39a1db2dc5ab58b989af485806c655315a44bf46ab06941f6ce0dcd7932029dc",
+    "current_provenance_sha256": "39a1db2dc5ab58b989af485806c655315a44bf46ab06941f6ce0dcd7932029dc",
+    "provenance_sha256_matches": true,
+    "supplied_gui_match_gate_px": 8.0
+  },
+  "track": {
+    "backend": "refractive",
+    "duplicate_frame_fish_id_count": 0,
+    "fish_ids": [
+      "ID_1",
+      "ID_2",
+      "ID_3"
+    ],
+    "frame_max": 348599,
+    "frame_min": 0,
+    "row_count": 1045800,
+    "score_unit": "mm^2",
+    "sha256": "8ebcf795ddbeec4b01c70caba93ea1cbce6896745bc5970ecc3ddd415e6e9362",
+    "size_bytes": 76493414
+  },
+  "tracklet_consistency": {
+    "conflicting_nonempty_tracklet_count": 0,
+    "exact_frame_label_status_counts": {
+      "clean": 298
+    },
+    "exact_tracklet_match_count": 296,
+    "exact_tracklet_match_share": 0.9932885906040269,
+    "exact_tracklet_mismatch_count": 2,
+    "missing_saved_tracklet_count": 2,
+    "nonempty_saved_tracklet_match_share": 1.0,
+    "recomputed_at_exact_frame_count": 298,
+    "segment_diagnostics": {
+      "geometry_id_column": "fish_id",
+      "geometry_ids": [
+        "ID_1",
+        "ID_2",
+        "ID_3"
+      ],
+      "label_status_counts": {
+        "clean": 1034161,
+        "interpolated": 4961,
+        "missing": 6678
+      },
+      "max_local_jump_mm": 8.0,
+      "over_threshold_jump_count": 0,
+      "over_threshold_jump_distance_distribution_mm": {
+        "count": 0,
+        "max": null,
+        "median": null,
+        "min": null,
+        "p25": null,
+        "p75": null
+      },
+      "segment_counts_by_geometry_id": {
+        "ID_1": 936,
+        "ID_2": 1005,
+        "ID_3": 988
+      },
+      "source_mode": "refractive_geometry_segments"
+    }
+  },
+  "verdict": "geometry_ids_not_biologically_consistent_for_female",
+  "warnings": [
+    "All rows use the placeholder annotator value YOUR_NAME; biological labels are still analyzable, but annotator provenance is not final.",
+    "The saved candidate queue used a 80px geometry-association gate, while the supplied GUI command states 8px.",
+    "2 confirmed rows select different geometry IDs in the two side views and therefore have no consensus geometry ID.",
+    "2 mapped manual-jump rows have no saved provisional tracklet ID; every non-empty saved tracklet matches the segment recomputed at the exact annotated frame."
+  ]
+}

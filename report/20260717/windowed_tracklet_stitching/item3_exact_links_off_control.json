@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "control": "exact same Item 3 fragment table with every link disabled",
+  "graph_hash": "793c547c698f3a906975adaf32321dc2d9dbcfe9d353aed0f2542e47d636d4a7",
+  "frame_start": 32264,
+  "frame_end": 33263,
+  "fragment_count": 491,
+  "direct_rows": 2819,
+  "selected_link_count": 0,
+  "restart_segment_count": 491,
+  "birth_cost": 3.0,
+  "death_cost": 3.0,
+  "objective": 2946.0,
+  "runtime_seconds": null,
+  "runtime_note": "analytical frozen-graph control; no solver or output serialization was required",
+  "links_on_comparison": {
+    "selected_link_count": 378,
+    "restart_segment_count": 113,
+    "objective": 1677.260984288198,
+    "objective_change": -1268.739015711802
+  },
+  "scientific_limitation": "fewer restart segments is not evidence of correct biological identity; only the female is labeled and male-to-male swaps remain unobservable"
+}

@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "coordinate_fairness": "Each method is reprojected against the corresponding mouth or visible-node centroid of the same manually selected SLEAP instance.",
+  "gate_px": 80.0,
+  "strict_gate_px": 8.0,
+  "methods": {
+    "historical_strict_mouth": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260716\\mouth_tracking_ablation\\full\\mouth_only_3d\\mouth_only_3d_3d.csv",
+      "anchor": "mouth",
+      "id_column": "fish_id",
+      "track_qc": {
+        "frame_min": 0,
+        "frame_max": 348599,
+        "frame_count": 348600,
+        "identity_count": 3,
+        "identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "finite_row_share": 0.9934299101166572,
+        "observed_noninterpolated_row_share": 0.9899866131191433,
+        "all_three_finite_frame_share": 0.989776247848537,
+        "all_three_observed_frame_share": 0.981592082616179,
+        "consecutive_jump_mm": {
+          "count": 1038920,
+          "median": 0.330864202877006,
+          "p95": 1.1344472694800698,
+          "p99": 2.20193353739555,
+          "max": 7.999974396752231
+        },
+        "jump_over_8mm_count": 0,
+        "jump_over_8mm_share": 0.0
+      },
+      "female_gt": {
+        "eligible_confirmed_female_annotations": 300,
+        "mapping_status_counts": {
+          "agree": 284,
+          "disagree": 2,
+          "one_view": 14
+        },
+        "mapped": {
+          "count": 298,
+          "identity_counts": {
+            "ID_1": 156,
+            "ID_2": 58,
+            "ID_3": 84
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.5234899328859061,
+          "observed_run_count": 12,
+          "observed_switch_count": 11
+        },
+        "strict_two_view": {
+          "count": 268,
+          "identity_counts": {
+            "ID_1": 139,
+            "ID_2": 51,
+            "ID_3": 78
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.5186567164179104,
+          "observed_run_count": 12,
+          "observed_switch_count": 11
+        }
+      },
+      "mixed_event_results": {
+        "event_count": 4,
+        "evaluable_events": 4,
+        "preserved_events": 3
+      }
+    },
+    "optimized_windowed_baseline_v2": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\full_optimized_baseline_v2\\optimized_baseline_v2_3d.csv",
+      "anchor": "mouth",
+      "id_column": "fish_id",
+      "track_qc": {
+        "frame_min": 0,
+        "frame_max": 348599,
+        "frame_count": 348600,
+        "identity_count": 3,
+        "identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "finite_row_share": 0.9826152227959457,
+        "observed_noninterpolated_row_share": 0.9429116465863454,
+        "all_three_finite_frame_share": 0.9689041881812966,
+        "all_three_observed_frame_share": 0.8942857142857142,
+        "consecutive_jump_mm": {
+          "count": 1027529,
+          "median": 0.3435607899270503,
+          "p95": 1.4854371880439676,
+          "p99": 7.309645672992878,
+          "max": 7.999788392747374
+        },
+        "jump_over_8mm_count": 0,
+        "jump_over_8mm_share": 0.0
+      },
+      "female_gt": {
+        "eligible_confirmed_female_annotations": 300,
+        "mapping_status_counts": {
+          "agree": 262,
+          "disagree": 3,
+          "one_view": 21,
+          "unmapped": 14
+        },
+        "mapped": {
+          "count": 283,
+          "identity_counts": {
+            "ID_1": 121,
+            "ID_2": 75,
+            "ID_3": 87
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.4275618374558304,
+          "observed_run_count": 82,
+          "observed_switch_count": 81
+        },
+        "strict_two_view": {
+          "count": 241,
+          "identity_counts": {
+            "ID_1": 101,
+            "ID_2": 66,
+            "ID_3": 74
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.4190871369294606,
+          "observed_run_count": 63,
+          "observed_switch_count": 62
+        }
+      },
+      "mixed_event_results": {
+        "event_count": 4,
+        "evaluable_events": 3,
+        "preserved_events": 3
+      }
+    }
+  }
+}

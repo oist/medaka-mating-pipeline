@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "focused_tests": {
+    "command": "$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; .venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp .pytest_tmp_final_confirmation tests\\test_candidate_cache.py tests\\test_windowed_tracklet_stitching.py",
+    "passed": 18,
+    "failed": 0,
+    "seconds": 1.86
+  },
+  "full_repository_tests": {
+    "command": "$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD='1'; .venv\\Scripts\\python.exe -m pytest -q -p no:cacheprovider --basetemp .pytest_tmp_full_final",
+    "passed": 615,
+    "failed": 0,
+    "warnings": 3,
+    "seconds": 33.75,
+    "warning_note": "Expected missing-polynomial-projection-model RuntimeWarnings in isolated calibration fixtures; no windowed-stitching warning or failure."
+  },
+  "integrity_checks": {
+    "top_level_json_files_parsed": 6,
+    "top_level_csv_files_parsed": 7,
+    "pairwise_rows": 15,
+    "individual_rows": 6,
+    "final_candidate_sha256": "340078e8e2c6c09c8177fd717daf44a054faad116380f83f65bbbd8b34de5d0b",
+    "git_diff_check": "pass; line-ending notices only for unrelated pre-existing tracked changes"
+  },
+  "female_gt_limitation": "Only the female is labeled; tests and reported female metrics cannot independently detect male-to-male swaps."
+}

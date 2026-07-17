@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "layout": "native-resolution 2x2: top, side1, side2, GT information",
+  "panel_width": 1200,
+  "panel_height": 1200,
+  "overlay": {
+    "female_label": "F",
+    "male_labels": "current geometry IDs",
+    "female_assignment": "piecewise nearest strict GT; midpoint transitions",
+    "position_source": "raw SLEAP mouth-tail pose matched to refractive projection",
+    "unassigned_predictions": "thin gray mouth-tail arrows without text labels",
+    "slp_match_gate_px": 80.0,
+    "line_thickness_px": 1,
+    "font_scale": 0.42
+  },
+  "scenes": [
+    {
+      "tracklet_id": "R3D:ID_3:S000328",
+      "geometry_id": "ID_3",
+      "tracklet_start": 72163,
+      "tracklet_end": 73228,
+      "render_start": 72163,
+      "render_end": 73228,
+      "context_seconds": 0.0,
+      "source_fps": 166.0,
+      "output_fps": 60.0,
+      "source_frame_count": 240,
+      "output_width": 2400,
+      "output_height": 2400,
+      "female_assignment": "piecewise nearest strict GT; ties use earlier frame",
+      "overlay_position_source": "raw SLEAP mouth-tail pose matched to refractive projection",
+      "slp_match_gate_px": 80.0,
+      "slp_match_diagnostics": {
+        "top_cam": {
+          "matched_poses": 675,
+          "finite_projected_poses": 720,
+          "unassigned_pose_arrows": 8,
+          "match_rate": 0.9375,
+          "projection_to_sleap_centroid_px": {
+            "median": 1.4798160903438307,
+            "p95": 9.903474530116535,
+            "max": 25.845828732975924
+          }
+        },
+        "side1_cam": {
+          "matched_poses": 653,
+          "finite_projected_poses": 720,
+          "unassigned_pose_arrows": 0,
+          "match_rate": 0.9069444444444444,
+          "projection_to_sleap_centroid_px": {
+            "median": 1.6059291749366966,
+            "p95": 12.964967884008418,
+            "max": 31.554363356852665
+          }
+        },
+        "side2_cam": {
+          "matched_poses": 668,
+          "finite_projected_poses": 720,
+          "unassigned_pose_arrows": 6,
+          "match_rate": 0.9277777777777778,
+          "projection_to_sleap_centroid_px": {
+            "median": 1.7103220836386668,
+            "p95": 11.457767572577923,
+            "max": 30.853737002931044
+          }
+        }
+      },
+      "evidence": [
+        {
+          "frame": 72371,
+          "female_geometry_id": "ID_3"
+        },
+        {
+          "frame": 73027,
+          "female_geometry_id": "ID_2"
+        }
+      ],
+      "output": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260716\\female_sex_gt_consistency\\tracklet_scene_videos_gray_preview\\R3D_ID_3_S000328_f000072163_000073228_native_2x2.mp4",
+      "ffmpeg_log": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260716\\female_sex_gt_consistency\\tracklet_scene_videos_gray_preview\\R3D_ID_3_S000328_f000072163_000073228_native_2x2.ffmpeg.log",
+      "render_seconds": 7.963333368301392
+    }
+  ]
+}

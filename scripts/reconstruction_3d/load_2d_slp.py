@@ -93,6 +93,7 @@ def _instance_point(
     *,
     node_names: list[str] | None = None,
     anchor_node: str | None = None,
+    require_anchor_node: bool = False,
 ) -> tuple[float, float, float]:
     """Return (x, y, score) for an instance. x/y are NaN if nothing visible."""
     pts = inst.numpy()  # (n_nodes, 2)
@@ -101,6 +102,8 @@ def _instance_point(
         score = getattr(inst, "score", None)
         if np.isfinite(pt).all():
             return float(pt[0]), float(pt[1]), float(score) if score is not None else np.nan
+        if require_anchor_node:
+            return np.nan, np.nan, float(score) if score is not None else np.nan
     mask = np.isfinite(pts).all(axis=1)
     if not mask.any():
         return np.nan, np.nan, float(getattr(inst, "score", np.nan) or np.nan)
@@ -114,6 +117,7 @@ def _instances_in_slot_order(
     *,
     node_names: list[str],
     anchor_node: str | None = None,
+    require_anchor_node: bool = False,
     filter_fp: bool = True,
     min_span_px: float = 15.0,
     dup_dist_px: float = 12.0,
@@ -132,6 +136,7 @@ def _instances_in_slot_order(
             inst,
             node_names=node_names,
             anchor_node=anchor_node,
+            require_anchor_node=require_anchor_node,
         )
         if np.isfinite(x) and np.isfinite(y):
             sortable.append((score, x, inst))
@@ -152,6 +157,7 @@ def load_points_by_frame(
     start_frame: int | None = None,
     end_frame: int | None = None,
     anchor_node: str | None = None,
+    require_anchor_node: bool = False,
     filter_fp: bool = True,
     min_span_px: float = 15.0,
     dup_dist_px: float = 12.0,
@@ -176,6 +182,9 @@ def load_points_by_frame(
         If provided, use this skeleton node's xy for each instance instead of
         the centroid of visible nodes. For the current medaka mouth-only SLEAP
         model, pass ``"mouth"`` to make the data contract explicit.
+    require_anchor_node : bool
+        If true, discard an instance when ``anchor_node`` is not finite instead
+        of falling back to the centroid of its other visible nodes.
 
     Returns
     -------
@@ -212,6 +221,7 @@ def load_points_by_frame(
                 f.instances,
                 node_names=node_names,
                 anchor_node=anchor_node,
+                require_anchor_node=require_anchor_node,
                 filter_fp=filter_fp,
                 min_span_px=min_span_px,
                 dup_dist_px=dup_dist_px,
@@ -222,6 +232,7 @@ def load_points_by_frame(
                     inst,
                     node_names=node_names,
                     anchor_node=anchor_node,
+                    require_anchor_node=require_anchor_node,
                 )
                 if np.isfinite(x) and np.isfinite(y):
                     pts.append((x, y, score))

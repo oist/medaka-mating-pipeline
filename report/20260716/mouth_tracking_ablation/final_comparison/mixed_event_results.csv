@@ -1,0 +1,13 @@
+tracklet_id,method,first_frame,last_frame,gt_geometry_id_first,gt_geometry_id_last,method_id_first,method_id_last,event_evaluable,female_id_preserved
+R3D:ID_1:S000839,current_centroid,273617,278182,ID_2,ID_1,ID_2,ID_1,True,False
+R3D:ID_1:S000839,mouth_2d_tracklet_first,273617,278182,ID_2,ID_1,ID_1,ID_1,True,True
+R3D:ID_1:S000839,mouth_only_3d,273617,278182,ID_2,ID_1,ID_1,ID_1,True,True
+R3D:ID_2:S000730,current_centroid,174316,180515,ID_2,ID_1,ID_2,ID_1,True,False
+R3D:ID_2:S000730,mouth_2d_tracklet_first,174316,180515,ID_2,ID_1,ID_3,ID_3,True,True
+R3D:ID_2:S000730,mouth_only_3d,174316,180515,ID_2,ID_1,ID_1,ID_1,True,True
+R3D:ID_3:S000328,current_centroid,72371,73027,ID_3,ID_2,ID_3,ID_2,True,False
+R3D:ID_3:S000328,mouth_2d_tracklet_first,72371,73027,ID_3,ID_2,ID_1,ID_1,True,True
+R3D:ID_3:S000328,mouth_only_3d,72371,73027,ID_3,ID_2,ID_2,ID_2,True,True
+R3D:ID_3:S000516,current_centroid,96612,97802,ID_3,ID_1,ID_3,ID_1,True,False
+R3D:ID_3:S000516,mouth_2d_tracklet_first,96612,97802,ID_3,ID_1,ID_1,ID_2,True,False
+R3D:ID_3:S000516,mouth_only_3d,96612,97802,ID_3,ID_1,ID_2,ID_1,True,False

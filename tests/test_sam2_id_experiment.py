@@ -194,6 +194,21 @@ def test_reconstruction_loader_uses_mouth_anchor_when_requested():
     assert score == pytest.approx(0.8)
 
 
+def test_reconstruction_loader_can_require_a_finite_mouth_anchor():
+    inst = _FakeSleapInstance([[np.nan, np.nan], [30, 40]])
+
+    x, y, score = _reconstruction_instance_point(
+        inst,
+        node_names=["mouth", "tail"],
+        anchor_node="mouth",
+        require_anchor_node=True,
+    )
+
+    assert np.isnan(x)
+    assert np.isnan(y)
+    assert score == pytest.approx(0.8)
+
+
 def test_reconstruction_loader_centroid_is_explicit_experimental_mode():
     inst = _FakeSleapInstance([[10, 20], [30, 40]])
 

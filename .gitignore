@@ -55,6 +55,7 @@ coverage.xml
 *.py.cover
 .hypothesis/
 .pytest_cache/
+/.pytest_tmp*/
 cover/
 
 # Translations
@@ -243,5 +244,27 @@ report/**/slide_previews*/
 report/**/*_remapped_idfinal_tracks.csv
 report/**/*_montage_track.csv
 report/**/mate_choice_per_frame.csv
+# Reproducible reconstruction studies keep compact reports and provenance in
+# git; full per-frame run directories remain local and are regenerated from the
+# documented commands.
+report/20260716/mouth_tracking_ablation/full/
+report/20260716/mouth_tracking_ablation/pilot/
+report/20260716/mouth_tracking_ablation/pytest_tmp/
+report/20260716/mouth_tracking_ablation/runtime_profile_*/
+report/20260716/mouth_tracking_ablation/windows/
+report/20260716/mouth_tracking_ablation/*.prof
+report/20260717/windowed_tracklet_stitching/bench_*/
+report/20260717/windowed_tracklet_stitching/bundle_*/
+report/20260717/windowed_tracklet_stitching/candidate_cache/
+report/20260717/windowed_tracklet_stitching/full_optimized_baseline*/
+report/20260717/windowed_tracklet_stitching/item1_final_*/
+report/20260717/windowed_tracklet_stitching/item5_same_graph/
+report/20260717/windowed_tracklet_stitching/item6_same_graph/
+report/20260717/windowed_tracklet_stitching/item56_verify_tmp*/
+report/20260717/windowed_tracklet_stitching/pair_item*/
+report/20260717/windowed_tracklet_stitching/pytest_tmp/
+report/20260717/windowed_tracklet_stitching/quality_*/
+report/20260717/windowed_tracklet_stitching/smoke_*/
+report/20260717/windowed_tracklet_stitching/worker_bench/
 # JS tooling deps that leak into report dirs
 node_modules/

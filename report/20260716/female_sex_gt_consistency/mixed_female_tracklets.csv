@@ -1,0 +1,9 @@
+subset,clean_tracklet_id,geometry_source_id,tracklet_start_frame,tracklet_end_frame,tracklet_length_frames,observed_annotation_frames,female_observation_count,nonfemale_observation_count,female_geometry_ids_observed_in_span,distinct_female_geometry_id_count,mixed_female_nonfemale,more_than_two_female_id_assignments
+all_mapped,R3D:ID_1:S000839,ID_1,271384,278939,7556,7,4,3,ID_1;ID_2,2,True,False
+all_mapped,R3D:ID_2:S000730,ID_2,173997,181132,7136,6,4,2,ID_1;ID_2,2,True,False
+all_mapped,R3D:ID_3:S000328,ID_3,72163,73228,1066,2,1,1,ID_2;ID_3,2,True,False
+all_mapped,R3D:ID_3:S000516,ID_3,96567,98072,1506,2,1,1,ID_1;ID_3,2,True,False
+strict_two_view_8px,R3D:ID_1:S000839,ID_1,271384,278939,7556,6,4,2,ID_1;ID_2,2,True,False
+strict_two_view_8px,R3D:ID_2:S000730,ID_2,173997,181132,7136,6,4,2,ID_1;ID_2,2,True,False
+strict_two_view_8px,R3D:ID_3:S000328,ID_3,72163,73228,1066,2,1,1,ID_2;ID_3,2,True,False
+strict_two_view_8px,R3D:ID_3:S000516,ID_3,96567,98072,1506,2,1,1,ID_1;ID_3,2,True,False

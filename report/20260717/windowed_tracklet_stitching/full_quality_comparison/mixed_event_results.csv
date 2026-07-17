@@ -1,0 +1,9 @@
+tracklet_id,method,first_frame,last_frame,gt_geometry_id_first,gt_geometry_id_last,method_id_first,method_id_last,event_evaluable,female_id_preserved
+R3D:ID_1:S000839,historical_strict_mouth,273617,278182,ID_2,ID_1,ID_1,ID_1,True,True
+R3D:ID_1:S000839,optimized_windowed_baseline,273617,278182,ID_2,ID_1,ID_1,ID_1,True,True
+R3D:ID_2:S000730,historical_strict_mouth,174316,180515,ID_2,ID_1,ID_1,ID_1,True,True
+R3D:ID_2:S000730,optimized_windowed_baseline,174316,180515,ID_2,ID_1,ID_2,,False,False
+R3D:ID_3:S000328,historical_strict_mouth,72371,73027,ID_3,ID_2,ID_2,ID_2,True,True
+R3D:ID_3:S000328,optimized_windowed_baseline,72371,73027,ID_3,ID_2,ID_2,ID_2,True,True
+R3D:ID_3:S000516,historical_strict_mouth,96612,97802,ID_3,ID_1,ID_2,ID_1,True,False
+R3D:ID_3:S000516,optimized_windowed_baseline,96612,97802,ID_3,ID_1,ID_1,ID_1,True,True

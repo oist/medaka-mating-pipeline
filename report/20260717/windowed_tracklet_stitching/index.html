@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive summary of the 2026-07-17 windowed tracklet stitching study.">
+  <title>Windowed Tracklet Stitching — Study Summary</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #16211d;
+      --muted: #65716c;
+      --paper: #f4f6f2;
+      --surface: #ffffff;
+      --surface-2: #eef2ed;
+      --line: #d9e0da;
+      --green: #176b4b;
+      --green-soft: #e1f1e8;
+      --amber: #9b5e0a;
+      --amber-soft: #fff0d2;
+      --red: #a33c32;
+      --red-soft: #fbe6e2;
+      --blue: #315f88;
+      --blue-soft: #e7f0f8;
+      --shadow: 0 20px 50px rgba(34, 54, 45, .08);
+      --radius: 18px;
+      --mono: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% -5%, rgba(23, 107, 75, .09), transparent 29rem),
+        var(--paper);
+      font-family: var(--sans);
+      line-height: 1.55;
+    }
+    button, input, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: var(--green); text-underline-offset: 3px; }
+    a:hover { color: #0d4f37; }
+    :focus-visible { outline: 3px solid rgba(49, 95, 136, .35); outline-offset: 3px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      border-bottom: 1px solid rgba(217, 224, 218, .85);
+      background: rgba(244, 246, 242, .88);
+      backdrop-filter: blur(18px);
+    }
+    .topbar-inner {
+      width: min(1180px, calc(100% - 32px));
+      min-height: 62px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 760; letter-spacing: -.02em; }
+    .brand-mark {
+      width: 26px; height: 26px; border-radius: 8px; background: var(--green);
+      box-shadow: inset 0 0 0 7px var(--green-soft);
+    }
+    .nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+    .nav::-webkit-scrollbar { display: none; }
+    .nav a {
+      padding: 8px 11px; border-radius: 999px; color: var(--muted);
+      text-decoration: none; white-space: nowrap; font-size: .89rem; font-weight: 650;
+    }
+    .nav a:hover { background: var(--surface); color: var(--ink); }
+
+    main { width: min(1180px, calc(100% - 32px)); margin: 0 auto; padding-bottom: 96px; }
+    section { scroll-margin-top: 82px; }
+    .hero { padding: 86px 0 40px; display: grid; grid-template-columns: 1.25fr .75fr; gap: 52px; align-items: end; }
+    .eyebrow { margin: 0 0 14px; color: var(--green); font-size: .78rem; font-weight: 820; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 0; max-width: 760px; font-size: clamp(2.75rem, 6vw, 5.6rem); line-height: .98; letter-spacing: -.065em; font-weight: 790; }
+    .dek { margin: 28px 0 0; max-width: 720px; color: var(--muted); font-size: clamp(1.05rem, 2vw, 1.27rem); }
+    .hero-meta { padding: 22px 0 2px; border-top: 1px solid var(--line); }
+    .meta-row { display: flex; justify-content: space-between; gap: 18px; padding: 8px 0; font-size: .91rem; }
+    .meta-row span:first-child { color: var(--muted); }
+    .meta-row strong { text-align: right; }
+
+    .decision {
+      margin: 36px 0 26px;
+      padding: 26px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 20px;
+      align-items: center;
+      border: 1px solid #edcfc8;
+      border-radius: var(--radius);
+      background: linear-gradient(120deg, #fff, var(--red-soft));
+      box-shadow: var(--shadow);
+    }
+    .decision-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; background: var(--red-soft); color: var(--red); font-size: 1.4rem; font-weight: 900; }
+    .decision h2 { margin: 0 0 3px; font-size: 1.2rem; letter-spacing: -.02em; }
+    .decision p { margin: 0; color: var(--muted); }
+    .pill { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 10px; border-radius: 999px; font-size: .76rem; font-weight: 800; letter-spacing: .035em; text-transform: uppercase; white-space: nowrap; }
+    .pill.reject { color: var(--red); background: var(--red-soft); }
+    .pill.retain { color: var(--green); background: var(--green-soft); }
+    .pill.defer { color: var(--amber); background: var(--amber-soft); }
+    .pill.info { color: var(--blue); background: var(--blue-soft); }
+
+    .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 26px 0 76px; }
+    .metric { padding: 19px 20px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.72); }
+    .metric .label { color: var(--muted); font-size: .78rem; font-weight: 720; text-transform: uppercase; letter-spacing: .06em; }
+    .metric .value { margin: 6px 0 1px; font-size: 1.8rem; line-height: 1.1; letter-spacing: -.045em; font-weight: 800; }
+    .metric .note { color: var(--muted); font-size: .82rem; }
+
+    .section-head { display: flex; justify-content: space-between; gap: 28px; align-items: end; margin: 0 0 22px; }
+    .section-head h2 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.65rem); letter-spacing: -.045em; line-height: 1.08; }
+    .section-head p { margin: 0; max-width: 550px; color: var(--muted); }
+
+    .comparison-shell { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 78px; }
+    .panel { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); overflow: hidden; }
+    .panel-head { padding: 20px 22px; display: flex; justify-content: space-between; gap: 12px; align-items: center; border-bottom: 1px solid var(--line); }
+    .panel-head h3 { margin: 0; font-size: 1rem; }
+    .compare-row { display: grid; grid-template-columns: minmax(135px, 1fr) 1.25fr 62px; gap: 12px; align-items: center; padding: 14px 22px; border-bottom: 1px solid #eef1ee; }
+    .compare-row:last-child { border-bottom: 0; }
+    .compare-label { font-size: .88rem; }
+    .compare-label small { display: block; color: var(--muted); }
+    .bars { display: grid; gap: 5px; }
+    .bar { position: relative; height: 7px; border-radius: 999px; overflow: hidden; background: var(--surface-2); }
+    .bar > span { display: block; height: 100%; border-radius: inherit; }
+    .bar.hist > span { background: var(--green); }
+    .bar.cand > span { background: var(--amber); }
+    .compare-value { font-family: var(--mono); font-size: .76rem; text-align: right; white-space: nowrap; }
+    .legend { display: flex; gap: 14px; color: var(--muted); font-size: .75rem; }
+    .legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 5px; border-radius: 50%; background: var(--green); }
+    .legend span:last-child::before { background: var(--amber); }
+    .finding { padding: 22px; }
+    .finding + .finding { border-top: 1px solid var(--line); }
+    .finding strong { display: block; margin-bottom: 5px; }
+    .finding p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+    .items-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 80px; }
+    .item-card {
+      min-height: 260px; padding: 21px; display: flex; flex-direction: column;
+      border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface);
+      box-shadow: 0 10px 30px rgba(34, 54, 45, .045); transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .item-card:hover { transform: translateY(-3px); border-color: #b7c5bc; box-shadow: var(--shadow); }
+    .item-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .item-no { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--surface-2); font-family: var(--mono); font-weight: 800; }
+    .item-card h3 { margin: 22px 0 8px; font-size: 1.21rem; line-height: 1.2; letter-spacing: -.025em; }
+    .item-card p { margin: 0; color: var(--muted); font-size: .91rem; }
+    .item-stat { margin: auto 0 14px; padding-top: 20px; display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: .78rem; }
+    .item-stat strong { color: var(--ink); font-family: var(--mono); font-size: .86rem; }
+    .open-item, .ghost-btn {
+      border: 0; border-radius: 10px; cursor: pointer; font-weight: 760;
+      transition: background .18s ease, color .18s ease;
+    }
+    .open-item { padding: 10px 13px; background: var(--ink); color: #fff; }
+    .open-item:hover { background: var(--green); }
+    .ghost-btn { padding: 8px 11px; background: var(--surface-2); color: var(--ink); }
+    .ghost-btn:hover { background: var(--line); }
+
+    .toolbar { display: flex; flex-wrap: wrap; gap: 9px; align-items: center; margin-bottom: 15px; }
+    .search { flex: 1 1 260px; min-height: 44px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface); color: var(--ink); }
+    .filter-btn { min-height: 40px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); cursor: pointer; font-weight: 680; font-size: .84rem; }
+    .filter-btn.active, .filter-btn:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
+    .table-wrap { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); overflow: auto; box-shadow: var(--shadow); }
+    table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+    th, td { padding: 13px 15px; text-align: left; border-bottom: 1px solid #e9ede9; vertical-align: top; }
+    th { position: sticky; top: 0; z-index: 1; background: #f6f8f5; color: var(--muted); font-size: .72rem; letter-spacing: .055em; text-transform: uppercase; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fafcf9; }
+    .pair { font-family: var(--mono); font-weight: 820; white-space: nowrap; }
+    .status-dot { display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: var(--amber); }
+    .status-dot.risk { background: var(--red); }
+    .status-dot.neutral { background: #81918a; }
+    .status-dot.signal { background: var(--green); }
+    .empty { display: none; padding: 30px; color: var(--muted); text-align: center; }
+
+    #interactions { margin-bottom: 80px; }
+    .bundle-strip { margin-top: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .bundle { padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.7); }
+    .bundle strong { display: block; margin-bottom: 6px; font-family: var(--mono); }
+    .bundle span { color: var(--muted); font-size: .82rem; }
+
+    .validation { margin-bottom: 80px; padding: 26px; display: grid; grid-template-columns: 1fr auto auto; gap: 26px; align-items: center; border-radius: var(--radius); background: var(--ink); color: #fff; }
+    .validation h2 { margin: 0 0 5px; font-size: 1.35rem; }
+    .validation p { margin: 0; color: #bfc9c4; }
+    .test-count { text-align: right; }
+    .test-count strong { display: block; font-family: var(--mono); font-size: 1.75rem; line-height: 1; }
+    .test-count span { color: #bfc9c4; font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; }
+
+    .artifact-groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .artifact-group { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); overflow: hidden; }
+    .artifact-group h3 { margin: 0; padding: 17px 18px; border-bottom: 1px solid var(--line); font-size: .96rem; }
+    .artifact-list { list-style: none; margin: 0; padding: 6px; }
+    .artifact-list li { border-radius: 9px; }
+    .artifact-list li[hidden] { display: none; }
+    .artifact-list a { padding: 10px 11px; display: flex; justify-content: space-between; gap: 12px; color: var(--ink); text-decoration: none; font-size: .84rem; }
+    .artifact-list a:hover { background: var(--surface-2); color: var(--green); }
+    .file-type { color: var(--muted); font-family: var(--mono); font-size: .69rem; text-transform: uppercase; }
+    .artifact-search { width: 100%; min-height: 46px; margin: 0 0 14px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+
+    .footnote { margin-top: 56px; padding-top: 22px; display: flex; justify-content: space-between; gap: 30px; border-top: 1px solid var(--line); color: var(--muted); font-size: .82rem; }
+    code { font-family: var(--mono); font-size: .86em; }
+
+    dialog { width: min(850px, calc(100% - 28px)); max-height: min(88vh, 900px); padding: 0; border: 0; border-radius: 20px; color: var(--ink); background: var(--surface); box-shadow: 0 36px 100px rgba(12, 26, 20, .28); }
+    dialog::backdrop { background: rgba(20, 32, 27, .58); backdrop-filter: blur(5px); }
+    .dialog-head { position: sticky; top: 0; z-index: 2; padding: 20px 24px; display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.94); backdrop-filter: blur(12px); }
+    .dialog-title { display: flex; gap: 13px; align-items: center; }
+    .dialog-title h2 { margin: 0; font-size: 1.25rem; }
+    .close-btn { width: 38px; height: 38px; border: 0; border-radius: 50%; background: var(--surface-2); cursor: pointer; font-size: 1.25rem; }
+    .dialog-body { padding: 25px; overflow: auto; }
+    .dialog-lede { margin: 0 0 22px; color: var(--muted); font-size: 1.02rem; }
+    .dialog-metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; margin-bottom: 24px; }
+    .dialog-metric { padding: 13px; border-radius: 12px; background: var(--surface-2); }
+    .dialog-metric span { display: block; color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; }
+    .dialog-metric strong { display: block; margin-top: 3px; font-family: var(--mono); font-size: .88rem; }
+    .dialog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .dialog-block { padding: 17px; border: 1px solid var(--line); border-radius: 13px; }
+    .dialog-block h3 { margin: 0 0 8px; font-size: .87rem; text-transform: uppercase; letter-spacing: .055em; }
+    .dialog-block p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .report-links { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .report-links a { padding: 9px 11px; border-radius: 9px; background: var(--green-soft); text-decoration: none; font-size: .82rem; font-weight: 750; }
+
+    @media (max-width: 900px) {
+      .hero, .comparison-shell { grid-template-columns: 1fr; }
+      .hero { gap: 22px; }
+      .hero-meta { max-width: 520px; }
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      .items-grid, .artifact-groups { grid-template-columns: repeat(2, 1fr); }
+      .bundle-strip { grid-template-columns: repeat(2, 1fr); }
+      .validation { grid-template-columns: 1fr 1fr; }
+      .validation > div:first-child { grid-column: 1 / -1; }
+    }
+    @media (max-width: 620px) {
+      main, .topbar-inner { width: min(100% - 22px, 1180px); }
+      .brand span { display: none; }
+      .hero { padding-top: 58px; }
+      h1 { font-size: 3.15rem; }
+      .decision { grid-template-columns: auto 1fr; }
+      .decision > .pill { grid-column: 2; justify-self: start; }
+      .metrics, .items-grid, .artifact-groups, .bundle-strip, .dialog-grid, .dialog-metrics { grid-template-columns: 1fr; }
+      .section-head { align-items: start; flex-direction: column; gap: 8px; }
+      .validation { grid-template-columns: 1fr 1fr; }
+      .compare-row { grid-template-columns: 1fr 1.1fr; }
+      .compare-value { grid-column: 2; }
+      .footnote { flex-direction: column; gap: 8px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"></span><span>Windowed Tracklet Study</span></div>
+      <nav class="nav" aria-label="Report sections">
+        <a href="#overview">Overview</a>
+        <a href="#items">Items</a>
+        <a href="#interactions">Interactions</a>
+        <a href="#artifacts">Artifacts</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="overview">
+      <div>
+        <p class="eyebrow">Final study report · 17 July 2026</p>
+        <h1>Windowed tracklet stitching</h1>
+        <p class="dek">An engineering and scientific evaluation of six proposed changes to full-recording 3D identity tracking for medaka mating behavior.</p>
+      </div>
+      <div class="hero-meta" aria-label="Study metadata">
+        <div class="meta-row"><span>Experiment</span><strong>20251225_K_1_2_FCMC</strong></div>
+        <div class="meta-row"><span>Model round</span><strong>round7_260704</strong></div>
+        <div class="meta-row"><span>Recording</span><strong>348,600 frames</strong></div>
+        <div class="meta-row"><span>Seed</span><strong>20260717</strong></div>
+      </div>
+    </section>
+
+    <section class="decision" aria-labelledby="decision-title">
+      <div class="decision-icon" aria-hidden="true">!</div>
+      <div>
+        <h2 id="decision-title">Keep the historical strict-mouth output in production</h2>
+        <p>The optimized candidate is faster and operationally stronger, but female accuracy, identity stability, and direct three-fish coverage regress materially.</p>
+      </div>
+      <span class="pill reject">Candidate rejected</span>
+    </section>
+
+    <div class="metrics" aria-label="Top-level metrics">
+      <div class="metric"><div class="label">Candidate runtime</div><div class="value">9.59 min</div><div class="note">575.6 s, warm cache</div></div>
+      <div class="metric"><div class="label">Historical runtime</div><div class="value">15.6 min</div><div class="note">Documented full run</div></div>
+      <div class="metric"><div class="label">Repository tests</div><div class="value">615 / 615</div><div class="note">3 expected warnings</div></div>
+      <div class="metric"><div class="label">Unresolved seams</div><div class="value">0</div><div class="note">35 restartable checkpoints</div></div>
+    </div>
+
+    <section aria-labelledby="quality-heading">
+      <div class="section-head">
+        <div><p class="eyebrow">Production gate</p><h2 id="quality-heading">Faster, but scientifically worse</h2></div>
+        <p>The candidate passes the 8 mm hard jump gate, yet accumulates many transitions near that boundary and loses stable, direct identity coverage.</p>
+      </div>
+      <div class="comparison-shell">
+        <div class="panel">
+          <div class="panel-head"><h3>Historical vs. optimized candidate</h3><div class="legend"><span>Historical</span><span>Candidate</span></div></div>
+          <div class="compare-row">
+            <div class="compare-label">Female accuracy<small>higher is better</small></div>
+            <div class="bars"><div class="bar hist"><span style="width:52.35%"></span></div><div class="bar cand"><span style="width:42.76%"></span></div></div>
+            <div class="compare-value">52.35<br>42.76%</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-label">All-three direct<small>higher is better</small></div>
+            <div class="bars"><div class="bar hist"><span style="width:98.16%"></span></div><div class="bar cand"><span style="width:89.43%"></span></div></div>
+            <div class="compare-value">98.16<br>89.43%</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-label">Female-ID changes<small>lower is better</small></div>
+            <div class="bars"><div class="bar hist"><span style="width:13.6%"></span></div><div class="bar cand"><span style="width:100%"></span></div></div>
+            <div class="compare-value">11<br>81</div>
+          </div>
+          <div class="compare-row">
+            <div class="compare-label">Jump p99<small>lower is better</small></div>
+            <div class="bars"><div class="bar hist"><span style="width:30.1%"></span></div><div class="bar cand"><span style="width:100%"></span></div></div>
+            <div class="compare-value">2.20<br>7.31 mm</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Interpretation</h3><span class="pill info">Decision evidence</span></div>
+          <div class="finding"><strong>Engineering result</strong><p>Bounded memory, exact seam reconciliation, deterministic resume, reusable HDF5 caches, and a 38.5% warm-run speed improvement all succeeded.</p></div>
+          <div class="finding"><strong>Scientific result</strong><p>Best-fixed female accuracy falls by 9.59 percentage points, observed female-ID changes rise 7.4×, and direct all-three coverage falls by 8.73 points.</p></div>
+          <div class="finding"><strong>Ground-truth limitation</strong><p>The ledger labels only the female. These metrics cannot independently detect swaps between the two males, so full three-fish identity truth remains an acceptance requirement.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="items" aria-labelledby="items-heading">
+      <div class="section-head">
+        <div><p class="eyebrow">Six evaluated changes</p><h2 id="items-heading">Open any item for evidence</h2></div>
+        <p>Each card combines the frozen proposal, implementation result, independent verifier finding, and final reconciled decision.</p>
+      </div>
+      <div class="items-grid" id="itemsGrid"></div>
+    </section>
+
+    <section id="interactions" aria-labelledby="interaction-heading">
+      <div class="section-head">
+        <div><p class="eyebrow">15 tested pairs</p><h2 id="interaction-heading">Interaction map</h2></div>
+        <p>No higher-order bundle earns a production run. Filter the pair audit by signal, neutral/redundant behavior, or risk.</p>
+      </div>
+      <div class="toolbar" aria-label="Pair filters">
+        <input class="search" id="pairSearch" type="search" placeholder="Search pairs, findings, or evidence…" aria-label="Search pair interactions">
+        <button class="filter-btn active" type="button" data-filter="all">All 15</button>
+        <button class="filter-btn" type="button" data-filter="signal">Signal</button>
+        <button class="filter-btn" type="button" data-filter="neutral">Neutral</button>
+        <button class="filter-btn" type="button" data-filter="risk">Risk</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Pair</th><th>Runtime</th><th>Quality interaction</th><th>Evidence</th></tr></thead>
+          <tbody id="pairRows"></tbody>
+        </table>
+        <div class="empty" id="pairEmpty">No interactions match this filter.</div>
+      </div>
+      <div class="bundle-strip" aria-label="Higher-order bundle results">
+        <div class="bundle"><strong>1+3+4</strong><span>Defer · 113 restart segments; no tail edge selected.</span></div>
+        <div class="bundle"><strong>1+3+4+5</strong><span>Defer · global output identical; no quality gain.</span></div>
+        <div class="bundle"><strong>1+3+4+5+6</strong><span>Redundant · deferral is an implementation no-op.</span></div>
+        <div class="bundle"><strong>1 full candidate</strong><span>Completed in 575.6 s; scientifically rejected.</span></div>
+      </div>
+    </section>
+
+    <section class="validation" aria-labelledby="validation-heading">
+      <div><h2 id="validation-heading">Implementation validation passed</h2><p>Focused and full-repository tests passed. JSON/CSV integrity, output hashes, determinism, and resume equivalence were checked.</p></div>
+      <div class="test-count"><strong>18 / 18</strong><span>Focused tests</span></div>
+      <div class="test-count"><strong>615 / 615</strong><span>Repository tests</span></div>
+    </section>
+
+    <section id="artifacts" aria-labelledby="artifact-heading">
+      <div class="section-head">
+        <div><p class="eyebrow">Evidence index</p><h2 id="artifact-heading">Reports &amp; reproducibility</h2></div>
+        <p>Search the curated report files below. Links are relative, so the page remains portable with this directory.</p>
+      </div>
+      <input class="artifact-search" id="artifactSearch" type="search" placeholder="Filter reports and data files…" aria-label="Filter report artifacts">
+      <div class="artifact-groups" id="artifactGroups"></div>
+    </section>
+
+    <footer class="footnote">
+      <span>Generated as a self-contained index for <code>report/20260717/windowed_tracklet_stitching</code>.</span>
+      <span>Source of record: <a href="study_summary.json">study_summary.json</a> · <a href="artifact_manifest.json">141-file manifest</a></span>
+    </footer>
+  </main>
+
+  <dialog id="itemDialog" aria-labelledby="dialogHeading">
+    <div class="dialog-head">
+      <div class="dialog-title"><span class="item-no" id="dialogNumber"></span><h2 id="dialogHeading"></h2></div>
+      <button class="close-btn" type="button" aria-label="Close item details">×</button>
+    </div>
+    <div class="dialog-body" id="dialogBody"></div>
+  </dialog>
+
+  <script>
+    const items = [
+      {
+        id: 1, title: 'Overlapping temporal windows', status: 'retain', badge: 'Retain infrastructure',
+        summary: 'Bounded parallel execution, exact seams, deterministic checkpoints, and reusable caches work; the integrated full candidate does not pass scientific quality.',
+        runtime: '25.73 s', speed: '0.88×', cohort: '32264–35364', direct: '9,122 rows',
+        outcome: 'Keep the execution infrastructure, but do not promote the candidate output.',
+        advantage: 'Bounded memory, parallel windows, exact resume, reusable HDF5 cache, and normalized single/overlap output equality.',
+        risk: 'Parallel overhead on the small slice, plus the full candidate’s lower female accuracy, 81 observed female changes, and lower direct coverage.',
+        evidence: 'Single-window and overlap outputs match exactly; the full run completes with 35 checkpoints and zero unresolved seams.',
+        links: ['item1_primary_report.md','item1_implementation_report.md','item1_verifier_report.md','item1_final_overlap8_32264_35364/run_summary.json']
+      },
+      {
+        id: 2, title: 'Multiframe cross-view grouping', status: 'reject', badge: 'Reject current design',
+        summary: 'The resource-aware multiframe mechanism is deterministic, but current thresholds are slower and collapse direct three-fish coverage.',
+        runtime: '58.06 s', speed: '0.32×', cohort: '32264–33263', direct: '840 rows',
+        outcome: 'Reject the present thresholds and support design.',
+        advantage: 'Explicit resource set packing and robust multi-frame evidence mechanics pass resource exclusivity checks.',
+        risk: '3.09× slower; all-three direct coverage falls from 848 frames to only 3, leaving too little identity evidence.',
+        evidence: 'The 1,000-frame frozen comparison is deterministic and has no jumps above 8 mm, but the coverage loss is catastrophic.',
+        links: ['item2_primary_report.md','item2_implementation_report.md','item2_verifier_report.md','bench_frozen_multiframe_32264_33263/run_summary.json']
+      },
+      {
+        id: 3, title: 'Explicit broken-fragment links', status: 'defer', badge: 'Defer',
+        summary: 'Auditable physical link costs and restart accounting work, but the result is 113 restart segments rather than three stable biological identities.',
+        runtime: '16.21 s', speed: '0.41×', cohort: '32264–33263', direct: '2,819 rows',
+        outcome: 'Defer until restart segments are converted into demonstrably stable fish identities.',
+        advantage: 'Transparent end-to-start costs, explicit restart contract, deterministic objective, and numerical term-sum error below 8.88e−16.',
+        risk: 'No exact links-off artifact in the runner, and segment IDs cannot be interpreted as three fish.',
+        evidence: '113 restart segments; jump p95/p99/max 1.272/5.421/7.966 mm; zero adjacent jumps above 8 mm.',
+        links: ['item3_primary_report.md','item3_implementation_report.md','item3_verifier_report.md','item3_exact_links_off_control.json']
+      },
+      {
+        id: 4, title: 'Conditional tail continuity', status: 'defer', badge: 'Defer',
+        summary: 'Tail evidence is neutral when missing and bounded when present, but it changes no selected real link and the frozen policy contract is incomplete.',
+        runtime: '16.20 s', speed: '1.00×', cohort: '32264–33263', direct: '2,819 rows',
+        outcome: 'Defer until eligibility, fallback, boundary audit, and tail-independent hashing are complete.',
+        advantage: 'Missing-tail neutrality and bounded secondary cost are verified; selected edge and output equality hold on the tested graph.',
+        risk: 'No observed decision benefit; within-margin assignments, full boundary proximity, compliant length filtering, and audit semantics remain incomplete.',
+        evidence: 'Same 113 segments and selected edges as Item 3; six tail-eligible edges in one bundle, none selected.',
+        links: ['item4_primary_report.md','item4_implementation_report.md','item4_verifier_report.md','bench_item4_tail_v2_32264_33263/run_summary.json']
+      },
+      {
+        id: 5, title: 'Global trajectory solver', status: 'defer', badge: 'Audit oracle only',
+        summary: 'The exact solver reproduces the same optimum on a small feasible graph, but is slower, has a lexicographic tie flaw, and is infeasible on the larger multiframe graph.',
+        runtime: '3.09 s', speed: '0.07×', cohort: '72000–72309', direct: '930 rows',
+        outcome: 'Use only as a small-graph audit oracle for now.',
+        advantage: 'Exact lower-bound verification, recomputed objective equality, and delayed-evidence capability on feasible graphs.',
+        risk: 'About 14× slower on the real feasible slice; tie handling is flawed; the 299-fragment multiframe graph cannot be covered by exactly three paths.',
+        evidence: 'Global, beam, and sequential solutions have the same three paths, objective, and normalized output on the 310-frame graph.',
+        links: ['item5_primary_report.md','item5_implementation_report.md','item5_verifier_report.md','item5_same_graph/global/solver_summary.json']
+      },
+      {
+        id: 6, title: 'Deferred identity decisions', status: 'defer', badge: 'Defer',
+        summary: 'The method can abstain at a horizon and retain alternatives, but entry-margin, future-support, audit, and resume semantics do not match the frozen policy.',
+        runtime: '0.216 s', speed: '0.96×', cohort: '72000–72309', direct: '930 rows',
+        outcome: 'Defer pending a compliant active-deferral implementation.',
+        advantage: 'Can leave identity blank rather than fabricate certainty; the exact 250-frame horizon synthetic test passes.',
+        risk: 'Entry-margin, tenth-direct-frame resolution, complete audit, and checkpoint/resume semantics fail; no real quality gain was observed.',
+        evidence: 'Two ambiguity intervals and six blank IDs on the tested graph; after an offline global solve, the current path is effectively a no-op.',
+        links: ['item6_primary_report.md','item6_implementation_report.md','item6_verifier_report.md','item6_same_graph/deferred/solver_summary.json']
+      }
+    ];
+
+    const pairs = [
+      {pair:'1 + 2',status:'signal',runtime:'51.48 s · 0.365×',quality:'Mixed: 73 vs 3 all-three frames, but one unresolved seam and less covered output.',evidence:'pair_item1_item2_overlap_32264_33263/run_summary.json'},
+      {pair:'1 + 3',status:'neutral',runtime:'19.92 s · 0.337×',quality:'Exact scientific-output equality with a slightly super-additive runtime cost.',evidence:'pair_item1_item3_overlap_32264_33263/run_summary.json'},
+      {pair:'1 + 4',status:'neutral',runtime:'19.84 s · 0.338×',quality:'Redundant scientific output with a slightly super-additive runtime cost.',evidence:'pair_item1_item4_overlap_32264_33263/run_summary.json'},
+      {pair:'1 + 5',status:'neutral',runtime:'30.30 s · 0.785×',quality:'Startup-dominated apparent sub-additivity; normalized output is identical.',evidence:'pair_item1_item5_overlap_global_72000_72309/solver_summary.json'},
+      {pair:'1 + 6',status:'neutral',runtime:'30.29 s · 0.785×',quality:'Approximately additive runtime; normalized output is identical.',evidence:'pair_item1_item6_overlap_deferred_72000_72309/solver_summary.json'},
+      {pair:'2 + 3',status:'risk',runtime:'62.24 s · NA',quality:'Antagonistic coverage; produces 122 segments.',evidence:'pair_item2_item3_32264_33263/run_summary.json'},
+      {pair:'2 + 4',status:'risk',runtime:'61.78 s · NA',quality:'Tail is redundant while direct coverage remains antagonistic.',evidence:'pair_item2_item4_32264_33263/run_summary.json'},
+      {pair:'2 + 5',status:'risk',runtime:'Infeasible',quality:'The 299-fragment graph has minimum path cover 10; exact-three cannot solve it.',evidence:'failed_runs.json'},
+      {pair:'2 + 6',status:'risk',runtime:'62.77 s · NA',quality:'Four unresolved intervals leave 744 of 840 identity rows blank; edge solution changes.',evidence:'pair_item2_item6_deferred/solver_summary.json'},
+      {pair:'3 + 4',status:'neutral',runtime:'16.20 s · NA',quality:'Selected edges and output are identical; incremental tail cost is negligible.',evidence:'bench_item4_tail_v2_32264_33263/run_summary.json'},
+      {pair:'3 + 5',status:'neutral',runtime:'3.09 s · NA',quality:'Same optimum and output; global solver is slower.',evidence:'item5_same_graph/global/solver_summary.json'},
+      {pair:'3 + 6',status:'signal',runtime:'0.216 s · NA',quality:'Deferred intervals appear, but quality remains unverified.',evidence:'item6_same_graph/deferred/solver_summary.json'},
+      {pair:'4 + 5',status:'neutral',runtime:'0.234 s · NA',quality:'Same objective and output; no quality gain.',evidence:'pair_item4_item5_global/solver_summary.json'},
+      {pair:'4 + 6',status:'neutral',runtime:'0.226 s · NA',quality:'Tail term is redundant; deferral behavior is unchanged.',evidence:'pair_item4_item6_deferred/solver_summary.json'},
+      {pair:'5 + 6',status:'neutral',runtime:'0.230 s · 0.968×',quality:'Implementation no-op under global solve; not evidence against true active deferral.',evidence:'pair_item5_item6_global_deferred/solver_summary.json'}
+    ];
+
+    const artifactGroups = [
+      {title:'Decision & overview', files:['final_recommendation.md','study_summary.json','optimized_baseline_report.md','agent_reconciliation.md','validation_summary.json']},
+      {title:'Item 1 · windows', files:['item1_primary_report.md','item1_implementation_report.md','item1_verifier_report.md','item1_final_single_32264_35364/run_summary.json','item1_final_overlap8_32264_35364/run_summary.json']},
+      {title:'Item 2 · multiframe', files:['item2_primary_report.md','item2_implementation_report.md','item2_verifier_report.md','bench_frozen_framewise_32264_33263/run_summary.json','bench_frozen_multiframe_32264_33263/run_summary.json']},
+      {title:'Items 3–4 · linking', files:['item3_primary_report.md','item3_implementation_report.md','item3_verifier_report.md','item3_exact_links_off_control.json','item4_primary_report.md','item4_implementation_report.md','item4_verifier_report.md']},
+      {title:'Items 5–6 · solving', files:['item5_primary_report.md','item5_implementation_report.md','item5_verifier_report.md','item6_primary_report.md','item6_implementation_report.md','item6_verifier_report.md']},
+      {title:'Interaction audits', files:['pairwise_combination_results.csv','higher_order_bundle_results.csv','compatibility_matrix.csv','pair_verifier_item1_pairs.md','pair_verifier_items2_3_pairs.md','pair_verifier_items3_6_and_bundles.md']},
+      {title:'Quality & performance', files:['quality_metrics.csv','cohort_quality_metrics.csv','individual_results.csv','runtime_breakdown.csv','hardware_benchmark.json']},
+      {title:'Protocol & provenance', files:['benchmark_protocol.md','reproducible_commands.md','logs_and_provenance.md','failed_runs.json','artifact_manifest.json']},
+      {title:'Full candidate', files:['full_optimized_baseline_v2/run_summary.json','full_optimized_baseline_v2/resolved_configuration.json','full_optimized_baseline_v2/frozen_graph_manifest.json']}
+    ];
+
+    const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    const labelForFile = path => path.split('/').pop().replace(/_/g, ' ');
+    const fileType = path => path.split('.').pop();
+
+    function renderItems() {
+      document.querySelector('#itemsGrid').innerHTML = items.map(item => `
+        <article class="item-card">
+          <div class="item-top"><span class="item-no">${item.id}</span><span class="pill ${item.status}">${escapeHtml(item.badge)}</span></div>
+          <h3>${escapeHtml(item.title)}</h3>
+          <p>${escapeHtml(item.summary)}</p>
+          <div class="item-stat"><span>Measured runtime<br><strong>${item.runtime}</strong></span><span>Relative speed<br><strong>${item.speed}</strong></span></div>
+          <button class="open-item" type="button" data-item="${item.id}">Open item ${item.id}</button>
+        </article>`).join('');
+    }
+
+    function openItem(id) {
+      const item = items.find(entry => entry.id === Number(id));
+      if (!item) return;
+      document.querySelector('#dialogNumber').textContent = item.id;
+      document.querySelector('#dialogHeading').textContent = item.title;
+      document.querySelector('#dialogBody').innerHTML = `
+        <p class="dialog-lede">${escapeHtml(item.summary)}</p>
+        <div class="dialog-metrics">
+          <div class="dialog-metric"><span>Decision</span><strong>${escapeHtml(item.badge)}</strong></div>
+          <div class="dialog-metric"><span>Cohort</span><strong>${escapeHtml(item.cohort)}</strong></div>
+          <div class="dialog-metric"><span>Runtime</span><strong>${escapeHtml(item.runtime)}</strong></div>
+          <div class="dialog-metric"><span>Direct output</span><strong>${escapeHtml(item.direct)}</strong></div>
+        </div>
+        <div class="dialog-grid">
+          <div class="dialog-block"><h3>Reconciled outcome</h3><p>${escapeHtml(item.outcome)}</p></div>
+          <div class="dialog-block"><h3>Evidence</h3><p>${escapeHtml(item.evidence)}</p></div>
+          <div class="dialog-block"><h3>What worked</h3><p>${escapeHtml(item.advantage)}</p></div>
+          <div class="dialog-block"><h3>Why it is not promoted</h3><p>${escapeHtml(item.risk)}</p></div>
+        </div>
+        <div class="report-links">${item.links.map((link, index) => `<a href="${encodeURI(link)}" target="_blank" rel="noopener">${['Primary report','Implementation','Verifier report','Run evidence'][index] || 'Evidence'}</a>`).join('')}</div>`;
+      document.querySelector('#itemDialog').showModal();
+    }
+
+    let pairFilter = 'all';
+    function renderPairs() {
+      const query = document.querySelector('#pairSearch').value.trim().toLowerCase();
+      const visible = pairs.filter(row => (pairFilter === 'all' || row.status === pairFilter) && `${row.pair} ${row.runtime} ${row.quality} ${row.evidence}`.toLowerCase().includes(query));
+      document.querySelector('#pairRows').innerHTML = visible.map(row => `
+        <tr><td class="pair"><span class="status-dot ${row.status}"></span>${row.pair}</td><td>${escapeHtml(row.runtime)}</td><td>${escapeHtml(row.quality)}</td><td><a href="${encodeURI(row.evidence)}" target="_blank" rel="noopener">Open evidence</a></td></tr>`).join('');
+      document.querySelector('#pairEmpty').style.display = visible.length ? 'none' : 'block';
+    }
+
+    function renderArtifacts() {
+      document.querySelector('#artifactGroups').innerHTML = artifactGroups.map((group, groupIndex) => `
+        <section class="artifact-group" data-artifact-group="${groupIndex}">
+          <h3>${escapeHtml(group.title)}</h3>
+          <ul class="artifact-list">${group.files.map(path => `<li data-artifact="${escapeHtml(`${group.title} ${path}`.toLowerCase())}"><a href="${encodeURI(path)}" target="_blank" rel="noopener"><span>${escapeHtml(labelForFile(path))}</span><span class="file-type">${escapeHtml(fileType(path))}</span></a></li>`).join('')}</ul>
+        </section>`).join('');
+    }
+
+    renderItems();
+    renderPairs();
+    renderArtifacts();
+
+    document.querySelector('#itemsGrid').addEventListener('click', event => {
+      const button = event.target.closest('[data-item]');
+      if (button) openItem(button.dataset.item);
+    });
+    const dialog = document.querySelector('#itemDialog');
+    dialog.querySelector('.close-btn').addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', event => {
+      const rect = dialog.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) dialog.close();
+    });
+    document.querySelector('#pairSearch').addEventListener('input', renderPairs);
+    document.querySelectorAll('.filter-btn').forEach(button => button.addEventListener('click', () => {
+      pairFilter = button.dataset.filter;
+      document.querySelectorAll('.filter-btn').forEach(candidate => candidate.classList.toggle('active', candidate === button));
+      renderPairs();
+    }));
+    document.querySelector('#artifactSearch').addEventListener('input', event => {
+      const query = event.target.value.trim().toLowerCase();
+      document.querySelectorAll('[data-artifact]').forEach(row => row.hidden = !row.dataset.artifact.includes(query));
+      document.querySelectorAll('[data-artifact-group]').forEach(group => group.hidden = !group.querySelector('[data-artifact]:not([hidden])'));
+    });
+  </script>
+</body>
+</html>

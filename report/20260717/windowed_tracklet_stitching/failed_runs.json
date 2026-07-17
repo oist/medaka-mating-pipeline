@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "failed_or_interrupted_runs_not_scored_as_success": [
+    {
+      "run": "first full pipeline supervisor",
+      "failure": "1000.5 second supervisor timeout after immutable graph creation",
+      "correction": "hash-verified graph finalization, followed by final compact full rerun"
+    },
+    {
+      "run": "dataframe graph finalizer reference",
+      "failure": "600.5 and 1800.5 second supervisor timeouts before output commit",
+      "correction": "array-backed exact-value-equivalent linker; final run 575.55 seconds end-to-end"
+    },
+    {
+      "run": "Item 2 + Item 5 exact global",
+      "failure": "three-path cover infeasible on 299-fragment/7306-edge multiframe graph",
+      "correction": "none; recorded as current configuration incompatibility"
+    },
+    {
+      "run": "candidate cache CLI manifest refresh",
+      "failure": "sandbox could not resolve Z: source path; stopped before cache mutation",
+      "correction": "manifest rehashed from local HDF5 caches only"
+    }
+  ]
+}

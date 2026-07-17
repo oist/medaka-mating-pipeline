@@ -1,0 +1,62 @@
+{
+  "top_cam": {
+    "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\top_cam.slp",
+    "predicted_instance_count": 1030215,
+    "node_order": [
+      "mouth",
+      "tail"
+    ],
+    "visibility_state_counts": {
+      "mouth_and_tail": 1007365,
+      "mouth_only": 19586,
+      "tail_only": 3264,
+      "neither": 0
+    },
+    "visibility_state_shares": {
+      "mouth_and_tail": 0.9778201637522265,
+      "mouth_only": 0.019011565546997473,
+      "tail_only": 0.0031682707007760517,
+      "neither": 0.0
+    }
+  },
+  "side1_cam": {
+    "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side1_cam.slp",
+    "predicted_instance_count": 1030361,
+    "node_order": [
+      "mouth",
+      "tail"
+    ],
+    "visibility_state_counts": {
+      "mouth_and_tail": 996350,
+      "mouth_only": 25250,
+      "tail_only": 8761,
+      "neither": 0
+    },
+    "visibility_state_shares": {
+      "mouth_and_tail": 0.9669911807609177,
+      "mouth_only": 0.02450597411975026,
+      "tail_only": 0.008502845119331963,
+      "neither": 0.0
+    }
+  },
+  "side2_cam": {
+    "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side2_cam.slp",
+    "predicted_instance_count": 1033589,
+    "node_order": [
+      "mouth",
+      "tail"
+    ],
+    "visibility_state_counts": {
+      "mouth_and_tail": 996092,
+      "mouth_only": 30794,
+      "tail_only": 6703,
+      "neither": 0
+    },
+    "visibility_state_shares": {
+      "mouth_and_tail": 0.9637215566342134,
+      "mouth_only": 0.02979327372872583,
+      "tail_only": 0.006485169637060766,
+      "neither": 0.0
+    }
+  }
+}

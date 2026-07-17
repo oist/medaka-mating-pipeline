@@ -1,0 +1,1360 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Female GT vs. Round7 Refractive Track",
+    "description": "Technical consistency audit for sparse female identity labels.",
+    "generatedAt": "2026-07-16T10:52:35.828690+00:00",
+    "filters": [],
+    "cards": [
+      {
+        "id": "mapping_coverage_card",
+        "description": "Confirmed female annotations with a consensus geometry ID.",
+        "dataset": "headline",
+        "sourceId": "female_refractive_consistency_audit",
+        "metrics": [
+          {
+            "label": "Mapped female labels",
+            "field": "mapping_coverage",
+            "format": "percent"
+          },
+          {
+            "label": "Two-view agreement",
+            "field": "two_view_agreement",
+            "format": "percent"
+          }
+        ]
+      },
+      {
+        "id": "fixed_id_card",
+        "description": "Accuracy from treating one geometry ID as the female for the full recording.",
+        "dataset": "headline",
+        "sourceId": "female_refractive_consistency_audit",
+        "metrics": [
+          {
+            "label": "Best fixed-ID accuracy",
+            "field": "best_fixed_accuracy",
+            "format": "percent"
+          },
+          {
+            "label": "Strict subset",
+            "field": "strict_fixed_accuracy",
+            "format": "percent"
+          }
+        ]
+      },
+      {
+        "id": "switch_card",
+        "description": "Lower-bound changes between consecutive sparse female annotations.",
+        "dataset": "headline",
+        "sourceId": "female_refractive_consistency_audit",
+        "metrics": [
+          {
+            "label": "Observed ID changes",
+            "field": "observed_switches",
+            "format": "number"
+          },
+          {
+            "label": "Observed runs",
+            "field": "observed_runs",
+            "format": "number"
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "identity_counts_chart",
+        "title": "Confirmed female labels by geometry ID",
+        "subtitle": "298 mapped annotations; no fixed geometry ID covers half of the labels.",
+        "type": "bar",
+        "dataset": "identity_counts",
+        "sourceId": "female_refractive_consistency_audit",
+        "encodings": {
+          "x": {
+            "field": "geometry_id",
+            "type": "nominal",
+            "label": "Geometry ID"
+          },
+          "y": {
+            "field": "annotation_count",
+            "type": "quantitative",
+            "label": "Confirmed female annotations",
+            "format": "number"
+          },
+          "tooltip": [
+            {
+              "field": "share",
+              "type": "quantitative",
+              "label": "Share",
+              "format": "percent"
+            }
+          ]
+        },
+        "valueFormat": "number",
+        "options": {
+          "palette": {
+            "kind": "categorical",
+            "roots": [
+              "blue"
+            ]
+          }
+        }
+      },
+      {
+        "id": "temporal_identity_chart",
+        "title": "Female geometry-ID share by candidate time bin",
+        "subtitle": "Early, middle, and late bins contain 114, 94, and 88 mapped candidate annotations.",
+        "type": "bar",
+        "dataset": "temporal_identity_counts",
+        "sourceId": "female_refractive_consistency_audit",
+        "encodings": {
+          "x": {
+            "field": "temporal_bin",
+            "type": "nominal",
+            "label": "Recording bin"
+          },
+          "y": {
+            "field": "share_within_bin",
+            "type": "quantitative",
+            "label": "Share of mapped female labels",
+            "format": "percent"
+          },
+          "color": {
+            "field": "geometry_id",
+            "type": "nominal",
+            "label": "Geometry ID"
+          },
+          "tooltip": [
+            {
+              "field": "annotation_count",
+              "type": "quantitative",
+              "label": "Annotations",
+              "format": "number"
+            }
+          ]
+        },
+        "valueFormat": "percent",
+        "options": {
+          "grouping": "grouped",
+          "palette": {
+            "kind": "categorical",
+            "roots": [
+              "blue",
+              "gold",
+              "pink"
+            ]
+          },
+          "legend": {
+            "show": true,
+            "position": "top"
+          }
+        }
+      },
+      {
+        "id": "sensitivity_chart",
+        "title": "Best fixed-ID accuracy under stricter evidence filters",
+        "subtitle": "The maximum remains below 45% after excluding wide-gate and one-view rows.",
+        "type": "bar",
+        "dataset": "sensitivity",
+        "sourceId": "female_refractive_consistency_audit",
+        "encodings": {
+          "x": {
+            "field": "subset",
+            "type": "nominal",
+            "label": "Evidence subset"
+          },
+          "y": {
+            "field": "best_fixed_accuracy",
+            "type": "quantitative",
+            "label": "Best fixed-ID accuracy",
+            "format": "percent"
+          },
+          "tooltip": [
+            {
+              "field": "annotation_count",
+              "type": "quantitative",
+              "label": "Annotations",
+              "format": "number"
+            },
+            {
+              "field": "observed_switches",
+              "type": "quantitative",
+              "label": "Observed changes",
+              "format": "number"
+            }
+          ]
+        },
+        "valueFormat": "percent",
+        "options": {
+          "palette": {
+            "kind": "categorical",
+            "roots": [
+              "blue"
+            ]
+          }
+        }
+      },
+      {
+        "id": "mapping_status_chart",
+        "title": "Cross-view geometry mapping status",
+        "subtitle": "300 confirmed annotations; 283 agree in both side cameras.",
+        "type": "bar",
+        "dataset": "mapping_status",
+        "sourceId": "female_refractive_consistency_audit",
+        "encodings": {
+          "x": {
+            "field": "mapping_status",
+            "type": "nominal",
+            "label": "Mapping status"
+          },
+          "y": {
+            "field": "share",
+            "type": "quantitative",
+            "label": "Share of confirmed annotations",
+            "format": "percent"
+          },
+          "tooltip": [
+            {
+              "field": "annotation_count",
+              "type": "quantitative",
+              "label": "Annotations",
+              "format": "number"
+            }
+          ]
+        },
+        "valueFormat": "percent",
+        "options": {
+          "palette": {
+            "kind": "categorical",
+            "roots": [
+              "blue"
+            ]
+          }
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "transition_table",
+        "title": "Observed female-ID transition brackets",
+        "subtitle": "Consecutive mapped annotations that carry different geometry IDs; exact swap frames are not identified.",
+        "dataset": "transitions",
+        "sourceId": "female_refractive_consistency_audit",
+        "defaultSort": {
+          "field": "right_annotation_frame",
+          "direction": "asc"
+        },
+        "density": "dense",
+        "layout": "full",
+        "columns": [
+          {
+            "field": "left_annotation_frame",
+            "label": "Left frame",
+            "format": "number"
+          },
+          {
+            "field": "right_annotation_frame",
+            "label": "Right frame",
+            "format": "number"
+          },
+          {
+            "field": "from_geometry_id",
+            "label": "From",
+            "type": "text"
+          },
+          {
+            "field": "to_geometry_id",
+            "label": "To",
+            "type": "text"
+          },
+          {
+            "field": "gap_frames",
+            "label": "Bracket width, frames",
+            "format": "number"
+          },
+          {
+            "field": "candidate_max_reprojection_distance_px",
+            "label": "Right candidate max reproj., px",
+            "format": "number"
+          }
+        ]
+      },
+      {
+        "id": "mapping_issue_table",
+        "title": "Rows requiring visual re-review",
+        "subtitle": "Cross-view disagreements or selected-ID reprojection above the supplied 8 px gate.",
+        "dataset": "mapping_issues",
+        "sourceId": "female_refractive_consistency_audit",
+        "defaultSort": {
+          "field": "frame",
+          "direction": "asc"
+        },
+        "density": "dense",
+        "layout": "full",
+        "columns": [
+          {
+            "field": "frame",
+            "label": "Frame",
+            "format": "number"
+          },
+          {
+            "field": "issue",
+            "label": "Issue",
+            "type": "text"
+          },
+          {
+            "field": "geometry_id_consistency",
+            "label": "View status",
+            "type": "text"
+          },
+          {
+            "field": "consensus_geometry_id",
+            "label": "Consensus ID",
+            "type": "text"
+          },
+          {
+            "field": "side1_reprojection_px",
+            "label": "Side1 reproj., px",
+            "format": "number"
+          },
+          {
+            "field": "side2_reprojection_px",
+            "label": "Side2 reproj., px",
+            "format": "number"
+          }
+        ]
+      },
+      {
+        "id": "missing_tracklet_table",
+        "title": "Mapped rows without a saved provisional tracklet",
+        "subtitle": "Two manual-jump records; recomputed exact-frame segments are clean.",
+        "dataset": "missing_tracklet",
+        "sourceId": "female_refractive_consistency_audit",
+        "defaultSort": {
+          "field": "frame",
+          "direction": "asc"
+        },
+        "columns": [
+          {
+            "field": "frame",
+            "label": "Frame",
+            "format": "number"
+          },
+          {
+            "field": "consensus_geometry_id",
+            "label": "Geometry ID",
+            "type": "text"
+          },
+          {
+            "field": "clean_tracklet_id",
+            "label": "Recomputed tracklet",
+            "type": "text"
+          },
+          {
+            "field": "label_status",
+            "label": "Exact-frame status",
+            "type": "text"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "female_refractive_consistency_audit",
+        "label": "Female GT and round7 refractive-track audit",
+        "path": "report/20260716/female_sex_gt_consistency/female_track_consistency_analysis.py"
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# Female GT vs. Round7 Refractive Track"
+      },
+      {
+        "id": "technical_summary",
+        "type": "markdown",
+        "body": "## Technical summary\n\n**The human female labels are internally strong enough to show that the round7 refractive geometry IDs are not stable biological identities.** Of 298 mapped confirmed labels, the best single ID (`ID_1`) covers only 43.3%; the annotation sequence contains at least 26 changes across 27 observed runs. A 'change' means adjacent mapped GT samples carry different geometry IDs, so it is a lower bound rather than an exact count of swap events.\n\n**Overall assessment: share the identity-inconsistency conclusion with caveats; revise the GT provenance before treating this ledger as a frozen gold release.** The ledger uses the placeholder annotator `YOUR_NAME`, and the saved candidate queue records an 80 px association gate although the supplied command states 8 px."
+      },
+      {
+        "id": "headline_metrics",
+        "type": "metric-strip",
+        "cardIds": [
+          "mapping_coverage_card",
+          "fixed_id_card",
+          "switch_card"
+        ]
+      },
+      {
+        "id": "identity_finding",
+        "type": "markdown",
+        "body": "## All three geometry IDs carry the female label\n\nThe mapped female labels split across `ID_1` (129), `ID_2` (68), and `ID_3` (101). A global `fish_id -> sex` lookup would therefore mislabel 56.7% of these mapped female anchors even under the best fixed choice. The implication is operational: sex must be attached after identity stitching, not directly to the current geometry ID."
+      },
+      {
+        "id": "identity_chart_block",
+        "type": "chart",
+        "chartId": "identity_counts_chart",
+        "layout": "full"
+      },
+      {
+        "id": "temporal_finding",
+        "type": "markdown",
+        "body": "## The dominant label shifts over recording time\n\n`ID_3` carries 68.4% of mapped female labels in the early candidate bin, whereas `ID_1` carries 55.3% in the middle and 64.8% in the late bin. This is temporal reassignment, not a small number of isolated row errors. The two manual-jump rows have no temporal-bin metadata and are excluded from this chart."
+      },
+      {
+        "id": "temporal_chart_block",
+        "type": "chart",
+        "chartId": "temporal_identity_chart",
+        "layout": "full"
+      },
+      {
+        "id": "sensitivity_finding",
+        "type": "markdown",
+        "body": "## Strict 8 px filtering leaves the conclusion unchanged\n\nThe strict two-view subset retains 265 rows, 25 observed changes, and a best fixed-ID accuracy of only 44.2%. Adding the candidate-wide <=8 px rule retains 249 rows and 23 changes. This robustness check rules out the saved 80 px queue gate as the main explanation for the ID reassignment."
+      },
+      {
+        "id": "sensitivity_chart_block",
+        "type": "chart",
+        "chartId": "sensitivity_chart",
+        "layout": "full"
+      },
+      {
+        "id": "mapping_finding",
+        "type": "markdown",
+        "body": "## Cross-view annotations are mostly self-consistent\n\nThe two side cameras agree on geometry ID for 283 of 300 confirmed rows (94.3%); 15 rows use one view and 2 disagree. All 298 selected consensus coordinates are finite and non-interpolated in the current track. This supports using the ledger as sparse identity evidence while keeping the disagreement and wide-gate rows out of a locked training set until re-reviewed."
+      },
+      {
+        "id": "mapping_chart_block",
+        "type": "chart",
+        "chartId": "mapping_status_chart",
+        "layout": "full"
+      },
+      {
+        "id": "scope_definitions",
+        "type": "markdown",
+        "body": "## Scope, data, and metric definitions\n\nThe ledger contains 301 unique source frames from 4,439 to 348,388 at 166 fps: 300 confirmed female rows and 1 ambiguous row. The compared track is the current refractive output with 1,045,800 rows, frames 0-348,599, IDs `ID_1`-`ID_3`, and score unit `mm^2`. 'Best fixed-ID accuracy' is the largest female-label count for any one geometry ID divided by all mapped confirmed labels."
+      },
+      {
+        "id": "methodology",
+        "type": "markdown",
+        "body": "## Exact joins and reprojection reproduce the GUI evidence\n\nThe audit validates the canonical `(experiment, frame, annotator)` key and deterministic annotation IDs, reconciles the append-only audit ledger, joins every selected geometry ID to the exact 3D frame, and reprojects that 3D point with the checked-in fixed-interface refractive calibration. It also rebuilds provisional tracklets with the production finite, non-interpolated, <=8 mm local-jump rule. The current provenance JSON hash and candidate CSV hash match the saved candidate-build records, and the track size matches the recorded source."
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "body": "## Limitations and rows that need re-review\n\n**The 26 observed changes are a lower bound.** Sparse candidate spacing cannot identify the exact swap frame and can miss an even number of swaps that return to the same label. The reconstruction has no >8 mm consecutive non-interpolated jump, so smooth trajectory continuity alone does not protect biological identity at crossings.\n\n**The saved evidence is incompatible with an 8 px gate on every row.** The queue summary records 80 px, 32/300 candidate rows exceed 8 px at the candidate-wide maximum, and the selected-ID reprojection has a 74.4 px side2 outlier at frame 246665. These rows do not drive the conclusion, but they should not enter a frozen GT set without visual review."
+      },
+      {
+        "id": "mapping_issue_table_block",
+        "type": "table",
+        "tableId": "mapping_issue_table",
+        "layout": "full"
+      },
+      {
+        "id": "transition_note",
+        "type": "markdown",
+        "body": "## Transition brackets localize identity-stitching work\n\nThe table lists every consecutive mapped GT pair whose geometry ID changes. Use each left/right bracket to inspect the full-resolution trajectory and side-camera evidence, then place a biological identity boundary or stitching constraint inside the interval."
+      },
+      {
+        "id": "transition_table_block",
+        "type": "table",
+        "tableId": "transition_table",
+        "layout": "full"
+      },
+      {
+        "id": "tracklet_note",
+        "type": "markdown",
+        "body": "## Provisional tracklet joins are otherwise exact\n\nAll 296 non-empty saved tracklet IDs match the clean segment recomputed at the exact annotation frame. Two mapped manual-jump rows have no saved provisional tracklet; their recomputed exact-frame segments are clean."
+      },
+      {
+        "id": "missing_tracklet_table_block",
+        "type": "table",
+        "tableId": "missing_tracklet_table"
+      },
+      {
+        "id": "next_steps",
+        "type": "markdown",
+        "body": "## Recommended next steps\n\n1. Correct the placeholder annotator value through a controlled ledger migration that preserves the old audit records and regenerates deterministic annotation IDs.\n2. Re-open the two cross-view disagreement frames (290906 and 338780), the 74.4 px outlier at frame 246665, and the remaining rows in the re-review table with an explicit 8 px gate.\n3. Use the 26 transition brackets as sparse identity-stitching supervision; do not assign female sex from one global geometry ID.\n4. After stitching, rerun this audit and require one stable final female ID across the high-confidence subset."
+      },
+      {
+        "id": "further_questions",
+        "type": "markdown",
+        "body": "## Further questions\n\n- Which exact frames inside the 26 brackets contain the identity exchanges?\n- Do top-camera 2D identity anchors or segmentation identities collapse these runs to one biological female?\n- Should the two manual-jump records be re-saved from the candidate queue so they carry explicit provisional tracklet IDs?"
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-07-16T10:52:35.828690+00:00",
+    "status": "ready",
+    "datasets": {
+      "headline": [
+        {
+          "mapping_coverage": 0.9933333333333333,
+          "two_view_agreement": 0.9433333333333334,
+          "best_fixed_accuracy": 0.43288590604026844,
+          "strict_fixed_accuracy": 0.44150943396226416,
+          "observed_switches": 26,
+          "observed_runs": 27
+        }
+      ],
+      "identity_counts": [
+        {
+          "geometry_id": "ID_1",
+          "annotation_count": 129,
+          "share": 0.4328859060402684
+        },
+        {
+          "geometry_id": "ID_2",
+          "annotation_count": 68,
+          "share": 0.2281879194630872
+        },
+        {
+          "geometry_id": "ID_3",
+          "annotation_count": 101,
+          "share": 0.3389261744966443
+        }
+      ],
+      "temporal_identity_counts": [
+        {
+          "temporal_bin": "early",
+          "geometry_id": "ID_1",
+          "annotation_count": 19,
+          "share_within_bin": 0.1666666666666666
+        },
+        {
+          "temporal_bin": "early",
+          "geometry_id": "ID_2",
+          "annotation_count": 17,
+          "share_within_bin": 0.1491228070175438
+        },
+        {
+          "temporal_bin": "early",
+          "geometry_id": "ID_3",
+          "annotation_count": 78,
+          "share_within_bin": 0.6842105263157895
+        },
+        {
+          "temporal_bin": "middle",
+          "geometry_id": "ID_1",
+          "annotation_count": 52,
+          "share_within_bin": 0.5531914893617021
+        },
+        {
+          "temporal_bin": "middle",
+          "geometry_id": "ID_2",
+          "annotation_count": 37,
+          "share_within_bin": 0.3936170212765957
+        },
+        {
+          "temporal_bin": "middle",
+          "geometry_id": "ID_3",
+          "annotation_count": 5,
+          "share_within_bin": 0.0531914893617021
+        },
+        {
+          "temporal_bin": "late",
+          "geometry_id": "ID_1",
+          "annotation_count": 57,
+          "share_within_bin": 0.6477272727272727
+        },
+        {
+          "temporal_bin": "late",
+          "geometry_id": "ID_2",
+          "annotation_count": 13,
+          "share_within_bin": 0.1477272727272727
+        },
+        {
+          "temporal_bin": "late",
+          "geometry_id": "ID_3",
+          "annotation_count": 18,
+          "share_within_bin": 0.2045454545454545
+        }
+      ],
+      "sensitivity": [
+        {
+          "subset": "All mapped",
+          "annotation_count": 298,
+          "best_fixed_accuracy": 0.43288590604026844,
+          "observed_switches": 26
+        },
+        {
+          "subset": "Strict two-view <=8 px",
+          "annotation_count": 265,
+          "best_fixed_accuracy": 0.44150943396226416,
+          "observed_switches": 25
+        },
+        {
+          "subset": "Very strict candidate <=8 px",
+          "annotation_count": 249,
+          "best_fixed_accuracy": 0.4497991967871486,
+          "observed_switches": 23
+        }
+      ],
+      "mapping_status": [
+        {
+          "mapping_status": "agree",
+          "annotation_count": 283,
+          "share": 0.9433333333333334
+        },
+        {
+          "mapping_status": "one_view",
+          "annotation_count": 15,
+          "share": 0.05
+        },
+        {
+          "mapping_status": "disagree",
+          "annotation_count": 2,
+          "share": 0.0066666666666666
+        }
+      ],
+      "transitions": [
+        {
+          "left_annotation_frame": 7438,
+          "right_annotation_frame": 10198,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 10198,
+          "candidate_max_reprojection_distance_px": 2.8405930145724008,
+          "gap_frames": 2760,
+          "left_seconds": 44.80722891566265,
+          "right_seconds": 61.43373493975904
+        },
+        {
+          "left_annotation_frame": 19436,
+          "right_annotation_frame": 20234,
+          "from_geometry_id": "ID_3",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "one_view",
+          "candidate_frame": 20234,
+          "candidate_max_reprojection_distance_px": 1.8943753310172136,
+          "gap_frames": 798,
+          "left_seconds": 117.0843373493976,
+          "right_seconds": 121.89156626506023
+        },
+        {
+          "left_annotation_frame": 22165,
+          "right_annotation_frame": 22966,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 22966,
+          "candidate_max_reprojection_distance_px": 3.794348983419389,
+          "gap_frames": 801,
+          "left_seconds": 133.52409638554218,
+          "right_seconds": 138.34939759036143
+        },
+        {
+          "left_annotation_frame": 28363,
+          "right_annotation_frame": 28884,
+          "from_geometry_id": "ID_3",
+          "to_geometry_id": "ID_2",
+          "geometry_id_consistency": "one_view",
+          "candidate_frame": 28884,
+          "candidate_max_reprojection_distance_px": 4.342393576686493,
+          "gap_frames": 521,
+          "left_seconds": 170.86144578313252,
+          "right_seconds": 174.0
+        },
+        {
+          "left_annotation_frame": 30411,
+          "right_annotation_frame": 31616,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 31616,
+          "candidate_max_reprojection_distance_px": 13.30059038458118,
+          "gap_frames": 1205,
+          "left_seconds": 183.1987951807229,
+          "right_seconds": 190.4578313253012
+        },
+        {
+          "left_annotation_frame": 70835,
+          "right_annotation_frame": 71288,
+          "from_geometry_id": "ID_3",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 71288,
+          "candidate_max_reprojection_distance_px": 3.389687362170412,
+          "gap_frames": 453,
+          "left_seconds": 426.7168674698795,
+          "right_seconds": 429.4457831325301
+        },
+        {
+          "left_annotation_frame": 71288,
+          "right_annotation_frame": 72371,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 72371,
+          "candidate_max_reprojection_distance_px": 2.146285136238687,
+          "gap_frames": 1083,
+          "left_seconds": 429.4457831325301,
+          "right_seconds": 435.9698795180723
+        },
+        {
+          "left_annotation_frame": 72371,
+          "right_annotation_frame": 73027,
+          "from_geometry_id": "ID_3",
+          "to_geometry_id": "ID_2",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 73027,
+          "candidate_max_reprojection_distance_px": 2.123450129519407,
+          "gap_frames": 656,
+          "left_seconds": 435.9698795180723,
+          "right_seconds": 439.921686746988
+        },
+        {
+          "left_annotation_frame": 76698,
+          "right_annotation_frame": 77285,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 77285,
+          "candidate_max_reprojection_distance_px": 4.998344201993462,
+          "gap_frames": 587,
+          "left_seconds": 462.03614457831327,
+          "right_seconds": 465.5722891566265
+        },
+        {
+          "left_annotation_frame": 78799,
+          "right_annotation_frame": 79547,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 79547,
+          "candidate_max_reprojection_distance_px": 10.584633106418831,
+          "gap_frames": 748,
+          "left_seconds": 474.6927710843373,
+          "right_seconds": 479.19879518072287
+        },
+        {
+          "left_annotation_frame": 79547,
+          "right_annotation_frame": 80215,
+          "from_geometry_id": "ID_3",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 80215,
+          "candidate_max_reprojection_distance_px": 15.030198532363968,
+          "gap_frames": 668,
+          "left_seconds": 479.19879518072287,
+          "right_seconds": 483.22289156626505
+        },
+        {
+          "left_annotation_frame": 86350,
+          "right_annotation_frame": 87520,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 87520,
+          "candidate_max_reprojection_distance_px": 7.21722300991208,
+          "gap_frames": 1170,
+          "left_seconds": 520.1807228915662,
+          "right_seconds": 527.2289156626506
+        },
+        {
+          "left_annotation_frame": 88147,
+          "right_annotation_frame": 89709,
+          "from_geometry_id": "ID_3",
+          "to_geometry_id": "ID_2",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 89709,
+          "candidate_max_reprojection_distance_px": 2.728315480313288,
+          "gap_frames": 1562,
+          "left_seconds": 531.0060240963855,
+          "right_seconds": 540.4156626506024
+        },
+        {
+          "left_annotation_frame": 94029,
+          "right_annotation_frame": 94891,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 94891,
+          "candidate_max_reprojection_distance_px": 3.93126873741325,
+          "gap_frames": 862,
+          "left_seconds": 566.4397590361446,
+          "right_seconds": 571.6325301204819
+        },
+        {
+          "left_annotation_frame": 96612,
+          "right_annotation_frame": 97802,
+          "from_geometry_id": "ID_3",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 97802,
+          "candidate_max_reprojection_distance_px": 3.075347127680783,
+          "gap_frames": 1190,
+          "left_seconds": 582.0,
+          "right_seconds": 589.1686746987951
+        },
+        {
+          "left_annotation_frame": 98387,
+          "right_annotation_frame": 99156,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 99156,
+          "candidate_max_reprojection_distance_px": 6.268981385685756,
+          "gap_frames": 769,
+          "left_seconds": 592.6927710843373,
+          "right_seconds": 597.3253012048193
+        },
+        {
+          "left_annotation_frame": 122123,
+          "right_annotation_frame": 122737,
+          "from_geometry_id": "ID_3",
+          "to_geometry_id": "ID_2",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 122737,
+          "candidate_max_reprojection_distance_px": 11.94197387603981,
+          "gap_frames": 614,
+          "left_seconds": 735.6807228915662,
+          "right_seconds": 739.3795180722891
+        },
+        {
+          "left_annotation_frame": 126377,
+          "right_annotation_frame": 127048,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 127048,
+          "candidate_max_reprojection_distance_px": 1.9800590269779503,
+          "gap_frames": 671,
+          "left_seconds": 761.3072289156627,
+          "right_seconds": 765.3493975903615
+        },
+        {
+          "left_annotation_frame": 130760,
+          "right_annotation_frame": 138892,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_2",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 138892,
+          "candidate_max_reprojection_distance_px": 7.12592623041364,
+          "gap_frames": 8132,
+          "left_seconds": 787.710843373494,
+          "right_seconds": 836.6987951807229
+        },
+        {
+          "left_annotation_frame": 177242,
+          "right_annotation_frame": 179435,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 179435,
+          "candidate_max_reprojection_distance_px": 1.5619397027144557,
+          "gap_frames": 2193,
+          "left_seconds": 1067.7228915662652,
+          "right_seconds": 1080.933734939759
+        },
+        {
+          "left_annotation_frame": 212276,
+          "right_annotation_frame": 213061,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_2",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 213061,
+          "candidate_max_reprojection_distance_px": 3.2608308486040585,
+          "gap_frames": 785,
+          "left_seconds": 1278.7710843373493,
+          "right_seconds": 1283.5
+        },
+        {
+          "left_annotation_frame": 213061,
+          "right_annotation_frame": 213866,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 213866,
+          "candidate_max_reprojection_distance_px": 8.35714024952593,
+          "gap_frames": 805,
+          "left_seconds": 1283.5,
+          "right_seconds": 1288.3493975903614
+        },
+        {
+          "left_annotation_frame": 257510,
+          "right_annotation_frame": 258537,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_2",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 258537,
+          "candidate_max_reprojection_distance_px": 6.390065285216577,
+          "gap_frames": 1027,
+          "left_seconds": 1551.2650602409635,
+          "right_seconds": 1557.4518072289156
+        },
+        {
+          "left_annotation_frame": 275099,
+          "right_annotation_frame": 275753,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_1",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 275753,
+          "candidate_max_reprojection_distance_px": 1.6489590213251846,
+          "gap_frames": 654,
+          "left_seconds": 1657.2228915662652,
+          "right_seconds": 1661.1626506024097
+        },
+        {
+          "left_annotation_frame": 319590,
+          "right_annotation_frame": 320304,
+          "from_geometry_id": "ID_1",
+          "to_geometry_id": "ID_2",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 320304,
+          "candidate_max_reprojection_distance_px": 5.990146665786685,
+          "gap_frames": 714,
+          "left_seconds": 1925.2409638554216,
+          "right_seconds": 1929.5421686746988
+        },
+        {
+          "left_annotation_frame": 320304,
+          "right_annotation_frame": 321054,
+          "from_geometry_id": "ID_2",
+          "to_geometry_id": "ID_3",
+          "geometry_id_consistency": "agree",
+          "candidate_frame": 321054,
+          "candidate_max_reprojection_distance_px": 4.393091982058487,
+          "gap_frames": 750,
+          "left_seconds": 1929.5421686746988,
+          "right_seconds": 1934.0602409638557
+        }
+      ],
+      "mapping_issues": [
+        {
+          "frame": 5158,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_2",
+          "side1_reprojection_px": 21.25881721330361,
+          "side2_reprojection_px": 22.49328593357201,
+          "candidate_max_reprojection_distance_px": 22.49328593357201
+        },
+        {
+          "frame": 5160,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "one_view",
+          "consensus_geometry_id": "ID_2",
+          "side1_reprojection_px": 21.137766222371408,
+          "side2_reprojection_px": null,
+          "candidate_max_reprojection_distance_px": 22.49328593357201
+        },
+        {
+          "frame": 7438,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_2",
+          "side1_reprojection_px": 20.78919328089361,
+          "side2_reprojection_px": 20.44884665546017,
+          "candidate_max_reprojection_distance_px": 20.78919328089361
+        },
+        {
+          "frame": 19436,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_3",
+          "side1_reprojection_px": 22.31102726244696,
+          "side2_reprojection_px": 22.973041128606003,
+          "candidate_max_reprojection_distance_px": 22.973041128606003
+        },
+        {
+          "frame": 21465,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "one_view",
+          "consensus_geometry_id": "ID_1",
+          "side1_reprojection_px": 10.08246094078273,
+          "side2_reprojection_px": null,
+          "candidate_max_reprojection_distance_px": 11.176547561457436
+        },
+        {
+          "frame": 31616,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_3",
+          "side1_reprojection_px": 11.411954539454046,
+          "side2_reprojection_px": 13.30059038458118,
+          "candidate_max_reprojection_distance_px": 13.30059038458118
+        },
+        {
+          "frame": 32249,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_3",
+          "side1_reprojection_px": 15.633803171547337,
+          "side2_reprojection_px": 16.887236130792015,
+          "candidate_max_reprojection_distance_px": 16.887236130792015
+        },
+        {
+          "frame": 32872,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "one_view",
+          "consensus_geometry_id": "ID_3",
+          "side1_reprojection_px": null,
+          "side2_reprojection_px": 23.973703211379668,
+          "candidate_max_reprojection_distance_px": 76.94041686508187
+        },
+        {
+          "frame": 40033,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_3",
+          "side1_reprojection_px": 11.15017618735492,
+          "side2_reprojection_px": 9.898811581726637,
+          "candidate_max_reprojection_distance_px": 11.15017618735492
+        },
+        {
+          "frame": 53574,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_3",
+          "side1_reprojection_px": 8.165584141439757,
+          "side2_reprojection_px": 7.491741233093657,
+          "candidate_max_reprojection_distance_px": 8.165584141439757
+        },
+        {
+          "frame": 80215,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_1",
+          "side1_reprojection_px": 15.030198532363968,
+          "side2_reprojection_px": 14.830094449360631,
+          "candidate_max_reprojection_distance_px": 15.030198532363968
+        },
+        {
+          "frame": 139489,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_2",
+          "side1_reprojection_px": 21.317321472827107,
+          "side2_reprojection_px": 20.491315277744164,
+          "candidate_max_reprojection_distance_px": 21.317321472827107
+        },
+        {
+          "frame": 246665,
+          "issue": "selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "agree",
+          "consensus_geometry_id": "ID_1",
+          "side1_reprojection_px": 7.389000705773965,
+          "side2_reprojection_px": 74.438425099629,
+          "candidate_max_reprojection_distance_px": 75.88795493013069
+        },
+        {
+          "frame": 290906,
+          "issue": "cross-view IDs disagree",
+          "geometry_id_consistency": "disagree",
+          "consensus_geometry_id": null,
+          "side1_reprojection_px": 1.463890615463887,
+          "side2_reprojection_px": 2.62815737694372,
+          "candidate_max_reprojection_distance_px": 3.1473888095570355
+        },
+        {
+          "frame": 338780,
+          "issue": "cross-view IDs disagree; selected-ID reprojection exceeds 8 px",
+          "geometry_id_consistency": "disagree",
+          "consensus_geometry_id": null,
+          "side1_reprojection_px": 2.259294105854317,
+          "side2_reprojection_px": 21.060220175612105,
+          "candidate_max_reprojection_distance_px": 74.39328453570565
+        }
+      ],
+      "missing_tracklet": [
+        {
+          "frame": 142702,
+          "consensus_geometry_id": "ID_2",
+          "clean_tracklet_id": "R3D:ID_2:S000703",
+          "label_status": "clean",
+          "candidate_frame": 142702
+        },
+        {
+          "frame": 306117,
+          "consensus_geometry_id": "ID_1",
+          "clean_tracklet_id": "R3D:ID_1:S000866",
+          "label_status": "clean",
+          "candidate_frame": 306117
+        }
+      ],
+      "runs": [
+        {
+          "run_number": 1,
+          "female_geometry_id": "ID_2",
+          "start_frame": 5158,
+          "end_frame": 7438,
+          "annotation_count": 3,
+          "start_seconds": 31.072289156626507,
+          "end_seconds": 44.80722891566265
+        },
+        {
+          "run_number": 2,
+          "female_geometry_id": "ID_3",
+          "start_frame": 10198,
+          "end_frame": 19436,
+          "annotation_count": 7,
+          "start_seconds": 61.43373493975904,
+          "end_seconds": 117.0843373493976
+        },
+        {
+          "run_number": 3,
+          "female_geometry_id": "ID_1",
+          "start_frame": 20234,
+          "end_frame": 22165,
+          "annotation_count": 4,
+          "start_seconds": 121.89156626506023,
+          "end_seconds": 133.52409638554218
+        },
+        {
+          "run_number": 4,
+          "female_geometry_id": "ID_3",
+          "start_frame": 22966,
+          "end_frame": 28363,
+          "annotation_count": 6,
+          "start_seconds": 138.34939759036143,
+          "end_seconds": 170.86144578313252
+        },
+        {
+          "run_number": 5,
+          "female_geometry_id": "ID_2",
+          "start_frame": 28884,
+          "end_frame": 30411,
+          "annotation_count": 3,
+          "start_seconds": 174.0,
+          "end_seconds": 183.1987951807229
+        },
+        {
+          "run_number": 6,
+          "female_geometry_id": "ID_3",
+          "start_frame": 31616,
+          "end_frame": 70835,
+          "annotation_count": 39,
+          "start_seconds": 190.4578313253012,
+          "end_seconds": 426.7168674698795
+        },
+        {
+          "run_number": 7,
+          "female_geometry_id": "ID_1",
+          "start_frame": 71288,
+          "end_frame": 71288,
+          "annotation_count": 1,
+          "start_seconds": 429.4457831325301,
+          "end_seconds": 429.4457831325301
+        },
+        {
+          "run_number": 8,
+          "female_geometry_id": "ID_3",
+          "start_frame": 72371,
+          "end_frame": 72371,
+          "annotation_count": 1,
+          "start_seconds": 435.9698795180723,
+          "end_seconds": 435.9698795180723
+        },
+        {
+          "run_number": 9,
+          "female_geometry_id": "ID_2",
+          "start_frame": 73027,
+          "end_frame": 76698,
+          "annotation_count": 5,
+          "start_seconds": 439.921686746988,
+          "end_seconds": 462.03614457831327
+        },
+        {
+          "run_number": 10,
+          "female_geometry_id": "ID_1",
+          "start_frame": 77285,
+          "end_frame": 78799,
+          "annotation_count": 3,
+          "start_seconds": 465.5722891566265,
+          "end_seconds": 474.6927710843373
+        },
+        {
+          "run_number": 11,
+          "female_geometry_id": "ID_3",
+          "start_frame": 79547,
+          "end_frame": 79547,
+          "annotation_count": 1,
+          "start_seconds": 479.19879518072287,
+          "end_seconds": 479.19879518072287
+        },
+        {
+          "run_number": 12,
+          "female_geometry_id": "ID_1",
+          "start_frame": 80215,
+          "end_frame": 86350,
+          "annotation_count": 9,
+          "start_seconds": 483.22289156626505,
+          "end_seconds": 520.1807228915662
+        },
+        {
+          "run_number": 13,
+          "female_geometry_id": "ID_3",
+          "start_frame": 87520,
+          "end_frame": 88147,
+          "annotation_count": 2,
+          "start_seconds": 527.2289156626506,
+          "end_seconds": 531.0060240963855
+        },
+        {
+          "run_number": 14,
+          "female_geometry_id": "ID_2",
+          "start_frame": 89709,
+          "end_frame": 94029,
+          "annotation_count": 6,
+          "start_seconds": 540.4156626506024,
+          "end_seconds": 566.4397590361446
+        },
+        {
+          "run_number": 15,
+          "female_geometry_id": "ID_3",
+          "start_frame": 94891,
+          "end_frame": 96612,
+          "annotation_count": 4,
+          "start_seconds": 571.6325301204819,
+          "end_seconds": 582.0
+        },
+        {
+          "run_number": 16,
+          "female_geometry_id": "ID_1",
+          "start_frame": 97802,
+          "end_frame": 98387,
+          "annotation_count": 2,
+          "start_seconds": 589.1686746987951,
+          "end_seconds": 592.6927710843373
+        },
+        {
+          "run_number": 17,
+          "female_geometry_id": "ID_3",
+          "start_frame": 99156,
+          "end_frame": 122123,
+          "annotation_count": 23,
+          "start_seconds": 597.3253012048193,
+          "end_seconds": 735.6807228915662
+        },
+        {
+          "run_number": 18,
+          "female_geometry_id": "ID_2",
+          "start_frame": 122737,
+          "end_frame": 126377,
+          "annotation_count": 4,
+          "start_seconds": 739.3795180722891,
+          "end_seconds": 761.3072289156627
+        },
+        {
+          "run_number": 19,
+          "female_geometry_id": "ID_1",
+          "start_frame": 127048,
+          "end_frame": 130760,
+          "annotation_count": 5,
+          "start_seconds": 765.3493975903615,
+          "end_seconds": 787.710843373494
+        },
+        {
+          "run_number": 20,
+          "female_geometry_id": "ID_2",
+          "start_frame": 138892,
+          "end_frame": 177242,
+          "annotation_count": 33,
+          "start_seconds": 836.6987951807229,
+          "end_seconds": 1067.7228915662652
+        },
+        {
+          "run_number": 21,
+          "female_geometry_id": "ID_1",
+          "start_frame": 179435,
+          "end_frame": 212276,
+          "annotation_count": 30,
+          "start_seconds": 1080.933734939759,
+          "end_seconds": 1278.7710843373493
+        },
+        {
+          "run_number": 22,
+          "female_geometry_id": "ID_2",
+          "start_frame": 213061,
+          "end_frame": 213061,
+          "annotation_count": 1,
+          "start_seconds": 1283.5,
+          "end_seconds": 1283.5
+        },
+        {
+          "run_number": 23,
+          "female_geometry_id": "ID_1",
+          "start_frame": 213866,
+          "end_frame": 257510,
+          "annotation_count": 36,
+          "start_seconds": 1288.3493975903614,
+          "end_seconds": 1551.2650602409635
+        },
+        {
+          "run_number": 24,
+          "female_geometry_id": "ID_2",
+          "start_frame": 258537,
+          "end_frame": 275099,
+          "annotation_count": 12,
+          "start_seconds": 1557.4518072289156,
+          "end_seconds": 1657.2228915662652
+        },
+        {
+          "run_number": 25,
+          "female_geometry_id": "ID_1",
+          "start_frame": 275753,
+          "end_frame": 319590,
+          "annotation_count": 39,
+          "start_seconds": 1661.1626506024097,
+          "end_seconds": 1925.2409638554216
+        },
+        {
+          "run_number": 26,
+          "female_geometry_id": "ID_2",
+          "start_frame": 320304,
+          "end_frame": 320304,
+          "annotation_count": 1,
+          "start_seconds": 1929.5421686746988,
+          "end_seconds": 1929.5421686746988
+        },
+        {
+          "run_number": 27,
+          "female_geometry_id": "ID_3",
+          "start_frame": 321054,
+          "end_frame": 348388,
+          "annotation_count": 18,
+          "start_seconds": 1934.0602409638557,
+          "end_seconds": 2098.722891566265
+        }
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": [
+    {
+      "id": "female_refractive_consistency_audit",
+      "label": "Female GT and round7 refractive-track audit",
+      "path": "report/20260716/female_sex_gt_consistency/female_track_consistency_analysis.py",
+      "query": {
+        "language": "python",
+        "description": "Deterministic frame/ID join, exact refractive reprojection, 8 mm tracklet reconstruction, sensitivity filtering, and sparse transition audit.",
+        "executed_at": "2026-07-16T10:52:35.828690+00:00",
+        "tables_used": [
+          "annotations/fish_sex_gt/20251225_K_1_2_FCMC/female_sex_gt.csv",
+          "OIST bucket/StephensU/medaka/reconstruction_3d/20251225_K_1_2_FCMC/round7_260704_refractive/round7_260704_refractive_3d.csv",
+          "annotations/fish_sex_gt/20251225_K_1_2_FCMC/clean_three_view_candidates_summary.json"
+        ],
+        "filters": [
+          {
+            "field": "gt_status/sex_label",
+            "value": "confirmed/F for identity metrics"
+          },
+          {
+            "field": "strict sensitivity",
+            "value": "two-view agreement and click/reprojection <=8 px"
+          }
+        ],
+        "metric_definitions": {
+          "best_fixed_geometry_id_accuracy": "Maximum annotation count for any one consensus geometry ID divided by confirmed annotations with a non-empty consensus geometry ID.",
+          "observed_id_switch_count": "Number of changes in consensus geometry ID between consecutive mapped annotations sorted by source frame; a lower bound because samples are sparse.",
+          "two_view_agreement": "Confirmed annotations where independently selected side-camera poses map to the same geometry ID divided by all confirmed annotations."
+        }
+      }
+    }
+  ]
+}

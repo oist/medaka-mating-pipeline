@@ -1,0 +1,5 @@
+bundle,cohort,runtime_seconds,objective,direct_rows,unresolved_intervals,outcome,evidence,runtime_scope
+1+3+4,32264-33263,19.83518069999991,1677.260984288198,2819,0,"reject/defer: overlap exercised; 113 restart segments; 6 tail-eligible edges, none selected",pair_item1_item4_overlap_32264_33263,fresh end-to-end overlap graph and restart solve
+1+3+4+5,72000-72309,8.187468499992974,44.37129530963059,930,0,defer: overlap exercised; tail has 0 eligible edges; global output identical,bundle_overlap_item1_3_4_graph_72000_72309; bundle_overlap_item1_3_4_5_global_72000_72309,fresh overlap graph plus separate global solver
+1+3+4+5+6,72000-72309,8.15859839998302,44.37129530963059,930,0,redundant: overlap exercised; global result/output identical; deferral is implementation no-op,bundle_overlap_item1_3_4_graph_72000_72309; bundle_overlap_item1_3_4_5_6_global_deferred_72000_72309,fresh overlap graph plus separate global/deferred solver
+1 only (full candidate),0-348599,575.5548323999974,,1030486,0,completed but scientifically rejected versus historical strict-mouth output,full_optimized_baseline_v2; final_full_quality_comparison,fresh end-to-end warm-cache full recording

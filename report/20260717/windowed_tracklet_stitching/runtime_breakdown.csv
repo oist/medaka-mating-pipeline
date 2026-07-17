@@ -1,0 +1,12 @@
+stage,cohort,wall_seconds,peak_rss_bytes,cpu_mean_percent,cpu_peak_percent,gpu_utilization,peak_vram_bytes,output_bytes,notes
+candidate_cache_side1_cam,0-348599 cold decode/write,105.80652790001477,,,,not sampled/cache I-O,0.0,31396657,e0d9231dde06df2230335d33b463559c7990476ffebfa44ff156c51298d6cf52
+candidate_cache_side2_cam,0-348599 cold decode/write,116.90826359999483,,,,not sampled/cache I-O,0.0,31524102,33445eb26f5aad5acc663fee38e4d686edb9702906afff0be3d7f38a745dafbf
+candidate_cache_top_cam,0-348599 cold decode/write,107.69390640000347,,,,not sampled/cache I-O,0.0,32014386,4d5628bb3cf8ba8d9039a99ba224b05f4dcdcde78e15998e74f530b64acadadd
+overlap_worker_sweep_1,32264-35364 warm local cache,58.07408540000324,272617472.0,97.72316602316602,113.4,not used,0.0,767632,identical output sha a6e85f...; pre-final compact-summary optimization
+overlap_worker_sweep_2,32264-35364 warm local cache,44.44403969999985,563064832.0,61.78121827411168,106.5,not used,0.0,767632,identical output sha a6e85f...; pre-final compact-summary optimization
+overlap_worker_sweep_4,32264-35364 warm local cache,39.540740900003584,939945984.0,71.52457142857143,218.5,not used,0.0,767632,identical output sha a6e85f...; pre-final compact-summary optimization
+overlap_worker_sweep_8,32264-35364 warm local cache,36.040341499989154,1483071488.0,76.03396226415093,106.5,not used,0.0,767632,identical output sha a6e85f...; pre-final compact-summary optimization
+overlap_worker_sweep_16,32264-35364 warm local cache,37.58488619999844,1481543680.0,76.31497005988022,106.5,not used,0.0,767632,identical output sha a6e85f...; pre-final compact-summary optimization
+full_optimized_baseline_v2,0-348599 warm local cache,575.5548323999974,3613310976.0,72.12056188925081,475.7,not used end-to-end,0.0,85984583,35 checkpoints; 618 aliases; 0 unresolved seams
+hardware_endpoint_cpu,"1,000,000 real endpoint pairs",0.07979070002329536,,,,not used,0.0,0,12532788.905 pairs/s
+hardware_endpoint_cuda_transfer_inclusive,"1,000,000 real endpoint pairs",0.008549600024707615,,,,timed synchronized CUDA; utilization/VRAM sampler unavailable,,0,max abs diff 1.78e-15

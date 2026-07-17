@@ -185,6 +185,7 @@ def run_reconstruction_from_slp(
     start_frame: int | None = None,
     end_frame: int | None = None,
     anchor_node: str | None = None,
+    require_anchor_node: bool = False,
     xyz_bounds: Tuple[float, float] | None = None,
     max_residual_per_fish: float | None = None,
     max_residual_px2: float | None = None,
@@ -220,6 +221,7 @@ def run_reconstruction_from_slp(
         start_frame=start_frame,
         end_frame=end_frame,
         anchor_node=anchor_node,
+        require_anchor_node=require_anchor_node,
     )
     if not points_by_frame:
         raise RuntimeError(
@@ -317,6 +319,8 @@ def run_reconstruction_from_slp(
                     Path(tracklet_path),
                     start_frame=frames[0],
                     end_frame=frames[-1],
+                    anchor_node=anchor_node,
+                    require_anchor_node=require_anchor_node,
                 )
                 meta_parts.append(meta)
                 slot_qc[view] = qc
@@ -1058,6 +1062,14 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--require-anchor-node",
+        action="store_true",
+        help=(
+            "Discard an instance when --anchor-node is not finite instead of "
+            "falling back to its other visible nodes."
+        ),
+    )
+    parser.add_argument(
         "--max-residual-px2",
         type=float,
         default=None,
@@ -1271,6 +1283,7 @@ def main(argv: list[str] | None = None) -> None:
         start_frame=args.start_frame,
         end_frame=args.end_frame,
         anchor_node=None if args.use_visible_node_centroid else args.anchor_node,
+        require_anchor_node=args.require_anchor_node,
         xyz_bounds=tuple(args.xyz_bounds) if args.xyz_bounds else None,
         max_residual_per_fish=args.max_residual_per_fish,
         max_residual_px2=args.max_residual_px2,
