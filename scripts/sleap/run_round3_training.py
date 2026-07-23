@@ -17,7 +17,8 @@ round-2 results that live in the same runs/ folder.
 Usage:
     python -m scripts.sleap.run_round3_training \\
         --round-dir "Z:/StephensU/medaka/sleap_models/retrain_20260508" \\
-        --round-tag "round3_260512"
+        --round-tag "round3_260512" \\
+        --centroid-anchor-policy strict
 """
 
 import argparse
@@ -44,15 +45,24 @@ def _count_labels(labels_slp: Path) -> int | None:
 
 
 def run_one(
-    *, config_path: Path, run_name: str, log_path: Path, dry_run: bool,
+    *,
+    config_path: Path,
+    run_name: str,
+    log_path: Path,
+    dry_run: bool,
+    centroid_anchor_policy: str | None = None,
 ) -> int:
     # Invoke the sleap_nn CLI module via the venv interpreter rather than the
     # `sleap-nn.exe` setuptools wrapper. On Windows with Application Control,
     # newly installed/updated wrappers can trip [WinError 4551] until the IT
     # policy catches up; the python -m form bypasses that since the venv's
     # python is already trusted.
+    if centroid_anchor_policy == "strict":
+        entrypoint = [str(Path(__file__).with_name("train_strict_anchor.py"))]
+    else:
+        entrypoint = ["-m", "sleap_nn.cli"]
     cmd = [
-        sys.executable, "-m", "sleap_nn.cli", "train",
+        sys.executable, *entrypoint, "train",
         "--config-name", config_path.name,
         "--config-dir", str(config_path.parent),
         f"trainer_config.run_name={run_name}",
@@ -62,6 +72,8 @@ def run_one(
     print(f"config     : {config_path}")
     print(f"run_name   : {run_name}")
     print(f"log        : {log_path}")
+    if centroid_anchor_policy is not None:
+        print(f"anchor policy: {centroid_anchor_policy}")
     print(f"command    : {' '.join(cmd)}")
     if dry_run:
         print("(dry-run; not launching)")
@@ -75,6 +87,8 @@ def run_one(
     env["PYTHONIOENCODING"] = "utf-8"
     with log_path.open("w", encoding="utf-8", errors="replace") as f:
         f.write(f"# {run_name}\n# cmd: {' '.join(cmd)}\n# started: {time.ctime()}\n\n")
+        if centroid_anchor_policy is not None:
+            f.write(f"# centroid_anchor_policy: {centroid_anchor_policy}\n")
         f.flush()
         # File redirect (NOT a pipe) so tqdm/progress lines don't deadlock.
         proc = subprocess.run(
@@ -100,6 +114,16 @@ def main(argv: list[str] | None = None) -> int:
                    help="Subset of model kinds to train (default: all).")
     p.add_argument("--views", nargs="+", default=None, choices=VIEWS,
                    help="Subset of views to train (default: all).")
+    p.add_argument(
+        "--centroid-anchor-policy",
+        choices=("strict", "sleap-fallback"),
+        default=None,
+        help=(
+            "Required when centroid is selected. 'strict' excludes frames with "
+            "a missing configured anchor and disables remaining-node fallback; "
+            "'sleap-fallback' explicitly uses upstream SLEAP-NN behavior."
+        ),
+    )
     args = p.parse_args(argv)
 
     if not args.round_dir.is_dir():
@@ -107,9 +131,16 @@ def main(argv: list[str] | None = None) -> int:
 
     views = list(args.views) if args.views else VIEWS
     kinds = list(args.kinds) if args.kinds else KINDS
+    if "centroid" in kinds and args.centroid_anchor_policy is None:
+        p.error(
+            "--centroid-anchor-policy is required when training centroid models; "
+            "use 'strict' for semantic anchors such as mouth"
+        )
     failures = []
     for view in views:
-        labels_slp = args.round_dir / view / "labels.pkg.slp"
+        labels_slp = args.round_dir / view / "train_labels.pkg.slp"
+        if not labels_slp.exists():
+            labels_slp = args.round_dir / view / "labels.pkg.slp"
         n = _count_labels(labels_slp) if labels_slp.exists() else None
         n_tag = n if n is not None else "X"
         for kind in kinds:
@@ -124,6 +155,9 @@ def main(argv: list[str] | None = None) -> int:
             rc = run_one(
                 config_path=cfg, run_name=run_name, log_path=log,
                 dry_run=args.dry_run,
+                centroid_anchor_policy=(
+                    args.centroid_anchor_policy if kind == "centroid" else None
+                ),
             )
             if rc != 0:
                 failures.append((view, kind, rc, log))

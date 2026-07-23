@@ -48,8 +48,10 @@ opencv-python>=4.11.0.86
 pillow>=10.0.0
 imageio-ffmpeg>=0.5.0
 
-# SLEAP tracking (including neural-network models)
-sleap[nn]>=1.5.2
+# Native PyTorch SLEAP training/inference and SLP I/O. Do not add the legacy
+# `sleap[nn]` meta-package: SLEAP 1.6.3 pins sleap-nn < 0.3.
+sleap-nn==0.3.0
+sleap-io>=0.8.0,<0.9.0
 
 # PyTorch (CUDA 13.0 on this machine, or CPU builds)
 # Windows/Linux CUDA 13.0: --index-url https://download.pytorch.org/whl/cu130
@@ -61,6 +63,3 @@ torchaudio>=2.6.0
 # Development and notebooks
 ipykernel>=7.1.0
 pytest>=7
-
-# Optional: add this if you only need to read/write SLEAP datasets
-# sleap-io

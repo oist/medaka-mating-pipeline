@@ -12,18 +12,18 @@ quality-control steps in a Windows / PowerShell environment.
 
 ## Environment
 
-Make sure SLEAP is installed in the environment you plan to use.
-
-Examples:
+Install the repository environment. It uses the native PyTorch SLEAP-NN 0.3
+stack directly; do not add the legacy `sleap[nn]` meta-package because it pins
+an older, incompatible SLEAP-NN release.
 
 ```powershell
-pip install "sleap[nn]"
+uv sync --all-extras
 ```
 
-or, if you prefer a tool install:
+For a standalone CLI that is separate from the repository environment:
 
 ```powershell
-uv tool install sleap-nn[torch] --torch-backend auto
+uv tool install "sleap-nn==0.3.0" --torch-backend auto
 ```
 
 ## Batch inference
@@ -185,3 +185,29 @@ are preserved, so untouched frames still contribute correct `mouth` labels.
 - `export_tracks.py`
 - `mine_training_frames.py`
 - `qc_tracks.py`
+
+## Strict semantic anchors for centroid training
+
+For a semantic centroid anchor such as `anchor_part: mouth`, launch training
+with an explicit policy:
+
+```powershell
+python -m scripts.sleap.run_round3_training `
+  --round-dir <round-dir> `
+  --round-tag <round-tag> `
+  --kinds centroid centered_instance `
+  --views top side `
+  --centroid-anchor-policy strict
+```
+
+`strict` excludes a centroid training or validation frame when any included
+instance lacks a finite configured anchor. It also disables SLEAP-NN's normal
+remaining-visible-node fallback inside that centroid process. This prevents a
+tail-only medaka instance from becoming a mouth-centroid target and avoids
+treating that incompletely labeled fish as dense background. Centered-instance
+training is unchanged. The chosen policy and exclusion counts are written to
+the run's `training_console.log`.
+
+The launcher requires `--centroid-anchor-policy` whenever centroid training is
+selected. Use `sleap-fallback` only when the upstream mean-of-visible-nodes
+behavior is intentional.

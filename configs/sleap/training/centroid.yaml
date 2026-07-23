@@ -173,5 +173,5 @@ trainer_config:
     match_threshold: 50.0
 name: ''
 description: ''
-sleap_nn_version: 0.2.0
+sleap_nn_version: 0.3.0
 filename: ''

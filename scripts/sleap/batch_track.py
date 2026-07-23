@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""
+r"""
 Batch SLEAP tracking.
 
 This helper:
@@ -159,7 +159,7 @@ def run_sleap_tracking(
     output_path: Path,
     max_instances: int = 3,
     frames: str | None = None,
-    device: str = "gpu",
+    device: str = "auto",
     progress_callback: Callable[[int, int], None] | None = None,
 ) -> None:
     """
@@ -190,10 +190,17 @@ def run_sleap_tracking(
     if device:
         cmd_args.extend(["--device", device])
 
-    if shutil.which("sleap") is not None:
-        cmd = _sleap_cmd("sleap", ["track"] + cmd_args)
-    else:
-        cmd = _sleap_cmd("sleap-nn-track", cmd_args)
+    sleap_nn_exe = shutil.which("sleap-nn")
+    if sleap_nn_exe is None:
+        adjacent_exe = Path(sys.executable).with_name("sleap-nn.exe")
+        if adjacent_exe.exists():
+            sleap_nn_exe = str(adjacent_exe)
+    if sleap_nn_exe is None:
+        raise RuntimeError(
+            "Could not find the sleap-nn CLI. Install the project environment "
+            "with `uv sync --extra sleap`."
+        )
+    cmd = [sleap_nn_exe, "track", *cmd_args]
 
     print("\nRunning tracking command:")
     print(f"  {' '.join(cmd)}")
@@ -248,7 +255,7 @@ def run_sleap_tracking(
                 f"\n\nIf you encounter GPU-related errors such as "
                 f"'don't know how to restore data location', try:"
                 f"\n  1. upgrading PyTorch: pip install --upgrade torch"
-                f"\n  2. using --device first-gpu instead of --device gpu"
+                f"\n  2. using --device cuda instead of --device auto"
                 f"\n  3. using --device cpu as a fallback"
                 f"\n  4. checking CUDA compatibility: python -c \"import torch; print(torch.version.cuda)\""
                 f"\n  5. re-saving the model if it was trained on a different GPU setup"
@@ -331,9 +338,9 @@ def main() -> None:
     )
     parser.add_argument(
         "--device",
-        default="gpu",
-        choices=["cpu", "gpu", "first-gpu", "last-gpu"],
-        help="Compute device to use (default: gpu).",
+        default="auto",
+        choices=["auto", "cpu", "cuda", "cuda:0", "mps"],
+        help="Compute device to use (default: auto).",
     )
 
     args = parser.parse_args()

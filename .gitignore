@@ -56,6 +56,9 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 /.pytest_tmp*/
+/.codex-audit/
+/.publish-test-tmp-*/
+report/.pytest_tmp*/
 cover/
 
 # Translations
@@ -266,5 +269,7 @@ report/20260717/windowed_tracklet_stitching/pytest_tmp/
 report/20260717/windowed_tracklet_stitching/quality_*/
 report/20260717/windowed_tracklet_stitching/smoke_*/
 report/20260717/windowed_tracklet_stitching/worker_bench/
+# Regenerable compact contact-review caches (candidate CSV/JSON stays inspectable).
+annotations/contact_episode_gt/**/ifd_cache/
 # JS tooling deps that leak into report dirs
 node_modules/

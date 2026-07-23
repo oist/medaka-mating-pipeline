@@ -20,12 +20,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 try:
-    import sleap  # type: ignore[import]
+    import sleap_io as sio  # type: ignore[import]
 except ImportError as e:  # noqa: BLE001
     raise SystemExit(
-        "Could not import the sleap package. Install SLEAP in the current "
-        "environment first, for example with:\n"
-        "  pip install 'sleap[nn]'"
+        "Could not import sleap-io. Install the project environment first, "
+        "for example with:\n"
+        "  uv sync --extra sleap"
     ) from e
 
 
@@ -33,46 +33,13 @@ def load_slp_data(slp_path: Path) -> pd.DataFrame:
     """Load instance-level data from a `.slp` file into a DataFrame."""
     print(f"Loading SLEAP file: {slp_path}")
 
-    labels = None
-
-    # Method 1: sleap.io.dataset.Labels.load_file (SLEAP 1.5+)
     try:
-        from sleap.io.dataset import Labels  # type: ignore[import]
-
-        labels = Labels.load_file(str(slp_path))  # type: ignore[attr-defined]
-    except (ImportError, AttributeError):
-        pass
-
-    # Method 2: sleap.load_file (older versions)
-    if labels is None:
-        try:
-            labels = sleap.load_file(str(slp_path))  # type: ignore[attr-defined]
-        except AttributeError:
-            pass
-
-    # Method 3: sleap.Labels.load_file (alternate import style)
-    if labels is None:
-        try:
-            labels = sleap.Labels.load_file(str(slp_path))  # type: ignore[attr-defined]
-        except (AttributeError, TypeError):
-            pass
-
-    # Method 4: sleap_io if installed
-    if labels is None:
-        try:
-            import sleap_io as sio  # type: ignore[import]
-
-            labels = sio.load_slp(str(slp_path))  # type: ignore[attr-defined]
-        except ImportError:
-            pass
-
-    if labels is None:
+        labels = sio.load_slp(slp_path)
+    except Exception as error:  # noqa: BLE001
         raise SystemExit(
-            "Failed to load SLEAP file. Please check:\n"
-            "1. SLEAP is correctly installed\n"
-            "2. File path is correct\n"
-            "3. File format is valid"
-        )
+            f"Failed to load SLEAP file: {slp_path}\n"
+            f"Error: {type(error).__name__}: {error}"
+        ) from error
 
     rows: list[dict] = []
 

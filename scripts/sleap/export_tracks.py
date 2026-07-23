@@ -3,14 +3,15 @@ from __future__ import annotations
 import argparse
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pandas as pd
 
 try:
-    import sleap  # type: ignore[import]
+    import sleap_io as sio  # type: ignore[import]
 except ImportError:
-    sleap = None  # type: ignore[assignment]
+    sio = None  # type: ignore[assignment]
 
 
 def _run(cmd: list[str]) -> None:
@@ -18,10 +19,32 @@ def _run(cmd: list[str]) -> None:
 
 
 def _sleap_cmd(exe: str, args: list[str]) -> list[str]:
-    """Use the executable from PATH if present; otherwise return `[exe, *args]`."""
-    if shutil.which(exe) is not None:
-        return [exe, *args]
+    """Resolve a CLI from PATH or next to the active Python interpreter."""
+    resolved = shutil.which(exe)
+    if resolved is not None:
+        return [resolved, *args]
+    adjacent_exe = Path(sys.executable).with_name(f"{exe}.exe")
+    if adjacent_exe.exists():
+        return [str(adjacent_exe), *args]
     return [exe, *args]
+
+
+def _load_slp(slp_path: Path):
+    """Load an SLP file with the native SLEAP-NN I/O package."""
+    if sio is None:
+        raise SystemExit(
+            "Cannot import sleap-io. Install the project environment first, e.g.:\n"
+            "  uv sync --extra sleap"
+        )
+
+    try:
+        return sio.load_slp(slp_path)
+    except Exception as error:  # noqa: BLE001
+        raise SystemExit(
+            f"Failed to load SLEAP file: {slp_path}\n"
+            f"Error: {type(error).__name__}: {error}\n"
+            "Please check that the path exists and the SLP file is valid."
+        ) from error
 
 
 def extract_video_and_model_info(slp_path: Path):
@@ -32,44 +55,7 @@ def extract_video_and_model_info(slp_path: Path):
     - `video_name`: source video filename without extension
     - `model_name`: inferred model name, usually from the parent directory
     """
-    if sleap is None:
-        raise SystemExit(
-            "Cannot import sleap package. Please install SLEAP first, e.g.:\n"
-            "pip install sleap or conda install -c conda-forge sleap"
-        )
-
-    labels = None
-    last_error = None
-
-    try:
-        from sleap.io.dataset import Labels  # type: ignore[import]
-        labels = Labels.load_file(str(slp_path))  # type: ignore[attr-defined]
-    except Exception as e:  # noqa: BLE001
-        last_error = e
-        try:
-            labels = sleap.load_file(str(slp_path))  # type: ignore[attr-defined]
-        except Exception as e2:  # noqa: BLE001
-            last_error = e2
-            try:
-                labels = sleap.Labels.load_file(str(slp_path))  # type: ignore[attr-defined]
-            except Exception as e3:  # noqa: BLE001
-                last_error = e3
-                try:
-                    import sleap_io as sio  # type: ignore[import]
-                    labels = sio.load_slp(str(slp_path))  # type: ignore[attr-defined]
-                except Exception:  # noqa: BLE001
-                    pass
-
-    if labels is None:
-        error_msg = (
-            f"Failed to load SLEAP file: {slp_path}\n"
-            f"Error: {type(last_error).__name__}: {last_error}\n"
-            "Please check:\n"
-            "1. SLEAP is correctly installed\n"
-            "2. File path is correct\n"
-            "3. File format is valid"
-        )
-        raise SystemExit(error_msg)
+    labels = _load_slp(slp_path)
 
     video_name = None
     if hasattr(labels, "videos") and len(labels.videos) > 0:
@@ -86,46 +72,8 @@ def extract_video_and_model_info(slp_path: Path):
 
 def load_slp_data_all_tracks(slp_path: Path):
     """Export all tracks from a `.slp` file using stable track identifiers."""
-    if sleap is None:
-        raise SystemExit(
-            "Cannot import sleap package. Please install SLEAP first, e.g.:\n"
-            "pip install sleap or conda install -c conda-forge sleap"
-        )
-
     print(f"Loading SLEAP file: {slp_path}")
-
-    labels = None
-    last_error = None
-
-    try:
-        from sleap.io.dataset import Labels  # type: ignore[import]
-        labels = Labels.load_file(str(slp_path))  # type: ignore[attr-defined]
-    except Exception as e:  # noqa: BLE001
-        last_error = e
-        try:
-            labels = sleap.load_file(str(slp_path))  # type: ignore[attr-defined]
-        except Exception as e2:  # noqa: BLE001
-            last_error = e2
-            try:
-                labels = sleap.Labels.load_file(str(slp_path))  # type: ignore[attr-defined]
-            except Exception as e3:  # noqa: BLE001
-                last_error = e3
-                try:
-                    import sleap_io as sio  # type: ignore[import]
-                    labels = sio.load_slp(str(slp_path))  # type: ignore[attr-defined]
-                except Exception:  # noqa: BLE001
-                    pass
-
-    if labels is None:
-        error_msg = (
-            f"Failed to load SLEAP file: {slp_path}\n"
-            f"Error: {type(last_error).__name__}: {last_error}\n"
-            "Please check:\n"
-            "1. SLEAP is correctly installed\n"
-            "2. File path is correct\n"
-            "3. File format is valid"
-        )
-        raise SystemExit(error_msg)
+    labels = _load_slp(slp_path)
 
     label_tracks = getattr(labels, "tracks", None) or []
     try:
@@ -229,7 +177,7 @@ def load_slp_data_all_tracks(slp_path: Path):
 
 def load_analysis_h5_all_tracks(h5_path: Path) -> pd.DataFrame:
     """
-    Load all tracks from an analysis HDF5 exported by `sleap-convert` and
+    Load all tracks from an analysis HDF5 exported by `sleap-io export` and
     return them in long-table form with columns:
     `frame, track, node, x, y, score`.
     """
@@ -366,7 +314,7 @@ def load_analysis_h5_all_tracks(h5_path: Path) -> pd.DataFrame:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Export SLEAP predictions (.slp) to analysis-friendly formats via `sleap-convert`.\n"
+            "Export SLEAP predictions (.slp) with the native `sleap-io` CLI.\n"
             "For CSV with stable track identity matching the overlay video, use --all-tracks."
         )
     )
@@ -379,7 +327,10 @@ def main() -> None:
         "--format",
         default="analysis",
         choices=["analysis", "analysis.csv", "analysis.nix", "h5", "json", "slp"],
-        help="Output format passed to `sleap-convert --format`.",
+        help=(
+            "Output format. analysis/analysis.csv/h5 use `sleap-io export`; "
+            "slp uses `sleap-io convert`. Legacy JSON/NIX exports are unsupported."
+        ),
     )
     parser.add_argument(
         "--output",
@@ -447,13 +398,36 @@ def main() -> None:
     if args.output is None:
         raise SystemExit("--output is required unless you use CSV export with --all-tracks")
 
-    convert_args: list[str] = [str(input_path), "--format", args.format]
-    if args.output:
-        convert_args += ["--output", args.output]
-    if args.video:
-        convert_args += ["--video", args.video]
+    if args.format in {"json", "analysis.nix"}:
+        raise SystemExit(
+            f"Format {args.format!r} depended on the removed legacy `sleap-convert` "
+            "command. Use analysis.csv, analysis/h5, or slp instead."
+        )
 
-    _run(_sleap_cmd("sleap-convert", convert_args))
+    if args.format in {"analysis", "h5", "analysis.csv"}:
+        output_format = "csv" if args.format == "analysis.csv" else "h5"
+        export_args = [
+            "export",
+            str(input_path),
+            "--output",
+            args.output,
+            "--format",
+            output_format,
+        ]
+        if args.video:
+            export_args += ["--video", args.video]
+        _run(_sleap_cmd("sleap-io", export_args))
+        return
+
+    convert_args = [
+        "convert",
+        str(input_path),
+        "--output",
+        args.output,
+        "--to",
+        "slp",
+    ]
+    _run(_sleap_cmd("sleap-io", convert_args))
 
 
 if __name__ == "__main__":
