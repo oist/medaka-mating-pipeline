@@ -1,0 +1,91 @@
+{
+  "cache_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\runs\\round8_active_learning\\20251225_K_1_2_FCMC\\feature_cache",
+  "cache_version": 2,
+  "tracking_cache_hit": true,
+  "views": {
+    "top_cam": {
+      "cache_version": 2,
+      "source_slp": {
+        "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\top_cam.slp",
+        "size_bytes": 124847234,
+        "mtime_ns": 1783428122000000000
+      },
+      "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/top_cam/cam0_top.mp4",
+      "node_names": [
+        "mouth",
+        "tail"
+      ],
+      "n_frames": 348600,
+      "n_instances": 1030215,
+      "feature_config": {
+        "plausible_score": 0.2,
+        "low_score": 0.5,
+        "score_dispersion": 0.2,
+        "mouth_close_px": 25.0,
+        "association_gate_px": 80.0,
+        "association_margin_px": 15.0,
+        "nn_gate_px": 80.0,
+        "residual_floor_px": 15.0,
+        "residual_mad_multiplier": 6.0,
+        "residual_window_frames": 333
+      },
+      "extraction_backend": "validated_native_hdf5"
+    },
+    "side1_cam": {
+      "cache_version": 2,
+      "source_slp": {
+        "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side1_cam.slp",
+        "size_bytes": 124868626,
+        "mtime_ns": 1783428163000000000
+      },
+      "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/side1_cam/cam1_side.mp4",
+      "node_names": [
+        "mouth",
+        "tail"
+      ],
+      "n_frames": 348600,
+      "n_instances": 1030361,
+      "feature_config": {
+        "plausible_score": 0.2,
+        "low_score": 0.5,
+        "score_dispersion": 0.2,
+        "mouth_close_px": 25.0,
+        "association_gate_px": 80.0,
+        "association_margin_px": 15.0,
+        "nn_gate_px": 80.0,
+        "residual_floor_px": 15.0,
+        "residual_mad_multiplier": 6.0,
+        "residual_window_frames": 333
+      },
+      "extraction_backend": "validated_native_hdf5"
+    },
+    "side2_cam": {
+      "cache_version": 2,
+      "source_slp": {
+        "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side2_cam.slp",
+        "size_bytes": 125219974,
+        "mtime_ns": 1783428203000000000
+      },
+      "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/side2_cam/cam2_side.mp4",
+      "node_names": [
+        "mouth",
+        "tail"
+      ],
+      "n_frames": 348600,
+      "n_instances": 1033589,
+      "feature_config": {
+        "plausible_score": 0.2,
+        "low_score": 0.5,
+        "score_dispersion": 0.2,
+        "mouth_close_px": 25.0,
+        "association_gate_px": 80.0,
+        "association_margin_px": 15.0,
+        "nn_gate_px": 80.0,
+        "residual_floor_px": 15.0,
+        "residual_mad_multiplier": 6.0,
+        "residual_window_frames": 333
+      },
+      "extraction_backend": "validated_native_hdf5"
+    }
+  }
+}

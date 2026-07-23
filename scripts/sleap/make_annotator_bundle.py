@@ -13,11 +13,10 @@ everything the annotator needs:
       pyqt_multiview_annotator.py
       annotator_helpers.py            # local_paths + Calibration inlined
       calibration/
-        imCoords_to_XYZ.joblib
-        XYZ_to_imCoords.joblib
-        xy_yz_to_xz.joblib
-        xz_yz_to_xy.joblib
-        xz_xy_to_yz.joblib
+        cam0_bundle_refractive.json
+        cam1_bundle_refractive.json
+        cam2_bundle_refractive.json
+        calibration_manifest.json
       data/
         annotation_seed.pkg.slp       # input pkg.slp (full or quick)
       output/                         # default destination for saves
@@ -104,6 +103,7 @@ uv run python pyqt_multiview_annotator.py ^
     --in   "data\\annotation_seed.pkg.slp" ^
     --out  "output\\edits.pkg.slp" ^
     --paths-config paths.local.toml ^
+    --calibration-backend auto ^
     --min-views 1 ^
     %*
 endlocal
@@ -162,8 +162,11 @@ in the docked Help panel on the right.
 - `output/edits_full.pkg.slp` — written by **`Ctrl+Shift+S`** (fully
   self-contained, embeds every user-labeled frame). Use this when you're
   ready to send your work back.
-- `calibration/` — calibration models for cross-view prediction.
-  Don't edit.
+- `calibration/` — the fixed-interface refractive camera model used for
+  refraction-aware triangulation, synchronized navigation, cross-view matching,
+  and missing-view suggestions. The launcher uses `--calibration-backend auto`,
+  which prefers this model when its three camera JSON files are present.
+  Don't edit these files.
 
 ## When you're done
 
@@ -198,8 +201,9 @@ def _read(path: Path) -> str:
 
 
 def _build_helpers_module() -> str:
-    """Concatenate the contents of the two helper modules into a single
-    file the annotator can import. We keep their public APIs so the
+    """Concatenate local paths and both calibration modules into one file.
+    The annotator imports the resulting module directly. We keep the source
+    modules' public APIs so the
     annotator's existing ``from scripts.common.local_paths import ...``
     and ``from scripts.reconstruction_3d.calibration import Calibration``
     statements work after a small redirection at the top of the
@@ -214,9 +218,33 @@ def _build_helpers_module() -> str:
     the folder.
     """
     local_paths = _read(REPO_ROOT / "scripts" / "common" / "local_paths.py")
+    refractive_geometry = _read(
+        REPO_ROOT / "scripts" / "calibration" / "refractive_geometry.py"
+    )
     calibration = _read(
         REPO_ROOT / "scripts" / "reconstruction_3d" / "calibration.py"
     )
+
+    # A concatenated Python module may have only one future-import prologue.
+    # Strip the source-level copies and emit it once below. Calibration's
+    # package import is also unnecessary because refractive_geometry is
+    # inlined immediately before it.
+    future_line = "from __future__ import annotations\n"
+    local_paths = local_paths.replace(future_line, "")
+    refractive_geometry = refractive_geometry.replace(future_line, "")
+    calibration = calibration.replace(future_line, "")
+    refractive_import = """from scripts.calibration.refractive_geometry import (
+    DEFAULT_MAX_RAY_SYSTEM_CONDITION,
+    EPSILON,
+    FlatPortCamera,
+)
+"""
+    if refractive_import not in calibration:
+        raise RuntimeError(
+            "Couldn't find the refractive_geometry import in calibration.py. "
+            "Update make_annotator_bundle.py to match."
+        )
+    calibration = calibration.replace(refractive_import, "")
 
     # In the bundled layout the helper file is at the bundle root, so
     # parents[2] would point above it; patch to parent.
@@ -237,15 +265,21 @@ def _build_helpers_module() -> str:
         "\n"
         "Concatenated from:\n"
         "  - scripts/common/local_paths.py  (REPO_ROOT patched)\n"
+        "  - scripts/calibration/refractive_geometry.py\n"
         "  - scripts/reconstruction_3d/calibration.py\n"
         "\n"
         "Do not edit by hand. Regenerate via\n"
         "scripts/sleap/make_annotator_bundle.py.\n"
         '"""\n\n'
+        "from __future__ import annotations\n\n"
         "# ============================================================\n"
         "# local_paths.py\n"
         "# ============================================================\n\n"
         + local_paths_patched
+        + "\n\n# ============================================================\n"
+        "# refractive_geometry.py\n"
+        "# ============================================================\n\n"
+        + refractive_geometry
         + "\n\n# ============================================================\n"
         "# calibration.py\n"
         "# ============================================================\n\n"
@@ -278,13 +312,21 @@ def _patch_annotator_imports(src: str) -> str:
 # Calibration discovery
 # ---------------------------------------------------------------------------
 
-CALIBRATION_FILES = (
+POLYNOMIAL_CALIBRATION_FILES = (
     "imCoords_to_XYZ.joblib",
     "XYZ_to_imCoords.joblib",
     "xy_yz_to_xz.joblib",
     "xz_yz_to_xy.joblib",
     "xz_xy_to_yz.joblib",
 )
+
+REFRACTIVE_CALIBRATION_FILES = (
+    "cam0_bundle_refractive.json",
+    "cam1_bundle_refractive.json",
+    "cam2_bundle_refractive.json",
+)
+
+OPTIONAL_CALIBRATION_FILES = ("calibration_manifest.json",)
 
 
 def _resolve_calibration_dir(arg: str | None, paths_config: str | None) -> Path:
@@ -358,13 +400,30 @@ def build_bundle(
         shutil.copy2(seed, seed_dst)
     print(f"  seed -> {seed_dst}  ({seed_dst.stat().st_size / 1e6:.1f} MB)")
 
-    # 2. Calibration files.
-    for name in CALIBRATION_FILES:
+    # 2. Calibration files. A bundle may contain either backend or both;
+    # Calibration(..., backend="auto") deterministically prefers refractive.
+    polynomial_complete = all(
+        (calibration_dir / name).is_file() for name in POLYNOMIAL_CALIBRATION_FILES[:2]
+    )
+    refractive_complete = all(
+        (calibration_dir / name).is_file() for name in REFRACTIVE_CALIBRATION_FILES
+    )
+    if not polynomial_complete and not refractive_complete:
+        raise FileNotFoundError(
+            f"{calibration_dir} contains neither a complete refractive bundle "
+            "nor the required polynomial imCoords_to_XYZ/XYZ_to_imCoords models"
+        )
+    copied_calibration: list[str] = []
+    for name in (
+        *REFRACTIVE_CALIBRATION_FILES,
+        *OPTIONAL_CALIBRATION_FILES,
+        *POLYNOMIAL_CALIBRATION_FILES,
+    ):
         src = calibration_dir / name
-        if not src.exists():
-            print(f"  WARNING: calibration file missing: {src}  (skipping)")
+        if not src.is_file():
             continue
         shutil.copy2(src, out_dir / "calibration" / name)
+        copied_calibration.append(name)
         print(f"  copied calibration/{name}")
 
     # 3. Inlined helpers + patched annotator script.
@@ -396,6 +455,8 @@ def build_bundle(
 
     print()
     print(f"Bundle ready: {out_dir}")
+    selected = "refractive" if refractive_complete else "polynomial"
+    print(f"Calibration backend: {selected} ({', '.join(copied_calibration)})")
     print("Hand the whole folder to your colleague. They run `run.bat` "
           "(Windows) or `bash run.sh` (mac/linux).")
 
@@ -418,7 +479,10 @@ def main(argv: list[str] | None = None) -> None:
     )
     ap.add_argument(
         "--calibration-dir", default=None,
-        help="Override calibration model dir (containing the 5 .joblib files).",
+        help=(
+            "Override calibration model directory. It may contain the three "
+            "fixed-interface refractive JSONs or the historical joblib models."
+        ),
     )
     ap.add_argument(
         "--annotator-script",

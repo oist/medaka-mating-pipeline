@@ -1,0 +1,307 @@
+{
+  "workflow": "round8_active_learning",
+  "generated_at_utc": "2026-07-21T09:58:29.066290Z",
+  "experiment": "20251225_K_1_2_FCMC",
+  "random_seed": 20260721,
+  "source_paths": {
+    "round7_top_cam_slp": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\top_cam.slp",
+      "size_bytes": 124847234,
+      "mtime_ns": 1783428122000000000
+    },
+    "round7_side1_cam_slp": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side1_cam.slp",
+      "size_bytes": 124868626,
+      "mtime_ns": 1783428163000000000
+    },
+    "round7_side2_cam_slp": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side2_cam.slp",
+      "size_bytes": 125219974,
+      "mtime_ns": 1783428203000000000
+    },
+    "round7_top_labels": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260704\\top\\labels.pkg.slp",
+      "size_bytes": 2046192763,
+      "mtime_ns": 1783102869000000000
+    },
+    "round7_side_labels": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260704\\side\\labels.pkg.slp",
+      "size_bytes": 3095053668,
+      "mtime_ns": 1783103299000000000
+    },
+    "strict_mouth_3d": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260718\\k12_jump8_strict_mouth_rerun\\mouth_only_jump8_rerun_3d_aligned_to_historical_frame.csv",
+      "size_bytes": 77334289,
+      "mtime_ns": 1784319449213369600
+    },
+    "contact_ledger": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\annotations\\contact_episode_gt\\20251225_K_1_2_FCMC\\contact_episode_gt.csv",
+      "size_bytes": 231458,
+      "mtime_ns": 1784619800107954600
+    },
+    "contact_candidates": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\annotations\\contact_episode_gt\\20251225_K_1_2_FCMC\\contact_candidates_jump8.csv",
+      "size_bytes": 172769,
+      "mtime_ns": 1784616792929516400
+    },
+    "calibration_model_dir": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186"
+    }
+  },
+  "feature_config": {
+    "plausible_score": 0.2,
+    "low_score": 0.5,
+    "score_dispersion": 0.2,
+    "mouth_close_px": 25.0,
+    "association_gate_px": 80.0,
+    "association_margin_px": 15.0,
+    "nn_gate_px": 80.0,
+    "residual_floor_px": 15.0,
+    "residual_mad_multiplier": 6.0,
+    "residual_window_frames": 333
+  },
+  "selection_config": {
+    "random_seed": 20260721,
+    "time_bins": 30,
+    "min_spacing_frames": 20,
+    "event_merge_gap_frames": 166,
+    "contact_context_frames": 166,
+    "close_ifd_mm": 16.0,
+    "guard_band_frames": 166,
+    "sentinel_start": 96612,
+    "sentinel_end": 97802,
+    "holdout_frames": 60,
+    "train_frames": 300
+  },
+  "calibration": {
+    "backend": "refractive",
+    "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+    "model_files": {
+      "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+      "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+      "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+    },
+    "camera_order": [
+      "cam0",
+      "cam1",
+      "cam2"
+    ],
+    "two_view_method": "direct_refracted_ray_intersection",
+    "score_unit": "mm^2",
+    "default_score_profile": "production_fast",
+    "score_profiles": {
+      "production_fast": {
+        "unit": "mm^2",
+        "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+      },
+      "legacy_combined": {
+        "unit": "mm^2",
+        "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+      }
+    },
+    "ray_system_guard": {
+      "minimum_rank": 3,
+      "maximum_condition_number": 10000000000.0,
+      "failure_xyz": "NaN",
+      "failure_score": "infinity"
+    },
+    "requested_backend": "auto",
+    "resolved_backend": "refractive"
+  },
+  "contact_ledger": {
+    "rows_on_disk": 32,
+    "disk_schema_version": "1.1",
+    "in_memory_schema_version": "1.2",
+    "rewritten": false
+  },
+  "candidate_counts": {
+    "by_category": {
+      "manual_fp_or_fn": 38715,
+      "close_multi_view_ambiguity": 34118,
+      "close_single_view_ambiguity": 29466,
+      "isolated_xy_outlier": 15397,
+      "close_clean_control": 8526
+    },
+    "by_ambiguous_view_count": {
+      "0": 163225,
+      "1": 128564,
+      "2": 42084,
+      "3": 14727
+    },
+    "ambiguous_by_view": {
+      "top_cam": 70695,
+      "side1_cam": 93288,
+      "side2_cam": 92930
+    },
+    "probable_fn_by_view": {
+      "top_cam": 22939,
+      "side1_cam": 24934,
+      "side2_cam": 20628
+    },
+    "isolated_outlier_by_view": {
+      "top_cam": 11732,
+      "side1_cam": 8091,
+      "side2_cam": 8385
+    }
+  },
+  "quota_selection": {
+    "requested_quotas": {
+      "close_multi_view_ambiguity": 150,
+      "manual_fp_or_fn": 60,
+      "isolated_xy_outlier": 90,
+      "close_single_view_ambiguity": 30,
+      "close_clean_control": 30
+    },
+    "actual_category_counts": {
+      "close_multi_view_ambiguity": 150,
+      "isolated_xy_outlier": 90,
+      "manual_fp_or_fn": 60,
+      "close_single_view_ambiguity": 30,
+      "close_clean_control": 30
+    },
+    "initial_train_picks": {
+      "close_multi_view_ambiguity": 122,
+      "manual_fp_or_fn": 48,
+      "isolated_xy_outlier": 90,
+      "close_single_view_ambiguity": 10,
+      "close_clean_control": 30
+    },
+    "redistribution": [],
+    "spacing_relaxed_categories": [],
+    "manual_fp_source_frames": [
+      17850,
+      17853,
+      18082,
+      18083,
+      18084,
+      18085,
+      18094,
+      18095,
+      18096,
+      18097,
+      18098,
+      18099,
+      18100,
+      18101,
+      18109,
+      18110,
+      18111,
+      18113,
+      18337,
+      18338,
+      18339,
+      18395,
+      22846,
+      26430,
+      26511,
+      30069,
+      30075,
+      30076,
+      30077,
+      30079
+    ],
+    "manual_fp_missing_from_selection": []
+  },
+  "selection_counts": {
+    "total": 360,
+    "by_category": {
+      "close_multi_view_ambiguity": 150,
+      "isolated_xy_outlier": 90,
+      "manual_fp_or_fn": 60,
+      "close_single_view_ambiguity": 30,
+      "close_clean_control": 30
+    },
+    "by_split": {
+      "train": 300,
+      "holdout": 60
+    },
+    "by_batch_split": {
+      "expansion|holdout": 40,
+      "expansion|train": 200,
+      "pilot|holdout": 20,
+      "pilot|train": 100
+    }
+  },
+  "manual_fp_coverage": {
+    "source_frame_count": 30,
+    "source_frames": [
+      17850,
+      17853,
+      18082,
+      18083,
+      18084,
+      18085,
+      18094,
+      18095,
+      18096,
+      18097,
+      18098,
+      18099,
+      18100,
+      18101,
+      18109,
+      18110,
+      18111,
+      18113,
+      18337,
+      18338,
+      18339,
+      18395,
+      22846,
+      26430,
+      26511,
+      30069,
+      30075,
+      30076,
+      30077,
+      30079
+    ],
+    "represented_count": 30,
+    "excluded_frames": []
+  },
+  "existing_label_overlap": {
+    "selected_source_frames_with_any_overlap": 5,
+    "selected_source_frames_without_overlap": 355,
+    "by_views": {
+      "top_cam;side1_cam;side2_cam": 5
+    }
+  },
+  "leakage_checks": {
+    "train_count": 300,
+    "holdout_count": 60,
+    "shared_event_groups": [],
+    "guard_band_frames": 166,
+    "guard_band_violations": [],
+    "passed": true
+  },
+  "contact_event_count": 230,
+  "artifacts": {
+    "selection_360": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260721\\round8_active_learning\\selection_360.csv",
+    "pilot_120": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260721\\round8_active_learning\\pilot_120.csv",
+    "expansion_240": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260721\\round8_active_learning\\expansion_240.csv",
+    "feature_cache_provenance": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260721\\round8_active_learning\\feature_cache_provenance.json",
+    "large_cache_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\runs\\round8_active_learning\\20251225_K_1_2_FCMC\\feature_cache",
+    "seed_output_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\runs\\round8_active_learning\\20251225_K_1_2_FCMC"
+  },
+  "seed_outputs": {
+    "pilot": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\runs\\round8_active_learning\\20251225_K_1_2_FCMC\\pilot_120_seed.pkg.slp",
+      "size_bytes": 473669267,
+      "validation": {
+        "source_frame_count": 120,
+        "labeled_frame_count": 360,
+        "view_image_count": 360,
+        "empty_labeled_frames": 0,
+        "instance_count": 1106,
+        "complete_instances": 927,
+        "partial_instances": 179,
+        "node_names": [
+          "mouth",
+          "tail"
+        ],
+        "suggestion_order_matches_manifest": true
+      },
+      "reused_existing_seed": true
+    }
+  }
+}

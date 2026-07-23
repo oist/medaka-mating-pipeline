@@ -79,6 +79,74 @@ FISH_COLORS: Dict[int, Tuple[int, int, int]] = {
 }
 FALLBACK_COLOR = (170, 170, 170)
 
+# Visual radius of the mouth/tail circles in image pixels. Keep Large at the
+# historical 8 px so existing users see no change until they choose a smaller
+# option from the toolbar.
+KEYPOINT_SIZE_RADII_PX: Dict[str, float] = {
+    "Small": 4.0,
+    "Medium": 6.0,
+    "Large": 8.0,
+}
+DEFAULT_KEYPOINT_SIZE = "Large"
+
+
+def keypoint_radius(size_name: str) -> float:
+    """Return the configured keypoint-circle radius in image pixels."""
+    try:
+        return KEYPOINT_SIZE_RADII_PX[size_name]
+    except KeyError as exc:
+        choices = ", ".join(KEYPOINT_SIZE_RADII_PX)
+        raise ValueError(
+            f"Unknown keypoint size {size_name!r}; choose one of: {choices}"
+        ) from exc
+
+
+def instance_fit_zoom(
+    points_by_view: Dict[str, List[Tuple[float, float]]],
+    focus_by_view: Dict[str, Tuple[float, float]],
+    viewport_sizes: Dict[str, Tuple[int, int]],
+    *,
+    display_margin_px: float = 32.0,
+    minimum_scene_span_px: float = 160.0,
+) -> Optional[float]:
+    """Return one zoom that fits every labeled point in its camera pane.
+
+    The panes share a zoom, so the tightest horizontal or vertical constraint
+    across all populated views wins. ``minimum_scene_span_px`` leaves useful
+    image context when a frame contains only one point or a very small fish.
+    """
+    candidates: List[float] = []
+    for view in VIEWS:
+        raw_points = points_by_view.get(view, [])
+        if not raw_points or view not in focus_by_view:
+            continue
+        points = np.asarray(raw_points, dtype=float).reshape(-1, 2)
+        points = points[np.all(np.isfinite(points), axis=1)]
+        focus = np.asarray(focus_by_view[view], dtype=float)
+        if not len(points) or focus.shape != (2,) or not np.all(np.isfinite(focus)):
+            continue
+
+        viewport_w, viewport_h = viewport_sizes.get(view, (0, 0))
+        usable_w = max(1.0, float(viewport_w) - 2.0 * display_margin_px)
+        usable_h = max(1.0, float(viewport_h) - 2.0 * display_margin_px)
+        max_dx = float(np.max(np.abs(points[:, 0] - focus[0])))
+        max_dy = float(np.max(np.abs(points[:, 1] - focus[1])))
+        scene_w = max(minimum_scene_span_px, 2.0 * max_dx)
+        scene_h = max(minimum_scene_span_px, 2.0 * max_dy)
+        candidates.extend((usable_w / scene_w, usable_h / scene_h))
+
+    if not candidates:
+        return None
+    return float(np.clip(min(candidates), 0.05, 8.0))
+
+
+def full_save_path(output_path: Path) -> Path:
+    """Return the documented portable-save name for a quick-save path."""
+    name = output_path.name
+    if name.lower().endswith(".pkg.slp"):
+        return output_path.with_name(name[: -len(".pkg.slp")] + "_full.pkg.slp")
+    return output_path.with_name(output_path.stem + "_full" + output_path.suffix)
+
 
 # ---------------------------------------------------------------------------
 # Data model — kept small and reused by the napari prototype too.
@@ -244,42 +312,47 @@ def predict_missing_view(
     cal: Calibration,
     pts_by_view: Dict[str, Optional[Tuple[float, float]]],
 ) -> Dict[str, Optional[Tuple[float, float]]]:
+    """Project a missing view from the two observed views.
+
+    This uses the public calibration API so it works for both the historical
+    polynomial model (which completes the missing view with its helper model)
+    and the fixed-interface refractive model (which intersects the two water
+    rays directly). The returned point is editable annotation assistance, not
+    a user-verified label.
+    """
     out = dict(pts_by_view)
     have = [v for v in VIEWS if pts_by_view[v] is not None]
     if len(have) != 2:
         return out
     missing = [v for v in VIEWS if v not in have][0]
-    p_top = pts_by_view["top_cam"]
-    p_s1 = pts_by_view["side1_cam"]
-    p_s2 = pts_by_view["side2_cam"]
+    triplet = np.full((3, 2), np.nan, dtype=float)
+    for view in have:
+        triplet[VIEW_INDEX[view]] = np.asarray(pts_by_view[view], dtype=float)
     try:
-        if missing == "top_cam":
-            arr = cal.compute_XY_imcoords_from_XZ_YZ(np.array(p_s1), np.array(p_s2))
-        elif missing == "side1_cam":
-            arr = cal.compute_XZ_imcoords_from_XY_YZ(np.array(p_top), np.array(p_s2))
-        else:
-            arr = cal.compute_YZ_imcoords_from_XZ_XY(np.array(p_s1), np.array(p_top))
-    except RuntimeError:
+        xyz = np.asarray(cal.triangulate(triplet), dtype=float)
+        if xyz.shape != (3,) or not np.all(np.isfinite(xyz)):
+            return out
+        projected = np.asarray(cal.project_world(xyz), dtype=float)
+        arr = projected[VIEW_INDEX[missing]]
+        if arr.shape != (2,) or not np.all(np.isfinite(arr)):
+            return out
+    except (RuntimeError, ValueError, np.linalg.LinAlgError):
         return out
     out[missing] = (float(arr[0]), float(arr[1]))
     return out
 
 
 def triangulate_xyz(cal: Calibration, pts: Dict[str, Tuple[float, float]]) -> np.ndarray:
-    """All three views must be populated. Returns 3D coords in mm."""
+    """Triangulate populated views and return 3D coordinates in millimetres."""
     triplet = np.array([list(pts[v]) for v in VIEWS], dtype=float)
-    return cal.compute_XYZ_from_imageCoord_triplet(triplet)
+    return np.asarray(cal.triangulate(triplet), dtype=float)
 
 
 def reproject_xyz(cal: Calibration, xyz: np.ndarray) -> Dict[str, Tuple[float, float]]:
-    """3D point -> 2D in each view via XYZ_to_imCoords."""
-    if cal._model_xyz2im is None:
-        raise RuntimeError("Calibration lacks XYZ_to_imCoords.joblib.")
-    out = cal._model_xyz2im.predict(np.asarray(xyz, dtype=float).reshape(1, -1))
-    if out.ndim == 2 and out.size == 6:
-        out = out.reshape(3, 2)
-    else:
-        out = np.asarray(out).reshape(-1, 3, 2)[0]
+    """Project a 3D point into each view through the selected backend."""
+    out = np.asarray(cal.project_world(np.asarray(xyz, dtype=float)), dtype=float)
+    if out.shape != (3, 2) or not np.all(np.isfinite(out)):
+        raise RuntimeError("Calibration returned invalid three-view projections.")
     return {v: (float(out[VIEW_INDEX[v], 0]), float(out[VIEW_INDEX[v], 1])) for v in VIEWS}
 
 
@@ -1009,6 +1082,7 @@ class MultiviewWindow:
         # Tank center as initial focus (mm).
         self.focus_xyz: np.ndarray = np.array([100.0, 100.0, 100.0])
         self.zoom: float = 0.5  # display pixels per image pixel
+        self.keypoint_size: str = DEFAULT_KEYPOINT_SIZE
         # State machine for instance entry: None | "place_mouth" | "place_tail"
         self.add_mode: Optional[str] = None
         self.pending_view: Optional[str] = None
@@ -1162,9 +1236,31 @@ class MultiviewWindow:
         layout.addWidget(zoom_out_btn)
 
         zoom_fit_btn = QtWidgets.QToolButton()
-        zoom_fit_btn.setText("Fit (0)")
+        zoom_fit_btn.setText("Fit view (0)")
         zoom_fit_btn.clicked.connect(self.fit_zoom)
         layout.addWidget(zoom_fit_btn)
+
+        fit_instances_btn = QtWidgets.QToolButton()
+        fit_instances_btn.setText("Fit instances (Ctrl+0)")
+        fit_instances_btn.setToolTip(
+            "Center and zoom all three views to the current frame's fish."
+        )
+        fit_instances_btn.clicked.connect(self.fit_instances)
+        layout.addWidget(fit_instances_btn)
+
+        keypoint_size_label = QtWidgets.QLabel("Keypoints:")
+        layout.addWidget(keypoint_size_label)
+
+        self.keypoint_size_combo = QtWidgets.QComboBox()
+        self.keypoint_size_combo.addItems(list(KEYPOINT_SIZE_RADII_PX))
+        self.keypoint_size_combo.setCurrentText(self.keypoint_size)
+        self.keypoint_size_combo.setToolTip(
+            "Change the mouth/tail circle size in all three views."
+        )
+        self.keypoint_size_combo.currentTextChanged.connect(
+            self.set_keypoint_size
+        )
+        layout.addWidget(self.keypoint_size_combo)
 
         layout.addStretch(1)
 
@@ -1198,10 +1294,18 @@ class MultiviewWindow:
         self._make_shortcut("+", lambda: self.bump_zoom(1.25))
         self._make_shortcut("-", lambda: self.bump_zoom(0.8))
         self._make_shortcut("0", self.fit_zoom)
+        self._make_shortcut("Ctrl+0", self.fit_instances)
         self._make_shortcut("Ctrl+S", self.save)
         self._make_shortcut("Ctrl+Shift+S", self.save_full)
         self._make_shortcut("Escape", self.cancel_add)
         self._make_shortcut("F", self.fill_missing_views)
+
+    def set_keypoint_size(self, size_name: str) -> None:
+        """Apply a toolbar-selected marker size without altering labels."""
+        keypoint_radius(size_name)  # Validate before changing GUI state.
+        self.keypoint_size = size_name
+        self._draw_keypoints()
+        self.status.showMessage(f"Keypoint circles: {size_name}.", 2500)
 
     def _make_shortcut(self, key, handler):
         QtCore, QtGui, QtWidgets = _qt()
@@ -1236,7 +1340,10 @@ class MultiviewWindow:
             "delete-this-keypoint, delete-this-instance, "
             "delete-fish-across-all-views.<br><br>"
             "<b>Frame nav</b>: <kbd>←</kbd> prev, <kbd>→</kbd> next.<br>"
-            "<b>Zoom</b>: <kbd>=</kbd>/<kbd>-</kbd>/<kbd>0</kbd>.<br>"
+            "<b>Zoom</b>: <kbd>=</kbd>/<kbd>-</kbd>; <kbd>0</kbd> fits the "
+            "view and <kbd>Ctrl+0</kbd> fits all current instances.<br>"
+            "<b>Keypoints</b>: choose Small, Medium, or Large in the toolbar "
+            "to change the mouth/tail circle size in all three views.<br>"
             "<b>Save</b>: <kbd>Ctrl+S</kbd> = quick save (references seed). "
             "<kbd>Ctrl+Shift+S</kbd> = full save with embedded frames "
             "(<code>&lt;out&gt;_full.pkg.slp</code>) — for sharing.<br>"
@@ -1345,6 +1452,86 @@ class MultiviewWindow:
             avail.append(min(r.width(), r.height()))
         target_disp_px = max(200, min(avail) - 40)
         self.zoom = float(target_disp_px / 1200.0)
+        self._sync_views()
+        self._update_status()
+
+    def fit_instances(self):
+        """Center and zoom the synchronized panes around current instances."""
+        if self.cur_group is None or not self.panes:
+            return
+
+        points_by_view: Dict[str, List[Tuple[float, float]]] = {
+            view: [] for view in VIEWS
+        }
+        for fk in self.cur_group.fish:
+            for keypoints in (fk.mouth, fk.tail):
+                for view in VIEWS:
+                    point = keypoints.get(view)
+                    if point is None:
+                        continue
+                    xy = np.asarray(point, dtype=float)
+                    if xy.shape == (2,) and np.all(np.isfinite(xy)):
+                        points_by_view[view].append((float(xy[0]), float(xy[1])))
+
+        populated_views = [view for view in VIEWS if points_by_view[view]]
+        if not populated_views:
+            self.status.showMessage("No instances on this frame to fit.", 3000)
+            return
+
+        # A bounding-box midpoint is preferable to the arithmetic mean here:
+        # it gives equal room to the outermost fish. Triangulating those view
+        # centers produces one physically consistent focus for the synced panes.
+        centers: Dict[str, Tuple[float, float]] = {}
+        for view in populated_views:
+            points = np.asarray(points_by_view[view], dtype=float)
+            center = (np.min(points, axis=0) + np.max(points, axis=0)) / 2.0
+            centers[view] = (float(center[0]), float(center[1]))
+
+        new_focus: Optional[np.ndarray] = None
+        if len(populated_views) >= 2:
+            observations = np.full((3, 2), np.nan, dtype=float)
+            for view, center in centers.items():
+                observations[VIEW_INDEX[view]] = center
+            try:
+                candidate = np.asarray(self.cal.triangulate(observations), dtype=float)
+                if candidate.shape == (3,) and np.all(np.isfinite(candidate)):
+                    new_focus = candidate
+            except (RuntimeError, ValueError, np.linalg.LinAlgError):
+                pass
+
+        if new_focus is None:
+            # One-view frames (or calibrations without two-view support) can
+            # still center accurately in the most populated pane.
+            anchor = max(populated_views, key=lambda view: len(points_by_view[view]))
+            new_focus = back_project_view_click(
+                self.cal, anchor, centers[anchor], self.focus_xyz
+            )
+        self.focus_xyz = new_focus
+
+        projected = np.asarray(
+            self.cal.compute_imCoords_from_XYZ(self.focus_xyz.reshape(1, 3))[0],
+            dtype=float,
+        )
+        focus_by_view = {
+            view: (
+                float(projected[VIEW_INDEX[view], 0]),
+                float(projected[VIEW_INDEX[view], 1]),
+            )
+            for view in VIEWS
+        }
+        viewport_sizes = {
+            view: (
+                pane.view.viewport().size().width(),
+                pane.view.viewport().size().height(),
+            )
+            for view, pane in self.panes.items()
+        }
+        zoom = instance_fit_zoom(
+            points_by_view, focus_by_view, viewport_sizes
+        )
+        if zoom is None:
+            return
+        self.zoom = zoom
         self._sync_views()
         self._update_status()
 
@@ -1719,6 +1906,9 @@ class MultiviewWindow:
         if self.cur_group is None:
             return
 
+        marker_radius = keypoint_radius(self.keypoint_size)
+        halo_radius = marker_radius + 6.0
+
         # Pre-compute reprojection errors per fish/node for halo coloring.
         # Only when all 3 views are populated.
         errors_by_fnv: Dict[Tuple[int, str, str], float] = {}
@@ -1751,14 +1941,14 @@ class MultiviewWindow:
                     pane.add_halo(
                         m[0], m[1],
                         color_rgb=_error_color(err_m),
-                        radius=14.0,
+                        radius=halo_radius,
                     )
                 err_t = errors_by_fnv.get((fish_idx, "tail", view))
                 if err_t is not None and t is not None:
                     pane.add_halo(
                         t[0], t[1],
                         color_rgb=_error_color(err_t),
-                        radius=14.0,
+                        radius=halo_radius,
                     )
 
                 if m is not None:
@@ -1767,7 +1957,7 @@ class MultiviewWindow:
                     # don't visually compete with visible ones.
                     pane.add_draggable_keypoint(
                         m[0], m[1],
-                        color_rgb=color, radius=8.0,
+                        color_rgb=color, radius=marker_radius,
                         fill_alpha=110 if m_vis else 0,
                         view_name=view, fish_idx=fish_idx, node="mouth",
                         on_moved=self._on_keypoint_moved,
@@ -1786,7 +1976,7 @@ class MultiviewWindow:
                     # circle.
                     pane.add_draggable_keypoint(
                         t[0], t[1],
-                        color_rgb=color, radius=8.0,
+                        color_rgb=color, radius=marker_radius,
                         fill_alpha=0 if t_vis else 110,
                         view_name=view, fish_idx=fish_idx, node="tail",
                         on_moved=self._on_keypoint_moved,
@@ -1808,7 +1998,9 @@ class MultiviewWindow:
             ):
                 pane.add_keypoint(
                     self.pending_mouth[0], self.pending_mouth[1],
-                    color_rgb=(255, 255, 255), radius=10.0, filled=False,
+                    color_rgb=(255, 255, 255),
+                    radius=marker_radius + 2.0,
+                    filled=False,
                     label="(pending)",
                 )
 
@@ -2202,9 +2394,7 @@ class MultiviewWindow:
         Output path is the quick-save path with ``_full`` appended, so the
         quick-save file isn't clobbered.
         """
-        full_path = self.out_path.with_name(
-            self.out_path.stem + "_full" + self.out_path.suffix
-        )
+        full_path = full_save_path(self.out_path)
         # ``embed="user"`` only embeds frames of LFs that have at least
         # one Instance; with the expanded seed many of our LFs are
         # placeholder-empty for missing-view slots the user hasn't
@@ -2383,6 +2573,15 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--paths-config", default=None)
     ap.add_argument("--medaka-data-dir", default=None)
     ap.add_argument("--calibration-model-dir", default=None)
+    ap.add_argument(
+        "--calibration-backend",
+        choices=("auto", "refractive", "polynomial"),
+        default="auto",
+        help=(
+            "Calibration geometry. 'auto' prefers a complete refractive JSON "
+            "bundle and otherwise uses the historical polynomial joblibs."
+        ),
+    )
     ap.add_argument("--min-views", type=int, default=1)
     ap.add_argument(
         "--resume", type=Path, default=None,
@@ -2432,9 +2631,15 @@ def main(argv: list[str] | None = None) -> None:
             print(f"  WARNING: failed to load resume file: {exc!s}")
             print(f"  continuing with the seed only.")
 
-    cal = Calibration(str(calib_dir))
-    if cal._model_xyz2im is None:
-        ap.error("calibration must include XYZ_to_imCoords.joblib for synced views.")
+    cal = Calibration(str(calib_dir), backend=args.calibration_backend)
+    if not cal.capabilities.get("projection", False):
+        ap.error("calibration must support 3D-to-2D projection for synced views.")
+    if not cal.capabilities.get("two_view_triangulation", False):
+        ap.error("calibration must support two-view triangulation for missing-view assistance.")
+    print(
+        f"  calibration: {cal.backend_name} backend; "
+        f"score unit={cal.score_unit}; model={cal.model_folder}"
+    )
 
     groups = build_groups(labels)
     keys = filter_groups(groups, min_views=args.min_views)
