@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "purpose": "translate jump6 shift-to-positive output into the historical jump8 coordinate frame for fair reprojection comparison and rendering",
+  "reference_csv": "report\\20260716\\mouth_tracking_ablation\\full\\mouth_only_3d\\mouth_only_3d_3d.csv",
+  "source_csv": "report\\20260718\\k12_jump6_strict_mouth\\mouth_only_jump6_3d.csv",
+  "aligned_csv": "report\\20260718\\k12_jump6_strict_mouth\\mouth_only_jump6_3d_aligned_to_jump8.csv",
+  "all_three_direct_common_frames": 341127,
+  "subtract_from_jump6_xyz_mm": {
+    "X": 11.896649665798805,
+    "Y": 16.786415525376626,
+    "Z": 11.879613228870923
+  },
+  "direct_centroid_delta_mad_mm": {
+    "X": 0.0,
+    "Y": 1.4210854715202004e-14,
+    "Z": 1.4210854715202004e-14
+  },
+  "direct_centroid_delta_abs_p99_mm": {
+    "X": 0.8424377918407694,
+    "Y": 0.22375228821135368,
+    "Z": 3.4504470796801354
+  }
+}

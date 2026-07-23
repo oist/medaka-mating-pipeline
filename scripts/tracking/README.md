@@ -386,6 +386,7 @@ cost of conservative triplet vetoes.
 | `--motion-tangent-weight` | Soft direction-discontinuity cost (opt-in) | `0` |
 | `--motion-acceleration-weight` | Soft acceleration-discontinuity cost (opt-in) | `0` |
 | `--max-motion-gap-frames` | Disable motion priors, but not distance gating, across longer gaps | `20` |
+| `--motion-history-frames` | Robust velocity/tangent history; `2` is last-interval compatibility mode | `2` |
 | `--num-individuals` | Number of fish slots end-to-end | `3` |
 | `--start-frame / --end-frame` | Inclusive frame range | `171800 176799` |
 | `--first-frame-id-only` | Skip Hungarian NN; fix IDs from first valid frame only | — |

@@ -84,6 +84,39 @@ def test_flow_weight_penalizes_direction_reversal():
     ] == pytest.approx(0.0)
 
 
+def test_robust_motion_history_does_not_let_one_tangent_spike_define_velocity():
+    best = {
+        0: _frame(0),
+        1: _frame(1),
+        2: _frame(2),
+        3: _frame(1),  # one-frame reversed displacement / bad observation
+        4: _frame(2),
+    }
+
+    last_interval = apply_cross_frame_tracking(
+        best,
+        num_individuals=1,
+        flow_weight=1.0,
+        motion_history_frames=2,
+    )
+    robust = apply_cross_frame_tracking(
+        best,
+        num_individuals=1,
+        flow_weight=1.0,
+        motion_history_frames=5,
+    )
+
+    assert last_interval[4]["tracking_diagnostics"]["ID_1"][
+        "tangent_discontinuity"
+    ] == pytest.approx(2.0)
+    assert robust[4]["tracking_diagnostics"]["ID_1"][
+        "tangent_discontinuity"
+    ] == pytest.approx(0.0)
+    assert robust[4]["tracking_diagnostics"]["ID_1"][
+        "motion_history_observations"
+    ] == 4
+
+
 def test_acceleration_cost_uses_persistent_three_frame_state():
     best = {
         0: _frame(0, 10),
@@ -183,6 +216,8 @@ def test_reconstruction_cli_exposes_opt_in_motion_costs():
             "0.1",
             "--max-motion-gap-frames",
             "20",
+            "--motion-history-frames",
+            "7",
         ]
     )
 
@@ -194,6 +229,8 @@ def test_reconstruction_cli_exposes_opt_in_motion_costs():
     assert enabled.motion_acceleration_weight == pytest.approx(0.5)
     assert enabled.motion_uncertainty_growth_per_frame == pytest.approx(0.1)
     assert enabled.max_motion_gap_frames == 20
+    assert defaults.motion_history_frames == 2
+    assert enabled.motion_history_frames == 7
 
 
 def test_six_candidate_reconstruction_forwards_motion_costs(
@@ -244,7 +281,7 @@ def test_six_candidate_reconstruction_forwards_motion_costs(
         lambda *_args, **_kwargs: str(tmp_path / "out.csv"),
     )
 
-    reconstruction.run_reconstruction_from_slp(
+    result = reconstruction.run_reconstruction_from_slp(
         "example_experiment",
         slp_dir=tmp_path,
         model_folder=tmp_path,
@@ -259,6 +296,7 @@ def test_six_candidate_reconstruction_forwards_motion_costs(
         motion_acceleration_weight=0.5,
         motion_uncertainty_growth_per_frame=0.1,
         max_motion_gap_frames=20,
+        motion_history_frames=7,
         fill_missing=False,
         plot=False,
         save_best_json=False,
@@ -268,6 +306,10 @@ def test_six_candidate_reconstruction_forwards_motion_costs(
     assert calls["selector"]["points"] is points_by_frame
     assert calls["selector"]["num_individuals"] == 3
     assert calls["selector"]["num_candidates"] == 6
+    assert result["calibration"]["temporal_linking"]["motion_history_frames"] == 7
+    assert result["calibration"]["temporal_linking"][
+        "motion_tangent_weight"
+    ] == pytest.approx(2.5)
     assert calls["linker"] == {
         "best": selected,
         "num_individuals": 3,
@@ -279,6 +321,7 @@ def test_six_candidate_reconstruction_forwards_motion_costs(
         "acceleration_weight": 0.5,
         "motion_uncertainty_growth_per_frame": 0.1,
         "max_motion_gap_frames": 20,
+        "motion_history_frames": 7,
         "source_id_hints_by_frame": None,
         "source_hints_override_motion_gate": False,
     }

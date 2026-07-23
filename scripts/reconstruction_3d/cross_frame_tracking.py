@@ -9,7 +9,7 @@ Missing (`NaN`) points do not participate in the distance calculation.
   tangent, and acceleration continuity costs.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List
 
 import numpy as np
@@ -34,18 +34,58 @@ class _TrackState:
     velocity: np.ndarray | None = None
     acceleration: np.ndarray | None = None
     velocity_interval_frames: int | None = None
+    history_size: int = 2
+    history_frames: list[int] = field(default_factory=list)
+    history_positions: list[np.ndarray] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        if self.history_size < 2:
+            raise ValueError("history_size must be at least 2")
+        if not self.history_frames:
+            self.history_frames = [int(self.frame)]
+            self.history_positions = [self.position.copy()]
+
+    def _robust_history_velocity(self) -> np.ndarray | None:
+        """Estimate velocity from all recent pairs using a Theil-Sen median."""
+        if len(self.history_frames) < 2:
+            return None
+        slopes = []
+        for left in range(len(self.history_frames) - 1):
+            for right in range(left + 1, len(self.history_frames)):
+                gap = self.history_frames[right] - self.history_frames[left]
+                if gap <= 0:
+                    continue
+                slopes.append(
+                    (self.history_positions[right] - self.history_positions[left])
+                    / gap
+                )
+        if not slopes:
+            return None
+        return np.median(np.asarray(slopes, dtype=float), axis=0)
 
     def update(self, frame: int, position: np.ndarray) -> None:
         """Update state after the frame-wide assignment has been solved."""
         gap = max(1, int(frame - self.frame))
-        velocity = (position - self.position) / gap
+        interval_velocity = (position - self.position) / gap
+        previous_velocity = self.velocity
+        self.history_frames.append(int(frame))
+        self.history_positions.append(position.copy())
+        if len(self.history_frames) > self.history_size:
+            self.history_frames = self.history_frames[-self.history_size :]
+            self.history_positions = self.history_positions[-self.history_size :]
+        velocity = (
+            interval_velocity
+            if self.history_size == 2
+            else self._robust_history_velocity()
+        )
+        assert velocity is not None
         acceleration = None
-        if self.velocity is not None:
+        if previous_velocity is not None:
             # The velocities are interval averages. Their effective timestamps
             # lie at the interval midpoints, hence the mean interval below.
             previous_gap = self.velocity_interval_frames or 1
             midpoint_gap = max(_MOTION_EPS, 0.5 * (previous_gap + gap))
-            acceleration = (velocity - self.velocity) / midpoint_gap
+            acceleration = (velocity - previous_velocity) / midpoint_gap
 
         self.frame = int(frame)
         self.position = position.copy()
@@ -123,6 +163,7 @@ def _motion_cost(
         "gap_frames": gap,
         "distance_mm": distance,
         "motion_available": motion_available,
+        "motion_history_observations": len(state.history_frames),
         "motion_reliability": reliability,
         "prediction_error_mm": prediction_error,
         "tangent_discontinuity": tangent_discontinuity,
@@ -173,6 +214,7 @@ def apply_cross_frame_tracking(
     acceleration_weight: float = 0.0,
     motion_uncertainty_growth_per_frame: float = 0.25,
     max_motion_gap_frames: int | None = None,
+    motion_history_frames: int = 2,
     num_individuals: int | None = None,
     max_jump_mm: float | None = None,
     max_jump_hard_cap_mm: float | None = None,
@@ -201,6 +243,10 @@ def apply_cross_frame_tracking(
       - `max_motion_gap_frames`: stop using velocity/tangent/acceleration priors
         when the current gap is larger than this, while retaining position-only
         matching and the normal jump gates.
+      - `motion_history_frames`: number of recent valid observations used to
+        estimate velocity. Two preserves the historical last-interval estimate;
+        values above two use a robust median of all pairwise slopes so one
+        tangent spike does not define the next assignment.
       - `max_jump_mm`: reject Hungarian matches where the per-frame distance
         exceeds `max_jump_mm * gap_frames`. An ID whose match is rejected
         keeps its last valid position and the current-frame slot is NaN.
@@ -239,6 +285,8 @@ def apply_cross_frame_tracking(
             raise ValueError(f"{name} must be a finite non-negative number")
     if max_motion_gap_frames is not None and max_motion_gap_frames < 1:
         raise ValueError("max_motion_gap_frames must be at least 1")
+    if motion_history_frames < 2:
+        raise ValueError("motion_history_frames must be at least 2")
 
     motion_enabled = any(
         weight > 0
@@ -281,7 +329,9 @@ def apply_cross_frame_tracking(
             continue
         pt = pts0[src_idx]
         new_groups_0[id_name] = [float(pt[0]), float(pt[1]), float(pt[2])]
-        track_states[id_name] = _TrackState(frames[0], pt.copy())
+        track_states[id_name] = _TrackState(
+            frames[0], pt.copy(), history_size=motion_history_frames
+        )
         id_mapping_0[id_idx] = int(src_idx)
         hinted_ids0.add(id_idx)
         hinted_src0.add(src_idx)
@@ -294,7 +344,9 @@ def apply_cross_frame_tracking(
             src_idx = remaining_src0.pop(0)
             pt = pts0[src_idx]
             new_groups_0[id_name] = [float(pt[0]), float(pt[1]), float(pt[2])]
-            track_states[id_name] = _TrackState(frames[0], pt.copy())
+            track_states[id_name] = _TrackState(
+                frames[0], pt.copy(), history_size=motion_history_frames
+            )
             id_mapping_0[i] = int(src_idx)
         else:
             new_groups_0[id_name] = [np.nan, np.nan, np.nan]
@@ -469,7 +521,9 @@ def apply_cross_frame_tracking(
             new_groups[id_name] = [float(pt[0]), float(pt[1]), float(pt[2])]
             state = track_states[id_name]
             if state is None:
-                track_states[id_name] = _TrackState(t_curr, pt.copy())
+                track_states[id_name] = _TrackState(
+                    t_curr, pt.copy(), history_size=motion_history_frames
+                )
             else:
                 state.update(t_curr, pt)
             id_mapping[i] = j

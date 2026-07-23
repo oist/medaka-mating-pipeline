@@ -1,0 +1,94 @@
+{
+  "schema_version": "windowed_tracklet_stitching_v2",
+  "configuration_hash": "80246ea39c3e8b9e80d7f801925b0bbc146df633204dc76b66b72d41bf20362b",
+  "experiment": "20251225_K_1_2_FCMC",
+  "round_tag": "round7_260704",
+  "output_tag": "bounds_probe",
+  "frames": [
+    0,
+    5000
+  ],
+  "windows": [
+    {
+      "schema_version": "windowed_tracklet_stitching_v2",
+      "configuration_hash": "ed1fcac610f79a5c9e7869bba0a88839684ffbea5705691b8cc93ee96e778294",
+      "window": {
+        "index": 0,
+        "core_start": 0,
+        "core_end": 5000,
+        "context_start": 0,
+        "context_end": 5000
+      },
+      "wall_time_seconds": 25.3522801999934,
+      "peak_rss_bytes": 226803712,
+      "cpu_percent_mean_process_tree": 97.50695652173913,
+      "cpu_percent_peak_process_tree": 106.9,
+      "resource_sample_count": 115,
+      "observation_rows": 5208,
+      "hypothesis_rows": 0,
+      "fragment_count": 2156,
+      "tracklet_summaries": {},
+      "output_files": {
+        "observations.parquet": "5b8784ba8dd6fcdb8211ed0b360e14c42bfd256b141cf525ef2d9e826877398a",
+        "fragment_observations.parquet": "3c02cc76e1bcddd36c01ba479b3765adaa92181f8d69b122acdce4cb7a6092a1",
+        "fragments.parquet": "274e9bb1e3ec13975c5e8c4361566f22a11289d2f0bf8a359a7d63bfb1008bcc",
+        "tracklet_summaries.json": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+      },
+      "reused": false
+    }
+  ],
+  "total_wall_time_seconds": 33.948209300026065,
+  "peak_rss_bytes": 232280064,
+  "cpu_percent_mean_process_tree": 96.84834437086091,
+  "cpu_percent_peak_process_tree": 106.7,
+  "resource_sample_count": 151,
+  "tracklet_summaries": {
+    "0": {}
+  },
+  "observation_rows": 5208,
+  "boundary_alias_candidates": 0,
+  "boundary_aliases_accepted": 0,
+  "unresolved_seams": 0,
+  "fragment_count": 2156,
+  "link_edge_count": 0,
+  "frozen_graph_hash": "b9db56b248aeb8916db75e0fbdeb7d9db37b7035e7d4ad7697a47fdd5071da03",
+  "frozen_graph_file_hashes": {
+    "fragment_observations.parquet": "90cd54a7f57de477c3f1caffed729ca780f59483eea0d66aec3615e64a5b6424",
+    "fragments.parquet": "ecc63042897c5035ab4fb306ebcc198e7a17a267849bb15a9398656ae7c79197",
+    "candidate_link_edges.parquet": "e0efb65e5a6382186ac5209f31d1aafb39909e49796ef810f506d2af7ca97726"
+  },
+  "solver_edge_count": 0,
+  "solver": {
+    "method": "baseline_hungarian",
+    "objective": null,
+    "hypotheses_peak": 1,
+    "pruned_states": 0,
+    "deterministic_tie_count": 0,
+    "unresolved_intervals": [],
+    "selected_edges": [],
+    "paths": [],
+    "status": "baseline"
+  },
+  "invariants": {
+    "resource_conflicts": 0,
+    "frames_over_three_active": 0
+  },
+  "direct_rows": 5208,
+  "filled_rows": 15003,
+  "output_files": {
+    "direct_parquet": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260718\\k12_jump6_strict_mouth\\bounds_probe_0_200\\direct_3d_observations.parquet",
+    "filled_csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260718\\k12_jump6_strict_mouth\\bounds_probe_0_200\\bounds_probe_3d.csv"
+  },
+  "environment": {
+    "python": "3.13.11",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "cpu_count_logical": 32,
+    "git": {
+      "commit": "cbaf4ce44c271cc2643853db748d961932879651",
+      "dirty": true,
+      "status": [
+        "?? report/20260718/"
+      ]
+    }
+  }
+}

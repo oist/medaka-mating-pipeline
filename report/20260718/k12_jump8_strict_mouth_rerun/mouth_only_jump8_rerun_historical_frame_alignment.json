@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "purpose": "translate controlled jump8 rerun into historical calibration-compatible comparison frame",
+  "reference_csv": "report\\20260716\\mouth_tracking_ablation\\full\\mouth_only_3d\\mouth_only_3d_3d.csv",
+  "source_csv": "report\\20260718\\k12_jump8_strict_mouth_rerun\\mouth_only_jump8_rerun_3d.csv",
+  "aligned_csv": "report\\20260718\\k12_jump8_strict_mouth_rerun\\mouth_only_jump8_rerun_3d_aligned_to_historical_frame.csv",
+  "common_direct_frames_for_translation": 342183,
+  "subtract_from_jump8_xyz_mm": {
+    "X": 11.896649665798805,
+    "Y": 17.261369691243274,
+    "Z": 12.516812667090363
+  },
+  "controlled_pair_common_all_three_direct_frames": 341127,
+  "controlled_pair_post_alignment_unlabeled_set_max_distance_mm": 1.6140428288623166e-13,
+  "controlled_pair_exact_le_1e-9_share": 1.0
+}

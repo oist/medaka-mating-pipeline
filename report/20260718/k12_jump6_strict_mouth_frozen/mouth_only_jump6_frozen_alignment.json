@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "purpose": "translate frozen jump6 shift-to-positive output into historical jump8 coordinate frame",
+  "reference_csv": "report\\20260716\\mouth_tracking_ablation\\full\\mouth_only_3d\\mouth_only_3d_3d.csv",
+  "source_csv": "report\\20260718\\k12_jump6_strict_mouth_frozen\\mouth_only_jump6_frozen_3d.csv",
+  "aligned_csv": "report\\20260718\\k12_jump6_strict_mouth_frozen\\mouth_only_jump6_frozen_3d_aligned_to_jump8.csv",
+  "all_three_direct_common_frames": 307355,
+  "subtract_from_jump6_xyz_mm": {
+    "X": -6.36734018826246e-05,
+    "Y": -2.4797499605710982e-05,
+    "Z": -8.608099921048051e-05
+  }
+}

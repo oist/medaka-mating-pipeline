@@ -103,6 +103,21 @@ frame-local SLEAP link, node coordinates, and detection key. Otherwise the
 selection is a valid `free_click`. Raw SLEAP instance indices are never treated
 as identities across frames.
 
+Scene evidence quality is recorded separately from the female decision:
+
+- `usable`: the human identity and its frame-local SLEAP/geometry mapping are
+  reliable enough for tracker scoring.
+- `human_only`: the female is identifiable in the raw video, but close contact,
+  a SLEAP false negative, a shared tail/node, or another pose error makes the
+  automatic instance/geometry mapping unsafe. Keep the human annotation, but
+  exclude its automatic mapping from tracker comparisons.
+- `unusable`: the scene does not support a reliable human identity decision.
+- `unreviewed`: legacy/default value until quality has been explicitly checked.
+
+The issue checkboxes are multi-select and save structured provenance for close
+contact, SLEAP false negatives, shared nodes, duplicate/merged instances, and
+other SLEAP errors. Free-text notes remain available for details.
+
 When geometry is enabled, finite 3D slots are projected to each camera and
 matched one-to-one to visible-node SLEAP centroids. The two selected views keep
 their geometry IDs independently. Different IDs produce a prominent warning and
@@ -153,7 +168,12 @@ to any existing annotation, including manual frames outside the candidate queue.
 
 ## Canonical schema and audit
 
-Schema version `1.1` adds explicit provisional-tracklet GT fields. Relevant new
+Schema version `1.2` adds `evidence_quality` and
+`observation_issue_flags`. Version 1.1 ledgers are upgraded in memory with
+`evidence_quality=unreviewed`; the existing evidence is never silently treated
+as usable tracker ground truth.
+
+Schema version `1.1` added explicit provisional-tracklet GT fields. Relevant
 columns are:
 
 ```text
@@ -164,8 +184,8 @@ candidate_geometry_tracklet_map_json, candidate_geometry_source_mode
 
 All version 1.0 columns remain in their documented order around these additions.
 Version 1.0 ledgers are upgraded in memory when opened; existing rows and
-annotation IDs are retained, and the expanded 1.1 schema is written on the next
-save.
+annotation IDs are retained, and the expanded current schema is written on the
+next save.
 
 `annotation_id` is deterministic for the canonical key. `sex_label` is `F`
 only for a confirmed row. `candidate_frame` is the queue/manual origin and may

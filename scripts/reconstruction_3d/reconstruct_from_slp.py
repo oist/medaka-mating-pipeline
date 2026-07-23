@@ -198,6 +198,7 @@ def run_reconstruction_from_slp(
     motion_acceleration_weight: float = 0.0,
     motion_uncertainty_growth_per_frame: float = 0.25,
     max_motion_gap_frames: int | None = None,
+    motion_history_frames: int = 2,
     first_frame_id_only: bool = False,
     fill_missing: bool = True,
     shift_to_positive: bool = True,
@@ -257,6 +258,26 @@ def run_reconstruction_from_slp(
         score_gate_option=score_gate_option,
         scoring_profile=scoring_profile,
     )
+    calibration_metadata["temporal_linking"] = {
+        "algorithm": (
+            "first_frame_id_only"
+            if first_frame_id_only
+            else "cross_frame_hungarian"
+        ),
+        "max_jump_mm": max_jump_mm,
+        "max_jump_hard_cap_mm": max_jump_hard_cap_mm,
+        "max_gap_frames": max_gap_frames,
+        "motion_velocity_prediction_weight": (
+            motion_velocity_prediction_weight
+        ),
+        "motion_tangent_weight": motion_tangent_weight,
+        "motion_acceleration_weight": motion_acceleration_weight,
+        "motion_uncertainty_growth_per_frame": (
+            motion_uncertainty_growth_per_frame
+        ),
+        "max_motion_gap_frames": max_motion_gap_frames,
+        "motion_history_frames": motion_history_frames,
+    }
     _print_calibration_resolution(calibration_metadata)
     allow_permutations = bool(
         assignment_cal.capabilities.get("hypothesis_scoring", True)
@@ -598,6 +619,7 @@ def run_reconstruction_from_slp(
                 motion_uncertainty_growth_per_frame
             ),
             max_motion_gap_frames=max_motion_gap_frames,
+            motion_history_frames=motion_history_frames,
             source_id_hints_by_frame=source_id_hints_by_frame,
             source_hints_override_motion_gate=False,
         )
@@ -1150,6 +1172,16 @@ def build_parser() -> argparse.ArgumentParser:
             "gap while retaining the normal distance gate."
         ),
     )
+    motion.add_argument(
+        "--motion-history-frames",
+        type=int,
+        default=2,
+        help=(
+            "Recent valid observations used for velocity/tangent estimation. "
+            "Two uses the last interval; values above two use a robust median "
+            "of pairwise slopes. Default 2."
+        ),
+    )
     parser.add_argument(
         "--no-shift-to-positive", action="store_true",
         help="Do not shift coordinates so the minimum sits at origin.",
@@ -1300,6 +1332,7 @@ def main(argv: list[str] | None = None) -> None:
             args.motion_uncertainty_growth_per_frame
         ),
         max_motion_gap_frames=args.max_motion_gap_frames,
+        motion_history_frames=args.motion_history_frames,
         first_frame_id_only=args.first_frame_id_only,
         fill_missing=not args.no_fill_missing,
         shift_to_positive=not args.no_shift_to_positive,

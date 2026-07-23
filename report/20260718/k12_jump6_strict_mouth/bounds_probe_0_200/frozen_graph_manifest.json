@@ -1,0 +1,8 @@
+{
+  "graph_hash": "b9db56b248aeb8916db75e0fbdeb7d9db37b7035e7d4ad7697a47fdd5071da03",
+  "files": {
+    "fragment_observations.parquet": "90cd54a7f57de477c3f1caffed729ca780f59483eea0d66aec3615e64a5b6424",
+    "fragments.parquet": "ecc63042897c5035ab4fb306ebcc198e7a17a267849bb15a9398656ae7c79197",
+    "candidate_link_edges.parquet": "e0efb65e5a6382186ac5209f31d1aafb39909e49796ef810f506d2af7ca97726"
+  }
+}

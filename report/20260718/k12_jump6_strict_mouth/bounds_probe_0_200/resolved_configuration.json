@@ -1,0 +1,187 @@
+{
+  "schema_version": "windowed_tracklet_stitching_v2",
+  "experiment": "20251225_K_1_2_FCMC",
+  "round_tag": "round7_260704",
+  "frame_start": 0,
+  "frame_end": 5000,
+  "window_mode": "single",
+  "window_core_frames": 10000,
+  "window_context_frames": 250,
+  "hypothesis_source": "legacy",
+  "cross_view_mode": "framewise",
+  "min_group_support": 3,
+  "min_group_valid_fraction": 0.95,
+  "max_group_residual_mm2": 10.0,
+  "fragment_link_mode": "none",
+  "tail_continuity": "off",
+  "trajectory_solver": "sequential_hungarian",
+  "identity_policy": "immediate",
+  "seed": 20260718,
+  "xyz_bounds_mm": [
+    0.0,
+    200.0
+  ],
+  "LinkGates": {
+    "max_gap_frames": 100,
+    "max_jump_mm_per_frame": 8.0,
+    "max_jump_hard_cap_mm": 80.0
+  },
+  "LinkWeights": {
+    "endpoint": 1.0,
+    "prediction": 2.0,
+    "velocity_angle": 0.0,
+    "temporal_gap": 0.25,
+    "overlap_consistency": 1.0,
+    "residual": 0.75,
+    "mouth_confidence": 0.5,
+    "endpoint_scale_mm": 8.0,
+    "prediction_scale_mm": 8.0,
+    "angle_scale_deg": 90.0,
+    "gap_scale_frames": 100.0,
+    "residual_scale_mm2": 2.5,
+    "clip_normalized": 4.0,
+    "tail_weight": 0.08333333333333333,
+    "tail_angle_scale_deg": 90.0,
+    "mouth_ambiguity_margin": 0.5,
+    "close_contact_mm": 12.0
+  },
+  "SolverConfig": {
+    "method": "sequential_hungarian",
+    "beam_width": 32,
+    "max_global_states": 4096,
+    "birth_cost": 3.0,
+    "death_cost": 3.0,
+    "ambiguity_margin": 0.5,
+    "retention_margin": 2.0,
+    "resolution_margin": 1.0,
+    "resolution_stability_frames": 10,
+    "deferred_horizon_frames": 250,
+    "identity_policy": "immediate",
+    "path_cover_mode": "exact_three"
+  },
+  "cache_metadata": {
+    "top_cam": {
+      "anchor_node": "mouth",
+      "complete": 1,
+      "coordinate_dtype": "float64",
+      "decode_write_seconds": 107.69390640000347,
+      "dup_dist_px": 12.0,
+      "filter_fp": 1,
+      "frame_count": 348600,
+      "kept_instance_count": 1025360,
+      "min_span_px": 15.0,
+      "mouth_missing_after_filter": 0,
+      "node_names_json": "[\"mouth\", \"tail\"]",
+      "num_candidates": 6,
+      "raw_instance_count": 1030215,
+      "require_anchor_node": 1,
+      "schema_version": "medaka_candidate_cache_v1",
+      "source_mtime_ns": 1783428122000000000,
+      "source_path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\top_cam.slp",
+      "source_size_bytes": 124847234,
+      "tail_missing_after_filter": 19586,
+      "view": "top_cam",
+      "cache_path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\candidate_cache\\top_cam.candidates.h5",
+      "cache_size_bytes": 32014386,
+      "cache_sha256": "4d5628bb3cf8ba8d9039a99ba224b05f4dcdcde78e15998e74f530b64acadadd"
+    },
+    "side1_cam": {
+      "anchor_node": "mouth",
+      "complete": 1,
+      "coordinate_dtype": "float64",
+      "decode_write_seconds": 105.80652790001477,
+      "dup_dist_px": 12.0,
+      "filter_fp": 1,
+      "frame_count": 348600,
+      "kept_instance_count": 1017441,
+      "min_span_px": 15.0,
+      "mouth_missing_after_filter": 0,
+      "node_names_json": "[\"mouth\", \"tail\"]",
+      "num_candidates": 6,
+      "raw_instance_count": 1030361,
+      "require_anchor_node": 1,
+      "schema_version": "medaka_candidate_cache_v1",
+      "source_mtime_ns": 1783428163000000000,
+      "source_path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side1_cam.slp",
+      "source_size_bytes": 124868626,
+      "tail_missing_after_filter": 25250,
+      "view": "side1_cam",
+      "cache_path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\candidate_cache\\side1_cam.candidates.h5",
+      "cache_size_bytes": 31396657,
+      "cache_sha256": "e0d9231dde06df2230335d33b463559c7990476ffebfa44ff156c51298d6cf52"
+    },
+    "side2_cam": {
+      "anchor_node": "mouth",
+      "complete": 1,
+      "coordinate_dtype": "float64",
+      "decode_write_seconds": 116.90826359999483,
+      "dup_dist_px": 12.0,
+      "filter_fp": 1,
+      "frame_count": 348600,
+      "kept_instance_count": 1022515,
+      "min_span_px": 15.0,
+      "mouth_missing_after_filter": 0,
+      "node_names_json": "[\"mouth\", \"tail\"]",
+      "num_candidates": 6,
+      "raw_instance_count": 1033589,
+      "require_anchor_node": 1,
+      "schema_version": "medaka_candidate_cache_v1",
+      "source_mtime_ns": 1783428203000000000,
+      "source_path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side2_cam.slp",
+      "source_size_bytes": 125219974,
+      "tail_missing_after_filter": 30794,
+      "view": "side2_cam",
+      "cache_path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260717\\windowed_tracklet_stitching\\candidate_cache\\side2_cam.candidates.h5",
+      "cache_size_bytes": 31524102,
+      "cache_sha256": "33445eb26f5aad5acc663fee38e4d686edb9702906afff0be3d7f38a745dafbf"
+    }
+  },
+  "calibration_provenance": {
+    "backend": "refractive",
+    "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+    "model_files": {
+      "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+      "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+      "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+    },
+    "camera_order": [
+      "cam0",
+      "cam1",
+      "cam2"
+    ],
+    "two_view_method": "direct_refracted_ray_intersection",
+    "score_unit": "mm^2",
+    "default_score_profile": "production_fast",
+    "score_profiles": {
+      "production_fast": {
+        "unit": "mm^2",
+        "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+      },
+      "legacy_combined": {
+        "unit": "mm^2",
+        "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+      }
+    },
+    "ray_system_guard": {
+      "minimum_rank": 3,
+      "maximum_condition_number": 10000000000.0,
+      "failure_xyz": "NaN",
+      "failure_score": "infinity"
+    },
+    "requested_backend": "refractive",
+    "resolved_backend": "refractive"
+  },
+  "calibration_file_hashes": {
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+  },
+  "code_file_hashes": {
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\scripts\\reconstruction_3d\\candidate_cache.py": "1905040cbbbe70c38d6c70f8ff926c64411f6ab07efc5f9a25b00d4abfea12c0",
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\scripts\\reconstruction_3d\\triangulate_extra_candidates.py": "4bbbddf51499a39d368190b6a791cdf4b509b85fcaf44c3d045b16f82ccf68ad",
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\scripts\\reconstruction_3d\\windowed_tracklet_core.py": "a49e827c0a7000a7c5e55c02cda8a7166f9ec4e47a23366b9aa161c9bd05fea2",
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\scripts\\reconstruction_3d\\windowed_tracklet_stitching.py": "3e8e72cd5b143ee22d554d3d53d0c432dfe41ab9cb60f658d427cc51e4255d1f"
+  }
+}

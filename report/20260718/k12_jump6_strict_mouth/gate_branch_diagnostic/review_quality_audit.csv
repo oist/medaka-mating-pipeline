@@ -1,0 +1,27 @@
+branch_id,trigger_frame,review_start_frame,review_end_frame,annotation_frame,gt_status,side1_selection_status,side2_selection_status,geometry_id_consistency,consensus_geometry_id,evidence_quality,observation_issue_flags,notes,automatic_mapping_candidate,tracker_scoring_eligible
+B001,18324,18158,18490,18324,confirmed,sleap_linked,sleap_linked,agree,ID_1,unreviewed,,,True,False
+B002,18366,18200,18532,18366,confirmed,sleap_linked,sleap_linked,agree,ID_1,unreviewed,,,True,False
+B003,18847,18681,19013,18847,confirmed,sleap_linked,sleap_linked,disagree,,unreviewed,,,False,False
+B004,19537,19371,19703,19537,confirmed,sleap_linked,not_selected,one_view,ID_1,unreviewed,,,False,False
+B005,27490,27324,27656,27490,confirmed,sleap_linked,sleap_linked,agree,ID_1,unreviewed,,,True,False
+B006,30812,30646,30978,30812,confirmed,sleap_linked,sleap_linked,agree,ID_2,unreviewed,,,True,False
+B007,36839,36673,37005,36839,confirmed,sleap_linked,sleap_linked,disagree,,unreviewed,,,False,False
+B008,74757,74591,74923,74757,confirmed,sleap_linked,sleap_linked,agree,ID_2,unreviewed,,,True,False
+B009,89328,89162,89494,89328,confirmed,sleap_linked,sleap_linked,agree,ID_3,unreviewed,,,True,False
+B010,89391,89225,89557,89391,confirmed,sleap_linked,sleap_linked,agree,ID_3,unreviewed,,,True,False
+B011,89443,89277,89609,89443,confirmed,sleap_linked,sleap_linked,agree,ID_3,unreviewed,,,True,False
+B012,89874,89708,90040,89874,confirmed,sleap_linked,sleap_linked,agree,ID_1,unreviewed,,,True,False
+B013,95368,95202,95534,95368,ambiguous,not_selected,not_selected,unmapped,,unreviewed,,,False,False
+B014,111847,111681,112013,111847,confirmed,sleap_linked,sleap_linked,disagree,,unreviewed,,,False,False
+B015,126465,126299,126631,126465,confirmed,sleap_linked,sleap_linked,agree,ID_2,unreviewed,,,True,False
+B016,133807,133641,133973,133776,confirmed,sleap_linked,not_selected,one_view,ID_2,unreviewed,,,False,False
+B017,133848,133682,134014,133848,confirmed,sleap_linked,not_selected,one_view,ID_1,unreviewed,,bad sleap prediction1,False,False
+B018,133887,133721,134053,133887,confirmed,sleap_linked,sleap_linked,agree,ID_3,unreviewed,,,True,False
+B019,133891,133725,134057,133891,confirmed,sleap_linked,sleap_linked,agree,ID_3,unreviewed,,,True,False
+B020,133919,133753,134085,133919,confirmed,not_selected,sleap_linked,one_view,ID_2,unreviewed,,,False,False
+B021,134309,134143,134475,134309,confirmed,not_selected,sleap_linked,one_view,ID_3,unreviewed,,bad sleap,False,False
+B022,134488,134322,134654,134488,ambiguous,not_selected,not_selected,unmapped,,unreviewed,,,False,False
+B023,212980,212814,213146,212980,confirmed,sleap_linked,sleap_linked,disagree,,unreviewed,,,False,False
+B024,213207,213041,213373,213207,confirmed,sleap_linked,sleap_linked,agree,ID_3,unreviewed,,,True,False
+B025,217542,217376,217708,,unannotated,,,,,unreviewed,,,False,False
+B026,217583,217417,217749,217583,confirmed,sleap_linked,sleap_linked,agree,ID_3,unreviewed,,,True,False

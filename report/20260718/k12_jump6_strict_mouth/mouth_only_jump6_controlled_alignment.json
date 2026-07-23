@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "purpose": "translate jump6 shift-to-positive output into controlled jump8 rerun coordinate frame",
+  "reference_csv": "report\\20260718\\k12_jump8_strict_mouth_rerun\\mouth_only_jump8_rerun_3d.csv",
+  "source_csv": "report\\20260718\\k12_jump6_strict_mouth\\mouth_only_jump6_3d.csv",
+  "aligned_csv": "report\\20260718\\k12_jump6_strict_mouth\\mouth_only_jump6_3d_aligned_to_controlled_jump8.csv",
+  "all_three_direct_common_frames": 341127,
+  "subtract_from_jump6_xyz_mm": {
+    "X": 0.0,
+    "Y": -0.47495416586664874,
+    "Z": -0.6371994382194401
+  },
+  "post_alignment_unlabeled_set_max_distance_mm": 1.4210854715202004e-13,
+  "post_alignment_exact_le_1e-9_share": 1.0
+}

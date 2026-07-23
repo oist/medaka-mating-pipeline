@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "experiment": "20251225_K_1_2_FCMC",
+  "definition": "A verified branch is a change in the 6mm-to-8mm identity permutation preceded by an expected observation outside min(6*gap,80) mm but inside min(8*gap,80) mm.",
+  "sources": {
+    "jump6_csv": "report\\20260718\\k12_jump6_strict_mouth\\mouth_only_jump6_3d_aligned_to_jump8.csv",
+    "jump8_csv": "report\\20260718\\k12_jump8_strict_mouth_rerun\\mouth_only_jump8_rerun_3d_aligned_to_historical_frame.csv",
+    "annotations_csv": "annotations\\fish_sex_gt\\20251225_K_1_2_FCMC\\female_sex_gt.csv"
+  },
+  "parameters": {
+    "jump6_mm": 6.0,
+    "jump8_mm": 8.0,
+    "hard_cap_mm": 80.0,
+    "tolerance_mm": 1e-06,
+    "context_frames": 166,
+    "merge_gap_frames": 1000,
+    "source_fps": 166.0
+  },
+  "frame_count": 348600,
+  "common_all_three_direct_frames": 341127,
+  "permutation_state_counts": {
+    "ID_1->ID_1;ID_2->ID_2;ID_3->ID_3": 28190,
+    "ID_1->ID_1;ID_2->ID_3;ID_3->ID_2": 3904,
+    "ID_1->ID_2;ID_2->ID_3;ID_3->ID_1": 19492,
+    "ID_1->ID_3;ID_2->ID_2;ID_3->ID_1": 120458,
+    "ID_1->ID_2;ID_2->ID_1;ID_3->ID_3": 154570,
+    "ID_1->ID_3;ID_2->ID_1;ID_3->ID_2": 14513
+  },
+  "verified_branch_transitions": 26,
+  "verified_gate_rejection_details": 41,
+  "consolidated_review_windows": 12,
+  "first_trigger_frame": 18324,
+  "last_trigger_frame": 217583,
+  "transitions_without_existing_annotation_in_context": 15
+}

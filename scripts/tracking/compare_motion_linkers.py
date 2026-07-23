@@ -48,6 +48,7 @@ class ComparisonConfig:
     acceleration_weight: float = 0.0
     motion_uncertainty_growth_per_frame: float = 0.25
     max_motion_gap_frames: int | None = 5
+    motion_history_frames: int = 2
     jump_threshold_mm: float = 8.0
     severe_jump_threshold_mm: float = 20.0
 
@@ -67,6 +68,8 @@ class ComparisonConfig:
                 raise ValueError(f"{name} must be finite and non-negative")
         if self.max_motion_gap_frames is not None and self.max_motion_gap_frames < 1:
             raise ValueError("max_motion_gap_frames must be positive or None")
+        if self.motion_history_frames < 2:
+            raise ValueError("motion_history_frames must be at least 2")
         if self.max_gap_frames is not None and self.max_gap_frames < 0:
             raise ValueError("max_gap_frames must be non-negative or None")
         if self.jump_threshold_mm <= 0:
@@ -688,6 +691,7 @@ def compare_motion_linkers(
             config.motion_uncertainty_growth_per_frame
         ),
         max_motion_gap_frames=config.max_motion_gap_frames,
+        motion_history_frames=config.motion_history_frames,
         **common,
     )
 
@@ -839,6 +843,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--motion-uncertainty-growth-per-frame", type=float, default=0.25
     )
     parser.add_argument("--max-motion-gap-frames", type=int, default=5)
+    parser.add_argument("--motion-history-frames", type=int, default=2)
     parser.add_argument("--jump-threshold-mm", type=float, default=8.0)
     parser.add_argument("--severe-jump-threshold-mm", type=float, default=20.0)
     return parser
@@ -866,6 +871,7 @@ def main(argv: list[str] | None = None) -> int:
             args.motion_uncertainty_growth_per_frame
         ),
         max_motion_gap_frames=args.max_motion_gap_frames,
+        motion_history_frames=args.motion_history_frames,
         jump_threshold_mm=args.jump_threshold_mm,
         severe_jump_threshold_mm=args.severe_jump_threshold_mm,
     )

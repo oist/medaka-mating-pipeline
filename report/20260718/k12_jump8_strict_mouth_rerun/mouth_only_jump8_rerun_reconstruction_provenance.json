@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "camera_order": [
+    "cam0",
+    "cam1",
+    "cam2"
+  ],
+  "triangulation": {
+    "backend": "refractive",
+    "score_unit": "mm^2",
+    "score_definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray",
+    "provenance": {
+      "backend": "refractive",
+      "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+      "model_files": {
+        "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+        "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+        "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+      },
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "two_view_method": "direct_refracted_ray_intersection",
+      "score_unit": "mm^2",
+      "default_score_profile": "production_fast",
+      "score_profiles": {
+        "production_fast": {
+          "unit": "mm^2",
+          "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+        },
+        "legacy_combined": {
+          "unit": "mm^2",
+          "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+        }
+      },
+      "ray_system_guard": {
+        "minimum_rank": 3,
+        "maximum_condition_number": 10000000000.0,
+        "failure_xyz": "NaN",
+        "failure_score": "infinity"
+      },
+      "requested_backend": "refractive",
+      "resolved_backend": "refractive"
+    },
+    "capabilities": {
+      "triangulation": true,
+      "three_view_triangulation": true,
+      "two_view_triangulation": true,
+      "direct_two_view_triangulation": true,
+      "projection": true,
+      "hypothesis_scoring": true,
+      "two_view_missing_cam0": true,
+      "two_view_missing_cam1": true,
+      "two_view_missing_cam2": true
+    }
+  },
+  "assignment_scoring": {
+    "backend": "refractive",
+    "score_unit": "mm^2",
+    "score_definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray",
+    "scoring_profile": "production_fast",
+    "provenance": {
+      "backend": "refractive",
+      "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+      "model_files": {
+        "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+        "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+        "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+      },
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "two_view_method": "direct_refracted_ray_intersection",
+      "score_unit": "mm^2",
+      "default_score_profile": "production_fast",
+      "score_profiles": {
+        "production_fast": {
+          "unit": "mm^2",
+          "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+        },
+        "legacy_combined": {
+          "unit": "mm^2",
+          "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+        }
+      },
+      "ray_system_guard": {
+        "minimum_rank": 3,
+        "maximum_condition_number": 10000000000.0,
+        "failure_xyz": "NaN",
+        "failure_score": "infinity"
+      },
+      "requested_backend": "refractive",
+      "resolved_backend": "refractive"
+    },
+    "capabilities": {
+      "triangulation": true,
+      "three_view_triangulation": true,
+      "two_view_triangulation": true,
+      "direct_two_view_triangulation": true,
+      "projection": true,
+      "hypothesis_scoring": true,
+      "two_view_missing_cam0": true,
+      "two_view_missing_cam1": true,
+      "two_view_missing_cam2": true
+    }
+  },
+  "score_gate": {
+    "value": null,
+    "unit": "mm^2",
+    "cli_option": null
+  },
+  "missing_view_policy": {
+    "observation_marker": "NaN camera row",
+    "refractive": "direct intersection of the two observed refracted rays",
+    "polynomial": "legacy pairwise-helper completion inside polynomial backend",
+    "silent_cross_backend_fallback": false
+  },
+  "projection": {
+    "backend": "refractive",
+    "unit": "px",
+    "capability": true,
+    "provenance": {
+      "backend": "refractive",
+      "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+      "model_files": {
+        "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+        "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+        "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+      },
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "two_view_method": "direct_refracted_ray_intersection",
+      "score_unit": "mm^2",
+      "default_score_profile": "production_fast",
+      "score_profiles": {
+        "production_fast": {
+          "unit": "mm^2",
+          "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+        },
+        "legacy_combined": {
+          "unit": "mm^2",
+          "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+        }
+      },
+      "ray_system_guard": {
+        "minimum_rank": 3,
+        "maximum_condition_number": 10000000000.0,
+        "failure_xyz": "NaN",
+        "failure_score": "infinity"
+      },
+      "requested_backend": "refractive",
+      "resolved_backend": "refractive"
+    },
+    "legacy_projection_fallback_configured": false,
+    "silent_cross_backend_fallback": false
+  }
+}

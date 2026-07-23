@@ -20,7 +20,8 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import linear_sum_assignment
 
-SCHEMA_VERSION = "1.1"
+SCHEMA_VERSION = "1.2"
+PREVIOUS_SCHEMA_VERSION = "1.1"
 LEGACY_SCHEMA_VERSION = "1.0"
 SOFTWARE_NAME = "scripts.analysis.female_sex_gt_annotator"
 FRAME_ALIASES = ("frame", "center_frame", "center", "jump_frame")
@@ -36,6 +37,14 @@ STANDARD_CANDIDATE_COLUMNS = {
 }
 GT_STATUSES = ("confirmed", "ambiguous", "not_visible", "bad_frame")
 SELECTION_STATUSES = ("sleap_linked", "free_click", "not_selected")
+EVIDENCE_QUALITIES = ("unreviewed", "usable", "human_only", "unusable")
+OBSERVATION_ISSUE_FLAGS = (
+    "close_contact",
+    "sleap_false_negative",
+    "shared_tail_or_node",
+    "duplicate_or_merged_instance",
+    "other_sleap_error",
+)
 
 ANNOTATION_COLUMNS = [
     "schema_version",
@@ -46,6 +55,8 @@ ANNOTATION_COLUMNS = [
     "annotator",
     "gt_status",
     "sex_label",
+    "evidence_quality",
+    "observation_issue_flags",
     "side1_selection_status",
     "side1_detection_key",
     "side1_instance_index",
@@ -100,8 +111,15 @@ TRACKLET_ANNOTATION_COLUMNS = {
     "candidate_geometry_tracklet_map_json",
     "candidate_geometry_source_mode",
 }
+QUALITY_ANNOTATION_COLUMNS = {
+    "evidence_quality",
+    "observation_issue_flags",
+}
+V11_ANNOTATION_COLUMNS = [
+    column for column in ANNOTATION_COLUMNS if column not in QUALITY_ANNOTATION_COLUMNS
+]
 LEGACY_ANNOTATION_COLUMNS = [
-    column for column in ANNOTATION_COLUMNS if column not in TRACKLET_ANNOTATION_COLUMNS
+    column for column in V11_ANNOTATION_COLUMNS if column not in TRACKLET_ANNOTATION_COLUMNS
 ]
 
 CANDIDATE_COLUMNS = [
@@ -624,6 +642,37 @@ def _selection_fields(prefix: str, selection: Mapping[str, Any]) -> dict[str, An
     }
 
 
+def normalize_observation_issue_flags(value: Any) -> str:
+    """Return a stable semicolon-separated set of structured scene issues."""
+    if _missing(value):
+        return ""
+    if isinstance(value, str):
+        raw = value.split(";")
+    else:
+        try:
+            raw = list(value)
+        except TypeError as error:
+            raise ValueError(
+                "observation_issue_flags must be a semicolon-separated string "
+                "or an iterable"
+            ) from error
+    flags: list[str] = []
+    for item in raw:
+        flag = str(item).strip()
+        if not flag:
+            continue
+        if flag not in OBSERVATION_ISSUE_FLAGS:
+            raise ValueError(
+                "observation_issue_flags contains unsupported value "
+                f"{flag!r}; expected one of {OBSERVATION_ISSUE_FLAGS}"
+            )
+        if flag not in flags:
+            flags.append(flag)
+    return ";".join(
+        flag for flag in OBSERVATION_ISSUE_FLAGS if flag in set(flags)
+    )
+
+
 def make_annotation_row(
     *,
     experiment: str,
@@ -639,6 +688,8 @@ def make_annotation_row(
     geometry_csv_path: str | Path | None = None,
     calibration_backend: str = "",
     calibration_model_files: Any = None,
+    evidence_quality: str = "unreviewed",
+    observation_issue_flags: Any = None,
     notes: str = "",
 ) -> dict[str, Any]:
     frame = _coerce_frame(frame, context="annotation frame")
@@ -679,6 +730,10 @@ def make_annotation_row(
             "annotator": annotator.strip(),
             "gt_status": gt_status,
             "sex_label": "F" if gt_status == "confirmed" else "",
+            "evidence_quality": str(evidence_quality or "unreviewed"),
+            "observation_issue_flags": normalize_observation_issue_flags(
+                observation_issue_flags
+            ),
             "geometry_id_consistency": consistency,
             "consensus_geometry_id": consensus,
             "tracklet_id_consistency": tracklet_state,
@@ -767,6 +822,15 @@ def validate_annotation_row(row: Mapping[str, Any]) -> dict[str, Any]:
         raise ValueError(
             "sex_label must be 'F' only for confirmed rows and empty otherwise"
         )
+    evidence_quality = str(normalized["evidence_quality"])
+    if evidence_quality not in EVIDENCE_QUALITIES:
+        raise ValueError(
+            f"evidence_quality must be one of {EVIDENCE_QUALITIES}, "
+            f"got {evidence_quality!r}"
+        )
+    normalized["observation_issue_flags"] = normalize_observation_issue_flags(
+        normalized["observation_issue_flags"]
+    )
     consistency, consensus = geometry_consistency(
         normalized["side1_geometry_id"], normalized["side2_geometry_id"]
     )
@@ -806,30 +870,40 @@ def _empty_ledger() -> pd.DataFrame:
     return pd.DataFrame(columns=ANNOTATION_COLUMNS)
 
 
-def _upgrade_legacy_annotation_row(row: Mapping[str, Any]) -> dict[str, Any]:
+def _upgrade_annotation_row(
+    row: Mapping[str, Any], *, source_version: str
+) -> dict[str, Any]:
     upgraded = {column: "" for column in ANNOTATION_COLUMNS}
-    for column in LEGACY_ANNOTATION_COLUMNS:
+    source_columns = (
+        LEGACY_ANNOTATION_COLUMNS
+        if source_version == LEGACY_SCHEMA_VERSION
+        else V11_ANNOTATION_COLUMNS
+    )
+    for column in source_columns:
         if column in row:
             upgraded[column] = row[column]
-    if str(upgraded.get("schema_version", "")) != LEGACY_SCHEMA_VERSION:
+    if str(upgraded.get("schema_version", "")) != source_version:
         raise ValueError(
             f"cannot upgrade annotation schema {upgraded.get('schema_version')!r}"
         )
     upgraded["schema_version"] = SCHEMA_VERSION
-    candidate = candidate_from_annotation(upgraded)
-    geometry_tracklet_map, geometry_source_mode = candidate_tracklet_context(candidate)
-    upgraded["candidate_geometry_tracklet_map_json"] = stable_json(
-        geometry_tracklet_map
-    )
-    upgraded["candidate_geometry_source_mode"] = geometry_source_mode
-    for side in ("side1", "side2"):
-        geometry_id = str(upgraded.get(f"{side}_geometry_id", "") or "")
-        upgraded[f"{side}_tracklet_id"] = geometry_tracklet_map.get(geometry_id, "")
-    state, consensus = tracklet_consistency(
-        upgraded["side1_tracklet_id"], upgraded["side2_tracklet_id"]
-    )
-    upgraded["tracklet_id_consistency"] = state
-    upgraded["consensus_tracklet_id"] = consensus
+    upgraded["evidence_quality"] = "unreviewed"
+    upgraded["observation_issue_flags"] = ""
+    if source_version == LEGACY_SCHEMA_VERSION:
+        candidate = candidate_from_annotation(upgraded)
+        geometry_tracklet_map, geometry_source_mode = candidate_tracklet_context(candidate)
+        upgraded["candidate_geometry_tracklet_map_json"] = stable_json(
+            geometry_tracklet_map
+        )
+        upgraded["candidate_geometry_source_mode"] = geometry_source_mode
+        for side in ("side1", "side2"):
+            geometry_id = str(upgraded.get(f"{side}_geometry_id", "") or "")
+            upgraded[f"{side}_tracklet_id"] = geometry_tracklet_map.get(geometry_id, "")
+        state, consensus = tracklet_consistency(
+            upgraded["side1_tracklet_id"], upgraded["side2_tracklet_id"]
+        )
+        upgraded["tracklet_id_consistency"] = state
+        upgraded["consensus_tracklet_id"] = consensus
     return validate_annotation_row(upgraded)
 
 
@@ -843,7 +917,14 @@ def read_annotation_ledger(path: str | Path) -> pd.DataFrame:
         raise ValueError(f"cannot parse annotation ledger {path}: {error}") from error
     if list(table.columns) == LEGACY_ANNOTATION_COLUMNS:
         upgraded_rows = [
-            _upgrade_legacy_annotation_row(row) for row in table.to_dict("records")
+            _upgrade_annotation_row(row, source_version=LEGACY_SCHEMA_VERSION)
+            for row in table.to_dict("records")
+        ]
+        table = pd.DataFrame(upgraded_rows, columns=ANNOTATION_COLUMNS)
+    elif list(table.columns) == V11_ANNOTATION_COLUMNS:
+        upgraded_rows = [
+            _upgrade_annotation_row(row, source_version=PREVIOUS_SCHEMA_VERSION)
+            for row in table.to_dict("records")
         ]
         table = pd.DataFrame(upgraded_rows, columns=ANNOTATION_COLUMNS)
     elif list(table.columns) != ANNOTATION_COLUMNS:

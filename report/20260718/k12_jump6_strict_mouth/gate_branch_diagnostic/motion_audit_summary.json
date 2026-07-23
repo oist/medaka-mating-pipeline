@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "decision": "6_vs_8_inconclusive_pending_quality_review",
+  "review": {
+    "branches": 26,
+    "annotated_branches": 25,
+    "two_view_consistent_candidates": 14,
+    "explicitly_quality_reviewed": 0,
+    "tracker_scoring_eligible": 0,
+    "policy": "Only evidence_quality=usable may score an automatic geometry mapping; human_only remains valid human identity evidence."
+  },
+  "motion": {
+    "changed_track_boundaries": 53,
+    "history_policy": "15 direct observations on each side within 30 frames; Theil-Sen-style median of all pairwise 3D slopes",
+    "jump6_tangent_angle_median_deg": 35.65152875493839,
+    "jump8_tangent_angle_median_deg": 39.65580410776083,
+    "jump6_boundaries_over_90_deg": 5,
+    "jump8_boundaries_over_90_deg": 6,
+    "warning": "Motion continuity is a diagnostic, not identity truth, when SLEAP observations are false-negative, shared, or merged."
+  }
+}

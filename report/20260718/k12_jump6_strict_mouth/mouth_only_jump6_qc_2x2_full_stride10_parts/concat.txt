@@ -1,0 +1,8 @@
+file 'C:/Users/machi/Documents/GitHub/medaka-mating-pipeline/report/20260718/k12_jump6_strict_mouth/mouth_only_jump6_qc_2x2_full_stride10_parts/part_000_0_43579.mp4'
+file 'C:/Users/machi/Documents/GitHub/medaka-mating-pipeline/report/20260718/k12_jump6_strict_mouth/mouth_only_jump6_qc_2x2_full_stride10_parts/part_001_43580_87159.mp4'
+file 'C:/Users/machi/Documents/GitHub/medaka-mating-pipeline/report/20260718/k12_jump6_strict_mouth/mouth_only_jump6_qc_2x2_full_stride10_parts/part_002_87160_130739.mp4'
+file 'C:/Users/machi/Documents/GitHub/medaka-mating-pipeline/report/20260718/k12_jump6_strict_mouth/mouth_only_jump6_qc_2x2_full_stride10_parts/part_003_130740_174319.mp4'
+file 'C:/Users/machi/Documents/GitHub/medaka-mating-pipeline/report/20260718/k12_jump6_strict_mouth/mouth_only_jump6_qc_2x2_full_stride10_parts/part_004_174320_217899.mp4'
+file 'C:/Users/machi/Documents/GitHub/medaka-mating-pipeline/report/20260718/k12_jump6_strict_mouth/mouth_only_jump6_qc_2x2_full_stride10_parts/part_005_217900_261479.mp4'
+file 'C:/Users/machi/Documents/GitHub/medaka-mating-pipeline/report/20260718/k12_jump6_strict_mouth/mouth_only_jump6_qc_2x2_full_stride10_parts/part_006_261480_305059.mp4'
+file 'C:/Users/machi/Documents/GitHub/medaka-mating-pipeline/report/20260718/k12_jump6_strict_mouth/mouth_only_jump6_qc_2x2_full_stride10_parts/part_007_305060_348599.mp4'

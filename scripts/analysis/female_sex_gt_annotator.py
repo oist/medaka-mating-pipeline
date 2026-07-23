@@ -838,6 +838,32 @@ def create_annotation_window(
             self.warning_label.hide()
             sidebar.addWidget(self.warning_label)
 
+            sidebar.addWidget(QtWidgets.QLabel("Evidence quality:"))
+            self.evidence_quality_combo = QtWidgets.QComboBox()
+            for label, value in (
+                ("Unreviewed", "unreviewed"),
+                ("Usable for tracker scoring", "usable"),
+                ("Human-only (exclude SLEAP/geometry mapping)", "human_only"),
+                ("Unusable even for human identity", "unusable"),
+            ):
+                self.evidence_quality_combo.addItem(label, value)
+            self.evidence_quality_combo.currentIndexChanged.connect(
+                self._mark_dirty
+            )
+            sidebar.addWidget(self.evidence_quality_combo)
+            self.issue_checkboxes = {}
+            for label, value in (
+                ("Fish close/contact", "close_contact"),
+                ("SLEAP false negative", "sleap_false_negative"),
+                ("Shared tail/node", "shared_tail_or_node"),
+                ("Duplicate/merged instance", "duplicate_or_merged_instance"),
+                ("Other SLEAP error", "other_sleap_error"),
+            ):
+                checkbox = QtWidgets.QCheckBox(label)
+                checkbox.stateChanged.connect(self._mark_dirty)
+                self.issue_checkboxes[value] = checkbox
+                sidebar.addWidget(checkbox)
+
             sidebar.addWidget(QtWidgets.QLabel("Decision (saved immediately):"))
             decision_grid = QtWidgets.QGridLayout()
             sidebar.addLayout(decision_grid)
@@ -1139,10 +1165,15 @@ def create_annotation_window(
         def _load_annotation(self) -> None:
             row = self.ledger.get(args.experiment, self.current_frame, args.annotator)
             self.notes.blockSignals(True)
+            self.evidence_quality_combo.blockSignals(True)
+            for checkbox in self.issue_checkboxes.values():
+                checkbox.blockSignals(True)
             if row is None:
                 self.selections = {view: empty_selection() for view in SIDE_VIEWS}
                 self.current_status = ""
                 self.notes.setPlainText("")
+                quality = "unreviewed"
+                issue_flags: set[str] = set()
             else:
                 self.selections = {
                     view: _selection_from_saved(row, VIEW_PREFIX[view])
@@ -1150,7 +1181,20 @@ def create_annotation_window(
                 }
                 self.current_status = str(row["gt_status"])
                 self.notes.setPlainText(str(row.get("notes", "")))
+                quality = str(row.get("evidence_quality", "unreviewed"))
+                issue_flags = {
+                    flag
+                    for flag in str(row.get("observation_issue_flags", "")).split(";")
+                    if flag
+                }
+            quality_index = self.evidence_quality_combo.findData(quality)
+            self.evidence_quality_combo.setCurrentIndex(max(0, quality_index))
+            for flag, checkbox in self.issue_checkboxes.items():
+                checkbox.setChecked(flag in issue_flags)
             self.notes.blockSignals(False)
+            self.evidence_quality_combo.blockSignals(False)
+            for checkbox in self.issue_checkboxes.values():
+                checkbox.blockSignals(False)
             self.dirty = False
             self._update_annotation_labels()
 
@@ -1292,6 +1336,14 @@ def create_annotation_window(
                 geometry_csv_path=self.geometry.path if self.geometry else None,
                 calibration_backend=calibration_backend,
                 calibration_model_files=model_files,
+                evidence_quality=str(
+                    self.evidence_quality_combo.currentData() or "unreviewed"
+                ),
+                observation_issue_flags=[
+                    flag
+                    for flag, checkbox in self.issue_checkboxes.items()
+                    if checkbox.isChecked()
+                ],
                 notes=self.notes.toPlainText(),
             )
 

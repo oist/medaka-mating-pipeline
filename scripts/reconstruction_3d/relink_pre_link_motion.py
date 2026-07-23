@@ -66,6 +66,7 @@ def run_pre_link_motion_relink(
     motion_acceleration_weight: float = 0.0,
     motion_uncertainty_growth_per_frame: float = 0.25,
     max_motion_gap_frames: int | None = None,
+    motion_history_frames: int = 2,
     fill_missing: bool = True,
     shift_to_positive: bool = True,
     overwrite: bool = False,
@@ -124,6 +125,7 @@ def run_pre_link_motion_relink(
             motion_uncertainty_growth_per_frame
         ),
         "max_motion_gap_frames": max_motion_gap_frames,
+        "motion_history_frames": motion_history_frames,
         "source_id_hints_by_frame": _source_hints(best),
         # Match reconstruct_from_slp: hints must not force a gated 3D jump.
         "source_hints_override_motion_gate": False,
@@ -233,6 +235,7 @@ def build_parser() -> argparse.ArgumentParser:
         default=0.25,
     )
     motion.add_argument("--max-motion-gap-frames", type=int, default=None)
+    motion.add_argument("--motion-history-frames", type=int, default=2)
 
     parser.add_argument(
         "--no-fill-missing",
@@ -274,6 +277,7 @@ def main(argv: list[str] | None = None) -> None:
                 args.motion_uncertainty_growth_per_frame
             ),
             max_motion_gap_frames=args.max_motion_gap_frames,
+            motion_history_frames=args.motion_history_frames,
             fill_missing=not args.no_fill_missing,
             shift_to_positive=not args.no_shift_to_positive,
             overwrite=args.overwrite,

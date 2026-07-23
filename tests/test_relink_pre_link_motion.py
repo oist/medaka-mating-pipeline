@@ -54,6 +54,7 @@ def test_motion_relink_uses_saved_candidates_and_writes_drop_in_outputs(
         motion_tangent_weight=2.0,
         motion_acceleration_weight=0.0,
         max_motion_gap_frames=5,
+        motion_history_frames=5,
         fill_missing=False,
         shift_to_positive=False,
     )
@@ -78,6 +79,7 @@ def test_motion_relink_uses_saved_candidates_and_writes_drop_in_outputs(
     assert summary["num_frames"] == 3
     assert summary["linker_settings"]["velocity_prediction_weight"] == 1.0
     assert summary["linker_settings"]["flow_weight"] == 2.0
+    assert summary["linker_settings"]["motion_history_frames"] == 5
     assert summary["source_hint_frames"] == 0
 
 
@@ -90,6 +92,7 @@ def test_motion_relink_defaults_are_opt_in_and_outputs_are_protected(
     assert defaults.motion_acceleration_weight == 0.0
     assert defaults.motion_uncertainty_growth_per_frame == 0.25
     assert defaults.max_motion_gap_frames is None
+    assert defaults.motion_history_frames == 2
     assert defaults.start_frame is None
     assert defaults.end_frame is None
     assert defaults.no_fill_missing is False

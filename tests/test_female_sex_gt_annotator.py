@@ -16,6 +16,7 @@ from scripts.analysis.female_sex_gt import (ANNOTATION_COLUMNS,
                                             LEGACY_ANNOTATION_COLUMNS,
                                             SCHEMA_VERSION,
                                             TRACKLET_ANNOTATION_COLUMNS,
+                                            V11_ANNOTATION_COLUMNS,
                                             AnnotationLedger,
                                             candidate_tracklet_context,
                                             deterministic_annotation_id,
@@ -296,6 +297,30 @@ def test_confirmed_decision_requires_one_side_view_selection():
     assert ambiguous["sex_label"] == ""
 
 
+def test_structured_scene_quality_separates_human_gt_from_tracker_evidence():
+    row = make_annotation_row(
+        experiment=EXPERIMENT,
+        frame=5,
+        source_fps=166,
+        annotator="alice",
+        gt_status="confirmed",
+        side1_selection=_free_selection(),
+        side2_selection=None,
+        candidate=manual_jump_candidate(EXPERIMENT, 5),
+        video_paths={"side1_cam": "one.mp4", "side2_cam": "two.mp4"},
+        slp_paths={"side1_cam": "one.slp", "side2_cam": "two.slp"},
+        evidence_quality="human_only",
+        observation_issue_flags=[
+            "shared_tail_or_node",
+            "close_contact",
+            "shared_tail_or_node",
+        ],
+    )
+    assert row["sex_label"] == "F"
+    assert row["evidence_quality"] == "human_only"
+    assert row["observation_issue_flags"] == "close_contact;shared_tail_or_node"
+
+
 def test_resume_row_and_candidate_queue_status_are_restored(tmp_path):
     candidate = normalize_candidate_table(
         pd.DataFrame({"frame": [5], "candidate_id": ["c5"], "source": ["motion"]}),
@@ -382,6 +407,22 @@ def test_legacy_1_0_ledger_is_upgraded_to_tracklet_schema(tmp_path):
     assert upgraded.loc[0, "schema_version"] == SCHEMA_VERSION
     assert upgraded.loc[0, "consensus_tracklet_id"] == ""
     assert TRACKLET_ANNOTATION_COLUMNS <= set(upgraded.columns)
+    assert upgraded.loc[0, "evidence_quality"] == "unreviewed"
+
+
+def test_previous_1_1_ledger_is_upgraded_to_scene_quality_schema(tmp_path):
+    modern = _row()
+    previous = {column: modern[column] for column in V11_ANNOTATION_COLUMNS}
+    previous["schema_version"] = "1.1"
+    path = tmp_path / "previous.csv"
+    pd.DataFrame([previous], columns=V11_ANNOTATION_COLUMNS).to_csv(path, index=False)
+
+    upgraded = read_annotation_ledger(path)
+
+    assert list(upgraded.columns) == ANNOTATION_COLUMNS
+    assert upgraded.loc[0, "schema_version"] == SCHEMA_VERSION
+    assert upgraded.loc[0, "evidence_quality"] == "unreviewed"
+    assert upgraded.loc[0, "observation_issue_flags"] == ""
 
 
 def test_annotator_build_candidates_invokes_bound_selector(tmp_path, monkeypatch):

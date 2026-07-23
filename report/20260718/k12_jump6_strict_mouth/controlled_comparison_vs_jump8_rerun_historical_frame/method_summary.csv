@@ -1,0 +1,3 @@
+method,anchor,eligible_gt,mapped_gt,mapped_best_fixed_accuracy,mapped_switches,strict_gt,strict_best_fixed_accuracy,strict_switches,all_three_observed_frame_share,jump_over_8mm_share,evaluable_mixed_events,preserved_mixed_events
+jump8,mouth,300,298,0.5234899328859061,11,277,0.51985559566787,11,0.981592082616179,0.0,4,3
+jump6,mouth,300,298,0.4463087248322148,10,277,0.4693140794223827,10,0.9788468158347676,0.0,4,3

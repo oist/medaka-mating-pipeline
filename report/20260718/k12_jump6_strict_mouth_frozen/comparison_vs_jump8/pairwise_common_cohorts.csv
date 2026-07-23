@@ -1,0 +1,5 @@
+left_method,right_method,cohort,method,count,best_fixed_id,best_fixed_accuracy,observed_switch_count
+jump6,jump8,common_mapped,jump6,281,ID_2,0.40213523131672596,75
+jump6,jump8,common_mapped,jump8,281,ID_1,0.5266903914590747,11
+jump6,jump8,common_strict,jump6,241,ID_2,0.4066390041493776,63
+jump6,jump8,common_strict,jump8,241,ID_1,0.5269709543568465,11

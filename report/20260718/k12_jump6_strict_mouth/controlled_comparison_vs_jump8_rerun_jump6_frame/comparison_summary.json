@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "coordinate_fairness": "Each method is reprojected against the corresponding mouth or visible-node centroid of the same manually selected SLEAP instance.",
+  "gate_px": 80.0,
+  "strict_gate_px": 8.0,
+  "methods": {
+    "jump8": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260718\\k12_jump8_strict_mouth_rerun\\mouth_only_jump8_rerun_3d_aligned_to_jump6.csv",
+      "anchor": "mouth",
+      "id_column": "fish_id",
+      "track_qc": {
+        "frame_min": 0,
+        "frame_max": 348599,
+        "frame_count": 348600,
+        "identity_count": 3,
+        "identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "finite_row_share": 0.9934299101166572,
+        "observed_noninterpolated_row_share": 0.9899866131191433,
+        "all_three_finite_frame_share": 0.989776247848537,
+        "all_three_observed_frame_share": 0.981592082616179,
+        "consecutive_jump_mm": {
+          "count": 1038920,
+          "median": 0.33423544435212316,
+          "p95": 1.1405443348345732,
+          "p99": 2.2644546177707614,
+          "max": 7.999974396752242
+        },
+        "jump_over_8mm_count": 0,
+        "jump_over_8mm_share": 0.0
+      },
+      "female_gt": {
+        "eligible_confirmed_female_annotations": 300,
+        "mapping_status_counts": {
+          "agree": 12,
+          "disagree": 15,
+          "one_view": 209,
+          "unmapped": 64
+        },
+        "mapped": {
+          "count": 221,
+          "identity_counts": {
+            "ID_1": 112,
+            "ID_2": 37,
+            "ID_3": 72
+          },
+          "best_fixed_id": "ID_1",
+          "best_fixed_accuracy": 0.5067873303167421,
+          "observed_run_count": 82,
+          "observed_switch_count": 81
+        },
+        "strict_two_view": {
+          "count": 0,
+          "identity_counts": {},
+          "best_fixed_id": "",
+          "best_fixed_accuracy": 0.0,
+          "observed_run_count": 0,
+          "observed_switch_count": 0
+        }
+      },
+      "mixed_event_results": {
+        "event_count": 4,
+        "evaluable_events": 2,
+        "preserved_events": 1
+      }
+    },
+    "jump6": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260718\\k12_jump6_strict_mouth\\mouth_only_jump6_3d.csv",
+      "anchor": "mouth",
+      "id_column": "fish_id",
+      "track_qc": {
+        "frame_min": 0,
+        "frame_max": 348599,
+        "frame_count": 348600,
+        "identity_count": 3,
+        "identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "finite_row_share": 0.9933342895391089,
+        "observed_noninterpolated_row_share": 0.9883113406004972,
+        "all_three_finite_frame_share": 0.9894893861158921,
+        "all_three_observed_frame_share": 0.9788468158347676,
+        "consecutive_jump_mm": {
+          "count": 1038819,
+          "median": 0.33432594312527764,
+          "p95": 1.1425722447067437,
+          "p99": 2.2914818539342408,
+          "max": 5.998078255997594
+        },
+        "jump_over_8mm_count": 0,
+        "jump_over_8mm_share": 0.0
+      },
+      "female_gt": {
+        "eligible_confirmed_female_annotations": 300,
+        "mapping_status_counts": {
+          "agree": 12,
+          "disagree": 15,
+          "one_view": 209,
+          "unmapped": 64
+        },
+        "mapped": {
+          "count": 221,
+          "identity_counts": {
+            "ID_1": 43,
+            "ID_2": 77,
+            "ID_3": 101
+          },
+          "best_fixed_id": "ID_3",
+          "best_fixed_accuracy": 0.45701357466063347,
+          "observed_run_count": 83,
+          "observed_switch_count": 82
+        },
+        "strict_two_view": {
+          "count": 0,
+          "identity_counts": {},
+          "best_fixed_id": "",
+          "best_fixed_accuracy": 0.0,
+          "observed_run_count": 0,
+          "observed_switch_count": 0
+        }
+      },
+      "mixed_event_results": {
+        "event_count": 4,
+        "evaluable_events": 2,
+        "preserved_events": 1
+      }
+    }
+  }
+}
