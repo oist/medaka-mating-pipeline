@@ -1,0 +1,43 @@
+{
+  "candidate_schema_version": "1.0",
+  "software": "scripts.analysis.contact_episode_annotator",
+  "generated_at_utc": "2026-07-21T06:53:12.932069Z",
+  "experiment": "20251225_K_1_2_FCMC",
+  "tracking_method": "jump8",
+  "detector_parameters": {
+    "enter_mm": 12.0,
+    "exit_mm": 16.0,
+    "merge_gap_frames": 5,
+    "context_frames": 166
+  },
+  "source_provenance": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260718\\k12_jump8_strict_mouth_rerun\\mouth_only_jump8_rerun_3d_aligned_to_historical_frame.csv",
+    "size_bytes": 77334289,
+    "mtime_ns": 1784319449213369600
+  },
+  "candidate_count": 366,
+  "detected_candidate_count": 366,
+  "manual_candidate_count": 0,
+  "columns": [
+    "candidate_schema_version",
+    "episode_id",
+    "experiment",
+    "tracking_method",
+    "contact_start_frame",
+    "contact_end_frame",
+    "review_start_frame",
+    "review_end_frame",
+    "minimum_ifd_mm",
+    "minimum_ifd_frame",
+    "minimum_pair",
+    "duration_frames",
+    "missing_direct_frames",
+    "missing_direct_fraction",
+    "merged_raw_interval_count",
+    "detector_parameters_json",
+    "source_provenance_json",
+    "manual"
+  ],
+  "direct_observations_only": true,
+  "missing_observation_policy": "break_then_optional_gap_merge"
+}
