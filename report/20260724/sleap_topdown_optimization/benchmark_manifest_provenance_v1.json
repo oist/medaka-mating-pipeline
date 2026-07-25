@@ -1,0 +1,42 @@
+{
+  "manifest_version": "phase1-v1",
+  "selection_seed": 20260724,
+  "selection_manifest": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260721\\round8_active_learning\\selection_360.csv",
+  "round7_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260704",
+  "round8_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260722_round8",
+  "benchmark_manifest": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\benchmark_manifest_phase1_v1.csv",
+  "pilot_manifest": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\benchmark_manifest_pilot_event_holdout_v1.csv",
+  "stress_manifest": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\benchmark_manifest_in_sample_stress_v1.csv",
+  "future_annotation_queue": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\future_locked_test_annotation_queue_v1.csv",
+  "future_annotation_queue_eligible": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\future_locked_test_annotation_queue_eligible_v1.csv",
+  "counts": {
+    "benchmark_rows": 186,
+    "by_cohort": {
+      "multi_experiment_in_sample_stress": 126,
+      "round8_pilot_event_holdout": 60
+    },
+    "by_provenance_class": {
+      "in_sample_stress_regression": 126,
+      "held_out_round8_but_seen_round7": 60
+    },
+    "by_view": {
+      "top_cam": 64,
+      "side1_cam": 61,
+      "side2_cam": 61
+    },
+    "by_difficulty": {
+      "close_contact_or_crossing": 75,
+      "partial_or_occluded": 57,
+      "ordinary": 54
+    },
+    "future_queue_rows": 720,
+    "future_lock_eligible_rows": 111,
+    "future_lock_eligible_events": 21
+  },
+  "leakage_policy": {
+    "event_window_frames": 166,
+    "future_queue_guard_frames": 166,
+    "pilot_provenance_class": "held_out_round8_but_seen_round7",
+    "reason": "Round 7 contains labeled frames in the pilot sentinel event, and Round 8 was warm-started from Round 7."
+  }
+}

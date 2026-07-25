@@ -1,0 +1,56 @@
+{
+  "counts": {
+    "reviewed": 0,
+    "saved_rows": 0,
+    "with_notes": 0
+  },
+  "decisions": [],
+  "generated_at_utc": "2026-07-24T06:04:21.194303Z",
+  "review_csv": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\manual_visual_qc.csv",
+  "schema_version": "1.0",
+  "source_provenance": {
+    "ground_truth": [],
+    "manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\benchmark_manifest_pilot_event_holdout_v1.csv",
+      "sha256": "e6b7a1881e5690f87b7854fc2592fc4862e470f948ee716b635081a5aacf626d"
+    },
+    "predictions": [
+      {
+        "covered_frames": 40,
+        "model": "round8",
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\round7_vs_round8_side_pilot_full_matches.csv",
+        "sha256": "1ec3c879abebb444e6d39b95cf8e64eb33887f203196d6e99098f63d13ceb1ba"
+      },
+      {
+        "covered_frames": 20,
+        "model": "round8",
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\round7_vs_round8_top_pilot_full_matches.csv",
+        "sha256": "9da03b096fa8e57ae9f90e194e6adb6bb77f7b0104e4706cdfbda0911796aa9d"
+      },
+      {
+        "covered_frames": 40,
+        "model": "round7",
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\predictions\\round7_side_full_topdown_round8_pilot_event_holdout_45650d8ef5.predictions.slp",
+        "sha256": "3aabe43eea286c6111b8175b915a6df8f6b8da643e10634b218590b1128feb51"
+      },
+      {
+        "covered_frames": 40,
+        "model": "round8",
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\predictions\\round8_side_full_topdown_round8_pilot_event_holdout_45650d8ef5.predictions.slp",
+        "sha256": "fcaf3f90cda4e844b87d2b4a8e14c5283b07fe4cee6b5791c1413ca424a2daf7"
+      },
+      {
+        "covered_frames": 20,
+        "model": "round7",
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\predictions\\round7_top_full_topdown_round8_pilot_event_holdout_edb72d3693.predictions.slp",
+        "sha256": "b4686f96153a1702b9c95e6caa77a04eada46887de71b111062c5cc39c3ffa7b"
+      },
+      {
+        "covered_frames": 20,
+        "model": "round8",
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\predictions\\round8_top_full_topdown_round8_pilot_event_holdout_edb72d3693.predictions.slp",
+        "sha256": "008aa38f4f4e83af198cea1f8e652993e72988824cef55a2679ddb76d089924e"
+      }
+    ]
+  }
+}

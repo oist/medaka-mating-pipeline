@@ -1,0 +1,188 @@
+{
+  "audit_version": "phase1-v1",
+  "audit_date": "2026-07-24",
+  "round_roots": {
+    "round7": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260704",
+    "round8": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260722_round8"
+  },
+  "source_reports": {
+    "round7_summary": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260704\\EVAL_SUMMARY.md",
+    "round8_finalize": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260722_round8\\finalize_report.json"
+  },
+  "selection_inputs": {
+    "selection_360": {
+      "path": "report/20260721/round8_active_learning/selection_360.csv",
+      "sha256": "47f16c84b9fd09546ff43e6ab5cd458f9537fd91d453252450c582064134ab29"
+    },
+    "pilot_120": {
+      "path": "report/20260721/round8_active_learning/pilot_120.csv",
+      "sha256": "06bc18ac768b997fa4466dea6deb297c8f319d633fa685d13d0375fc6410940a"
+    },
+    "expansion_240": {
+      "path": "report/20260721/round8_active_learning/expansion_240.csv",
+      "sha256": "16c9bb33930545c647cbb669d39d43035f5c24efb8b121eccb828627725815ea"
+    }
+  },
+  "round7_labels": {
+    "top": {
+      "labeled_frames": 1295,
+      "instances": 3885
+    },
+    "side": {
+      "labeled_frames": 2590,
+      "instances": 7771
+    },
+    "frames_by_experiment_and_view_family": {
+      "20251225_K_1_1_FCMC": {
+        "top": 125,
+        "side": 250
+      },
+      "20251225_K_1_2_FCMC": {
+        "top": 1045,
+        "side": 2090
+      },
+      "20251225_K_1_3_FCMC": {
+        "top": 125,
+        "side": 250
+      }
+    },
+    "existing_evaluation_class": "in_sample_stress_regression",
+    "existing_split_warning": "Saved validation splits are randomized and component-specific rather than event-aware; top centroid and centered-instance validation frames have zero overlap, and side has only 23 overlapping frames."
+  },
+  "round8_finalize": {
+    "status": "pilot_only",
+    "source_frames": {
+      "holdout": 20,
+      "usable_train": 93
+    },
+    "view_rows": {
+      "holdout": 60,
+      "usable_train": 279
+    },
+    "cumulative_label_counts": {
+      "top": 1382,
+      "side": 2764
+    },
+    "strict_runs": {
+      "top_centroid": {
+        "name": "round8_260723_strictmouth.centroid_n1382",
+        "best_epoch": 26
+      },
+      "top_centered_instance": {
+        "name": "round8_260723_strictmouth.centered_instance_n1382",
+        "best_epoch": 58
+      },
+      "side_centroid": {
+        "name": "round8_260723_strictmouth.centroid_n2764",
+        "best_epoch": 8,
+        "last_epoch": 38
+      },
+      "side_centered_instance": {
+        "name": "round8_260723_strictmouth.centered_instance_n2764",
+        "best_epoch": 35,
+        "last_epoch": 199
+      }
+    },
+    "corrected_expansion_labels_available": false,
+    "corrected_expansion_search_result": "The active-learning artifact root contains the pilot seed, pilot edits, and pilot full package only; no corrected expansion-240 label package was found."
+  },
+  "pilot_event_leakage": {
+    "experiment": "20251225_K_1_2_FCMC",
+    "event_id": "holdout_sentinel_96612_97802",
+    "event_frames": [
+      96612,
+      97802
+    ],
+    "round8_training_guard_frames": [
+      96446,
+      97968
+    ],
+    "round7_synchronized_source_frames_in_event_or_guard": [
+      96484,
+      96805,
+      96956,
+      97195,
+      97375,
+      97825
+    ],
+    "round7_exposed_source_frame_count": 6,
+    "classification": "held_out_round8_but_seen_round7",
+    "additional_dependency": "Round 8 was warm-started from Round 7."
+  },
+  "annotation_reference_bias": {
+    "cause": "Round 8 pilot annotations were initialized from Round 7 predictions and then corrected manually.",
+    "diagnostic_threshold_px": 0.01,
+    "exact_coordinate_fractions": {
+      "side_round7_mouth": {
+        "numerator": 84,
+        "denominator": 107,
+        "fraction": 0.7850467289719626
+      },
+      "side_round7_tail": {
+        "numerator": 83,
+        "denominator": 109,
+        "fraction": 0.7614678899082569
+      },
+      "top_round7_mouth": {
+        "numerator": 44,
+        "denominator": 59,
+        "fraction": 0.7457627118644068
+      },
+      "top_round7_tail": {
+        "numerator": 38,
+        "denominator": 57,
+        "fraction": 0.6666666666666666
+      },
+      "side_round8_mouth": {
+        "numerator": 0,
+        "denominator": 106,
+        "fraction": 0.0
+      },
+      "side_round8_tail": {
+        "numerator": 1,
+        "denominator": 110,
+        "fraction": 0.00909090909090909
+      },
+      "top_round8_mouth": {
+        "numerator": 0,
+        "denominator": 58,
+        "fraction": 0.0
+      },
+      "top_round8_tail": {
+        "numerator": 0,
+        "denominator": 57,
+        "fraction": 0.0
+      }
+    }
+  },
+  "benchmark_classification": {
+    "genuinely_held_out_from_both_models": {
+      "rows": 0,
+      "status": "not_available"
+    },
+    "held_out_from_round8_but_seen_by_round7": {
+      "rows": 60,
+      "source_frames": 20,
+      "events": 1
+    },
+    "in_sample_stress_regression": {
+      "rows": 126,
+      "experiments": 3,
+      "events": 57
+    },
+    "unknown_provenance": {
+      "rows": 0
+    }
+  },
+  "future_locked_test": {
+    "candidate_rows": 720,
+    "currently_eligible_rows": 111,
+    "currently_eligible_source_frames": 37,
+    "currently_eligible_events": 21,
+    "currently_eligible_experiments": [
+      "20251225_K_1_2_FCMC"
+    ],
+    "status": "annotation_candidates_only_not_a_locked_test",
+    "required_action": "Manually annotate and reserve event-disjoint frames unseen by both rounds, and add untouched events from K_1_1 and K_1_3 before using this cohort for promotion."
+  }
+}
