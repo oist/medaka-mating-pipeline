@@ -6,18 +6,36 @@ selection.
 
 ## Manual annotation
 
-The GUI was launched with:
+Use the simple PyQt instance annotator:
 
 ```powershell
-.venv\Scripts\python.exe -m scripts.sleap.multiview_annotation_gui `
+.venv\Scripts\python.exe -m scripts.sleap.pyqt_multiview_annotator `
   --in report\20260725\sleap_independent_benchmark_annotation\independent_annotation_40_blank.pkg.slp `
   --out report\20260725\sleap_independent_benchmark_annotation\independent_annotation_40_labeled.pkg.slp `
-  --autosave --independent --embed-output none
+  --paths-config configs\paths.local.toml `
+  --calibration-backend auto --min-views 1 --independent
 ```
 
 For each of the 40 synchronized source frames, label exactly three fish in
 each of `top_cam`, `side1_cam`, and `side2_cam`. Every fish must have finite
 `mouth` and `tail` coordinates. Do not seed from model predictions.
+
+Recommended workflow for each synchronized frame:
+
+1. Click **Add instance (I)**. In the top pane, click one fish's **mouth**
+   and then its **tail**. Repeat for all three fish; add mode remains active.
+2. Repeat the mouth-then-tail pair for all three fish in side1 and side2.
+   The GUI uses calibration only to suggest which existing color/slot is the
+   same fish; it does not create coordinates in `--independent` mode.
+3. Keep blue/orange/green on the same physical fish across the three views of
+   this one synchronized frame. The colors are not sex or persistent
+   biological identities and can reset on the next frame.
+4. Use Left/Right to navigate and `Ctrl+S` to save immediately. A quiet
+   quick-save also runs every two minutes and on normal exit. Reopening the
+   same command automatically resumes from the output file.
+
+The body arrow points from tail toward mouth. `F` is disabled for this locked
+benchmark so every saved coordinate comes from a manual click.
 
 The selection contains 14 K_1_1 frames, 13 K_1_2 frames, and 13 K_1_3 frames.
 The 120 view frames have no model predictions or prefilled keypoints.

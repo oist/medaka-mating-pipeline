@@ -41,6 +41,7 @@ CLI
 import argparse
 import sys
 from collections import defaultdict
+from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -148,6 +149,11 @@ def full_save_path(output_path: Path) -> Path:
     return output_path.with_name(output_path.stem + "_full" + output_path.suffix)
 
 
+def copy_labels_provenance(labels) -> dict:
+    """Return a detached copy of package provenance for saved annotations."""
+    return deepcopy(dict(getattr(labels, "provenance", {}) or {}))
+
+
 # ---------------------------------------------------------------------------
 # Data model — kept small and reused by the napari prototype too.
 # ---------------------------------------------------------------------------
@@ -175,6 +181,21 @@ class FishKeypoints:
     tail_visible: Dict[str, bool] = field(
         default_factory=lambda: {v: True for v in VIEWS}
     )
+
+
+def first_empty_fish_slot(fish: List[FishKeypoints]) -> Optional[int]:
+    """Return the first completely unused fish slot, if one exists."""
+    for fish_index, keypoints in enumerate(fish):
+        if all(
+            point is None
+            for view in VIEWS
+            for point in (
+                keypoints.mouth.get(view),
+                keypoints.tail.get(view),
+            )
+        ):
+            return fish_index
+    return None
 
 
 @dataclass
@@ -491,7 +512,7 @@ def _merge_resume_labels(seed_labels, resume_labels):
         videos=list({id(lf.video): lf.video for lf in new_lfs}.values()),
         labeled_frames=new_lfs,
         suggestions=seed_labels.suggestions,
-        provenance=seed_labels.provenance,
+        provenance=copy_labels_provenance(seed_labels),
     )
 
 
@@ -1068,6 +1089,7 @@ class MultiviewWindow:
         groups_src,
         medaka_data_dir: Path,
         out_path: Path,
+        allow_calibration_fill: bool = True,
     ):
         QtCore, QtGui, QtWidgets = _qt()
         self.labels = labels
@@ -1076,6 +1098,7 @@ class MultiviewWindow:
         self.groups_src = groups_src
         self.medaka_data_dir = medaka_data_dir
         self.out_path = out_path
+        self.allow_calibration_fill = bool(allow_calibration_fill)
 
         self.cur_idx: int = 0
         self.cur_group: Optional[FrameGroup] = None
@@ -1099,7 +1122,10 @@ class MultiviewWindow:
 
         # Build window.
         self.window = QtWidgets.QMainWindow()
-        self.window.setWindowTitle("Medaka multi-view annotator (PyQt)")
+        title = "Medaka multi-view annotator (PyQt)"
+        if not self.allow_calibration_fill:
+            title += " — independent manual points"
+        self.window.setWindowTitle(title)
         self.window.resize(1500, 900)
 
         central = QtWidgets.QWidget()
@@ -1318,6 +1344,19 @@ class MultiviewWindow:
 
     def _add_help_dock(self):
         QtCore, QtGui, QtWidgets = _qt()
+        fill_help = (
+            "<b>F is disabled</b> for this independent benchmark; every "
+            "mouth and tail coordinate must be clicked manually.<br>"
+            if not self.allow_calibration_fill
+            else (
+                "<b>F</b>: re-match all fish across views via calibration "
+                "(anchored on the most recently edited view) and re-predict "
+                "the keypoints in the OTHER views from the new matches. The "
+                "anchor view's keypoints are kept as-is; other views are "
+                "Hungarian-paired by reprojection error and the empty slots "
+                "are filled.<br>"
+            )
+        )
         text = (
             "<h3>Multi-view annotator</h3>"
             "<b>Synced focus</b>: click any view → focus point moves to "
@@ -1327,13 +1366,8 @@ class MultiviewWindow:
             "click after that = tail. The two clicks must be in the same "
             "view. After committing, candidate IDs are computed via "
             "calibration and one is shown in a popup.<br><br>"
-            "<b>F</b>: re-match all fish across views via calibration "
-            "(anchored on the most recently edited view) and re-predict "
-            "the keypoints in the OTHER views from the new matches. The "
-            "anchor view's keypoints are kept as-is; other views are "
-            "Hungarian-paired by reprojection error and the empty slots "
-            "are filled.<br>"
-            "<b>Right-click a keypoint</b>: toggle hidden ↔ visible "
+            + fill_help
+            + "<b>Right-click a keypoint</b>: toggle hidden ↔ visible "
             "immediately. Hidden keypoints are drawn with the alternate "
             "fill and saved with <code>visible=False</code>.<br>"
             "<b>Ctrl + right-click a keypoint</b>: menu with Swap ID, "
@@ -1694,8 +1728,12 @@ class MultiviewWindow:
         # we'll fall through to "new fish" below.
 
         if fish_idx is None:
-            fish_idx = len(self.cur_group.fish)
-            self.cur_group.fish.append(FishKeypoints(fish_id=fish_idx))
+            empty_slot = first_empty_fish_slot(self.cur_group.fish)
+            if empty_slot is None:
+                fish_idx = len(self.cur_group.fish)
+                self.cur_group.fish.append(FishKeypoints(fish_id=fish_idx))
+            else:
+                fish_idx = empty_slot
             decision_msg = decision_msg or f"new fish ID_{fish_idx + 1}"
         else:
             while fish_idx >= len(self.cur_group.fish):
@@ -2161,6 +2199,13 @@ class MultiviewWindow:
              ``visible=True`` (they're a geometric best-guess; the user can
              toggle to hidden if they're an inference rather than visible).
         """
+        if not self.allow_calibration_fill:
+            self.status.showMessage(
+                "F is disabled: independent benchmark coordinates must be "
+                "placed manually.",
+                5000,
+            )
+            return
         if self.cur_group is None:
             self.status.showMessage("F: no group loaded.", 3000)
             return
@@ -2545,6 +2590,7 @@ class MultiviewWindow:
             videos=merged_videos,
             labeled_frames=merged_lfs,
             suggestions=suggestions,
+            provenance=copy_labels_provenance(self.labels),
         )
         out_path.parent.mkdir(parents=True, exist_ok=True)
         QtWidgets_app = _qt()[2].QApplication.instance()
@@ -2595,6 +2641,15 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument(
         "--no-resume", action="store_true",
         help="Don't auto-resume from --out even if it exists.",
+    )
+    ap.add_argument(
+        "--independent",
+        action="store_true",
+        help=(
+            "Disable calibration coordinate fill. Cross-view view navigation "
+            "and ID suggestions remain available, but all mouth/tail "
+            "coordinates must be clicked manually."
+        ),
     )
     args = ap.parse_args(argv)
 
@@ -2656,6 +2711,7 @@ def main(argv: list[str] | None = None) -> None:
         groups_src=groups,
         medaka_data_dir=Path(medaka_data_dir),
         out_path=args.out,
+        allow_calibration_fill=not args.independent,
     )
     win.window.show()
     sys.exit(app.exec_())

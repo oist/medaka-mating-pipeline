@@ -15,8 +15,12 @@ from scripts.sleap.make_annotator_bundle import (
 )
 from scripts.sleap.pyqt_multiview_annotator import (
     DEFAULT_KEYPOINT_SIZE,
+    FishKeypoints,
     KEYPOINT_SIZE_RADII_PX,
+    MultiviewWindow,
     VIEWS,
+    copy_labels_provenance,
+    first_empty_fish_slot,
     full_save_path,
     instance_fit_zoom,
     keypoint_radius,
@@ -71,6 +75,41 @@ def test_instance_fit_zoom_returns_none_without_points() -> None:
 def test_full_save_path_places_full_before_pkg_suffix() -> None:
     assert full_save_path(Path("edits.pkg.slp")) == Path("edits_full.pkg.slp")
     assert full_save_path(Path("edits.slp")) == Path("edits_full.slp")
+
+
+def test_blank_seed_reuses_first_empty_fish_slot() -> None:
+    fish = [FishKeypoints(fish_id=0)]
+    assert first_empty_fish_slot(fish) == 0
+
+    fish[0].mouth["top_cam"] = (10.0, 20.0)
+    assert first_empty_fish_slot(fish) is None
+
+    fish.append(FishKeypoints(fish_id=1))
+    assert first_empty_fish_slot(fish) == 1
+
+
+def test_saved_provenance_copy_is_deep_and_detached() -> None:
+    class Labels:
+        provenance = {"selection": {"seed": 20260724}}
+
+    copied = copy_labels_provenance(Labels())
+    copied["selection"]["seed"] = 0
+    assert Labels.provenance["selection"]["seed"] == 20260724
+
+
+def test_independent_mode_rejects_calibration_coordinate_fill() -> None:
+    class Status:
+        message = ""
+
+        def showMessage(self, message, _timeout):
+            self.message = message
+
+    window = object.__new__(MultiviewWindow)
+    window.allow_calibration_fill = False
+    window.status = Status()
+    window.fill_missing_views()
+    assert "disabled" in window.status.message
+    assert "manually" in window.status.message
 
 
 def test_refractive_two_view_prediction_recovers_missing_projection() -> None:
