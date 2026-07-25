@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 import types
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -15,17 +16,33 @@ from scripts.sleap.make_annotator_bundle import (
 )
 from scripts.sleap.pyqt_multiview_annotator import (
     DEFAULT_KEYPOINT_SIZE,
+    PREDICTION_REVIEW_PROVENANCE_KEY,
     FishKeypoints,
     KEYPOINT_SIZE_RADII_PX,
     MultiviewWindow,
     VIEWS,
     ViewPane,
+    _merge_resume_labels,
+    accept_fish_view,
+    build_frame_group,
+    build_groups,
+    build_instance_review_sequence,
+    candidate_artifact_from_provenance,
+    candidate_artifact_mismatch,
     copy_labels_provenance,
+    fish_view_is_saveable,
     first_empty_fish_slot,
     full_save_path,
     instance_fit_zoom,
     keypoint_radius,
     predict_missing_view,
+    reject_candidate_fish_view,
+    review_slot_decisions_from_provenance,
+    review_slot_index_from_instance,
+    review_slot_key,
+    review_slot_track_name,
+    review_view_key,
+    reviewed_view_keys_from_provenance,
 )
 
 
@@ -96,6 +113,376 @@ def test_saved_provenance_copy_is_deep_and_detached() -> None:
     copied = copy_labels_provenance(Labels())
     copied["selection"]["seed"] = 0
     assert Labels.provenance["selection"]["seed"] == 20260724
+
+
+def _fake_candidate_instance(
+    mouth=(10.0, 20.0),
+    tail=(30.0, 40.0),
+    *,
+    score=0.9,
+):
+    points = np.zeros(
+        2,
+        dtype=[("xy", np.float64, (2,)), ("visible", np.bool_)],
+    )
+    points[0]["xy"] = mouth if mouth is not None else (np.nan, np.nan)
+    points[1]["xy"] = tail if tail is not None else (np.nan, np.nan)
+    points["visible"] = True
+    return SimpleNamespace(points=points, score=score)
+
+
+def test_candidate_overlay_is_visible_but_not_saveable_until_accepted(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        "scripts.sleap.pyqt_multiview_annotator.load_image_for_view",
+        lambda *_args, **_kwargs: np.zeros((8, 8, 3), dtype=np.uint8),
+    )
+    blank = SimpleNamespace(instances=[])
+    candidate = SimpleNamespace(
+        instances=[_fake_candidate_instance()]
+    )
+
+    group = build_frame_group(
+        ("experiment_A", 42),
+        {"top_cam": blank},
+        medaka_data_dir=Path("."),
+        cal=None,
+        candidate_src_lfs={"top_cam": candidate},
+    )
+    fish = group.fish[0]
+
+    assert fish.mouth["top_cam"] == (10.0, 20.0)
+    assert fish.tail["top_cam"] == (30.0, 40.0)
+    assert fish.candidate_by_view["top_cam"] is True
+    assert fish_view_is_saveable(fish, "top_cam") is False
+
+    assert accept_fish_view(fish, "top_cam") is True
+    assert fish_view_is_saveable(fish, "top_cam") is True
+
+
+def test_rejected_candidate_does_not_reappear_in_reviewed_view(
+    monkeypatch,
+) -> None:
+    monkeypatch.setattr(
+        "scripts.sleap.pyqt_multiview_annotator.load_image_for_view",
+        lambda *_args, **_kwargs: np.zeros((8, 8, 3), dtype=np.uint8),
+    )
+    blank = SimpleNamespace(instances=[])
+    candidate = SimpleNamespace(
+        instances=[_fake_candidate_instance()]
+    )
+
+    group = build_frame_group(
+        ("experiment_A", 42),
+        {"top_cam": blank},
+        medaka_data_dir=Path("."),
+        cal=None,
+        candidate_src_lfs={"top_cam": candidate},
+    )
+    assert reject_candidate_fish_view(group.fish[0], "top_cam") is True
+    assert group.fish[0].mouth["top_cam"] is None
+    assert fish_view_is_saveable(group.fish[0], "top_cam") is False
+
+    resumed = build_frame_group(
+        ("experiment_A", 42),
+        {"top_cam": blank},
+        medaka_data_dir=Path("."),
+        cal=None,
+        candidate_src_lfs={"top_cam": candidate},
+        reviewed_views={"top_cam"},
+    )
+    assert resumed.fish[0].mouth["top_cam"] is None
+    assert resumed.fish[0].tail["top_cam"] is None
+
+
+def test_resume_empty_frame_overrides_seed_and_preserves_review_provenance(
+    tmp_path,
+) -> None:
+    import sleap_io as sio
+
+    skeleton = sio.Skeleton(name="fish")
+    skeleton.add_nodes(["mouth", "tail"])
+    skeleton.add_edge("mouth", "tail")
+    video_path = (
+        tmp_path
+        / "experiment_A"
+        / "top_cam"
+        / "cam0_top.mp4"
+    )
+    video = sio.Video(str(video_path), open_backend=False)
+    instance = sio.Instance.from_numpy(
+        np.array([[10.0, 20.0], [30.0, 40.0]]),
+        skeleton=skeleton,
+    )
+    seed = sio.Labels(
+        skeletons=[skeleton],
+        videos=[video],
+        labeled_frames=[
+            sio.LabeledFrame(
+                video=video,
+                frame_idx=42,
+                instances=[instance],
+            )
+        ],
+        provenance={"seed": {"name": "authoritative"}},
+    )
+    stable_key = review_view_key("experiment_A", 42, "top_cam")
+    artifact = {"path": "candidate.slp", "sha256": "abc123"}
+    resume = sio.Labels(
+        skeletons=[skeleton],
+        videos=[video],
+        labeled_frames=[
+            sio.LabeledFrame(video=video, frame_idx=42, instances=[])
+        ],
+        provenance={
+            PREDICTION_REVIEW_PROVENANCE_KEY: {
+                "candidate_artifact": artifact,
+                "reviewed_views": [stable_key],
+            }
+        },
+    )
+
+    merged = _merge_resume_labels(seed, resume)
+
+    assert len(merged.labeled_frames) == 1
+    assert merged.labeled_frames[0].instances == []
+    assert reviewed_view_keys_from_provenance(merged) == {stable_key}
+    assert candidate_artifact_from_provenance(merged) == artifact
+    assert merged.provenance["seed"] == {"name": "authoritative"}
+
+
+def test_candidate_resume_rejects_different_prediction_artifact() -> None:
+    persisted = {"path": "old.slp", "sha256": "a" * 64}
+    same = {"path": "moved.slp", "sha256": "a" * 64}
+    changed = {"path": "old.slp", "sha256": "b" * 64}
+
+    assert candidate_artifact_mismatch(persisted, same) is None
+    assert "SHA-256 mismatch" in candidate_artifact_mismatch(
+        persisted,
+        changed,
+    )
+
+
+def test_instance_review_sequence_is_per_view_and_skips_complete_manual() -> None:
+    key = ("experiment_A", 42)
+    candidates = {
+        key: {
+            "top_cam": SimpleNamespace(
+                instances=[
+                    _fake_candidate_instance(score=0.9),
+                    _fake_candidate_instance(
+                        mouth=(50.0, 60.0),
+                        tail=(70.0, 80.0),
+                        score=0.8,
+                    ),
+                    _fake_candidate_instance(
+                        mouth=(90.0, 100.0),
+                        tail=(110.0, 120.0),
+                        score=0.7,
+                    ),
+                ]
+            ),
+            "side1_cam": SimpleNamespace(
+                instances=[
+                    _fake_candidate_instance(score=0.9),
+                    _fake_candidate_instance(score=0.8),
+                ]
+            ),
+        }
+    }
+    authoritative = {
+        key: {
+            "top_cam": SimpleNamespace(
+                instances=[
+                    _fake_candidate_instance(score=0.9),
+                    _fake_candidate_instance(tail=None, score=0.8),
+                ]
+            )
+        }
+    }
+    rejected = {
+        review_slot_key(
+            "experiment_A",
+            42,
+            "side1_cam",
+            0,
+        )
+    }
+
+    sequence = build_instance_review_sequence(
+        [key],
+        candidates,
+        authoritative,
+        accepted_slot_keys=set(),
+        rejected_slot_keys=rejected,
+    )
+
+    assert sequence == [
+        (key, "top_cam", 1),
+        (key, "top_cam", 2),
+        (key, "side1_cam", 1),
+    ]
+
+
+def test_instance_review_accept_is_scoped_to_active_view_and_rank() -> None:
+    key = ("experiment_A", 42)
+    fish = [FishKeypoints(fish_id=i) for i in range(2)]
+    for fish_idx, keypoints in enumerate(fish):
+        for view in ("top_cam", "side1_cam"):
+            keypoints.mouth[view] = (10.0 + fish_idx, 20.0)
+            keypoints.tail[view] = (30.0 + fish_idx, 40.0)
+            keypoints.candidate_by_view[view] = True
+
+    window = object.__new__(MultiviewWindow)
+    window.instance_review = True
+    window.instance_review_sequence = [(key, "top_cam", 1)]
+    window.instance_review_idx = 0
+    window.cur_group = SimpleNamespace(
+        experiment=key[0],
+        frame_idx=key[1],
+        fish=fish,
+    )
+    window.accepted_slot_keys = set()
+    window.rejected_slot_keys = set()
+    window.reviewed_view_keys = set()
+    window._draw_keypoints = lambda: None
+    window._update_status = lambda: None
+    window.status = SimpleNamespace(showMessage=lambda *_args: None)
+
+    window.accept_current_candidates()
+
+    assert fish[1].accepted_by_view["top_cam"] is True
+    assert fish[1].accepted_by_view["side1_cam"] is False
+    assert fish[0].accepted_by_view["top_cam"] is False
+    assert window.accepted_slot_keys == {
+        review_slot_key("experiment_A", 42, "top_cam", 1)
+    }
+
+
+def test_partial_frame_slot_decisions_survive_save_and_resume(
+    tmp_path,
+    monkeypatch,
+) -> None:
+    import sleap_io as sio
+
+    monkeypatch.setattr(
+        "scripts.sleap.pyqt_multiview_annotator.load_image_for_view",
+        lambda *_args, **_kwargs: np.zeros((8, 8, 3), dtype=np.uint8),
+    )
+    skeleton = sio.Skeleton(name="fish")
+    skeleton.add_nodes(["mouth", "tail"])
+    skeleton.add_edge("mouth", "tail")
+    video_path = (
+        tmp_path
+        / "experiment_A"
+        / "top_cam"
+        / "cam0_top.mp4"
+    )
+    video = sio.Video(str(video_path), open_backend=False)
+    seed_lf = sio.LabeledFrame(video=video, frame_idx=42, instances=[])
+    seed = sio.Labels(
+        skeletons=[skeleton],
+        videos=[video],
+        labeled_frames=[seed_lf],
+        provenance={"seed": {"name": "authoritative"}},
+    )
+    key = ("experiment_A", 42)
+    candidate_lf = SimpleNamespace(
+        instances=[
+            _fake_candidate_instance(
+                mouth=(10.0, 20.0),
+                tail=(30.0, 40.0),
+                score=0.9,
+            ),
+            _fake_candidate_instance(
+                mouth=(50.0, 60.0),
+                tail=(70.0, 80.0),
+                score=0.8,
+            ),
+            _fake_candidate_instance(
+                mouth=(90.0, 100.0),
+                tail=(110.0, 120.0),
+                score=0.7,
+            ),
+        ]
+    )
+    group = build_frame_group(
+        key,
+        {"top_cam": seed_lf},
+        medaka_data_dir=tmp_path,
+        cal=None,
+        candidate_src_lfs={"top_cam": candidate_lf},
+    )
+    accept_fish_view(group.fish[0], "top_cam")
+    reject_candidate_fish_view(group.fish[1], "top_cam")
+    accepted_key = review_slot_key(
+        "experiment_A", 42, "top_cam", 0
+    )
+    rejected_key = review_slot_key(
+        "experiment_A", 42, "top_cam", 1
+    )
+
+    window = object.__new__(MultiviewWindow)
+    window.labels = seed
+    window.cur_group = group
+    window._edited_groups = {key: group}
+    window.medaka_data_dir = tmp_path
+    window.candidate_review_enabled = True
+    window.instance_review = True
+    window.candidate_artifact = {
+        "path": "candidate.slp",
+        "sha256": "abc123",
+    }
+    window.reviewed_view_keys = set()
+    window.accepted_slot_keys = {accepted_key}
+    window.rejected_slot_keys = {rejected_key}
+    window.status = SimpleNamespace(showMessage=lambda *_args: None)
+    out_path = tmp_path / "review.pkg.slp"
+
+    window._do_save(out_path=out_path, embed=False)
+    saved = sio.load_slp(out_path, open_videos=False)
+
+    assert len(saved.labeled_frames) == 1
+    assert len(saved.labeled_frames[0].instances) == 1
+    saved_instance = saved.labeled_frames[0].instances[0]
+    assert review_slot_index_from_instance(saved_instance) == 0
+    assert saved_instance.track.name == review_slot_track_name(
+        "experiment_A",
+        42,
+        "top_cam",
+        0,
+    )
+    assert review_slot_decisions_from_provenance(saved) == (
+        {accepted_key},
+        {rejected_key},
+    )
+
+    merged = _merge_resume_labels(seed, saved)
+    accepted, rejected = review_slot_decisions_from_provenance(merged)
+    merged_groups = build_groups(merged)
+    resumed = build_frame_group(
+        key,
+        merged_groups[key],
+        medaka_data_dir=tmp_path,
+        cal=None,
+        candidate_src_lfs={"top_cam": candidate_lf},
+        accepted_slot_keys=accepted,
+        rejected_slot_keys=rejected,
+    )
+
+    assert resumed.fish[0].candidate_by_view["top_cam"] is False
+    assert resumed.fish[0].mouth["top_cam"] == (10.0, 20.0)
+    assert resumed.fish[1].mouth["top_cam"] is None
+    assert resumed.fish[2].candidate_by_view["top_cam"] is True
+    assert fish_view_is_saveable(resumed.fish[2], "top_cam") is False
+    assert build_instance_review_sequence(
+        [key],
+        {key: {"top_cam": candidate_lf}},
+        merged_groups,
+        accepted,
+        rejected,
+    ) == [(key, "top_cam", 2)]
 
 
 def test_independent_mode_rejects_calibration_coordinate_fill() -> None:

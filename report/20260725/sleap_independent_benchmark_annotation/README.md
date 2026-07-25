@@ -40,6 +40,39 @@ benchmark so every saved coordinate comes from a manual click.
 The selection contains 14 K_1_1 frames, 13 K_1_2 frames, and 13 K_1_3 frames.
 The 120 view frames have no model predictions or prefilled keypoints.
 
+## Optional Round-8 prediction review
+
+This is a separate human-in-the-loop review path; it does not replace or
+modify the blank/manual workflow above. Keep the blank or manually edited SLP
+as the authoritative `--in` package and supply the Round-8 predictions only as
+a review overlay:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.sleap.pyqt_multiview_annotator `
+  --in report\20260725\sleap_independent_benchmark_annotation\independent_annotation_40_blank.pkg.slp `
+  --candidate-slp .tmp\prediction_review\round8_candidates.slp `
+  --out report\20260725\sleap_independent_benchmark_annotation\independent_annotation_40_round8_instance_review.pkg.slp `
+  --paths-config configs\paths.local.toml `
+  --calibration-backend auto --min-views 1 `
+  --instance-review --independent
+```
+
+Use `independent_annotation_40_labeled.pkg.slp` as `--in` instead if the
+separate review should retain existing manual annotations. Never use the
+candidate SLP as `--in`, and keep the review output name distinct from both
+the manual labels and the candidate overlay.
+
+Instance review visits one active detection in one camera view at a time, so
+it does not assume that prediction score ranks identify the same fish across
+views. Left/Right moves to the previous/next detection across the 40 source
+frames and 120 camera views. Press `A` to accept the active detection or `R`
+to reject it. Dragging or otherwise editing a candidate accepts that detection.
+Untouched candidates remain proposals and are not serialized as user labels.
+
+`Ctrl+S` saves immediately; the same quiet two-minute and normal-exit
+autosaves apply. Reopen the exact command to resume automatically from the
+separate `--out` file, including prior accept/reject decisions.
+
 ## Freeze after annotation
 
 After saving the manual output, run:

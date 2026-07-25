@@ -34,17 +34,26 @@ CLI
 ---
     python -m scripts.sleap.pyqt_multiview_annotator \\
         --in  C:/.../annotation_seed_round3.pkg.slp \\
+        --candidate-slp C:/.../prediction_candidates.slp \\
         --out C:/.../annotation_seed_round3_v3.pkg.slp \\
         --paths-config configs/paths.local.toml
+
+``--in`` is always the authoritative annotation package. Predictions supplied
+through ``--candidate-slp`` are a review-only overlay: merely viewing them
+never converts them into user instances. Dragging/toggling a candidate or
+pressing A accepts it; pressing R rejects the remaining candidates in the
+current synchronized frame. Review decisions are persisted in provenance.
 """
 
 import argparse
+import hashlib
 import sys
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from urllib.parse import quote
 
 import numpy as np
 
@@ -154,6 +163,245 @@ def copy_labels_provenance(labels) -> dict:
     return deepcopy(dict(getattr(labels, "provenance", {}) or {}))
 
 
+PREDICTION_REVIEW_PROVENANCE_KEY = "prediction_candidate_review"
+PREDICTION_REVIEW_SCHEMA = "prediction-candidate-review-v2"
+REVIEW_SLOT_TRACK_PREFIX = "prediction-review-slot-v1:"
+
+
+def sha256_file(path: Path) -> str:
+    """Return a streaming SHA-256 digest for a candidate artifact."""
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def review_view_key(experiment: str, frame_idx: int, view: str) -> str:
+    """Return the stable provenance key for one reviewed camera frame."""
+    return f"{experiment}|{int(frame_idx)}|{view}"
+
+
+def review_slot_key(
+    experiment: str,
+    frame_idx: int,
+    view: str,
+    fish_idx: int,
+) -> str:
+    """Return the stable provenance key for one candidate fish/view slot."""
+    return (
+        f"{experiment}|{int(frame_idx)}|{view}|"
+        f"fish_slot={int(fish_idx)}"
+    )
+
+
+def review_slot_track_name(
+    experiment: str,
+    frame_idx: int,
+    view: str,
+    fish_idx: int,
+) -> str:
+    """Return an item-unique Track name that preserves a review slot."""
+    return (
+        f"{REVIEW_SLOT_TRACK_PREFIX}{quote(str(experiment), safe='')}:"
+        f"{int(frame_idx)}:{quote(str(view), safe='')}:{int(fish_idx)}"
+    )
+
+
+def review_slot_index_from_instance(instance) -> Optional[int]:
+    """Read a stable review slot index from an instance Track, if present."""
+    track = getattr(instance, "track", None)
+    name = str(getattr(track, "name", "") or "")
+    if not name.startswith(REVIEW_SLOT_TRACK_PREFIX):
+        return None
+    value = name.rsplit(":", 1)[-1]
+    try:
+        slot = int(value)
+    except ValueError:
+        return None
+    return slot if slot >= 0 else None
+
+
+def reviewed_view_keys_from_provenance(labels) -> set[str]:
+    """Read reviewed camera-frame keys from an annotation package."""
+    provenance = copy_labels_provenance(labels)
+    review = provenance.get(PREDICTION_REVIEW_PROVENANCE_KEY, {})
+    if not isinstance(review, dict):
+        return set()
+    values = review.get("reviewed_views", [])
+    return {str(value) for value in values if str(value).strip()}
+
+
+def candidate_artifact_from_provenance(labels) -> dict:
+    """Return the persisted prediction-candidate artifact record, if any."""
+    provenance = copy_labels_provenance(labels)
+    review = provenance.get(PREDICTION_REVIEW_PROVENANCE_KEY, {})
+    if not isinstance(review, dict):
+        return {}
+    artifact = review.get("candidate_artifact", {})
+    return deepcopy(artifact) if isinstance(artifact, dict) else {}
+
+
+def review_slot_decisions_from_provenance(
+    labels,
+) -> Tuple[set[str], set[str]]:
+    """Return accepted and rejected instance-review slot keys."""
+    provenance = copy_labels_provenance(labels)
+    review = provenance.get(PREDICTION_REVIEW_PROVENANCE_KEY, {})
+    if not isinstance(review, dict):
+        return set(), set()
+    instance_review = review.get("instance_review", {})
+    if not isinstance(instance_review, dict):
+        return set(), set()
+    accepted = {
+        str(value)
+        for value in instance_review.get("accepted_slots", [])
+        if str(value).strip()
+    }
+    rejected = {
+        str(value)
+        for value in instance_review.get("rejected_slots", [])
+        if str(value).strip()
+    }
+    # Accepted wins if malformed provenance contains the same slot in both.
+    rejected.difference_update(accepted)
+    return accepted, rejected
+
+
+def candidate_artifact_record(path: Path) -> dict:
+    """Build the persisted identity record for a candidate SLP."""
+    resolved = Path(path).resolve()
+    return {
+        "path": str(resolved),
+        "sha256": sha256_file(resolved),
+        "size_bytes": int(resolved.stat().st_size),
+    }
+
+
+def candidate_artifact_mismatch(
+    persisted: dict,
+    current: dict,
+) -> Optional[str]:
+    """Explain an unsafe resume/candidate mismatch, or return ``None``."""
+    old_digest = str((persisted or {}).get("sha256", "")).strip().lower()
+    new_digest = str((current or {}).get("sha256", "")).strip().lower()
+    if old_digest and new_digest and old_digest != new_digest:
+        return (
+            "the resume file contains review decisions for a different "
+            "candidate SLP (SHA-256 mismatch)"
+        )
+    return None
+
+
+def ranked_instances(labeled_frame) -> list:
+    """Return instances in the deterministic rank order used by the GUI."""
+    return sorted(
+        list(getattr(labeled_frame, "instances", []) or []),
+        key=lambda inst: -(getattr(inst, "score", 0.0) or 0.0),
+    )
+
+
+def instances_by_review_slot(
+    labeled_frame,
+    n_slots: int,
+) -> Dict[int, object]:
+    """Place tracked instances in their saved slots, then rank untracked."""
+    assignments: Dict[int, object] = {}
+    untracked = []
+    for instance in ranked_instances(labeled_frame):
+        slot = review_slot_index_from_instance(instance)
+        if slot is None or slot >= n_slots or slot in assignments:
+            untracked.append(instance)
+        else:
+            assignments[slot] = instance
+    empty_slots = [
+        fish_idx
+        for fish_idx in range(n_slots)
+        if fish_idx not in assignments
+    ]
+    for fish_idx, instance in zip(empty_slots, untracked):
+        assignments[fish_idx] = instance
+    return assignments
+
+
+def build_instance_review_sequence(
+    authoritative_group_keys,
+    candidate_groups,
+    authoritative_groups=None,
+    accepted_slot_keys=None,
+    rejected_slot_keys=None,
+) -> List[Tuple[Tuple[str, int], str, int]]:
+    """Flatten incomplete per-view candidate items in authoritative order."""
+    authoritative_groups = dict(authoritative_groups or {})
+    decided_slot_keys = set(accepted_slot_keys or ()) | set(
+        rejected_slot_keys or ()
+    )
+    sequence: List[Tuple[Tuple[str, int], str, int]] = []
+    for key in authoritative_group_keys:
+        candidate_views = dict(candidate_groups.get(key, {}))
+        authoritative_views = dict(authoritative_groups.get(key, {}))
+        for view in VIEWS:
+            candidate_lf = candidate_views.get(view)
+            if candidate_lf is None:
+                continue
+            candidates = ranked_instances(candidate_lf)
+            authoritative = instances_by_review_slot(
+                authoritative_views.get(view),
+                len(candidates),
+            )
+            for fish_idx, candidate in enumerate(candidates):
+                if (
+                    review_slot_key(
+                        key[0],
+                        key[1],
+                        view,
+                        fish_idx,
+                    )
+                    in decided_slot_keys
+                ):
+                    continue
+                mouth, _mouth_vis, tail, _tail_vis = (
+                    instance_xy_vis_pair(candidate)
+                )
+                if mouth is None and tail is None:
+                    continue
+                authoritative_instance = authoritative.get(fish_idx)
+                if authoritative_instance is None:
+                    sequence.append((key, view, fish_idx))
+                    continue
+                auth_mouth, _mouth_vis, auth_tail, _tail_vis = (
+                    instance_xy_vis_pair(authoritative_instance)
+                )
+                if auth_mouth is None or auth_tail is None:
+                    sequence.append((key, view, fish_idx))
+    return sequence
+
+
+def fish_points_by_view(
+    fish: List[FishKeypoints],
+    fish_indices,
+) -> Dict[str, List[Tuple[float, float]]]:
+    """Collect finite mouth/tail points for selected fish slots."""
+    points_by_view: Dict[str, List[Tuple[float, float]]] = {
+        view: [] for view in VIEWS
+    }
+    for fish_idx in fish_indices:
+        if fish_idx < 0 or fish_idx >= len(fish):
+            continue
+        keypoints = fish[fish_idx]
+        for node_points in (keypoints.mouth, keypoints.tail):
+            for view in VIEWS:
+                point = node_points.get(view)
+                if point is None:
+                    continue
+                xy = np.asarray(point, dtype=float)
+                if xy.shape == (2,) and np.all(np.isfinite(xy)):
+                    points_by_view[view].append(
+                        (float(xy[0]), float(xy[1]))
+                    )
+    return points_by_view
+
+
 # ---------------------------------------------------------------------------
 # Data model — kept small and reused by the napari prototype too.
 # ---------------------------------------------------------------------------
@@ -181,6 +429,57 @@ class FishKeypoints:
     tail_visible: Dict[str, bool] = field(
         default_factory=lambda: {v: True for v in VIEWS}
     )
+    # Candidate coordinates are visible/editable but are never serialized as
+    # user labels until accepted explicitly or modified by the annotator.
+    candidate_by_view: Dict[str, bool] = field(
+        default_factory=lambda: {v: False for v in VIEWS}
+    )
+    accepted_by_view: Dict[str, bool] = field(
+        default_factory=lambda: {v: False for v in VIEWS}
+    )
+
+
+def accept_fish_view(keypoints: FishKeypoints, view: str) -> bool:
+    """Accept one populated candidate view and return whether it changed."""
+    populated = (
+        keypoints.mouth.get(view) is not None
+        or keypoints.tail.get(view) is not None
+    )
+    if not populated:
+        return False
+    changed = not keypoints.accepted_by_view.get(view, False)
+    keypoints.accepted_by_view[view] = True
+    return changed
+
+
+def fish_view_is_saveable(keypoints: FishKeypoints, view: str) -> bool:
+    """Return whether this camera-view instance may become a user label."""
+    populated = (
+        keypoints.mouth.get(view) is not None
+        or keypoints.tail.get(view) is not None
+    )
+    if not populated:
+        return False
+    if keypoints.candidate_by_view.get(view, False):
+        return bool(keypoints.accepted_by_view.get(view, False))
+    return True
+
+
+def reject_candidate_fish_view(
+    keypoints: FishKeypoints,
+    view: str,
+) -> bool:
+    """Clear one unaccepted candidate view and return whether it changed."""
+    if (
+        not keypoints.candidate_by_view.get(view, False)
+        or keypoints.accepted_by_view.get(view, False)
+    ):
+        return False
+    keypoints.mouth[view] = None
+    keypoints.tail[view] = None
+    keypoints.candidate_by_view[view] = False
+    keypoints.accepted_by_view[view] = False
+    return True
 
 
 def first_empty_fish_slot(fish: List[FishKeypoints]) -> Optional[int]:
@@ -205,6 +504,7 @@ class FrameGroup:
     images: Dict[str, np.ndarray] = field(default_factory=dict)
     fish: List[FishKeypoints] = field(default_factory=list)
     src_lfs: Dict[str, "sio.LabeledFrame"] = field(default_factory=dict)
+    reviewed_views: set[str] = field(default_factory=set)
 
 
 # ---------------------------------------------------------------------------
@@ -507,12 +807,38 @@ def _merge_resume_labels(seed_labels, resume_labels):
 
     print(f"  overlaid={overlaid} LF(s); appended={appended} new LF(s).")
 
+    provenance = copy_labels_provenance(seed_labels)
+    resume_review = copy_labels_provenance(resume_labels).get(
+        PREDICTION_REVIEW_PROVENANCE_KEY
+    )
+    if isinstance(resume_review, dict):
+        provenance[PREDICTION_REVIEW_PROVENANCE_KEY] = deepcopy(
+            resume_review
+        )
+
+    merged_tracks = []
+    seen_track_ids = set()
+    for track in (
+        list(getattr(seed_labels, "tracks", []) or [])
+        + list(getattr(resume_labels, "tracks", []) or [])
+        + [
+            getattr(instance, "track", None)
+            for lf in new_lfs
+            for instance in lf.instances
+        ]
+    ):
+        if track is None or id(track) in seen_track_ids:
+            continue
+        seen_track_ids.add(id(track))
+        merged_tracks.append(track)
+
     return sio.Labels(
         skeletons=seed_labels.skeletons,
         videos=list({id(lf.video): lf.video for lf in new_lfs}.values()),
         labeled_frames=new_lfs,
+        tracks=merged_tracks,
         suggestions=seed_labels.suggestions,
-        provenance=copy_labels_provenance(seed_labels),
+        provenance=provenance,
     )
 
 
@@ -558,9 +884,27 @@ def load_image_for_view(
     )
 
 
-def build_frame_group(key, src_lfs, *, medaka_data_dir, cal):
+def build_frame_group(
+    key,
+    src_lfs,
+    *,
+    medaka_data_dir,
+    cal,
+    candidate_src_lfs=None,
+    reviewed_views=None,
+    accepted_slot_keys=None,
+    rejected_slot_keys=None,
+):
     exp, frame_idx = key
-    grp = FrameGroup(experiment=exp, frame_idx=frame_idx, src_lfs=dict(src_lfs))
+    candidate_src_lfs = dict(candidate_src_lfs or {})
+    accepted_slot_keys = set(accepted_slot_keys or ())
+    rejected_slot_keys = set(rejected_slot_keys or ())
+    grp = FrameGroup(
+        experiment=exp,
+        frame_idx=frame_idx,
+        src_lfs=dict(src_lfs),
+        reviewed_views=set(reviewed_views or ()),
+    )
     for view in VIEWS:
         lf = src_lfs.get(view)
         img = load_image_for_view(
@@ -576,26 +920,63 @@ def build_frame_group(key, src_lfs, *, medaka_data_dir, cal):
 
     # Up to NUM_FISH instances per view; align by detection-score order.
     n_fish = 0
-    for view in VIEWS:
-        lf = src_lfs.get(view)
-        if lf is not None:
-            n_fish = max(n_fish, len(lf.instances))
+    for frames_by_view in (src_lfs, candidate_src_lfs):
+        for view in VIEWS:
+            lf = frames_by_view.get(view)
+            if lf is not None:
+                n_fish = max(n_fish, len(lf.instances))
+                tracked_slots = [
+                    review_slot_index_from_instance(instance)
+                    for instance in lf.instances
+                ]
+                tracked_slots = [
+                    slot for slot in tracked_slots if slot is not None
+                ]
+                if tracked_slots:
+                    n_fish = max(n_fish, max(tracked_slots) + 1)
     n_fish = max(1, n_fish)
     grp.fish = [FishKeypoints(fish_id=i) for i in range(n_fish)]
 
+    # Authoritative input instances are already user labels and stay
+    # saveable. Candidate instances are added only to otherwise empty slots.
     for view, lf in src_lfs.items():
         if lf is None:
             continue
-        ranked = sorted(
-            lf.instances,
-            key=lambda inst: -(getattr(inst, "score", 0.0) or 0.0),
-        )
-        for i, inst in enumerate(ranked[:n_fish]):
+        assignments = instances_by_review_slot(lf, n_fish)
+        for i, inst in sorted(assignments.items()):
             mouth, mouth_vis, tail, tail_vis = instance_xy_vis_pair(inst)
             grp.fish[i].mouth[view] = mouth
             grp.fish[i].tail[view] = tail
             grp.fish[i].mouth_visible[view] = mouth_vis
             grp.fish[i].tail_visible[view] = tail_vis
+            grp.fish[i].accepted_by_view[view] = True
+
+    for view, lf in candidate_src_lfs.items():
+        if lf is None or view in grp.reviewed_views:
+            continue
+        ranked = ranked_instances(lf)
+        for i, inst in enumerate(ranked[:n_fish]):
+            slot_key = review_slot_key(exp, frame_idx, view, i)
+            if (
+                slot_key in accepted_slot_keys
+                or slot_key in rejected_slot_keys
+            ):
+                continue
+            keypoints = grp.fish[i]
+            if (
+                keypoints.mouth.get(view) is not None
+                or keypoints.tail.get(view) is not None
+            ):
+                continue
+            mouth, mouth_vis, tail, tail_vis = instance_xy_vis_pair(inst)
+            if mouth is None and tail is None:
+                continue
+            keypoints.mouth[view] = mouth
+            keypoints.tail[view] = tail
+            keypoints.mouth_visible[view] = mouth_vis
+            keypoints.tail_visible[view] = tail_vis
+            keypoints.candidate_by_view[view] = True
+            keypoints.accepted_by_view[view] = False
     return grp
 
 
@@ -810,6 +1191,7 @@ class ViewPane:
         on_toggle_visible,
         on_request_swap,
         label: Optional[str] = None,
+        candidate: bool = False,
     ) -> None:
         QtCore, QtGui, QtWidgets = _qt()
         item = _make_keypoint_item(
@@ -819,6 +1201,7 @@ class ViewPane:
             on_moved=on_moved, on_release=on_release, on_delete=on_delete,
             on_toggle_visible=on_toggle_visible,
             on_request_swap=on_request_swap,
+            candidate=candidate,
             z=2.0,
         )
         self.scene.addItem(item)
@@ -863,8 +1246,17 @@ class ViewPane:
         line.setZValue(0.5)
         self.keypoint_items.append(line)
 
-    def add_arrow(self, p_tail, p_mouth, color_rgb, width=1.5,
-                  head_len=13.0, head_deg=26.0, tip_gap=10.0):
+    def add_arrow(
+        self,
+        p_tail,
+        p_mouth,
+        color_rgb,
+        width=1.5,
+        head_len=13.0,
+        head_deg=26.0,
+        tip_gap=10.0,
+        candidate: bool = False,
+    ):
         """Body-axis edge drawn as an arrow pointing tail -> mouth.
 
         The arrowhead sits just short of the mouth marker (backed off by
@@ -881,6 +1273,8 @@ class ViewPane:
         pen = QtGui.QPen(QtGui.QColor(*color_rgb))
         pen.setWidthF(width)
         pen.setCosmetic(True)
+        if candidate:
+            pen.setStyle(QtCore.Qt.DashLine)
         dx, dy = xm - xt, ym - yt
         L = math.hypot(dx, dy)
         if L < 1e-6:
@@ -1013,6 +1407,7 @@ def _make_keypoint_item(
     on_delete,
     on_toggle_visible,
     on_request_swap,
+    candidate: bool = False,
     z: float = 1.0,
 ):
     """Create a movable :class:`QGraphicsEllipseItem` that streams its
@@ -1032,6 +1427,8 @@ def _make_keypoint_item(
             pen = QtGui.QPen(QtGui.QColor(*color_rgb))
             pen.setWidthF(2.0)
             pen.setCosmetic(True)
+            if candidate:
+                pen.setStyle(QtCore.Qt.DashLine)
             self.setPen(pen)
             self.setBrush(QtGui.QBrush(QtGui.QColor(*color_rgb, fill_alpha)))
             self.setPos(x, y)
@@ -1169,6 +1566,9 @@ class MultiviewWindow:
         medaka_data_dir: Path,
         out_path: Path,
         allow_calibration_fill: bool = True,
+        candidate_groups=None,
+        candidate_artifact: Optional[dict] = None,
+        instance_review: bool = False,
     ):
         QtCore, QtGui, QtWidgets = _qt()
         self.labels = labels
@@ -1178,8 +1578,45 @@ class MultiviewWindow:
         self.medaka_data_dir = medaka_data_dir
         self.out_path = out_path
         self.allow_calibration_fill = bool(allow_calibration_fill)
+        self.candidate_groups = dict(candidate_groups or {})
+        self.candidate_artifact = deepcopy(candidate_artifact or {})
+        self.candidate_review_enabled = bool(self.candidate_artifact)
+        self.instance_review = bool(instance_review)
+        if self.instance_review and not self.candidate_review_enabled:
+            raise ValueError(
+                "instance review requires a prediction candidate overlay"
+            )
+        self.reviewed_view_keys = reviewed_view_keys_from_provenance(labels)
+        (
+            self.accepted_slot_keys,
+            self.rejected_slot_keys,
+        ) = review_slot_decisions_from_provenance(labels)
+        self.instance_review_sequence = (
+            build_instance_review_sequence(
+                group_keys,
+                self.candidate_groups,
+                self.groups_src,
+                self.accepted_slot_keys,
+                self.rejected_slot_keys,
+            )
+            if self.instance_review
+            else []
+        )
+        if self.instance_review and not self.instance_review_sequence:
+            raise ValueError(
+                "candidate overlay has no populated fish slots to review"
+            )
+        self.instance_review_idx = 0
+        self._group_index_by_key = {
+            key: index for index, key in enumerate(self.group_keys)
+        }
 
         self.cur_idx: int = 0
+        if self.instance_review_sequence:
+            first_key, _first_view, _first_fish_idx = (
+                self.instance_review_sequence[0]
+            )
+            self.cur_idx = self._group_index_by_key[first_key]
         self.cur_group: Optional[FrameGroup] = None
         # Tank center as initial focus (mm).
         self.focus_xyz: np.ndarray = np.array([100.0, 100.0, 100.0])
@@ -1202,7 +1639,11 @@ class MultiviewWindow:
         # Build window.
         self.window = QtWidgets.QMainWindow()
         title = "Medaka multi-view annotator (PyQt)"
-        if not self.allow_calibration_fill:
+        if getattr(self, "instance_review", False):
+            title += " — instance-by-instance prediction review"
+        elif self.candidate_review_enabled:
+            title += " — human-in-the-loop prediction review"
+        elif not self.allow_calibration_fill:
             title += " — independent manual points"
         self.window.setWindowTitle(title)
         self.window.resize(1500, 900)
@@ -1330,6 +1771,47 @@ class MultiviewWindow:
         self.add_btn.toggled.connect(self.toggle_add_mode)
         layout.addWidget(self.add_btn)
 
+        if self.candidate_review_enabled:
+            accept_btn = QtWidgets.QToolButton()
+            accept_btn.setText(
+                "Accept active fish (A)"
+                if self.instance_review
+                else "Accept candidates (A)"
+            )
+            accept_btn.setToolTip(
+                (
+                    "Accept the one active per-view fish candidate."
+                )
+                if self.instance_review
+                else (
+                    "Accept every visible prediction candidate in this "
+                    "synchronized frame group."
+                )
+            )
+            accept_btn.clicked.connect(self.accept_current_candidates)
+            layout.addWidget(accept_btn)
+
+            reject_btn = QtWidgets.QToolButton()
+            reject_btn.setText(
+                "Reject active fish (R)"
+                if self.instance_review
+                else "Reject candidates (R)"
+            )
+            reject_btn.setToolTip(
+                (
+                    "Reject the one active per-view fish candidate. Other "
+                    "candidates remain undecided."
+                )
+                if self.instance_review
+                else (
+                    "Reject every unaccepted prediction candidate in this "
+                    "synchronized frame group. Rejections persist across "
+                    "resume."
+                )
+            )
+            reject_btn.clicked.connect(self.reject_current_candidates)
+            layout.addWidget(reject_btn)
+
         zoom_in_btn = QtWidgets.QToolButton()
         zoom_in_btn.setText("Zoom + (=)")
         zoom_in_btn.clicked.connect(lambda: self.bump_zoom(1.25))
@@ -1346,9 +1828,20 @@ class MultiviewWindow:
         layout.addWidget(zoom_fit_btn)
 
         fit_instances_btn = QtWidgets.QToolButton()
-        fit_instances_btn.setText("Fit instances (Ctrl+0)")
+        fit_instances_btn.setText(
+            "Fit active (Ctrl+0)"
+            if self.instance_review
+            else "Fit instances (Ctrl+0)"
+        )
         fit_instances_btn.setToolTip(
-            "Center and zoom all three views to the current frame's fish."
+            (
+                "Center and zoom tightly on the active review instance."
+                if self.instance_review
+                else (
+                    "Center and zoom all three views to the current "
+                    "frame's fish."
+                )
+            )
         )
         fit_instances_btn.clicked.connect(self.fit_instances)
         layout.addWidget(fit_instances_btn)
@@ -1404,6 +1897,9 @@ class MultiviewWindow:
         self._make_shortcut("Ctrl+Shift+S", self.save_full)
         self._make_shortcut("Escape", self.cancel_add)
         self._make_shortcut("F", self.fill_missing_views)
+        if self.candidate_review_enabled:
+            self._make_shortcut("A", self.accept_current_candidates)
+            self._make_shortcut("R", self.reject_current_candidates)
 
     def set_keypoint_size(self, size_name: str) -> None:
         """Apply a toolbar-selected marker size without altering labels."""
@@ -1411,6 +1907,131 @@ class MultiviewWindow:
         self.keypoint_size = size_name
         self._draw_keypoints()
         self.status.showMessage(f"Keypoint circles: {size_name}.", 2500)
+
+    def _active_review_item(
+        self,
+    ) -> Optional[Tuple[Tuple[str, int], str, int]]:
+        """Return the selected per-view review item, if enabled."""
+        if not self.instance_review_sequence:
+            return None
+        return self.instance_review_sequence[self.instance_review_idx]
+
+    def _active_fish_idx(self) -> Optional[int]:
+        """Return the selected review slot, or ``None`` in frame mode."""
+        item = self._active_review_item()
+        return item[2] if item is not None else None
+
+    def _active_review_view(self) -> Optional[str]:
+        """Return the selected camera view, or ``None`` in frame mode."""
+        item = self._active_review_item()
+        return item[1] if item is not None else None
+
+    def _mark_fish_view_decision(
+        self,
+        fish_idx: int,
+        view: str,
+        decision: str,
+    ) -> None:
+        """Persist an edit at view level or instance-slot level."""
+        if not self.instance_review:
+            self._mark_view_reviewed(view)
+            return
+        if self.cur_group is None:
+            return
+        key = review_slot_key(
+            self.cur_group.experiment,
+            self.cur_group.frame_idx,
+            view,
+            fish_idx,
+        )
+        if decision == "accepted":
+            self.accepted_slot_keys.add(key)
+            self.rejected_slot_keys.discard(key)
+        elif decision == "rejected":
+            self.rejected_slot_keys.add(key)
+            self.accepted_slot_keys.discard(key)
+        else:
+            raise ValueError(f"Unknown review decision: {decision!r}")
+
+    def accept_current_candidates(self) -> None:
+        """Accept candidates in the current frame or active fish slot."""
+        if self.cur_group is None:
+            return
+        active_fish_idx = self._active_fish_idx()
+        fish_items = (
+            [(active_fish_idx, self.cur_group.fish[active_fish_idx])]
+            if active_fish_idx is not None
+            and active_fish_idx < len(self.cur_group.fish)
+            else list(enumerate(self.cur_group.fish))
+        )
+        active_view = self._active_review_view()
+        views = [active_view] if active_view is not None else VIEWS
+        accepted = 0
+        incomplete = 0
+        for fish_idx, keypoints in fish_items:
+            for view in views:
+                if self.instance_review and (
+                    keypoints.mouth.get(view) is None
+                    or keypoints.tail.get(view) is None
+                ):
+                    incomplete += 1
+                    continue
+                if not keypoints.candidate_by_view.get(view, False):
+                    continue
+                if accept_fish_view(keypoints, view):
+                    accepted += 1
+                self._mark_fish_view_decision(
+                    fish_idx, view, "accepted"
+                )
+        self._draw_keypoints()
+        self._update_status()
+        if incomplete:
+            self.status.showMessage(
+                "Active candidate is partial. Press I, then click the "
+                "missing mouth or tail before accepting it.",
+                6000,
+            )
+            return
+        self.status.showMessage(
+            (
+                f"Accepted active fish in {accepted} view(s)."
+                if self.instance_review
+                else f"Accepted {accepted} candidate view-instance(s)."
+            ),
+            4000,
+        )
+
+    def reject_current_candidates(self) -> None:
+        """Reject candidates in the current frame or active fish slot."""
+        if self.cur_group is None:
+            return
+        active_fish_idx = self._active_fish_idx()
+        fish_items = (
+            [(active_fish_idx, self.cur_group.fish[active_fish_idx])]
+            if active_fish_idx is not None
+            and active_fish_idx < len(self.cur_group.fish)
+            else list(enumerate(self.cur_group.fish))
+        )
+        active_view = self._active_review_view()
+        views = [active_view] if active_view is not None else VIEWS
+        rejected = 0
+        for fish_idx, keypoints in fish_items:
+            for view in views:
+                if reject_candidate_fish_view(keypoints, view):
+                    self._mark_fish_view_decision(
+                        fish_idx, view, "rejected"
+                    )
+                    rejected += 1
+        self._draw_keypoints()
+        self._update_status()
+        self.status.showMessage(
+            (
+                f"Rejected active fish in {rejected} view(s)."
+                if self.instance_review
+                else f"Rejected {rejected} candidate view-instance(s)."
+            ),
+            4000,
+        )
 
     def _make_shortcut(self, key, handler):
         QtCore, QtGui, QtWidgets = _qt()
@@ -1423,11 +2044,23 @@ class MultiviewWindow:
 
     def _add_help_dock(self):
         QtCore, QtGui, QtWidgets = _qt()
-        fill_help = (
-            "<b>F is disabled</b> for this independent benchmark; every "
-            "mouth and tail coordinate must be clicked manually.<br>"
-            if not self.allow_calibration_fill
-            else (
+        if self.instance_review:
+            fill_help = (
+                "<b>F is disabled</b> in instance review because its "
+                "frame-wide re-matching would modify hidden fish slots.<br>"
+            )
+        elif not self.allow_calibration_fill and self.candidate_review_enabled:
+            fill_help = (
+                "<b>F is disabled</b>: review/correct the displayed model "
+                "candidates directly, or add missing points manually.<br>"
+            )
+        elif not self.allow_calibration_fill:
+            fill_help = (
+                "<b>F is disabled</b> for this independent benchmark; every "
+                "mouth and tail coordinate must be clicked manually.<br>"
+            )
+        else:
+            fill_help = (
                 "<b>F</b>: re-match all fish across views via calibration "
                 "(anchored on the most recently edited view) and re-predict "
                 "the keypoints in the OTHER views from the new matches. The "
@@ -1435,6 +2068,32 @@ class MultiviewWindow:
                 "Hungarian-paired by reprojection error and the empty slots "
                 "are filled.<br>"
             )
+        if self.instance_review:
+            candidate_help = (
+                "<b>Instance review</b>: one camera pane and one candidate "
+                "are shown and tightly centered. <kbd>←</kbd>/<kbd>→</kbd> "
+                "move through per-view instances across frames. Gray dashed "
+                "points are unsaved candidates. Drag/change or press "
+                "<kbd>A</kbd> to accept this item; <kbd>R</kbd> rejects only "
+                "this item. Other candidates remain undecided and reviewable "
+                "after resume."
+                "<br><br>"
+            )
+        elif self.candidate_review_enabled:
+            candidate_help = (
+                "<b>Prediction review</b>: gray dashed instances are "
+                "candidates, not saved annotations. Drag or change a "
+                "candidate to accept it; <kbd>A</kbd> accepts all candidates "
+                "in this synchronized frame. <kbd>R</kbd> rejects all "
+                "still-gray candidates. Acceptance and rejection persist "
+                "across resume.<br><br>"
+            )
+        else:
+            candidate_help = ""
+        navigation_help = (
+            "fish candidate.<br>"
+            if self.instance_review
+            else "frame.<br>"
         )
         text = (
             "<h3>Multi-view annotator</h3>"
@@ -1445,6 +2104,7 @@ class MultiviewWindow:
             "click after that = tail. The two clicks must be in the same "
             "view. After committing, candidate IDs are computed via "
             "calibration and one is shown in a popup.<br><br>"
+            + candidate_help
             + fill_help
             + "<b>Right-click a keypoint</b>: toggle hidden ↔ visible "
             "immediately. Hidden keypoints are drawn with the alternate "
@@ -1452,8 +2112,9 @@ class MultiviewWindow:
             "<b>Ctrl + right-click a keypoint</b>: menu with Swap ID, "
             "delete-this-keypoint, delete-this-instance, "
             "delete-fish-across-all-views.<br><br>"
-            "<b>Frame nav</b>: <kbd>←</kbd> prev, <kbd>→</kbd> next.<br>"
-            "<b>Zoom</b>: <kbd>=</kbd>/<kbd>-</kbd>; <kbd>0</kbd> fits the "
+            "<b>Navigation</b>: <kbd>←</kbd> previous, <kbd>→</kbd> next "
+            + navigation_help
+            + "<b>Zoom</b>: <kbd>=</kbd>/<kbd>-</kbd>; <kbd>0</kbd> fits the "
             "view and <kbd>Ctrl+0</kbd> fits all current instances.<br>"
             "<b>Keypoints</b>: choose Small, Medium, or Large in the toolbar "
             "to change the mouth/tail circle size in all three views.<br>"
@@ -1487,20 +2148,47 @@ class MultiviewWindow:
             # stashed; reload from sources. Keypoints are preserved.
             self._reload_images_into_group(self.cur_group)
         else:
+            reviewed_views = {
+                view
+                for view in VIEWS
+                if review_view_key(key[0], key[1], view)
+                in self.reviewed_view_keys
+            }
             self.cur_group = build_frame_group(
                 key,
                 self.groups_src[key],
                 medaka_data_dir=self.medaka_data_dir,
                 cal=self.cal,
+                candidate_src_lfs=self.candidate_groups.get(key, {}),
+                reviewed_views=reviewed_views,
+                accepted_slot_keys=self.accepted_slot_keys,
+                rejected_slot_keys=self.rejected_slot_keys,
             )
         for view, pane in self.panes.items():
             pane.set_image(self.cur_group.images[view])
-        self._sync_views()
+            pane.view.setVisible(
+                not self.instance_review
+                or view == self._active_review_view()
+            )
+        if self.instance_review:
+            self.fit_active_instance()
+        else:
+            self._sync_views()
         self._draw_keypoints()
-        self.frame_label.setText(
-            f"[{self.cur_idx + 1}/{len(self.group_keys)}] "
-            f"{key[0]} @ frame {key[1]}"
-        )
+        if self.instance_review:
+            active_fish_idx = self._active_fish_idx()
+            active_view = self._active_review_view()
+            self.frame_label.setText(
+                f"[instance {self.instance_review_idx + 1}/"
+                f"{len(self.instance_review_sequence)}] "
+                f"{key[0]} @ frame {key[1]} | "
+                f"{active_view} candidate {int(active_fish_idx) + 1}"
+            )
+        else:
+            self.frame_label.setText(
+                f"[{self.cur_idx + 1}/{len(self.group_keys)}] "
+                f"{key[0]} @ frame {key[1]}"
+            )
         self._update_status()
 
     def _stash_current_group(self) -> None:
@@ -1529,12 +2217,33 @@ class MultiviewWindow:
             grp.images[view] = img
 
     def next_frame(self):
-        self.cur_idx = min(self.cur_idx + 1, len(self.group_keys) - 1)
+        if self.instance_review_sequence:
+            self.instance_review_idx = min(
+                self.instance_review_idx + 1,
+                len(self.instance_review_sequence) - 1,
+            )
+            key, _view, _fish_idx = self.instance_review_sequence[
+                self.instance_review_idx
+            ]
+            self.cur_idx = self._group_index_by_key[key]
+        else:
+            self.cur_idx = min(
+                self.cur_idx + 1, len(self.group_keys) - 1
+            )
         self.cancel_add()
         self._render_current()
 
     def prev_frame(self):
-        self.cur_idx = max(self.cur_idx - 1, 0)
+        if self.instance_review_sequence:
+            self.instance_review_idx = max(
+                self.instance_review_idx - 1, 0
+            )
+            key, _view, _fish_idx = self.instance_review_sequence[
+                self.instance_review_idx
+            ]
+            self.cur_idx = self._group_index_by_key[key]
+        else:
+            self.cur_idx = max(self.cur_idx - 1, 0)
         self.cancel_add()
         self._render_current()
 
@@ -1554,6 +2263,16 @@ class MultiviewWindow:
 
     def bump_zoom(self, factor):
         self.zoom = float(np.clip(self.zoom * factor, 0.05, 8.0))
+        if self.instance_review:
+            view = self._active_review_view()
+            pane = self.panes.get(view) if view is not None else None
+            if pane is not None:
+                # Preserve the exact center chosen by the instance fitter.
+                # A calibration projection would move this single-view
+                # review away from the active detection.
+                pane.set_focus(pane.current_center(), self.zoom)
+                self._update_status()
+                return
         self._sync_views()
         self._update_status()
 
@@ -1570,23 +2289,71 @@ class MultiviewWindow:
         self._sync_views()
         self._update_status()
 
+    def _mark_view_reviewed(self, view: str) -> None:
+        if self.cur_group is None:
+            return
+        self.cur_group.reviewed_views.add(view)
+        self.reviewed_view_keys.add(
+            review_view_key(
+                self.cur_group.experiment,
+                self.cur_group.frame_idx,
+                view,
+            )
+        )
+
+    def fit_active_instance(self) -> None:
+        """Tightly center the sole visible pane on the active candidate."""
+        if self.cur_group is None or not self.panes:
+            return
+        fish_idx = self._active_fish_idx()
+        view = self._active_review_view()
+        if fish_idx is None or view is None:
+            return
+        points_by_view = fish_points_by_view(
+            self.cur_group.fish,
+            [fish_idx],
+        )
+        points = points_by_view[view]
+        if not points:
+            return
+
+        points_array = np.asarray(points, dtype=float)
+        center_array = (
+            np.min(points_array, axis=0) + np.max(points_array, axis=0)
+        ) / 2.0
+        center = (float(center_array[0]), float(center_array[1]))
+        focus_by_view = {view: center}
+        viewport_sizes = {
+            view: (
+                self.panes[view].view.viewport().size().width(),
+                self.panes[view].view.viewport().size().height(),
+            )
+        }
+        zoom = instance_fit_zoom(
+            {view: points},
+            focus_by_view,
+            viewport_sizes,
+            display_margin_px=48.0,
+            minimum_scene_span_px=120.0,
+        )
+        if zoom is not None:
+            self.zoom = zoom
+        self.panes[view].set_focus(center, self.zoom)
+
     def fit_instances(self):
         """Center and zoom the synchronized panes around current instances."""
         if self.cur_group is None or not self.panes:
             return
+        if self.instance_review:
+            self.fit_active_instance()
+            self._update_status()
+            return
 
-        points_by_view: Dict[str, List[Tuple[float, float]]] = {
-            view: [] for view in VIEWS
-        }
-        for fk in self.cur_group.fish:
-            for keypoints in (fk.mouth, fk.tail):
-                for view in VIEWS:
-                    point = keypoints.get(view)
-                    if point is None:
-                        continue
-                    xy = np.asarray(point, dtype=float)
-                    if xy.shape == (2,) and np.all(np.isfinite(xy)):
-                        points_by_view[view].append((float(xy[0]), float(xy[1])))
+        fish_indices = range(len(self.cur_group.fish))
+        points_by_view = fish_points_by_view(
+            self.cur_group.fish,
+            fish_indices,
+        )
 
         populated_views = [view for view in VIEWS if points_by_view[view]]
         if not populated_views:
@@ -1653,7 +2420,11 @@ class MultiviewWindow:
     # -------------------- click + pan handlers --------------------
 
     def on_pane_click(self, view: str, x_img: float, y_img: float):
-        if self.add_mode == "place_mouth":
+        if self.add_mode == "place_missing_mouth":
+            self._place_missing_node(view, "mouth", x_img, y_img)
+        elif self.add_mode == "place_missing_tail":
+            self._place_missing_node(view, "tail", x_img, y_img)
+        elif self.add_mode == "place_mouth":
             self._place_mouth(view, x_img, y_img)
         elif self.add_mode == "place_tail":
             self._place_tail(view, x_img, y_img)
@@ -1693,6 +2464,30 @@ class MultiviewWindow:
 
     def toggle_add_mode(self, on: bool):
         if on:
+            active_fish_idx = self._active_fish_idx()
+            active_view = self._active_review_view()
+            if (
+                active_fish_idx is not None
+                and active_view is not None
+                and self.cur_group is not None
+            ):
+                keypoints = self.cur_group.fish[active_fish_idx]
+                mouth_missing = keypoints.mouth.get(active_view) is None
+                tail_missing = keypoints.tail.get(active_view) is None
+                if mouth_missing != tail_missing:
+                    missing_node = (
+                        "mouth" if mouth_missing else "tail"
+                    )
+                    self.add_mode = f"place_missing_{missing_node}"
+                    self.pending_view = active_view
+                    self.pending_mouth = None
+                    self.pending_fish_idx = active_fish_idx
+                    self.status.showMessage(
+                        f"COMPLETE ACTIVE CANDIDATE: click the missing "
+                        f"{missing_node.upper()} in {active_view}.",
+                        0,
+                    )
+                    return
             self.add_mode = "place_mouth"
             self.pending_view = None
             self.pending_mouth = None
@@ -1744,7 +2539,12 @@ class MultiviewWindow:
         fish_idx: Optional[int] = None
         decision_msg: str = ""
 
-        if len(candidates) == 1:
+        if self.instance_review:
+            fish_idx = self._active_fish_idx()
+            decision_msg = (
+                f"assigned to active candidate {int(fish_idx) + 1}"
+            )
+        elif len(candidates) == 1:
             # Definitive: there's only one fish this could plausibly be.
             fish_idx = candidates[0][0]
             decision_msg = f"auto-assigned ID_{fish_idx + 1} (only candidate left)"
@@ -1790,6 +2590,9 @@ class MultiviewWindow:
 
         self.cur_group.fish[fish_idx].mouth[view] = mouth
         self.cur_group.fish[fish_idx].tail[view] = tail
+        self.cur_group.fish[fish_idx].candidate_by_view[view] = False
+        self.cur_group.fish[fish_idx].accepted_by_view[view] = True
+        self._mark_fish_view_decision(fish_idx, view, "accepted")
         self.last_edited_view = view
         self.status.showMessage(
             f"Instance placed in {view}: {decision_msg}.", 4000
@@ -1993,31 +2796,61 @@ class MultiviewWindow:
 
         marker_radius = keypoint_radius(self.keypoint_size)
         halo_radius = marker_radius + 6.0
+        active_fish_idx = self._active_fish_idx()
+        fish_indices = (
+            [active_fish_idx]
+            if active_fish_idx is not None
+            else range(len(self.cur_group.fish))
+        )
 
         # Pre-compute reprojection errors per fish/node for halo coloring.
         # Only when all 3 views are populated.
         errors_by_fnv: Dict[Tuple[int, str, str], float] = {}
-        for fish_idx, fk in enumerate(self.cur_group.fish):
-            for node, kp_dict in (("mouth", fk.mouth), ("tail", fk.tail)):
-                if not all(kp_dict[v] is not None for v in VIEWS):
+        if not self.instance_review:
+            for fish_idx in fish_indices:
+                if fish_idx >= len(self.cur_group.fish):
                     continue
-                pts = {v: kp_dict[v] for v in VIEWS}
-                xyz = triangulate_xyz(self.cal, pts)
-                if not np.all(np.isfinite(xyz)):
-                    continue
-                try:
-                    reproj = reproject_xyz(self.cal, xyz)
-                except RuntimeError:
-                    continue
-                for v in VIEWS:
-                    err = float(np.hypot(
-                        pts[v][0] - reproj[v][0], pts[v][1] - reproj[v][1]
-                    ))
-                    errors_by_fnv[(fish_idx, node, v)] = err
+                fk = self.cur_group.fish[fish_idx]
+                for node, kp_dict in (
+                    ("mouth", fk.mouth),
+                    ("tail", fk.tail),
+                ):
+                    if not all(kp_dict[v] is not None for v in VIEWS):
+                        continue
+                    pts = {v: kp_dict[v] for v in VIEWS}
+                    xyz = triangulate_xyz(self.cal, pts)
+                    if not np.all(np.isfinite(xyz)):
+                        continue
+                    try:
+                        reproj = reproject_xyz(self.cal, xyz)
+                    except RuntimeError:
+                        continue
+                    for v in VIEWS:
+                        err = float(np.hypot(
+                            pts[v][0] - reproj[v][0],
+                            pts[v][1] - reproj[v][1],
+                        ))
+                        errors_by_fnv[(fish_idx, node, v)] = err
 
         for view, pane in self.panes.items():
-            for fish_idx, fk in enumerate(self.cur_group.fish):
-                color = self._color_for(fish_idx)
+            if (
+                self.instance_review
+                and view != self._active_review_view()
+            ):
+                continue
+            for fish_idx in fish_indices:
+                if fish_idx >= len(self.cur_group.fish):
+                    continue
+                fk = self.cur_group.fish[fish_idx]
+                candidate = (
+                    fk.candidate_by_view.get(view, False)
+                    and not fk.accepted_by_view.get(view, False)
+                )
+                color = (
+                    (190, 190, 190)
+                    if candidate
+                    else self._color_for(fish_idx)
+                )
                 m = fk.mouth.get(view)
                 t = fk.tail.get(view)
                 # Halos go behind the keypoints (lower z).
@@ -2050,8 +2883,14 @@ class MultiviewWindow:
                         on_delete=self._on_keypoint_delete,
                         on_toggle_visible=self._on_keypoint_toggle_visible,
                         on_request_swap=self._on_keypoint_request_swap,
+                        candidate=candidate,
                         label=(
-                            f"ID_{fish_idx + 1}" + ("" if m_vis else " (hidden)")
+                            (
+                                f"CAND ID_{fish_idx + 1}"
+                                if candidate
+                                else f"ID_{fish_idx + 1}"
+                            )
+                            + ("" if m_vis else " (hidden)")
                         ),
                     )
                 if t is not None:
@@ -2069,12 +2908,19 @@ class MultiviewWindow:
                         on_delete=self._on_keypoint_delete,
                         on_toggle_visible=self._on_keypoint_toggle_visible,
                         on_request_swap=self._on_keypoint_request_swap,
+                        candidate=candidate,
                         label=("(hidden)" if not t_vis else None),
                     )
                 if m is not None and t is not None:
                     # Arrow tail -> mouth: a mouth/tail flip reverses it, so
                     # swaps jump out at close-contact crossings.
-                    pane.add_arrow(t, m, color_rgb=color, width=1.5)
+                    pane.add_arrow(
+                        t,
+                        m,
+                        color_rgb=color,
+                        width=1.5,
+                        candidate=candidate,
+                    )
             # Pending mouth marker if mid-add.
             if (
                 self.add_mode == "place_tail"
@@ -2099,6 +2945,8 @@ class MultiviewWindow:
         fk = self.cur_group.fish[fish_idx]
         target = fk.mouth if node == "mouth" else fk.tail
         target[view] = (float(x), float(y))
+        accept_fish_view(fk, view)
+        self._mark_fish_view_decision(fish_idx, view, "accepted")
         self.last_edited_view = view
         self._update_status()
 
@@ -2117,18 +2965,34 @@ class MultiviewWindow:
         # an empty fish slot just renames it, which is also fine but rarely
         # what's wanted, so we list them last.
         candidates: List[Tuple[int, str, bool]] = []
+        active_view = self._active_review_view()
         for i, fk in enumerate(self.cur_group.fish):
             if i == fish_idx:
                 continue
-            has_data = any(
-                fk.mouth.get(v) is not None or fk.tail.get(v) is not None
-                for v in VIEWS
-            )
-            n_views = sum(
-                1 for v in VIEWS
-                if fk.mouth.get(v) is not None or fk.tail.get(v) is not None
-            )
-            hint = f"({n_views}/3 views)" if has_data else "(empty slot)"
+            if active_view is not None:
+                has_data = (
+                    fk.mouth.get(active_view) is not None
+                    or fk.tail.get(active_view) is not None
+                )
+                hint = (
+                    f"({active_view})" if has_data else "(empty slot)"
+                )
+            else:
+                has_data = any(
+                    fk.mouth.get(v) is not None
+                    or fk.tail.get(v) is not None
+                    for v in VIEWS
+                )
+                n_views = sum(
+                    1 for v in VIEWS
+                    if fk.mouth.get(v) is not None
+                    or fk.tail.get(v) is not None
+                )
+                hint = (
+                    f"({n_views}/3 views)"
+                    if has_data
+                    else "(empty slot)"
+                )
             candidates.append((i, hint, has_data))
         if not candidates:
             self.status.showMessage("No other fish to swap with.", 3000)
@@ -2139,8 +3003,14 @@ class MultiviewWindow:
         dlg = QtWidgets.QDialog(self.window)
         dlg.setWindowTitle(f"Swap ID_{fish_idx + 1} with…")
         layout = QtWidgets.QVBoxLayout(dlg)
+        scope_text = (
+            f"in {active_view}"
+            if active_view is not None
+            else "across all 3 views"
+        )
         layout.addWidget(QtWidgets.QLabel(
-            f"Swap <b>ID_{fish_idx + 1}</b> ↔ which fish? (applies to all 3 views)"
+            f"Swap <b>ID_{fish_idx + 1}</b> ↔ which fish? "
+            f"(applies {scope_text})"
         ))
         result: Dict[str, Optional[int]] = {"other": None}
         for other_idx, hint, _has in candidates:
@@ -2168,14 +3038,103 @@ class MultiviewWindow:
         # tied to position (and downstream code is happy).
         a = self.cur_group.fish[fish_idx]
         b = self.cur_group.fish[other]
-        a.mouth, b.mouth = b.mouth, a.mouth
-        a.tail, b.tail = b.tail, a.tail
-        a.mouth_visible, b.mouth_visible = b.mouth_visible, a.mouth_visible
-        a.tail_visible, b.tail_visible = b.tail_visible, a.tail_visible
+        if active_view is not None:
+            swap_views = [active_view]
+            for values_a, values_b in (
+                (a.mouth, b.mouth),
+                (a.tail, b.tail),
+                (a.mouth_visible, b.mouth_visible),
+                (a.tail_visible, b.tail_visible),
+                (a.candidate_by_view, b.candidate_by_view),
+                (a.accepted_by_view, b.accepted_by_view),
+            ):
+                values_a[active_view], values_b[active_view] = (
+                    values_b[active_view],
+                    values_a[active_view],
+                )
+        else:
+            swap_views = list(VIEWS)
+            a.mouth, b.mouth = b.mouth, a.mouth
+            a.tail, b.tail = b.tail, a.tail
+            a.mouth_visible, b.mouth_visible = (
+                b.mouth_visible,
+                a.mouth_visible,
+            )
+            a.tail_visible, b.tail_visible = (
+                b.tail_visible,
+                a.tail_visible,
+            )
+            a.candidate_by_view, b.candidate_by_view = (
+                b.candidate_by_view,
+                a.candidate_by_view,
+            )
+            a.accepted_by_view, b.accepted_by_view = (
+                b.accepted_by_view,
+                a.accepted_by_view,
+            )
+        for swapped_idx, keypoints in ((fish_idx, a), (other, b)):
+            for candidate_view in swap_views:
+                if (
+                    keypoints.mouth.get(candidate_view) is not None
+                    or keypoints.tail.get(candidate_view) is not None
+                ):
+                    accept_fish_view(keypoints, candidate_view)
+                    self._mark_fish_view_decision(
+                        swapped_idx,
+                        candidate_view,
+                        "accepted",
+                    )
+        self._draw_keypoints()
+        self._update_status()
+
+    def _place_missing_node(
+        self,
+        view: str,
+        node: str,
+        x: float,
+        y: float,
+    ) -> None:
+        """Complete the sole missing node on the active review item."""
+        fish_idx = self._active_fish_idx()
+        active_view = self._active_review_view()
+        if (
+            self.cur_group is None
+            or fish_idx is None
+            or view != active_view
+            or node not in NODE_NAMES
+        ):
+            self.status.showMessage(
+                f"Click the active {active_view} pane to complete this item.",
+                4000,
+            )
+            return
+        keypoints = self.cur_group.fish[fish_idx]
+        target = keypoints.mouth if node == "mouth" else keypoints.tail
+        target[view] = (float(x), float(y))
+        visibility = (
+            keypoints.mouth_visible
+            if node == "mouth"
+            else keypoints.tail_visible
+        )
+        visibility[view] = True
+        keypoints.candidate_by_view[view] = False
+        keypoints.accepted_by_view[view] = True
+        self._mark_fish_view_decision(
+            fish_idx,
+            view,
+            "accepted",
+        )
+        self.last_edited_view = view
+        self.cancel_add()
         self._draw_keypoints()
         self._update_status()
         self.status.showMessage(
-            f"Swapped ID_{fish_idx + 1} ↔ ID_{other + 1} across all views.",
+            f"Completed and accepted candidate {fish_idx + 1}: "
+            f"placed {node} in {view}.",
+            5000,
+        )
+        self.status.showMessage(
+            f"Swapped ID_{fish_idx + 1} ↔ ID_{other + 1} {scope_text}.",
             5000,
         )
 
@@ -2186,6 +3145,8 @@ class MultiviewWindow:
         fk = self.cur_group.fish[fish_idx]
         vis_dict = fk.mouth_visible if node == "mouth" else fk.tail_visible
         vis_dict[view] = not vis_dict.get(view, True)
+        accept_fish_view(fk, view)
+        self._mark_fish_view_decision(fish_idx, view, "accepted")
         new_state = "hidden" if not vis_dict[view] else "visible"
         self._draw_keypoints()
         self.status.showMessage(
@@ -2205,17 +3166,42 @@ class MultiviewWindow:
         fk = self.cur_group.fish[fish_idx]
         if scope == "keypoint" and node in NODE_NAMES:
             (fk.mouth if node == "mouth" else fk.tail)[view] = None
+            populated = (
+                fk.mouth.get(view) is not None
+                or fk.tail.get(view) is not None
+            )
+            fk.accepted_by_view[view] = populated
+            self._mark_fish_view_decision(
+                fish_idx,
+                view,
+                "accepted" if populated else "rejected",
+            )
             self.last_edited_view = view
             msg = f"Deleted ID_{fish_idx + 1} {node} in {view}."
         elif scope == "instance":
             fk.mouth[view] = None
             fk.tail[view] = None
+            fk.candidate_by_view[view] = False
+            fk.accepted_by_view[view] = False
+            self._mark_fish_view_decision(
+                fish_idx, view, "rejected"
+            )
             self.last_edited_view = view
             msg = f"Deleted ID_{fish_idx + 1} instance in {view}."
         elif scope == "fish":
             for v in VIEWS:
+                populated = (
+                    fk.mouth.get(v) is not None
+                    or fk.tail.get(v) is not None
+                )
                 fk.mouth[v] = None
                 fk.tail[v] = None
+                fk.candidate_by_view[v] = False
+                fk.accepted_by_view[v] = False
+                if populated:
+                    self._mark_fish_view_decision(
+                        fish_idx, v, "rejected"
+                    )
             msg = f"Deleted ID_{fish_idx + 1} from all views."
         else:
             return
@@ -2246,6 +3232,13 @@ class MultiviewWindow:
              ``visible=True`` (they're a geometric best-guess; the user can
              toggle to hidden if they're an inference rather than visible).
         """
+        if getattr(self, "instance_review", False):
+            self.status.showMessage(
+                "F is disabled in instance review because it would change "
+                "hidden fish slots.",
+                5000,
+            )
+            return
         if not self.allow_calibration_fill:
             self.status.showMessage(
                 "F is disabled: independent benchmark coordinates must be "
@@ -2347,6 +3340,18 @@ class MultiviewWindow:
                     n_filled += 1
 
         self.cur_group.fish = new_fish
+        for fish_idx, keypoints in enumerate(self.cur_group.fish):
+            for populated_view in VIEWS:
+                if (
+                    keypoints.mouth.get(populated_view) is not None
+                    or keypoints.tail.get(populated_view) is not None
+                ):
+                    keypoints.accepted_by_view[populated_view] = True
+                    self._mark_fish_view_decision(
+                        fish_idx,
+                        populated_view,
+                        "accepted",
+                    )
         self._draw_keypoints()
         self._update_status()
         msg = (
@@ -2435,10 +3440,41 @@ class MultiviewWindow:
         if self.cur_group is None:
             return
         bits = []
-        bits.append(f"focus_xyz=({self.focus_xyz[0]:.0f},"
-                    f"{self.focus_xyz[1]:.0f},{self.focus_xyz[2]:.0f})mm")
+        active_fish_idx = self._active_fish_idx()
+        active_view = self._active_review_view()
+        if active_fish_idx is not None and active_view is not None:
+            slot_key = review_slot_key(
+                self.cur_group.experiment,
+                self.cur_group.frame_idx,
+                active_view,
+                active_fish_idx,
+            )
+            if slot_key in self.accepted_slot_keys:
+                decision = "accepted"
+            elif slot_key in self.rejected_slot_keys:
+                decision = "rejected"
+            else:
+                decision = "undecided"
+            bits.append(
+                f"instance {self.instance_review_idx + 1}/"
+                f"{len(self.instance_review_sequence)}"
+            )
+            bits.append(
+                f"frame={self.cur_group.frame_idx} "
+                f"view={active_view} "
+                f"candidate={active_fish_idx + 1} [{decision}]"
+            )
+        if not self.instance_review:
+            bits.append(f"focus_xyz=({self.focus_xyz[0]:.0f},"
+                        f"{self.focus_xyz[1]:.0f},"
+                        f"{self.focus_xyz[2]:.0f})mm")
         bits.append(f"zoom={self.zoom:.2f}x")
-        for fish_idx, fk in enumerate(self.cur_group.fish):
+        fish_items = (
+            []
+            if self.instance_review
+            else list(enumerate(self.cur_group.fish))
+        )
+        for fish_idx, fk in fish_items:
             for node, kp in (("mouth", fk.mouth), ("tail", fk.tail)):
                 full = [v for v in VIEWS if kp[v] is not None]
                 if len(full) == 3:
@@ -2463,6 +3499,10 @@ class MultiviewWindow:
             bits.append("[ADD: click MOUTH]")
         elif self.add_mode == "place_tail":
             bits.append(f"[ADD: click TAIL in {self.pending_view}]")
+        elif self.add_mode == "place_missing_mouth":
+            bits.append(f"[COMPLETE: click MOUTH in {self.pending_view}]")
+        elif self.add_mode == "place_missing_tail":
+            bits.append(f"[COMPLETE: click TAIL in {self.pending_view}]")
         self.status.showMessage("  |  ".join(bits))
 
     # -------------------- save --------------------
@@ -2573,20 +3613,53 @@ class MultiviewWindow:
 
         replaced_keys: set[Tuple[str, int, str]] = set()
         new_lfs: List["sio.LabeledFrame"] = []
+        track_by_name = {
+            str(getattr(track, "name", "") or ""): track
+            for track in list(getattr(self.labels, "tracks", []) or [])
+            if str(getattr(track, "name", "") or "")
+        }
 
         # Iterate *all* edited groups, not just the current one.
         for (exp, frame_idx), grp in self._edited_groups.items():
             for view in VIEWS:
+                slot_keys = [
+                    review_slot_key(
+                        exp,
+                        frame_idx,
+                        view,
+                        fish_idx,
+                    )
+                    for fish_idx in range(len(grp.fish))
+                ]
+                has_slot_decision = any(
+                    key in self.accepted_slot_keys
+                    or key in self.rejected_slot_keys
+                    for key in slot_keys
+                )
+                if self.instance_review:
+                    should_replace = (
+                        view in grp.reviewed_views
+                        or has_slot_decision
+                    )
+                else:
+                    should_replace = (
+                        not self.candidate_review_enabled
+                        or view in grp.reviewed_views
+                    )
+                if not should_replace:
+                    # Merely visiting a candidate view is not acceptance.
+                    # Leave the authoritative input LF untouched.
+                    continue
                 src_lf = grp.src_lfs.get(view)
                 target_video = _resolve_video(view, exp, src_lf)
                 if target_video is None:
                     continue
                 instances = []
-                for fk in grp.fish:
+                for fish_idx, fk in enumerate(grp.fish):
+                    if not fish_view_is_saveable(fk, view):
+                        continue
                     m = fk.mouth.get(view)
                     t = fk.tail.get(view)
-                    if m is None and t is None:
-                        continue
                     m_vis = bool(fk.mouth_visible.get(view, True)) if m is not None else False
                     t_vis = bool(fk.tail_visible.get(view, True)) if t is not None else False
                     pts = np.array(
@@ -2600,13 +3673,48 @@ class MultiviewWindow:
                         ],
                         dtype=float,
                     )
+                    track = None
+                    slot_key = review_slot_key(
+                        exp,
+                        frame_idx,
+                        view,
+                        fish_idx,
+                    )
+                    if (
+                        self.instance_review
+                        and slot_key in self.accepted_slot_keys
+                    ):
+                        track_name = review_slot_track_name(
+                            exp,
+                            frame_idx,
+                            view,
+                            fish_idx,
+                        )
+                        track = track_by_name.get(track_name)
+                        if track is None:
+                            track = sio.Track(name=track_name)
+                            track_by_name[track_name] = track
                     instances.append(
-                        sio.Instance.from_numpy(points_data=pts, skeleton=skel)
+                        sio.Instance.from_numpy(
+                            points_data=pts,
+                            skeleton=skel,
+                            track=track,
+                        )
                     )
                 if not instances:
                     # User removed every fish from this view of this group;
-                    # mark it replaced (with no LF) so the original is dropped.
+                    # in candidate-review mode preserve an explicit empty LF
+                    # so resume overlays the rejection instead of resurrecting
+                    # the candidate.
                     replaced_keys.add((exp, frame_idx, view))
+                    if self.candidate_review_enabled:
+                        new_lfs.append(
+                            sio.LabeledFrame(
+                                video=target_video,
+                                frame_idx=frame_idx,
+                                instances=[],
+                            )
+                        )
                     continue
                 new_lfs.append(
                     sio.LabeledFrame(
@@ -2632,12 +3740,50 @@ class MultiviewWindow:
         merged_videos = list(
             {id(lf.video): lf.video for lf in merged_lfs}.values()
         )
+        merged_tracks = []
+        seen_track_ids = set()
+        for track in (
+            list(getattr(self.labels, "tracks", []) or [])
+            + [
+                getattr(instance, "track", None)
+                for lf in merged_lfs
+                for instance in lf.instances
+            ]
+        ):
+            if track is None or id(track) in seen_track_ids:
+                continue
+            seen_track_ids.add(id(track))
+            merged_tracks.append(track)
+        provenance = copy_labels_provenance(self.labels)
+        if self.candidate_review_enabled:
+            provenance[PREDICTION_REVIEW_PROVENANCE_KEY] = {
+                "schema_version": PREDICTION_REVIEW_SCHEMA,
+                "candidate_artifact": deepcopy(self.candidate_artifact),
+                "reviewed_views": sorted(self.reviewed_view_keys),
+                "reviewed_view_count": len(self.reviewed_view_keys),
+                "instance_review": {
+                    "enabled": bool(self.instance_review),
+                    "unit": "experiment-frame-view-ranked-candidate",
+                    "accepted_slots": sorted(self.accepted_slot_keys),
+                    "rejected_slots": sorted(self.rejected_slot_keys),
+                    "accepted_slot_count": len(self.accepted_slot_keys),
+                    "rejected_slot_count": len(self.rejected_slot_keys),
+                    "track_name_prefix": REVIEW_SLOT_TRACK_PREFIX,
+                },
+                "safety_policy": {
+                    "unreviewed_candidates_saved_as_user_instances": False,
+                    "candidate_edit_implies_acceptance": True,
+                    "reviewed_rejection_saved_as_explicit_empty_frame": True,
+                    "instance_decisions_do_not_review_sibling_slots": True,
+                },
+            }
         merged = sio.Labels(
             skeletons=[skel],
             videos=merged_videos,
             labeled_frames=merged_lfs,
+            tracks=merged_tracks,
             suggestions=suggestions,
-            provenance=copy_labels_provenance(self.labels),
+            provenance=provenance,
         )
         out_path.parent.mkdir(parents=True, exist_ok=True)
         QtWidgets_app = _qt()[2].QApplication.instance()
@@ -2662,6 +3808,25 @@ class MultiviewWindow:
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--in", dest="input", type=Path, required=True)
+    ap.add_argument(
+        "--candidate-slp",
+        type=Path,
+        default=None,
+        help=(
+            "Prediction SLP to display as a review-only overlay. --in stays "
+            "authoritative; untouched candidates are never saved as user "
+            "instances."
+        ),
+    )
+    ap.add_argument(
+        "--instance-review",
+        action="store_true",
+        help=(
+            "Review one per-view prediction instance at a time. Requires "
+            "--candidate-slp; Left/Right navigate items and A/R decide only "
+            "the active candidate."
+        ),
+    )
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--paths-config", default=None)
     ap.add_argument("--medaka-data-dir", default=None)
@@ -2700,6 +3865,20 @@ def main(argv: list[str] | None = None) -> None:
     )
     args = ap.parse_args(argv)
 
+    if args.instance_review and args.candidate_slp is None:
+        ap.error("--instance-review requires --candidate-slp.")
+    if not args.input.is_file():
+        ap.error(f"--in does not exist: {args.input}")
+    if args.candidate_slp is not None:
+        if not args.candidate_slp.is_file():
+            ap.error(
+                f"--candidate-slp does not exist: {args.candidate_slp}"
+            )
+        if args.candidate_slp.resolve() == args.input.resolve():
+            ap.error("--candidate-slp must be distinct from authoritative --in.")
+        if args.candidate_slp.resolve() == args.out.resolve():
+            ap.error("--out must not overwrite --candidate-slp.")
+
     local = load_local_paths(args.paths_config)
     medaka_data_dir = choose_path(
         args.medaka_data_dir, local.medaka_data_dir if local else None
@@ -2733,6 +3912,44 @@ def main(argv: list[str] | None = None) -> None:
             print(f"  WARNING: failed to load resume file: {exc!s}")
             print(f"  continuing with the seed only.")
 
+    candidate_groups = {}
+    candidate_artifact = {}
+    if args.candidate_slp is not None:
+        candidate_artifact = candidate_artifact_record(args.candidate_slp)
+        persisted_artifact = candidate_artifact_from_provenance(labels)
+        mismatch = candidate_artifact_mismatch(
+            persisted_artifact,
+            candidate_artifact,
+        )
+        if mismatch:
+            ap.error(
+                f"{mismatch}. Use the original --candidate-slp, choose a "
+                "different --out, or pass --no-resume to start a new review."
+            )
+
+        print(f"Loading candidate overlay {args.candidate_slp} ...")
+        candidate_labels = sio.load_slp(
+            str(args.candidate_slp),
+            open_videos=False,
+        )
+        all_candidate_groups = build_groups(candidate_labels)
+        authoritative_keys = set(build_groups(labels))
+        candidate_groups = {
+            key: frames_by_view
+            for key, frames_by_view in all_candidate_groups.items()
+            if key in authoritative_keys
+        }
+        matched_views = sum(
+            len(frames_by_view)
+            for frames_by_view in candidate_groups.values()
+        )
+        ignored_groups = len(all_candidate_groups) - len(candidate_groups)
+        print(
+            f"  {matched_views} candidate view-frame(s) matched "
+            f"{len(candidate_groups)} authoritative group(s); "
+            f"{ignored_groups} non-authoritative group(s) ignored."
+        )
+
     cal = Calibration(str(calib_dir), backend=args.calibration_backend)
     if not cal.capabilities.get("projection", False):
         ap.error("calibration must support 3D-to-2D projection for synced views.")
@@ -2746,6 +3963,26 @@ def main(argv: list[str] | None = None) -> None:
     groups = build_groups(labels)
     keys = filter_groups(groups, min_views=args.min_views)
     print(f"  {len(keys)} groups (min_views={args.min_views}).")
+    if args.instance_review:
+        accepted_slot_keys, rejected_slot_keys = (
+            review_slot_decisions_from_provenance(labels)
+        )
+        review_sequence = build_instance_review_sequence(
+            keys,
+            candidate_groups,
+            groups,
+            accepted_slot_keys,
+            rejected_slot_keys,
+        )
+        if not review_sequence:
+            ap.error(
+                "--instance-review found no incomplete authoritative "
+                "per-view candidate items."
+            )
+        print(
+            f"  {len(review_sequence)} per-view candidate instance(s) "
+            "queued for review."
+        )
 
     # Launch Qt.
     QtCore, QtGui, QtWidgets = _qt()
@@ -2759,6 +3996,9 @@ def main(argv: list[str] | None = None) -> None:
         medaka_data_dir=Path(medaka_data_dir),
         out_path=args.out,
         allow_calibration_fill=not args.independent,
+        candidate_groups=candidate_groups,
+        candidate_artifact=candidate_artifact,
+        instance_review=args.instance_review,
     )
     win.window.show()
     sys.exit(app.exec_())
