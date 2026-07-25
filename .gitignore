@@ -56,6 +56,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 /.pytest_tmp*/
+/.pytest-tmp-*/
 /.codex-audit/
 /.publish-test-tmp-*/
 report/.pytest_tmp*/
@@ -243,6 +244,7 @@ data/derived/
 report/**/*.pptx
 report/**/*.png
 report/**/slide_previews*/
+report/**/model_staging/
 # Large regenerable per-frame / full-track CSVs from bake-off analysis (regenerate via the report scripts)
 report/**/*_remapped_idfinal_tracks.csv
 report/**/*_montage_track.csv
