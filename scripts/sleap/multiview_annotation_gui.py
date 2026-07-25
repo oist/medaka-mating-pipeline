@@ -130,6 +130,31 @@ class FrameGroup:
     src_lfs: Dict[str, "sio.LabeledFrame"] = field(default_factory=dict)
 
 
+def clone_fish_keypoints(
+    fish: List[FishKeypoints],
+) -> List[FishKeypoints]:
+    """Copy editable keypoints without retaining the large frame images."""
+    return [
+        FishKeypoints(
+            mouth=dict(item.mouth),
+            tail=dict(item.tail),
+            predicted_mouth=dict(item.predicted_mouth),
+            predicted_tail=dict(item.predicted_tail),
+        )
+        for item in fish
+    ]
+
+
+def fish_have_annotations(fish: List[FishKeypoints]) -> bool:
+    """Return whether any real mouth/tail point is present."""
+    return any(
+        point is not None
+        for item in fish
+        for by_view in (item.mouth, item.tail)
+        for point in by_view.values()
+    )
+
+
 # ---------------------------------------------------------------------------
 # Utilities
 # ---------------------------------------------------------------------------
@@ -430,6 +455,9 @@ class MultiviewAnnotator:
         groups_src: Dict[Tuple[str, int], Dict[str, "sio.LabeledFrame"]],
         medaka_data_dir: Path,
         out_path: Path,
+        autosave: bool = False,
+        allow_calibration_fill: bool = True,
+        embed_output: str = "user",
     ) -> None:
         self.labels = labels
         self.cal = cal
@@ -437,8 +465,14 @@ class MultiviewAnnotator:
         self.groups_src = groups_src
         self.medaka_data_dir = medaka_data_dir
         self.out_path = out_path
+        self.autosave = bool(autosave)
+        self.allow_calibration_fill = bool(allow_calibration_fill)
+        self.embed_output = embed_output
         self.cur_idx: int = 0
         self.cur_group: Optional[FrameGroup] = None
+        # Keypoint-only cache. Without this, navigating away rebuilds the
+        # frame from the input SLP and silently loses unsaved blank-set edits.
+        self.group_edits: Dict[Tuple[str, int], List[FishKeypoints]] = {}
         # Cached x-offsets per view, refreshed each frame group.
         self._x_offsets: Dict[str, float] = {}
         self._view_widths: Dict[str, float] = {}
@@ -497,6 +531,12 @@ class MultiviewAnnotator:
 
     # -------------------- frame nav + render --------------------
 
+    def _cache_current_group(self) -> None:
+        if self.cur_group is None:
+            return
+        key = (self.cur_group.experiment, self.cur_group.frame_idx)
+        self.group_edits[key] = clone_fish_keypoints(self.cur_group.fish)
+
     def _render_current(self) -> None:
         if not self.group_keys:
             self._set_status("No multi-view groups in this seed.")
@@ -508,6 +548,8 @@ class MultiviewAnnotator:
             medaka_data_dir=self.medaka_data_dir,
             cal=self.cal,
         )
+        if key in self.group_edits:
+            self.cur_group.fish = clone_fish_keypoints(self.group_edits[key])
         self._update_image_layers()
         self._populate_points_from_group()
         self._update_status_bar()
@@ -703,6 +745,10 @@ class MultiviewAnnotator:
             f"[{self.cur_idx + 1}/{len(self.group_keys)}]",
             f"{key[0]} f={key[1]}",
             active,
+            (
+                f"cached={sum(fish_have_annotations(v) for v in self.group_edits.values())}"
+                f"/{len(self.group_keys)}"
+            ),
         ]
         for fish_idx, fk in enumerate(self.cur_group.fish):
             for node_name, kp in (("mouth", fk.mouth), ("tail", fk.tail)):
@@ -724,6 +770,20 @@ class MultiviewAnnotator:
         """Dock a static help label so the user sees the hotkeys at all times."""
         from qtpy.QtWidgets import QLabel
 
+        fill_help = (
+            "<b>Fill missing views</b>: disabled for independent annotation.<br>"
+            if not self.allow_calibration_fill
+            else (
+                "<b>Fill missing views</b>: <kbd>f</kbd> (predicts the 3rd view "
+                "for any fish that has both keypoints in 2 views).<br>"
+            )
+        )
+        save_help = (
+            "<b>Autosave</b>: enabled on navigation. "
+            "<kbd>Ctrl+S</kbd> also saves immediately.<br>"
+            if self.autosave
+            else "<b>Save</b>: <kbd>Ctrl+S</kbd> writes the merged labels.<br>"
+        )
         help_text = (
             "<h3>Multi-view annotator</h3>"
             "<b>Layout</b>: top | side1 | side2 hstacked.<br>"
@@ -741,10 +801,9 @@ class MultiviewAnnotator:
             "<kbd>s</kbd>=tail (ring)<br>"
             "<br>"
             "<b>Frame nav</b>: <kbd>[</kbd>=prev, <kbd>]</kbd>=next<br>"
-            "<b>Fill missing views</b>: <kbd>f</kbd> (predicts the 3rd view "
-            "for any fish that has both keypoints in 2 views).<br>"
-            "<b>Save</b>: <kbd>Ctrl+S</kbd> writes the merged labels.<br>"
-            "<br>"
+            + fill_help
+            + save_help
+            + "<br>"
             "When all 3 views have a keypoint for some fish/node the status "
             "bar shows the per-view reprojection error in pixels."
         )
@@ -759,6 +818,11 @@ class MultiviewAnnotator:
         model. The predictions are inserted as regular keypoints — the user
         can drag to refine or delete if wrong.
         """
+        if not self.allow_calibration_fill:
+            self._set_status(
+                "Calibration fill is disabled for independent locked-test annotation."
+            )
+            return
         if self.cur_group is None:
             return
         added = 0
@@ -783,15 +847,24 @@ class MultiviewAnnotator:
     # -------------------- key bindings --------------------
 
     def _bind_keys(self) -> None:
+        def navigate(delta: int) -> None:
+            if self.autosave:
+                self.save()
+            else:
+                self._cache_current_group()
+            self.cur_idx = max(
+                0,
+                min(self.cur_idx + delta, len(self.group_keys) - 1),
+            )
+            self._render_current()
+
         @self.viewer.bind_key("BracketRight", overwrite=True)
         def next_frame(_v):  # noqa: ARG001
-            self.cur_idx = min(self.cur_idx + 1, len(self.group_keys) - 1)
-            self._render_current()
+            navigate(1)
 
         @self.viewer.bind_key("BracketLeft", overwrite=True)
         def prev_frame(_v):  # noqa: ARG001
-            self.cur_idx = max(self.cur_idx - 1, 0)
-            self._render_current()
+            navigate(-1)
 
         # Fish selection: q/w/e -> ID_1 / ID_2 / ID_3.
         for key, fish_idx in (("q", 0), ("w", 1), ("e", 2)):
@@ -839,6 +912,7 @@ class MultiviewAnnotator:
         # Pull latest edits from the live napari layer into `cur_group` if open.
         if self.cur_group is not None and self.points_layer is not None:
             self._on_points_changed()
+        self._cache_current_group()
 
         skel = self.labels.skeletons[0]
         # Map source-video filename -> Video object so we keep a single
@@ -863,19 +937,20 @@ class MultiviewAnnotator:
 
         for key in self.group_keys:
             exp, frame_idx = key
-            # Use the latest in-memory group state; if not visited, build it
-            # so we still write the predictions+sources for the user.
-            grp = (
-                self.cur_group
-                if (self.cur_group is not None
-                    and (self.cur_group.experiment, self.cur_group.frame_idx) == key)
-                else build_frame_group(
+            if (
+                self.cur_group is not None
+                and (self.cur_group.experiment, self.cur_group.frame_idx) == key
+            ):
+                grp = self.cur_group
+            else:
+                grp = build_frame_group(
                     key,
                     self.groups_src[key],
                     medaka_data_dir=self.medaka_data_dir,
                     cal=self.cal,
                 )
-            )
+                if key in self.group_edits:
+                    grp.fish = clone_fish_keypoints(self.group_edits[key])
             for view in VIEWS:
                 # Determine the target Video for this LF: prefer the existing
                 # source video for this (exp, view); fall back to the on-disk
@@ -916,8 +991,9 @@ class MultiviewAnnotator:
                         dtype=float,
                     )
                     instances.append(sio.Instance.from_numpy(points_data=pts, skeleton=skel))
-                if not instances:
-                    continue
+                # Preserve an explicit blank LF too. This makes deletion of all
+                # instances durable and keeps blank annotation manifests
+                # resumable without dropping unvisited frames.
                 new_lfs.append(
                     sio.LabeledFrame(
                         video=target_video,
@@ -949,7 +1025,8 @@ class MultiviewAnnotator:
         self.out_path.parent.mkdir(parents=True, exist_ok=True)
         print(f"Saving {len(merged_lfs)} LFs ({len(new_lfs)} replaced, "
               f"{len(kept_lfs)} kept) -> {self.out_path}")
-        sio.save_slp(merged, str(self.out_path), embed="user")
+        embed = False if self.embed_output == "none" else self.embed_output
+        sio.save_slp(merged, str(self.out_path), embed=embed)
         print("  done.")
         self._set_status(f"Saved {len(merged_lfs)} LFs to {self.out_path}")
 
@@ -975,6 +1052,30 @@ def main(argv: list[str] | None = None) -> None:
                     "views already populated. Default 1 = include round-2 "
                     "single-view picks (so the GUI also lets you fill the "
                     "other 2 views in for those).")
+    ap.add_argument(
+        "--resume",
+        action="store_true",
+        help="If --out already exists, load it instead of --in.",
+    )
+    ap.add_argument(
+        "--autosave",
+        action="store_true",
+        help="Save before previous/next navigation; Ctrl+S also saves immediately.",
+    )
+    ap.add_argument(
+        "--independent",
+        action="store_true",
+        help="Disable calibration-based missing-view fill for a locked test set.",
+    )
+    ap.add_argument(
+        "--embed-output",
+        choices=("user", "none"),
+        default="user",
+        help=(
+            "Embed annotated images in --out ('user') or retain raw-video "
+            "references ('none'). Use none for fast autosave."
+        ),
+    )
     args = ap.parse_args(argv)
 
     local = load_local_paths(args.paths_config)
@@ -992,8 +1093,9 @@ def main(argv: list[str] | None = None) -> None:
 
     import sleap_io as sio
 
-    print(f"Loading {args.input} ...")
-    labels = sio.load_slp(str(args.input))
+    input_path = args.out if args.resume and args.out.exists() else args.input
+    print(f"Loading {input_path} ...")
+    labels = sio.load_slp(str(input_path))
     print(f"  {len(labels.labeled_frames)} LFs, {len(labels.videos)} videos.")
 
     cal = Calibration(str(calib_dir))
@@ -1026,6 +1128,9 @@ def main(argv: list[str] | None = None) -> None:
         groups_src=groups,
         medaka_data_dir=Path(medaka_data_dir),
         out_path=args.out,
+        autosave=args.autosave,
+        allow_calibration_fill=not args.independent,
+        embed_output=args.embed_output,
     )
     annotator.show()
 
