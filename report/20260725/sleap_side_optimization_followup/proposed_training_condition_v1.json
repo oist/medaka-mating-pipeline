@@ -1,0 +1,136 @@
+{
+  "schema_version": "sleap_side_training_condition_proposal_v1",
+  "created_date": "2026-07-25",
+  "status": "proposed_not_run",
+  "condition_id": "side_future_sigma15_crop448_rot90_ohkmoff_strictmouth_v1",
+  "view": "side",
+  "scientific_claim": "Exploratory control-derived bundled challenger; hypothesis-generating, not a benchmark-validated optimum.",
+  "evaluated_pair_to_retain": {
+    "name": "sigma15_plus_unchanged_control_ci",
+    "status": "evaluated_pilot_coverage_challenger",
+    "centroid_candidate": "side_centroid_sigma15_strictframe_p40",
+    "centered_instance_candidate": "side_centered_instance_control_p40",
+    "warning": "This literal evaluated pair uses the unchanged control CI: crop 512, rotation +/-180 degrees, zero jitter, OHKM on, and the control anchor/data policy."
+  },
+  "proposed_training_condition": {
+    "centroid": {
+      "anchor_node": "mouth",
+      "sigma": 1.5,
+      "centroid_anchor_policy": "frame_all_instance_mouths_finite",
+      "rotation_degrees": [
+        -15.0,
+        15.0
+      ],
+      "initialization": {
+        "policy": "warm_start_from_evaluated_candidate",
+        "checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40\\best.ckpt",
+        "checkpoint_sha256": "aa13ad87e9e74edc402a41eed80659cfa579405be1b939f8bff1374f9f3ea410"
+      },
+      "data_expansion": {
+        "requirement": "Add independent, fully mouth-labeled side instances.",
+        "alternative": "Use an explicit ignored-loss region for missing mouth anchors.",
+        "prohibited": "Do not include visible fish with missing mouth labels as negative background.",
+        "current_opportunity": "The audited dropped side frames contain 902 additional finite mouths, approximately 13.15% more than the strict targets, but their missing anchors must be completed or loss-ignored before use."
+      }
+    },
+    "centered_instance": {
+      "anchor_node": "mouth",
+      "crop_size": 448,
+      "scale_range": [
+        0.7,
+        1.3
+      ],
+      "rotation_degrees": [
+        -90.0,
+        90.0
+      ],
+      "jitter_px": 0,
+      "online_hard_keypoint_mining": false,
+      "centered_instance_anchor_policy": "strict_per_instance",
+      "missing_mouth_policy": "Exclude only the individual centered-instance sample whose mouth coordinate is non-finite; retain other eligible instances from the same frame.",
+      "initialization": {
+        "policy": "warm_start_from_evaluated_control_candidate",
+        "checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40\\best.ckpt",
+        "checkpoint_sha256": "18feb2e61c632ceed1e696e47ead14dd95a69522c99c3f6ad5d0fc570455fc5a"
+      },
+      "sleap_config_overrides": {
+        "data_config.preprocessing.crop_size": 448,
+        "data_config.augmentation_config.geometric.rotation_min": -90.0,
+        "data_config.augmentation_config.geometric.rotation_max": 90.0,
+        "data_config.augmentation_config.geometric.rotation_p": 1.0,
+        "data_config.augmentation_config.geometric.translate_width": 0.0,
+        "data_config.augmentation_config.geometric.translate_height": 0.0,
+        "trainer_config.online_hard_keypoint_mining.online_mining": false,
+        "trainer_config.lr_scheduler.reduce_lr_on_plateau.threshold": 2e-07,
+        "trainer_config.early_stopping.min_delta": 2e-09
+      }
+    },
+    "shared_training_contract": {
+      "seed": 42,
+      "early_stopping_patience": 40,
+      "lr_plateau_patience": 5,
+      "save_top_k": 1,
+      "save_last": true
+    }
+  },
+  "required_comparators": [
+    {
+      "name": "broad_regression_reference",
+      "centroid_candidate": "side_centroid_sigma20_strictframe_p40",
+      "centroid_checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40\\best.ckpt",
+      "centroid_checkpoint_sha256": "668b02571d025f88f6e23f6539b0899a870159b54f4db7cd7ab868d997faa5af",
+      "centered_instance_candidate": "side_centered_instance_control_p40",
+      "centered_instance_checkpoint_sha256": "18feb2e61c632ceed1e696e47ead14dd95a69522c99c3f6ad5d0fc570455fc5a",
+      "purpose": "Sigma 2.0 plus unchanged control CI was the broad three-experiment stress favorite."
+    },
+    {
+      "name": "identical_hybrid_with_ohkm_on",
+      "difference_from_proposal": {
+        "trainer_config.online_hard_keypoint_mining.online_mining": true
+      },
+      "purpose": "Isolate the OHKM decision while holding crop, rotation, jitter, data eligibility, initialization, and seed fixed."
+    }
+  ],
+  "evidence": {
+    "evaluation_inventory": {
+      "path": "../sleap_side_optimization_evaluation/evaluation_artifact_inventory.json",
+      "sha256": "1b8206266fb42714ea57345c54ddb34907bfb132a33af5fb65545b27d4ca377d"
+    },
+    "metrics_summary": {
+      "path": "../sleap_side_optimization_evaluation/side_optimization_metrics_summary.csv",
+      "sha256": "76c4a3d03821884f8e6bab9925d5f75ca90b3f10ea2a7e28eea75af74c527943"
+    },
+    "benchmark_manifest": {
+      "path": "../../20260724/sleap_topdown_optimization/benchmark_manifest_phase1_v1.csv",
+      "sha256": "77ac74730c332a75dc4e4a86eee255b6ac48fac99e2db7d64489533b9e466429",
+      "scientific_status": "diagnostic_not_locked_generalization_test"
+    },
+    "interpretation": {
+      "sigma_1_5": "Best centroid and full-top-down coverage on the single pilot event; sigma 2.0 remained better on the broader stress cohort.",
+      "unchanged_control_ci": "Won exact-mouth oracle centered-instance evaluation in both diagnostic cohorts.",
+      "crop_rotation_ohkm_strict_bundle": "Not validated as an improvement. The evaluated optimized bundles changed these factors together and underperformed the unchanged control.",
+      "jitter_16": "Rejected due to brittle high-percentile tail failures.",
+      "jitter_0": "Chosen here to retain the control's zero-jitter condition and avoid repeating the rejected +/-16 px setting."
+    }
+  },
+  "execution_contract": {
+    "state": "not_started",
+    "requires_new_output_root": true,
+    "must_not_modify_completed_run": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt",
+    "runner_support": "not_yet_implemented",
+    "locked_benchmark_training": "prohibited"
+  },
+  "evaluation_gate": {
+    "required": [
+      "centroid_only",
+      "oracle_centered_instance",
+      "full_topdown"
+    ],
+    "promotion_requires": [
+      "independent manually annotated benchmark",
+      "same-seed paired comparators",
+      "fully labeled and partial-label metrics reported separately",
+      "no regression in all-three detection coverage, tail p99, shared-tail rate, or swap rate"
+    ]
+  }
+}
