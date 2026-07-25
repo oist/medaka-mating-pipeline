@@ -1,0 +1,276 @@
+{
+  "workflow": "side_topdown_shared_benchmark_evaluation",
+  "scientific_status": "diagnostic_not_locked_generalization_test",
+  "benchmark": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\benchmark_manifest_phase1_v1.csv",
+  "benchmark_sha256": "77ac74730c332a75dc4e4a86eee255b6ac48fac99e2db7d64489533b9e466429",
+  "benchmark_summary": {
+    "all_rows": 186,
+    "side_rows": 122,
+    "side_strict_centroid_eligible_rows": 90,
+    "side_by_cohort": {
+      "multi_experiment_in_sample_stress": 82,
+      "round8_pilot_event_holdout": 40
+    },
+    "side_by_experiment": {
+      "20251225_K_1_1_FCMC": 28,
+      "20251225_K_1_2_FCMC": 70,
+      "20251225_K_1_3_FCMC": 24
+    },
+    "side_by_difficulty": {
+      "close_contact_or_crossing": 46,
+      "ordinary": 35,
+      "partial_or_occluded": 41
+    }
+  },
+  "evaluator_sources": [
+    {
+      "path": "scripts\\sleap\\run_topdown_optimization_evaluation.py",
+      "size_bytes": 25471,
+      "sha256": "772e72645458a9c3fdaf71d92c6b240843e8fd4490cbb6528f5737813736f46d"
+    },
+    {
+      "path": "scripts\\sleap\\compare_rounds_topdown.py",
+      "size_bytes": 25893,
+      "sha256": "b4088cee102c7f996f1a214f5817e53a5644d06743627e1b1992496dff225e15"
+    },
+    {
+      "path": "scripts\\sleap\\eval_topdown_vs_bottomup.py",
+      "size_bytes": 58555,
+      "sha256": "893a8e9fda05d85f7fc1dcdadc0434be7eab95039d9cefcd4603975a3b873623"
+    }
+  ],
+  "model_root": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt",
+  "sigma25_checkpoint_recovery": {
+    "run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma25_control_p40",
+    "staging_dir": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25",
+    "staged": true,
+    "source_kind": "archived_interrupted_best",
+    "source_checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma25_control_p40\\best.interrupted_20260724_184103.ckpt",
+    "source_checkpoint_sha256": "c0dfd23d329bc80ffa498c165a7e28a4431adee3965b72238d8a03434d8a55fd",
+    "staged_checkpoint": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25\\best.ckpt",
+    "staged_checkpoint_sha256": "c0dfd23d329bc80ffa498c165a7e28a4431adee3965b72238d8a03434d8a55fd",
+    "staged_training_config": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25\\training_config.yaml",
+    "staged_training_config_sha256": "54179759351a336baa9907952c781aa0e521e8c04151c59a8aa76d275b66b22d",
+    "checkpoint_epoch": 14,
+    "checkpoint_global_step": 4290
+  },
+  "model_artifacts": {
+    "centroid_sigma25": {
+      "source_run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma25_control_p40",
+      "run_dir": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25",
+      "best_checkpoint": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25\\best.ckpt",
+      "best_checkpoint_sha256": "c0dfd23d329bc80ffa498c165a7e28a4431adee3965b72238d8a03434d8a55fd",
+      "training_config": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25\\training_config.yaml",
+      "training_config_sha256": "54179759351a336baa9907952c781aa0e521e8c04151c59a8aa76d275b66b22d"
+    },
+    "centroid_sigma20": {
+      "source_run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40",
+      "run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40",
+      "best_checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40\\best.ckpt",
+      "best_checkpoint_sha256": "668b02571d025f88f6e23f6539b0899a870159b54f4db7cd7ab868d997faa5af",
+      "training_config": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40\\training_config.yaml",
+      "training_config_sha256": "b4178dc9ddf7a4fdea1a0421e9dfee10b8d857286519f40c9e896ce173cd9787"
+    },
+    "centroid_sigma15": {
+      "source_run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40",
+      "run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40",
+      "best_checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40\\best.ckpt",
+      "best_checkpoint_sha256": "aa13ad87e9e74edc402a41eed80659cfa579405be1b939f8bff1374f9f3ea410",
+      "training_config": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40\\training_config.yaml",
+      "training_config_sha256": "1240503e090f7977ab09d712966f0e3809b892013ffe1eacc07d1a8dff8947bf"
+    },
+    "instance_control": {
+      "source_run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40",
+      "run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40",
+      "best_checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40\\best.ckpt",
+      "best_checkpoint_sha256": "18feb2e61c632ceed1e696e47ead14dd95a69522c99c3f6ad5d0fc570455fc5a",
+      "training_config": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40\\training_config.yaml",
+      "training_config_sha256": "b9af5c662fa0e331e9dd5a140cad65fe6d72ccc52b591b936806a878169fff27"
+    },
+    "instance_jitter8": {
+      "source_run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40",
+      "run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40",
+      "best_checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40\\best.ckpt",
+      "best_checkpoint_sha256": "7efeba7a420c19145550f0f357bb07334cedb40b4ab234c84d1b9bf874aab57a",
+      "training_config": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40\\training_config.yaml",
+      "training_config_sha256": "92d9c4d11b9c1f2be323bf6ae0befb16b42ab49ffb3ae7c9001e73eebfa8b26f"
+    },
+    "instance_jitter16": {
+      "source_run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40",
+      "run_dir": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40",
+      "best_checkpoint": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40\\best.ckpt",
+      "best_checkpoint_sha256": "27832d281dd96d1c6bd0af9c92ce5c9e4b9e41dedd46fe8e72de05e75d5fe632",
+      "training_config": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40\\training_config.yaml",
+      "training_config_sha256": "df2574d3ee75e9b51342a514ec6ea099d57a3d3cb8322ff3a1483779b498f94d"
+    }
+  },
+  "jobs": [
+    {
+      "name": "centroid_only",
+      "mode": "centroid_only",
+      "strict_anchor_eligible_only": true,
+      "models": {
+        "centroid_sigma25": [
+          "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25"
+        ],
+        "centroid_sigma20": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40"
+        ],
+        "centroid_sigma15": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40"
+        ]
+      },
+      "command": [
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\.venv\\Scripts\\python.exe",
+        "-m",
+        "scripts.sleap.compare_rounds_topdown",
+        "--view",
+        "side",
+        "--manifest",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\benchmark_manifest_phase1_v1.csv",
+        "--evaluation-mode",
+        "centroid_only",
+        "--predictions-dir",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\predictions",
+        "--out-json",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\side_centroid_only_shared_benchmark.json",
+        "--batch-size",
+        "4",
+        "--device",
+        "cuda",
+        "--reuse-existing-predictions",
+        "--strict-centroid-eligible-only",
+        "--model",
+        "centroid_sigma25=C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25",
+        "--model",
+        "centroid_sigma20=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40",
+        "--model",
+        "centroid_sigma15=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40"
+      ]
+    },
+    {
+      "name": "oracle_centered_instance",
+      "mode": "oracle_centered_instance",
+      "strict_anchor_eligible_only": true,
+      "models": {
+        "instance_control": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40"
+        ],
+        "instance_jitter8": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40"
+        ],
+        "instance_jitter16": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40"
+        ]
+      },
+      "command": [
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\.venv\\Scripts\\python.exe",
+        "-m",
+        "scripts.sleap.compare_rounds_topdown",
+        "--view",
+        "side",
+        "--manifest",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\benchmark_manifest_phase1_v1.csv",
+        "--evaluation-mode",
+        "oracle_centered_instance",
+        "--predictions-dir",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\predictions",
+        "--out-json",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\side_oracle_centered_instance_shared_benchmark.json",
+        "--batch-size",
+        "4",
+        "--device",
+        "cuda",
+        "--reuse-existing-predictions",
+        "--strict-centroid-eligible-only",
+        "--model",
+        "instance_control=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40",
+        "--model",
+        "instance_jitter8=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40",
+        "--model",
+        "instance_jitter16=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40"
+      ]
+    },
+    {
+      "name": "full_topdown_grid",
+      "mode": "full_topdown",
+      "strict_anchor_eligible_only": false,
+      "models": {
+        "sigma25__control": [
+          "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40"
+        ],
+        "sigma25__jitter8": [
+          "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40"
+        ],
+        "sigma25__jitter16": [
+          "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40"
+        ],
+        "sigma20__control": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40"
+        ],
+        "sigma20__jitter8": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40"
+        ],
+        "sigma20__jitter16": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40"
+        ],
+        "sigma15__control": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40"
+        ],
+        "sigma15__jitter8": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40"
+        ],
+        "sigma15__jitter16": [
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40",
+          "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40"
+        ]
+      },
+      "command": [
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\.venv\\Scripts\\python.exe",
+        "-m",
+        "scripts.sleap.compare_rounds_topdown",
+        "--view",
+        "side",
+        "--manifest",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\benchmark_manifest_phase1_v1.csv",
+        "--evaluation-mode",
+        "full_topdown",
+        "--predictions-dir",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\predictions",
+        "--out-json",
+        "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\side_full_topdown_grid_shared_benchmark.json",
+        "--batch-size",
+        "4",
+        "--device",
+        "cuda",
+        "--reuse-existing-predictions",
+        "--model",
+        "sigma25__control=C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40",
+        "--model",
+        "sigma25__jitter8=C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40",
+        "--model",
+        "sigma25__jitter16=C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_side_optimization_evaluation\\model_staging\\centroid_sigma25,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40",
+        "--model",
+        "sigma20__control=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40",
+        "--model",
+        "sigma20__jitter8=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40",
+        "--model",
+        "sigma20__jitter16=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma20_strictframe_p40,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40",
+        "--model",
+        "sigma15__control=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_control_p40",
+        "--model",
+        "sigma15__jitter8=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter8_p40",
+        "--model",
+        "sigma15__jitter16=\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centroid_sigma15_strictframe_p40,\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260724_sideopt\\side\\runs\\side_centered_instance_opt_jitter16_p40"
+      ]
+    }
+  ]
+}

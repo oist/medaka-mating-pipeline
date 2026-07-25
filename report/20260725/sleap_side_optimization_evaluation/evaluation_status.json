@@ -1,0 +1,11 @@
+{
+  "updated_at": "2026-07-25T10:48:30+0900",
+  "state": "complete",
+  "active": null,
+  "completed": [
+    "centroid_only",
+    "oracle_centered_instance",
+    "full_topdown_grid"
+  ],
+  "failed": []
+}
