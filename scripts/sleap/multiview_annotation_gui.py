@@ -60,6 +60,7 @@ CLI
 import argparse
 import sys
 from collections import defaultdict
+from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -92,6 +93,11 @@ PRED_COLOR_RGB = (0.7, 0.7, 0.7)  # auto-predicted points
 
 NODE_NAMES = ("mouth", "tail")
 NUM_FISH = 3
+
+
+def copy_labels_provenance(labels) -> dict:
+    """Return an independent copy of package provenance for save operations."""
+    return deepcopy(dict(getattr(labels, "provenance", {}) or {}))
 
 
 # ---------------------------------------------------------------------------
@@ -1021,6 +1027,7 @@ class MultiviewAnnotator:
             videos=list({id(v): v for v in video_by_name.values()}.values()),
             labeled_frames=merged_lfs,
             suggestions=suggestions,
+            provenance=copy_labels_provenance(self.labels),
         )
         self.out_path.parent.mkdir(parents=True, exist_ok=True)
         print(f"Saving {len(merged_lfs)} LFs ({len(new_lfs)} replaced, "

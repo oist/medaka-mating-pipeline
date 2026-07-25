@@ -1,0 +1,53 @@
+{
+  "version": "independent40-v1",
+  "selection_seed": 20260724,
+  "guard_frames": 166,
+  "selection_rule": "K_1_2: one stable-hash-ranked future-lock-eligible frame per non-overlapping event; K_1_1/K_1_3: stable-hash-ranked uniform point events; all expanded event intervals exclude every Round 7 label and every Round 8 pilot/model-training exposure frame. Uncorrected expansion candidates were not model exposure.",
+  "quotas": {
+    "20251225_K_1_1_FCMC": 14,
+    "20251225_K_1_2_FCMC": 13,
+    "20251225_K_1_3_FCMC": 13
+  },
+  "round7_packages": {
+    "top": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260704\\top\\labels.pkg.slp",
+      "labeled_frames": 1295,
+      "matched_exposure_rows": 1295,
+      "size_bytes": 2046192763
+    },
+    "side": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260704\\side\\labels.pkg.slp",
+      "labeled_frames": 2590,
+      "matched_exposure_rows": 2590,
+      "size_bytes": 3095053668
+    }
+  },
+  "round8_selection": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260721\\round8_active_learning\\selection_360.csv",
+    "sha256": "47f16c84b9fd09546ff43e6ab5cd458f9537fd91d453252450c582064134ab29",
+    "exposure_filter": "annotation_batch == pilot",
+    "exposure_role": "pilot/model-training exposure only",
+    "excluded_role": "uncorrected expansion candidates; not used as model exposure",
+    "unique_exposure_frames_by_experiment": {
+      "20251225_K_1_2_FCMC": 120
+    }
+  },
+  "future_queue": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\future_locked_test_annotation_queue_eligible_v1.csv",
+    "sha256": "721e17d225f894ddd45bb6a0d0dc6e7034f82942973815d6c74574f5824825ca"
+  },
+  "manifest": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_independent_benchmark_annotation\\independent_annotation_40_manifest.csv",
+    "sha256": "2c7f35da17fd3a37f4be66a5f838164fe88165835dbbd78bc4e5cf9d573e5ebd"
+  },
+  "contains_model_predictions": false,
+  "contains_keypoint_coordinates": false,
+  "blank_package": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_independent_benchmark_annotation\\independent_annotation_40_blank.pkg.slp",
+    "sha256": "c1fcddf7d67eeb586572175cdb3cf4fc5d22289abc6b21a36fe72a9f850c8146",
+    "source_frames": 40,
+    "view_frames": 120,
+    "instances": 0,
+    "videos": 9
+  }
+}
