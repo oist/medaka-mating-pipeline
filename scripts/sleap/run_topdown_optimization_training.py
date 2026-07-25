@@ -44,6 +44,8 @@ class Candidate:
     centered_instance_policy: str = "disabled"
     sigma: float | None = None
     jitter_px: int | None = None
+    online_hard_keypoint_mining: bool | None = None
+    required_initial_checkpoint_sha256: str | None = None
 
 
 PRIMARY_CANDIDATES = (
@@ -71,12 +73,41 @@ PRIMARY_CANDIDATES = (
         kind="centered_instance",
         centered_instance_policy="strict",
         jitter_px=8,
+        online_hard_keypoint_mining=False,
     ),
     Candidate(
         name="side_centered_instance_opt_jitter16_p40",
         kind="centered_instance",
         centered_instance_policy="strict",
         jitter_px=16,
+        online_hard_keypoint_mining=False,
+    ),
+)
+EVALUATED_CONTROL_CI_SHA256 = (
+    "18feb2e61c632ceed1e696e47ead14dd95a69522c99c3f6ad5d0fc570455fc5a"
+)
+PHASE4_CONTROLLED_CANDIDATES = (
+    Candidate(
+        name=(
+            "side_centered_instance_crop448_rot90_jitter0_"
+            "strictmouth_ohkmoff_p40"
+        ),
+        kind="centered_instance",
+        centered_instance_policy="strict",
+        jitter_px=0,
+        online_hard_keypoint_mining=False,
+        required_initial_checkpoint_sha256=EVALUATED_CONTROL_CI_SHA256,
+    ),
+    Candidate(
+        name=(
+            "side_centered_instance_crop448_rot90_jitter0_"
+            "strictmouth_ohkmon_p40"
+        ),
+        kind="centered_instance",
+        centered_instance_policy="strict",
+        jitter_px=0,
+        online_hard_keypoint_mining=True,
+        required_initial_checkpoint_sha256=EVALUATED_CONTROL_CI_SHA256,
     ),
 )
 OPTIONAL_CANDIDATES = (
@@ -88,9 +119,13 @@ OPTIONAL_CANDIDATES = (
         centroid_policy="instance",
         sigma=2.0,
     ),
+    *PHASE4_CONTROLLED_CANDIDATES,
 )
 ALL_CANDIDATES = PRIMARY_CANDIDATES + OPTIONAL_CANDIDATES
 CANDIDATE_BY_NAME = {candidate.name: candidate for candidate in ALL_CANDIDATES}
+PHASE4_CONTROLLED_NAMES = {
+    candidate.name for candidate in PHASE4_CONTROLLED_CANDIDATES
+}
 
 
 def jitter_fraction(jitter_px: int, crop_size: int) -> float:
@@ -245,6 +280,13 @@ def build_candidate_config(
         crop_size = 448
         jitter_px = int(candidate.jitter_px)
         jitter_frac = jitter_fraction(jitter_px, crop_size)
+        if candidate.online_hard_keypoint_mining is None:
+            raise ValueError(
+                f"{candidate.name} must set online_hard_keypoint_mining"
+            )
+        online_hard_keypoint_mining = bool(
+            candidate.online_hard_keypoint_mining
+        )
         data["preprocessing"]["crop_size"] = crop_size
         geometric = data["augmentation_config"]["geometric"]
         geometric["rotation_min"] = -90.0
@@ -252,10 +294,13 @@ def build_candidate_config(
         geometric["rotation_p"] = 1.0
         geometric["translate_width"] = jitter_frac
         geometric["translate_height"] = jitter_frac
-        geometric["translate_p"] = 1.0
-        trainer["online_hard_keypoint_mining"]["online_mining"] = False
+        geometric["translate_p"] = 1.0 if jitter_px > 0 else 0.0
+        trainer["online_hard_keypoint_mining"]["online_mining"] = (
+            online_hard_keypoint_mining
+        )
         # With two nodes, OHKM selected both and multiplied ordinary MSE by 5.
-        # Preserve equivalent absolute plateau thresholds after disabling it.
+        # Keep identical monitor thresholds in the controlled OHKM pair so the
+        # mining flag is the only substantive config difference.
         trainer["lr_scheduler"]["reduce_lr_on_plateau"]["threshold"] = 2.0e-7
         trainer["early_stopping"]["min_delta"] = 2.0e-9
         trainer["train_steps_per_epoch"] = int(
@@ -266,7 +311,9 @@ def build_candidate_config(
                 "crop_size": crop_size,
                 "jitter_px": jitter_px,
                 "translation_fraction_of_oversized_crop": jitter_frac,
-                "jitter_implementation": "post_affine_translation",
+                "jitter_implementation": (
+                    "post_affine_translation" if jitter_px > 0 else "none"
+                ),
                 "rotation_degrees": [-90.0, 90.0],
                 "scale_range": [
                     float(geometric["scale_min"]),
@@ -275,7 +322,9 @@ def build_candidate_config(
                 "centered_instance_anchor_policy": (
                     candidate.centered_instance_policy
                 ),
-                "online_hard_keypoint_mining": False,
+                "online_hard_keypoint_mining": (
+                    online_hard_keypoint_mining
+                ),
                 "samples_per_epoch": int(label_summary["instances_anchor"]),
             }
         )
@@ -307,10 +356,6 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(8 * 1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
-
-
-def _sha256_text(text: str) -> str:
-    return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def _write_prepared_text(
@@ -404,6 +449,7 @@ def prepare_candidates(
     candidates: list[Candidate],
     seed: int,
     early_stopping_patience: int,
+    initial_checkpoint_overrides: dict[str, Path] | None = None,
     overwrite_prepared: bool = False,
 ) -> dict[str, Any]:
     """Write candidate YAMLs and return a machine-readable manifest."""
@@ -421,11 +467,31 @@ def prepare_candidates(
 
     entries = []
     baseline_artifacts: dict[str, dict[str, str]] = {}
+    checkpoint_overrides = initial_checkpoint_overrides or {}
     for candidate in candidates:
-        initial_checkpoint = resolve_round8_checkpoint(
-            base_round_dir, candidate.kind
-        )
+        initial_checkpoint = checkpoint_overrides.get(
+            candidate.kind
+        ) or resolve_round8_checkpoint(base_round_dir, candidate.kind)
+        if not initial_checkpoint.is_file():
+            raise FileNotFoundError(
+                f"Initial checkpoint not found: {initial_checkpoint}"
+            )
+        initial_checkpoint_sha256 = _sha256(initial_checkpoint)
+        if (
+            candidate.required_initial_checkpoint_sha256 is not None
+            and initial_checkpoint_sha256
+            != candidate.required_initial_checkpoint_sha256
+        ):
+            raise ValueError(
+                f"{candidate.name} requires initial checkpoint SHA-256 "
+                f"{candidate.required_initial_checkpoint_sha256}, got "
+                f"{initial_checkpoint_sha256}: {initial_checkpoint}"
+            )
         base_path = initial_checkpoint.parent / "training_config.yaml"
+        if not base_path.is_file():
+            raise FileNotFoundError(
+                f"Initial training config not found: {base_path}"
+            )
         base_config = yaml.safe_load(base_path.read_text(encoding="utf-8"))
         config, derived = build_candidate_config(
             base_config,
@@ -436,6 +502,8 @@ def prepare_candidates(
             early_stopping_patience=early_stopping_patience,
             initial_checkpoint=initial_checkpoint,
         )
+        derived["initial_checkpoint_sha256"] = initial_checkpoint_sha256
+        derived["initial_training_config_sha256"] = _sha256(base_path)
         cache_root = Path(config["data_config"]["cache_img_path"])
         cache_complete = _cache_is_complete(
             cache_root, train_summary["frames"], val_summary["frames"]
@@ -463,13 +531,15 @@ def prepare_candidates(
                 ),
                 "cache_root": str(cache_root),
                 "reuses_complete_cache": bool(cache_complete),
-                "generated_config_sha256": _sha256_text(config_text),
+                # Hash the bytes actually written. On Windows, text-mode
+                # newline translation may make these differ from config_text.
+                "generated_config_sha256": _sha256(config_path),
             }
         )
         if candidate.kind not in baseline_artifacts:
             baseline_artifacts[candidate.kind] = {
                 "checkpoint": str(initial_checkpoint.resolve()),
-                "checkpoint_sha256": _sha256(initial_checkpoint),
+                "checkpoint_sha256": initial_checkpoint_sha256,
                 "training_config": str(base_path.resolve()),
                 "training_config_sha256": _sha256(base_path),
             }
@@ -607,6 +677,7 @@ def run_candidate(
         "post_affine"
         if candidate.centered_instance_policy == "strict"
         and candidate.jitter_px is not None
+        and candidate.jitter_px > 0
         else "native"
     )
     print(f"\n--- {candidate.name} ---", flush=True)
@@ -768,6 +839,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base-round-dir", type=Path, default=None)
     parser.add_argument("--output-root", type=Path, default=None)
     parser.add_argument(
+        "--centered-instance-initial-checkpoint",
+        type=Path,
+        help=(
+            "Override the initialization checkpoint and sibling training "
+            "config for selected centered-instance candidates."
+        ),
+    )
+    parser.add_argument(
         "--candidates",
         nargs="+",
         choices=list(CANDIDATE_BY_NAME),
@@ -802,6 +881,31 @@ def main(argv: list[str] | None = None) -> int:
         if args.candidates
         else list(PRIMARY_CANDIDATES)
     )
+    selected_names = {candidate.name for candidate in selected}
+    phase4_selected = bool(selected_names & PHASE4_CONTROLLED_NAMES)
+    completed_root = (
+        local_paths.sleap_models_dir / "retrain_20260724_sideopt"
+    ).resolve()
+    resolved_output_root = output_root.resolve()
+    if phase4_selected:
+        if args.output_root is None:
+            parser.error(
+                "controlled Phase-4 candidates require an explicit new "
+                "--output-root"
+            )
+        if args.centered_instance_initial_checkpoint is None:
+            parser.error(
+                "controlled Phase-4 candidates require "
+                "--centered-instance-initial-checkpoint"
+            )
+        if (
+            resolved_output_root == completed_root
+            or completed_root in resolved_output_root.parents
+        ):
+            parser.error(
+                "controlled Phase-4 candidates cannot write into the "
+                f"completed run root: {completed_root}"
+            )
     if args.overwrite_prepared and _training_outputs_exist(output_root):
         parser.error(
             "--overwrite-prepared is refused because training outputs already "
@@ -813,6 +917,15 @@ def main(argv: list[str] | None = None) -> int:
         candidates=selected,
         seed=args.seed,
         early_stopping_patience=40,
+        initial_checkpoint_overrides=(
+            {
+                "centered_instance": (
+                    args.centered_instance_initial_checkpoint
+                )
+            }
+            if args.centered_instance_initial_checkpoint is not None
+            else None
+        ),
         overwrite_prepared=args.overwrite_prepared,
     )
     print(

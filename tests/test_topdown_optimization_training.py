@@ -7,6 +7,8 @@ import pytest
 
 from scripts.sleap.run_topdown_optimization_training import (
     CANDIDATE_BY_NAME,
+    PHASE4_CONTROLLED_NAMES,
+    PRIMARY_CANDIDATES,
     _write_prepared_text,
     build_candidate_config,
     jitter_fraction,
@@ -173,6 +175,75 @@ def test_centered_instance_primary_recipe() -> None:
     assert derived["centered_instance_anchor_policy"] == "strict"
     assert derived["jitter_implementation"] == "post_affine_translation"
     assert "post-affine pure translation" in config["description"]
+
+
+def test_phase4_pair_is_optional_and_differs_only_by_ohkm_and_name() -> None:
+    primary_names = {candidate.name for candidate in PRIMARY_CANDIDATES}
+    assert not (primary_names & PHASE4_CONTROLLED_NAMES)
+
+    off = CANDIDATE_BY_NAME[
+        "side_centered_instance_crop448_rot90_jitter0_"
+        "strictmouth_ohkmoff_p40"
+    ]
+    on = CANDIDATE_BY_NAME[
+        "side_centered_instance_crop448_rot90_jitter0_"
+        "strictmouth_ohkmon_p40"
+    ]
+    off_config, off_derived = build_candidate_config(
+        base_config("centered_instance"),
+        off,
+        output_root=Path("out"),
+        label_summary=LABEL_SUMMARY,
+    )
+    on_config, on_derived = build_candidate_config(
+        base_config("centered_instance"),
+        on,
+        output_root=Path("out"),
+        label_summary=LABEL_SUMMARY,
+    )
+
+    for config, derived, expected_ohkm in (
+        (off_config, off_derived, False),
+        (on_config, on_derived, True),
+    ):
+        geometric = config["data_config"]["augmentation_config"]["geometric"]
+        assert config["data_config"]["preprocessing"]["crop_size"] == 448
+        assert (geometric["rotation_min"], geometric["rotation_max"]) == (
+            -90.0,
+            90.0,
+        )
+        assert geometric["translate_width"] == 0.0
+        assert geometric["translate_height"] == 0.0
+        assert geometric["translate_p"] == 0.0
+        assert config["trainer_config"]["online_hard_keypoint_mining"][
+            "online_mining"
+        ] is expected_ohkm
+        assert config["trainer_config"]["train_steps_per_epoch"] == math.ceil(
+            7764 / 16
+        )
+        assert derived["jitter_implementation"] == "none"
+        assert derived["online_hard_keypoint_mining"] is expected_ohkm
+
+    def flattened(value, prefix=""):
+        if isinstance(value, dict):
+            output = {}
+            for key, child in value.items():
+                child_prefix = f"{prefix}.{key}" if prefix else key
+                output.update(flattened(child, child_prefix))
+            return output
+        return {prefix: value}
+
+    off_flat = flattened(off_config)
+    on_flat = flattened(on_config)
+    differences = {
+        key
+        for key in off_flat
+        if off_flat[key] != on_flat[key]
+    }
+    assert differences == {
+        "trainer_config.run_name",
+        "trainer_config.online_hard_keypoint_mining.online_mining",
+    }
 
 
 def test_prepared_artifacts_are_immutable_without_explicit_override(
