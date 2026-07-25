@@ -620,8 +620,11 @@ class ViewPane:
         QtCore, QtGui, QtWidgets = _qt()
         self.view_name = view_name
         self._on_click = on_click  # callable(view_name, x_image, y_image)
-        self._on_pan = on_pan      # callable(view_name, dx_px, dy_px)
-        self._on_wheel = on_wheel  # callable(view_name, x_image, y_image, delta_y)
+        # Navigation callbacks receive the *actual* scene center produced by
+        # this pane's QGraphicsView transform. The main window back-projects
+        # that center to synchronize the other two cameras.
+        self._on_pan = on_pan      # callable(view_name, center_x, center_y)
+        self._on_wheel = on_wheel  # callable(view_name, center_x, center_y, zoom)
         self._press_pos = None     # for click-vs-drag detection
         self._press_in_drag = False
 
@@ -634,6 +637,10 @@ class ViewPane:
         self.view.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
         self.view.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
         self.view.setMouseTracking(True)
+        # Mouse events are emitted by QGraphicsView's viewport widget. Setting
+        # tracking only on the outer view leaves drag moves missing on some
+        # Windows/PyQt builds.
+        self.view.viewport().setMouseTracking(True)
 
         # Capture mouse events on the view itself so our click handler runs
         # regardless of which scene item is under the cursor.
@@ -680,6 +687,66 @@ class ViewPane:
         # Center the view on the focus image-space coordinate.
         self.view.centerOn(QtCore.QPointF(focus_xy[0], focus_xy[1]))
         self._reposition_label()
+
+    def current_center(self) -> Tuple[float, float]:
+        """Return the image-space point currently at the viewport center."""
+        center = self.view.viewport().rect().center()
+        scene_point = self.view.mapToScene(center)
+        return float(scene_point.x()), float(scene_point.y())
+
+    def current_zoom(self) -> float:
+        """Return display pixels per image pixel for this pane."""
+        return float(abs(self.view.transform().m11()))
+
+    def zoom_at_viewport_pos(
+        self,
+        viewport_pos,
+        factor: float,
+        *,
+        min_zoom: float = 0.05,
+        max_zoom: float = 8.0,
+    ) -> Tuple[Tuple[float, float], float]:
+        """Scale while keeping the image pixel under ``viewport_pos`` fixed.
+
+        QGraphicsView's transformation-anchor behavior is sensitive to hidden
+        scrollbar ranges and platform event timing. This method enforces the
+        cursor invariant explicitly: measure the scene point under the cursor,
+        scale, then shift the scene center by the measured residual.
+        """
+        QtCore, QtGui, QtWidgets = _qt()
+        old_zoom = self.current_zoom()
+        if old_zoom <= 0:
+            old_zoom = 1.0
+        target_zoom = float(np.clip(old_zoom * factor, min_zoom, max_zoom))
+        if abs(target_zoom - old_zoom) < 1e-12:
+            return self.current_center(), old_zoom
+
+        anchor_before = self.view.mapToScene(viewport_pos)
+        self.view.scale(target_zoom / old_zoom, target_zoom / old_zoom)
+        anchor_after = self.view.mapToScene(viewport_pos)
+        center_after_scale = self.view.mapToScene(
+            self.view.viewport().rect().center()
+        )
+        corrected_center = center_after_scale + (anchor_before - anchor_after)
+        self.view.centerOn(corrected_center)
+        return self.current_center(), target_zoom
+
+    def pan_by_viewport_delta(
+        self,
+        dx_px: float,
+        dy_px: float,
+    ) -> Tuple[float, float]:
+        """Move the displayed image with a mouse drag and return its center."""
+        QtCore, QtGui, QtWidgets = _qt()
+        zoom = max(self.current_zoom(), 1e-12)
+        center_x, center_y = self.current_center()
+        self.view.centerOn(
+            QtCore.QPointF(
+                center_x - float(dx_px) / zoom,
+                center_y - float(dy_px) / zoom,
+            )
+        )
+        return self.current_center()
 
     def clear_keypoints(self) -> None:
         for item in self.keypoint_items:
@@ -884,8 +951,10 @@ class ViewPane:
         QtCore, QtGui, QtWidgets = _qt()
         if self._press_pos is None:
             return
-        if not (ev.buttons() & QtCore.Qt.LeftButton):
-            return
+        # Some Windows/PyQt viewport paths report ``NoButton`` on move
+        # events even while the left-button press is still active. The
+        # press/release handlers already own the gesture lifecycle, so
+        # `_press_pos` is the reliable drag-state signal here.
         dx = ev.pos().x() - self._press_pos[0]
         dy = ev.pos().y() - self._press_pos[1]
         if not self._press_in_drag:
@@ -896,7 +965,8 @@ class ViewPane:
             self._press_in_drag = True
         if dx == 0 and dy == 0:
             return
-        self._on_pan(self.view_name, dx, dy)
+        center_x, center_y = self.pan_by_viewport_delta(dx, dy)
+        self._on_pan(self.view_name, center_x, center_y)
         self._press_pos = (ev.pos().x(), ev.pos().y())
 
     def _handle_release(self, ev):
@@ -913,9 +983,18 @@ class ViewPane:
     def _handle_wheel(self, ev):
         if self._on_wheel is None:
             return False
-        scene_pt = self.view.mapToScene(ev.pos())
         delta_y = ev.angleDelta().y()
-        self._on_wheel(self.view_name, float(scene_pt.x()), float(scene_pt.y()), delta_y)
+        if delta_y == 0:
+            delta_y = ev.pixelDelta().y()
+        if delta_y == 0:
+            return True
+        factor = 1.0 + 0.0015 * abs(delta_y)
+        if delta_y < 0:
+            factor = 1.0 / factor
+        (center_x, center_y), zoom = self.zoom_at_viewport_pos(
+            ev.pos(), factor
+        )
+        self._on_wheel(self.view_name, center_x, center_y, zoom)
         return True
 
 
@@ -1461,11 +1540,13 @@ class MultiviewWindow:
 
     # -------------------- focus / zoom sync --------------------
 
-    def _sync_views(self):
+    def _sync_views(self, *, skip_view: Optional[str] = None):
         focus_proj = self.cal.compute_imCoords_from_XYZ(
             self.focus_xyz.reshape(1, 3)
         )[0]  # shape (3, 2)
         for i, view in enumerate(VIEWS):
+            if view == skip_view:
+                continue
             self.panes[view].set_focus(
                 (float(focus_proj[i, 0]), float(focus_proj[i, 1])),
                 self.zoom,
@@ -1584,63 +1665,29 @@ class MultiviewWindow:
             self._sync_views()
             self._update_status()
 
-    def on_pane_wheel(self, view: str, x_cursor: float, y_cursor: float, delta_y: int):
-        """Mouse-wheel zoom centered on the cursor.
-
-        The standard "zoom to mouse cursor" behaviour: the image-space pixel
-        currently under the cursor stays under the cursor after the zoom
-        change. To pull this off across the synced multi-view setup we
-        update both ``self.zoom`` and ``self.focus_xyz`` so the new focus,
-        when projected through calibration into ``view``, lands on the right
-        weighted point between the cursor and the previous focus.
-        """
-        if delta_y == 0:
-            return
-        factor = 1.0 + 0.0015 * abs(delta_y)
-        if delta_y < 0:
-            factor = 1.0 / factor
-        new_zoom = float(np.clip(self.zoom * factor, 0.05, 8.0))
-        if abs(new_zoom - self.zoom) < 1e-6:
-            return
-
-        # Where the focus currently projects in this view.
-        focus_proj = self.cal.compute_imCoords_from_XYZ(
-            self.focus_xyz.reshape(1, 3)
-        )[0]
-        cur_focus = focus_proj[VIEW_INDEX[view]]
-        # Weighted average toward cursor: new_focus = (z_old/z_new)*cur + (1 - z_old/z_new)*cursor.
-        ratio = self.zoom / new_zoom
-        new_focus_x = ratio * cur_focus[0] + (1.0 - ratio) * x_cursor
-        new_focus_y = ratio * cur_focus[1] + (1.0 - ratio) * y_cursor
+    def on_pane_wheel(
+        self,
+        view: str,
+        center_x: float,
+        center_y: float,
+        zoom: float,
+    ):
+        """Synchronize other views after cursor-anchored local zoom."""
         self.focus_xyz = back_project_view_click(
-            self.cal, view, (new_focus_x, new_focus_y), self.focus_xyz
+            self.cal, view, (center_x, center_y), self.focus_xyz
         )
-        self.zoom = new_zoom
-        self._sync_views()
+        self.zoom = float(zoom)
+        # The active pane has already applied an exact cursor-preserving Qt
+        # transform. Keep it untouched and project its new center to peers.
+        self._sync_views(skip_view=view)
         self._update_status()
 
-    def on_pane_pan(self, view: str, dx_px: float, dy_px: float):
-        """Pan the focus point so the *active* view tracks the user's drag
-        exactly. The other two views follow via the calibration projection.
-
-        We compute the new desired focus position in the active view's image
-        space (current focus 2D + drag delta) and then run the full Newton
-        back-projection to find the focus_xyz that lands there. This makes
-        the active view feel like the primary — it goes wherever the user
-        drags it, regardless of how the other 2 views' projections behave.
-        """
-        if abs(dx_px) < 0.01 and abs(dy_px) < 0.01:
-            return
-        proj0 = self.cal.compute_imCoords_from_XYZ(
-            self.focus_xyz.reshape(1, 3)
-        )[0][VIEW_INDEX[view]]
-        # Drag delta in pane pixels -> image-space delta (account for zoom).
-        target_x = float(proj0[0]) - dx_px / self.zoom
-        target_y = float(proj0[1]) - dy_px / self.zoom
+    def on_pane_pan(self, view: str, center_x: float, center_y: float):
+        """Synchronize other views after a direct mouse-drag translation."""
         self.focus_xyz = back_project_view_click(
-            self.cal, view, (target_x, target_y), self.focus_xyz
+            self.cal, view, (center_x, center_y), self.focus_xyz
         )
-        self._sync_views()
+        self._sync_views(skip_view=view)
 
     # -------------------- instance add --------------------
 

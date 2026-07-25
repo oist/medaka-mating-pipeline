@@ -19,6 +19,7 @@ from scripts.sleap.pyqt_multiview_annotator import (
     KEYPOINT_SIZE_RADII_PX,
     MultiviewWindow,
     VIEWS,
+    ViewPane,
     copy_labels_provenance,
     first_empty_fish_slot,
     full_save_path,
@@ -110,6 +111,104 @@ def test_independent_mode_rejects_calibration_coordinate_fill() -> None:
     window.fill_missing_views()
     assert "disabled" in window.status.message
     assert "manually" in window.status.message
+
+
+def test_view_pane_zoom_keeps_scene_pixel_under_cursor(
+    monkeypatch,
+) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    from PyQt5 import QtCore, QtWidgets
+
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    pane = ViewPane(
+        "top_cam",
+        lambda *_args: None,
+        lambda *_args: None,
+        lambda *_args: None,
+    )
+    pane.view.resize(420, 420)
+    pane.view.show()
+    app.processEvents()
+    pane.set_image(np.zeros((1200, 1200, 3), dtype=np.uint8))
+    pane.set_focus((600.0, 600.0), 0.5)
+    app.processEvents()
+
+    cursor = QtCore.QPoint(315, 90)
+    before = pane.view.mapToScene(cursor)
+    _, zoom = pane.zoom_at_viewport_pos(cursor, 1.6)
+    app.processEvents()
+    after = pane.view.mapToScene(cursor)
+
+    assert zoom == pytest.approx(0.8)
+    assert after.x() == pytest.approx(before.x(), abs=2.0)
+    assert after.y() == pytest.approx(before.y(), abs=2.0)
+    pane.view.close()
+
+
+def test_view_pane_pan_moves_image_with_drag(monkeypatch) -> None:
+    monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
+    from PyQt5 import QtCore, QtGui, QtWidgets
+
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    pan_events = []
+    pane = ViewPane(
+        "top_cam",
+        lambda *_args: None,
+        lambda *args: pan_events.append(args),
+        lambda *_args: None,
+    )
+    pane.view.resize(420, 420)
+    pane.view.show()
+    app.processEvents()
+    pane.set_image(np.zeros((1200, 1200, 3), dtype=np.uint8))
+    pane.set_focus((600.0, 600.0), 1.0)
+    app.processEvents()
+
+    marker = QtCore.QPointF(600.0, 600.0)
+    before = pane.view.mapFromScene(marker)
+    viewport = pane.view.viewport()
+
+    def send_mouse(event_type, position, button, buttons) -> None:
+        point = QtCore.QPointF(*position)
+        event = QtGui.QMouseEvent(
+            event_type,
+            point,
+            point,
+            point,
+            button,
+            buttons,
+            QtCore.Qt.NoModifier,
+        )
+        QtWidgets.QApplication.sendEvent(viewport, event)
+        app.processEvents()
+
+    send_mouse(
+        QtCore.QEvent.MouseButtonPress,
+        (210.0, 210.0),
+        QtCore.Qt.LeftButton,
+        QtCore.Qt.LeftButton,
+    )
+    send_mouse(
+        QtCore.QEvent.MouseMove,
+        (260.0, 180.0),
+        QtCore.Qt.NoButton,
+        QtCore.Qt.LeftButton,
+    )
+    send_mouse(
+        QtCore.QEvent.MouseButtonRelease,
+        (260.0, 180.0),
+        QtCore.Qt.LeftButton,
+        QtCore.Qt.NoButton,
+    )
+    app.processEvents()
+    after = pane.view.mapFromScene(marker)
+
+    assert pane.view.viewport().hasMouseTracking()
+    assert len(pan_events) == 1
+    assert pan_events[0][0] == "top_cam"
+    assert after.x() - before.x() == pytest.approx(50.0, abs=2.0)
+    assert after.y() - before.y() == pytest.approx(-30.0, abs=2.0)
+    pane.view.close()
 
 
 def test_refractive_two_view_prediction_recovers_missing_projection() -> None:
