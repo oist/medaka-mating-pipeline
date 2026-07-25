@@ -7,20 +7,28 @@ so that everything imported here is numpy/scipy-only.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 
 from scripts.sleap.eval_topdown_vs_bottomup import (
     MetricAccumulator,
     accumulate_frame,
+    centroid_arrays_as_mouth_instances,
     centroid_cost_matrix,
     count_merged_gt,
     frame_hash,
     hungarian_match,
     instance_centroid,
     is_mouth_tail_swap,
+    manifest_positions,
+    match_instances_partial,
     min_pairwise_centroid_distance,
     node_error,
+    normalize_difficulty,
+    partial_label_cost_matrix,
+    run_strategy,
     select_eval_indices,
 )
 
@@ -88,6 +96,16 @@ def test_hungarian_one_to_one():
     assert not un_gt and not un_pr
 
 
+def test_hungarian_gate_is_part_of_global_assignment():
+    # An unconstrained rectangular solve chooses (0,0)=1 and (1,1)=101, then
+    # drops the latter at a 100 px gate. The gated global optimum retains two
+    # feasible matches: (0,1)=99 and (1,0)=2.
+    cost = np.array([[1.0, 99.0], [2.0, 101.0]])
+    matches, un_gt, un_pr = hungarian_match(cost, gate=100.0)
+    assert {(gi, pj) for gi, pj, _ in matches} == {(0, 1), (1, 0)}
+    assert not un_gt and not un_pr
+
+
 def test_empty_predictions_all_missed():
     gt = [fish([0, 0], [10, 0])]
     cost = centroid_cost_matrix(gt, [])
@@ -95,6 +113,129 @@ def test_empty_predictions_all_missed():
     assert matches == []
     assert un_gt == [0]
     assert un_pr == []
+
+
+def test_partial_cost_marks_no_joint_node_unmatchable():
+    gt = [fish([0, 0], [np.nan, np.nan])]
+    pr = [fish([np.nan, np.nan], [10, 0])]
+    cost, basis, joint = partial_label_cost_matrix(
+        gt, pr, MOUTH_IDX, TAIL_IDX
+    )
+    assert np.isinf(cost[0, 0])
+    assert basis[0, 0] == "unmatchable"
+    assert joint[0][0] == ()
+    result = match_instances_partial(gt, pr, MOUTH_IDX, TAIL_IDX, gate=150)
+    assert result.matches == ()
+    assert result.unmatchable_gt == (0,)
+
+
+def test_centroid_only_output_becomes_mouth_partial_instance():
+    converted = centroid_arrays_as_mouth_instances(
+        [np.array([[12.0, 34.0]])], mouth_idx=0, n_nodes=2
+    )
+    assert np.allclose(converted[0][0], [12.0, 34.0])
+    assert np.all(np.isnan(converted[0][1]))
+
+
+def test_run_strategy_uses_sleap_nn_inference_predict(monkeypatch):
+    import scripts.sleap.eval_topdown_vs_bottomup as evaluator
+    import sleap_nn.inference
+
+    calls = {}
+    sentinel = object()
+
+    def fake_predict(**kwargs):
+        calls.update(kwargs)
+        return sentinel
+
+    monkeypatch.setattr(sleap_nn.inference, "predict", fake_predict)
+    monkeypatch.setattr(
+        evaluator,
+        "make_prediction_labels_self_contained",
+        lambda labels: labels,
+    )
+    output = run_strategy(
+        strategy="oracle-test",
+        model_paths=[Path("models/centered")],
+        subset_labels="labels",
+        max_instances=3,
+        batch_size=2,
+        device="cpu",
+        prediction_mode="oracle_centered_instance",
+    )
+    assert output is sentinel
+    assert calls["source"] == "labels"
+    assert calls["model_paths"] == [str(Path("models/centered"))]
+    assert calls["centroid_only"] is False
+    assert calls["clean_empty_frames"] is False
+
+
+def test_side2_97340_partial_mouths_avoid_artificial_109px_error():
+    # Synthetic analogue: both GT fish have only mouth annotations. Long tails
+    # make prediction centroids cross, reproducing the old ~109 px association
+    # artifact even though both predicted mouths are close to their GT mouths.
+    gt = [
+        fish([0, 0], [np.nan, np.nan]),
+        fish([109, 0], [np.nan, np.nan]),
+    ]
+    pr = [
+        fish([1, 0], [220, 0]),
+        fish([108, 0], [-110, 0]),
+    ]
+    legacy, _, _ = hungarian_match(centroid_cost_matrix(gt, pr), gate=150)
+    assert {(gi, pj) for gi, pj, _ in legacy} == {(0, 1), (1, 0)}
+
+    result = match_instances_partial(gt, pr, MOUTH_IDX, TAIL_IDX, gate=150)
+    assert {(m.gt_index, m.pred_index) for m in result.matches} == {
+        (0, 0),
+        (1, 1),
+    }
+    assert {m.basis for m in result.matches} == {"mouth"}
+    mouth_errors = [
+        node_error(gt[m.gt_index][MOUTH_IDX], pr[m.pred_index][MOUTH_IDX])
+        for m in result.matches
+    ]
+    assert mouth_errors == pytest.approx([1.0, 1.0])
+
+
+def test_side2_97630_partial_mouths_avoid_artificial_51px_error():
+    # Same structure at the smaller separation observed in frame 97630.
+    gt = [
+        fish([0, 0], [np.nan, np.nan]),
+        fish([51, 0], [np.nan, np.nan]),
+    ]
+    pr = [
+        fish([1, 0], [104, 0]),
+        fish([50, 0], [-52, 0]),
+    ]
+    result = match_instances_partial(gt, pr, MOUTH_IDX, TAIL_IDX, gate=100)
+    assert {(m.gt_index, m.pred_index) for m in result.matches} == {
+        (0, 0),
+        (1, 1),
+    }
+    assert max(
+        node_error(gt[m.gt_index][0], pr[m.pred_index][0])
+        for m in result.matches
+    ) == pytest.approx(1.0)
+
+
+def test_side1_97219_retains_genuine_tail_error():
+    gt = [
+        fish([0, 0], [20, 0]),
+        fish([100, 0], [120, 0]),
+    ]
+    pr = [
+        fish([1, 0], [65.2, 0]),  # correct mouth, genuine 45.2 px tail error
+        fish([101, 0], [121, 0]),
+    ]
+    acc = MetricAccumulator()
+    result = accumulate_frame(acc, gt, pr, MOUTH_IDX, TAIL_IDX, gate=150)
+    assert {(m.gt_index, m.pred_index) for m in result.matches} == {
+        (0, 0),
+        (1, 1),
+    }
+    assert {m.basis for m in result.matches} == {"both"}
+    assert max(acc.tail_errs) == pytest.approx(45.2)
 
 
 # ---------------------------------------------------------------------------
@@ -192,6 +333,11 @@ def test_accumulate_frame_perfect_prediction():
     assert s["swap_rate"] == 0.0
     assert s["mouth_err_mean"] == pytest.approx(0.0)
     assert s["merge_rate"] == 0.0
+    assert s["precision_numerator"] == 2
+    assert s["precision_denominator"] == 2
+    assert s["recall_numerator"] == 2
+    assert s["recall_denominator"] == 2
+    assert s["f1"] == pytest.approx(1.0)
 
 
 def test_accumulate_frame_missed_and_extra():
@@ -239,3 +385,162 @@ def test_optional_oks_fn_used_when_provided():
 
     accumulate_frame(acc, gt, pr, MOUTH_IDX, TAIL_IDX, gate=50.0, oks_fn=fake_oks)
     assert acc.summary()["oks_mean"] == pytest.approx(0.87)
+
+
+def test_metric_denominators_and_full_partial_subsets():
+    acc = MetricAccumulator()
+    gt = [
+        fish([0, 0], [10, 0]),  # fully labeled
+        fish([100, 0], [np.nan, np.nan]),  # partial: mouth only
+        fish([200, 0], [210, 0]),  # missed
+    ]
+    pr = [
+        fish([3, 0], [14, 0]),
+        fish([102, 0], [160, 0]),
+        fish([500, 0], [510, 0]),  # extra
+    ]
+    accumulate_frame(acc, gt, pr, MOUTH_IDX, TAIL_IDX, gate=50)
+    summary = acc.summary()
+
+    assert summary["precision_numerator"] == 2
+    assert summary["precision_denominator"] == 3
+    assert summary["recall_numerator"] == 2
+    assert summary["recall_denominator"] == 3
+    assert summary["all_three_detection_numerator"] == 0
+    assert summary["all_three_detection_denominator"] == 1
+
+    full = summary["keypoint_subsets"]["fully_labeled"]
+    partial = summary["keypoint_subsets"]["partial"]
+    assert full["n_gt"] == 2
+    assert full["n_matched"] == 1
+    assert full["mouth"]["n"] == 1
+    assert full["tail"]["n"] == 1
+    assert full["mouth"]["pck5_denominator"] == 1
+    assert full["mouth"]["pck5_numerator"] == 1
+    assert partial["n_gt"] == 1
+    assert partial["n_matched"] == 1
+    assert partial["mouth"]["n"] == 1
+    assert partial["tail"]["n"] == 0
+    assert summary["match_basis_counts"] == {"both": 1, "mouth": 1}
+
+
+def test_shared_tail_rate_has_explicit_frame_denominator():
+    acc = MetricAccumulator()
+    gt = [fish([0, 0], [10, 0]), fish([100, 0], [110, 0])]
+    pr = [fish([0, 0], [50, 0]), fish([100, 0], [52, 0])]
+    accumulate_frame(acc, gt, pr, MOUTH_IDX, TAIL_IDX, gate=50)
+    summary = acc.summary()
+    assert summary["shared_tail_numerator"] == 1
+    assert summary["shared_tail_denominator"] == 1
+    assert summary["shared_tail_rate"] == 1.0
+
+
+class _FakeLabeledFrame:
+    def __init__(self, frame_idx):
+        self.frame_idx = frame_idx
+
+
+class _FakeLabels:
+    def __init__(self, frame_indices):
+        self.labeled_frames = [_FakeLabeledFrame(i) for i in frame_indices]
+
+
+def test_manifest_positions_preserves_order_and_validates_frame_index():
+    labels = _FakeLabels([10, 20, 30])
+    rows = [
+        {
+            "frame_key": "b",
+            "source_labeled_frame_index": "2",
+            "frame_idx": "30",
+        },
+        {
+            "frame_key": "a",
+            "source_labeled_frame_index": "0",
+            "frame_idx": "10",
+        },
+    ]
+    positions, resolved = manifest_positions(labels, rows)
+    assert positions == [2, 0]
+    assert [row["frame_key"] for row in resolved] == ["b", "a"]
+
+    bad = [{**rows[0], "frame_idx": "31"}]
+    with pytest.raises(ValueError, match="expected 31"):
+        manifest_positions(labels, bad)
+
+
+@pytest.mark.parametrize(
+    ("row", "expected"),
+    [
+        ({"difficulty": "ordinary", "node_visibility": "full"}, "ordinary"),
+        ({"difficulty": "close-contact/crossing"}, "close_contact"),
+        ({"difficulty": "ordinary", "node_visibility": "mouth_only"}, "partial"),
+        ({"category": "partial/occluded"}, "partial"),
+        (
+            {
+                "difficulty": "close_contact_or_crossing",
+                "node_visibility": (
+                    "fish1[mouth:visible,tail:visible];"
+                    "fish2[mouth:visible,tail:visible]"
+                ),
+            },
+            "close_contact",
+        ),
+        (
+            {
+                "difficulty": "ordinary",
+                "node_visibility": "fish1[mouth:hidden,tail:visible]",
+            },
+            "partial",
+        ),
+    ],
+)
+def test_normalize_difficulty(row, expected):
+    assert normalize_difficulty(row) == expected
+
+
+def test_round_dir_overrides_do_not_require_mapped_model_root():
+    from scripts.sleap.compare_rounds_topdown import resolve_round_specs
+
+    specs = resolve_round_specs(
+        paths_config=Path("definitely_missing_paths_config.toml"),
+        round_dir_overrides=[
+            r"round7=\\server\share\retrain_20260704",
+            r"round8=\\server\share\retrain_20260722_round8",
+        ],
+    )
+    assert specs["round7"][0] == Path(r"\\server\share\retrain_20260704")
+    assert specs["round8"][1] == "round8_260723_strictmouth"
+
+
+def test_explicit_candidate_model_specs_validate_mode_arity(tmp_path):
+    from scripts.sleap.compare_rounds_topdown import parse_model_specs
+
+    centroid = tmp_path / "centroid"
+    centered = tmp_path / "centered"
+    centroid.mkdir()
+    centered.mkdir()
+    (centroid / "best.ckpt").touch()
+    (centered / "best.ckpt").touch()
+
+    component = parse_model_specs(
+        [f"sigma20={centroid}"], "centroid_only"
+    )
+    assert component == {"sigma20": [centroid]}
+
+    full = parse_model_specs(
+        [f"sigma20_jitter8={centroid},{centered}"], "full_topdown"
+    )
+    assert full == {"sigma20_jitter8": [centroid, centered]}
+
+    with pytest.raises(ValueError, match="requires 2 path"):
+        parse_model_specs([f"broken={centroid}"], "full_topdown")
+
+
+def test_explicit_candidate_model_specs_require_best_checkpoint(tmp_path):
+    from scripts.sleap.compare_rounds_topdown import parse_model_specs
+
+    model = tmp_path / "incomplete"
+    model.mkdir()
+
+    with pytest.raises(ValueError, match="no best.ckpt"):
+        parse_model_specs([f"incomplete={model}"], "centroid_only")
