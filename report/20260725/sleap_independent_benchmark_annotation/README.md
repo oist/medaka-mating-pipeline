@@ -1,5 +1,13 @@
 # Independent 40-frame annotation runbook
 
+> **Superseded selection notice (2026-07-26):** Human review showed that
+> K_1_2 frames 1207 and 4626 are acquisition setup/fish-introduction footage,
+> not three-fish behavior. Do not force three annotations into those images or
+> freeze the v1 export. Use the versioned HITL replacement workflow in
+> `report/20260726/sleap_hitl_benchmark_v2/README.md`; it replaces these rows
+> with frames 19323 and 27474 while preserving the original manifest as
+> provenance.
+
 This package is the event-disjoint manual benchmark required before a side
 model can be promoted. It must never be used for training or threshold
 selection.

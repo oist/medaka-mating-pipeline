@@ -1,0 +1,99 @@
+{
+  "schema_version": "shared-benchmark40-hitl-v2",
+  "status": "replacement_candidates_pending_hitl_annotation",
+  "selection_seed": 20260724,
+  "guard_frames": 166,
+  "selection_rule": "Use the v1 midpoint representative and stable SHA-256 event ranking. Reserve every v1 K_1_2 event interval expanded by the guard, then greedily take the next future-lock-eligible events whose expanded intervals do not overlap each other.",
+  "source_v1_manifest": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260725\\sleap_independent_benchmark_annotation\\independent_annotation_40_manifest.csv",
+    "sha256": "2c7f35da17fd3a37f4be66a5f838164fe88165835dbbd78bc4e5cf9d573e5ebd",
+    "rows": 40,
+    "immutable": true
+  },
+  "future_queue": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\future_locked_test_annotation_queue_eligible_v1.csv",
+    "sha256": "721e17d225f894ddd45bb6a0d0dc6e7034f82942973815d6c74574f5824825ca"
+  },
+  "v2_manifest": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260726\\sleap_hitl_benchmark_v2\\shared_benchmark_40_hitl_v2_manifest.csv",
+    "sha256": "f26a238f81e763ba8a0925083b04021de39575e107cfc1f346514bc5803e175a",
+    "rows": 40
+  },
+  "replacements": [
+    {
+      "superseded": {
+        "frame_key": "li1_a4be88e276c50d73895c",
+        "experiment": "20251225_K_1_2_FCMC",
+        "frame_idx": 1207,
+        "event_id": "contact_1207_1212_cece026776",
+        "event_start_frame": 1207,
+        "event_end_frame": 1212
+      },
+      "replacement": {
+        "frame_key": "li2_860c1ebaef9c8e25632e",
+        "experiment": "20251225_K_1_2_FCMC",
+        "frame_idx": 27474,
+        "event_id": "orphan_27471_27498_f196b26f18",
+        "event_start_frame": 27471,
+        "event_end_frame": 27498,
+        "stable_rank_hash": "628597a08557ca7044b2e48483c99c5b7bc8c09fa7634bb606c89a3a8abedbc2"
+      },
+      "replacement_rank": 1,
+      "eligible_queue_stable_rank": 15,
+      "reason": "setup_period_wrong_fish_count"
+    },
+    {
+      "superseded": {
+        "frame_key": "li1_9b5a02b670c5ac183604",
+        "experiment": "20251225_K_1_2_FCMC",
+        "frame_idx": 4626,
+        "event_id": "orphan_3285_9281_be05bbbabf",
+        "event_start_frame": 3285,
+        "event_end_frame": 9281
+      },
+      "replacement": {
+        "frame_key": "li2_42db7666f99eff176b99",
+        "experiment": "20251225_K_1_2_FCMC",
+        "frame_idx": 19323,
+        "event_id": "contact_19256_19378_a730f6fd79",
+        "event_start_frame": 19256,
+        "event_end_frame": 19378,
+        "stable_rank_hash": "94bcb21ecb886368d55e20409dd27609edc6b0f36d47cdf722420fd3eb26bf89"
+      },
+      "replacement_rank": 2,
+      "eligible_queue_stable_rank": 17,
+      "reason": "setup_period_wrong_fish_count"
+    }
+  ],
+  "validation": {
+    "source_rows": 40,
+    "v2_rows": 40,
+    "replacement_rows": 2,
+    "quotas_before": {
+      "20251225_K_1_1_FCMC": 14,
+      "20251225_K_1_2_FCMC": 13,
+      "20251225_K_1_3_FCMC": 13
+    },
+    "quotas_after": {
+      "20251225_K_1_1_FCMC": 14,
+      "20251225_K_1_2_FCMC": 13,
+      "20251225_K_1_3_FCMC": 13
+    },
+    "quotas_preserved": true,
+    "target_event_intervals_disjoint_with_guard": true,
+    "all_v1_target_event_intervals_reserved": true,
+    "guard_frames": 166,
+    "source_v1_manifest_unchanged": true
+  },
+  "blank_package_scope": "replacement source frames only; all three synchronized views",
+  "contains_model_predictions": false,
+  "contains_keypoint_coordinates": false,
+  "blank_package": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260726\\sleap_hitl_benchmark_v2\\shared_benchmark_40_hitl_v2_replacements_blank.pkg.slp",
+    "sha256": "d94007f596607263bbf184097a1c6c8f36027944d6819337bb27573edbd3f4e9",
+    "source_frames": 2,
+    "view_frames": 6,
+    "instances": 0,
+    "videos": 3
+  }
+}
