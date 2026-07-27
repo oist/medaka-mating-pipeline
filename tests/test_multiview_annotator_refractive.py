@@ -27,6 +27,7 @@ from scripts.sleap.pyqt_multiview_annotator import (
     build_frame_group,
     build_groups,
     build_instance_review_sequence,
+    build_missing_instance_sequence,
     candidate_artifact_from_provenance,
     candidate_artifact_mismatch,
     copy_labels_provenance,
@@ -35,6 +36,7 @@ from scripts.sleap.pyqt_multiview_annotator import (
     full_save_path,
     instance_fit_zoom,
     keypoint_radius,
+    parse_missing_instance_target,
     predict_missing_view,
     reject_candidate_fish_view,
     review_slot_decisions_from_provenance,
@@ -323,6 +325,136 @@ def test_instance_review_sequence_is_per_view_and_skips_complete_manual() -> Non
         (key, "top_cam", 2),
         (key, "side1_cam", 1),
     ]
+
+
+def test_missing_instance_targets_queue_exact_deficits_and_skip_resumed() -> None:
+    key_a = ("experiment_A", 42)
+    key_b = ("experiment_A", 99)
+    groups = {
+        key_a: {
+            "top_cam": SimpleNamespace(instances=[object(), object()]),
+            "side2_cam": SimpleNamespace(instances=[object(), object()]),
+        },
+        key_b: {
+            "side1_cam": SimpleNamespace(
+                instances=[object(), object(), object()]
+            ),
+        },
+    }
+    targets = [
+        (key_a, "top_cam"),
+        (key_a, "side2_cam"),
+        (key_b, "side1_cam"),
+    ]
+
+    assert build_missing_instance_sequence(
+        groups,
+        targets,
+        expected_instances=3,
+    ) == [
+        (key_a, "top_cam"),
+        (key_a, "side2_cam"),
+    ]
+
+    groups[key_a]["top_cam"].instances.append(object())
+    assert build_missing_instance_sequence(
+        groups,
+        targets,
+        expected_instances=3,
+    ) == [(key_a, "side2_cam")]
+
+
+def test_missing_instance_target_parser_and_validation() -> None:
+    assert parse_missing_instance_target(
+        "20251225_K_1_2_FCMC:19323:side2_cam"
+    ) == (("20251225_K_1_2_FCMC", 19323), "side2_cam")
+    with pytest.raises(ValueError, match="EXPERIMENT:FRAME:VIEW"):
+        parse_missing_instance_target("bad-target")
+    with pytest.raises(ValueError, match="unknown view"):
+        parse_missing_instance_target("experiment_A:42:side3_cam")
+
+
+def test_missing_instance_sequence_rejects_duplicates_and_extra_instances() -> None:
+    key = ("experiment_A", 42)
+    groups = {
+        key: {
+            "top_cam": SimpleNamespace(
+                instances=[object(), object(), object(), object()]
+            )
+        }
+    }
+    with pytest.raises(ValueError, match="above expected"):
+        build_missing_instance_sequence(
+            groups,
+            [(key, "top_cam")],
+            expected_instances=3,
+        )
+    groups[key]["top_cam"].instances.pop()
+    with pytest.raises(ValueError, match="duplicate"):
+        build_missing_instance_sequence(
+            groups,
+            [(key, "top_cam"), (key, "top_cam")],
+            expected_instances=3,
+        )
+
+
+def test_missing_instance_commit_uses_open_view_slot_without_id_dialog() -> None:
+    fish = [FishKeypoints(fish_id=i) for i in range(3)]
+    for fish_idx in (0, 1):
+        fish[fish_idx].mouth["side2_cam"] = (10.0 + fish_idx, 20.0)
+        fish[fish_idx].tail["side2_cam"] = (30.0 + fish_idx, 40.0)
+    fish[2].mouth["top_cam"] = (50.0, 60.0)
+    fish[2].tail["top_cam"] = (70.0, 80.0)
+
+    window = object.__new__(MultiviewWindow)
+    window.missing_instance_review = True
+    window.instance_review = False
+    window.instance_review_sequence = []
+    window.missing_instance_sequence = [
+        (("experiment_A", 42), "side2_cam")
+    ]
+    window.missing_instance_idx = 0
+    window.cur_group = SimpleNamespace(
+        experiment="experiment_A",
+        frame_idx=42,
+        fish=fish,
+    )
+    window.pending_view = "side2_cam"
+    window.pending_mouth = (90.0, 100.0)
+    window._mark_fish_view_decision = lambda *_args: None
+    window._draw_keypoints = lambda: None
+    window._update_status = lambda: None
+    window._finish_missing_instance = lambda: None
+    window.status = SimpleNamespace(showMessage=lambda *_args: None)
+
+    window._place_tail("side2_cam", 110.0, 120.0)
+
+    assert fish[2].mouth["side2_cam"] == (90.0, 100.0)
+    assert fish[2].tail["side2_cam"] == (110.0, 120.0)
+
+
+def test_missing_instance_finish_saves_before_advancing() -> None:
+    window = object.__new__(MultiviewWindow)
+    window.out_path = Path("new-v2.pkg.slp")
+    window.missing_instance_sequence = [
+        (("experiment_A", 42), "top_cam"),
+        (("experiment_A", 42), "side2_cam"),
+    ]
+    window.missing_instance_idx = 0
+    window._group_index_by_key = {("experiment_A", 42): 7}
+    events = []
+    window._safe_save = lambda *args, **kwargs: events.append(
+        ("save", args, kwargs)
+    ) or True
+    window._render_current = lambda: events.append(("render",))
+
+    window._finish_missing_instance()
+
+    assert events[0][0] == "save"
+    assert events[0][1][1] == Path("new-v2.pkg.slp")
+    assert events[1] == ("render",)
+    assert window.missing_instance_idx == 1
+    assert window.cur_idx == 7
 
 
 def test_instance_review_accept_is_scoped_to_active_view_and_rank() -> None:

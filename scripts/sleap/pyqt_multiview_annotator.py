@@ -750,6 +750,69 @@ def filter_groups(groups, *, min_views: int = 1):
     return keys
 
 
+def parse_missing_instance_target(
+    value: str,
+) -> Tuple[Tuple[str, int], str]:
+    """Parse ``EXPERIMENT:FRAME:VIEW`` for targeted missing-fish review."""
+    try:
+        experiment, frame_text, view = value.rsplit(":", 2)
+        frame_idx = int(frame_text)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(
+            "missing-instance target must be EXPERIMENT:FRAME:VIEW"
+        ) from exc
+    if not experiment:
+        raise ValueError("missing-instance target has an empty experiment")
+    if view not in VIEWS:
+        raise ValueError(
+            f"unknown view {view!r}; choose one of: {', '.join(VIEWS)}"
+        )
+    return (experiment, frame_idx), view
+
+
+def build_missing_instance_sequence(
+    groups,
+    targets: List[Tuple[Tuple[str, int], str]],
+    *,
+    expected_instances: int,
+) -> List[Tuple[Tuple[str, int], str]]:
+    """Queue one mouth→tail task per deficient instance in requested views.
+
+    Counts are evaluated after resume labels have been merged, so relaunching
+    the same command skips additions that were already saved successfully.
+    """
+    if expected_instances < 1:
+        raise ValueError("expected_instances must be at least 1")
+    sequence: List[Tuple[Tuple[str, int], str]] = []
+    seen = set()
+    for key, view in targets:
+        target = (key, view)
+        if target in seen:
+            raise ValueError(
+                f"duplicate missing-instance target: {key[0]}:{key[1]}:{view}"
+            )
+        seen.add(target)
+        frames_by_view = groups.get(key)
+        if frames_by_view is None:
+            raise ValueError(
+                f"missing-instance target group is absent: {key[0]}:{key[1]}"
+            )
+        lf = frames_by_view.get(view)
+        if lf is None:
+            raise ValueError(
+                "missing-instance target view is absent: "
+                f"{key[0]}:{key[1]}:{view}"
+            )
+        deficit = expected_instances - len(lf.instances)
+        if deficit < 0:
+            raise ValueError(
+                f"{key[0]}:{key[1]}:{view} has {len(lf.instances)} "
+                f"instances, above expected {expected_instances}"
+            )
+        sequence.extend([target] * deficit)
+    return sequence
+
+
 def _merge_resume_labels(seed_labels, resume_labels):
     """Overlay annotations from ``resume_labels`` (a previous quick-save)
     onto ``seed_labels``.
@@ -1569,6 +1632,7 @@ class MultiviewWindow:
         candidate_groups=None,
         candidate_artifact: Optional[dict] = None,
         instance_review: bool = False,
+        missing_instance_sequence=None,
     ):
         QtCore, QtGui, QtWidgets = _qt()
         self.labels = labels
@@ -1582,9 +1646,20 @@ class MultiviewWindow:
         self.candidate_artifact = deepcopy(candidate_artifact or {})
         self.candidate_review_enabled = bool(self.candidate_artifact)
         self.instance_review = bool(instance_review)
+        self.missing_instance_sequence = list(
+            missing_instance_sequence or []
+        )
+        self.missing_instance_idx = 0
+        self.missing_instance_review = bool(
+            self.missing_instance_sequence
+        )
         if self.instance_review and not self.candidate_review_enabled:
             raise ValueError(
                 "instance review requires a prediction candidate overlay"
+            )
+        if self.instance_review and self.missing_instance_review:
+            raise ValueError(
+                "instance review and missing-instance review are exclusive"
             )
         self.reviewed_view_keys = reviewed_view_keys_from_provenance(labels)
         (
@@ -1617,6 +1692,9 @@ class MultiviewWindow:
                 self.instance_review_sequence[0]
             )
             self.cur_idx = self._group_index_by_key[first_key]
+        elif self.missing_instance_sequence:
+            first_key, _first_view = self.missing_instance_sequence[0]
+            self.cur_idx = self._group_index_by_key[first_key]
         self.cur_group: Optional[FrameGroup] = None
         # Tank center as initial focus (mm).
         self.focus_xyz: np.ndarray = np.array([100.0, 100.0, 100.0])
@@ -1641,6 +1719,8 @@ class MultiviewWindow:
         title = "Medaka multi-view annotator (PyQt)"
         if getattr(self, "instance_review", False):
             title += " — instance-by-instance prediction review"
+        elif self.missing_instance_review:
+            title += " — add missing fish"
         elif self.candidate_review_enabled:
             title += " — human-in-the-loop prediction review"
         elif not self.allow_calibration_fill:
@@ -1916,6 +1996,15 @@ class MultiviewWindow:
             return None
         return self.instance_review_sequence[self.instance_review_idx]
 
+    def _active_missing_instance_item(
+        self,
+    ) -> Optional[Tuple[Tuple[str, int], str]]:
+        """Return the selected deficient view, if targeted add mode is on."""
+        sequence = getattr(self, "missing_instance_sequence", [])
+        if not sequence:
+            return None
+        return sequence[self.missing_instance_idx]
+
     def _active_fish_idx(self) -> Optional[int]:
         """Return the selected review slot, or ``None`` in frame mode."""
         item = self._active_review_item()
@@ -1924,7 +2013,10 @@ class MultiviewWindow:
     def _active_review_view(self) -> Optional[str]:
         """Return the selected camera view, or ``None`` in frame mode."""
         item = self._active_review_item()
-        return item[1] if item is not None else None
+        if item is not None:
+            return item[1]
+        missing_item = self._active_missing_instance_item()
+        return missing_item[1] if missing_item is not None else None
 
     def _mark_fish_view_decision(
         self,
@@ -2049,6 +2141,12 @@ class MultiviewWindow:
                 "<b>F is disabled</b> in instance review because its "
                 "frame-wide re-matching would modify hidden fish slots.<br>"
             )
+        elif self.missing_instance_review:
+            fill_help = (
+                "<b>Targeted missing-fish mode</b>: only the deficient view "
+                "is shown. Click mouth, then tail; the addition is saved and "
+                "the GUI advances automatically.<br>"
+            )
         elif not self.allow_calibration_fill and self.candidate_review_enabled:
             fill_help = (
                 "<b>F is disabled</b>: review/correct the displayed model "
@@ -2167,11 +2265,16 @@ class MultiviewWindow:
         for view, pane in self.panes.items():
             pane.set_image(self.cur_group.images[view])
             pane.view.setVisible(
-                not self.instance_review
+                not (
+                    self.instance_review
+                    or self.missing_instance_review
+                )
                 or view == self._active_review_view()
             )
         if self.instance_review:
             self.fit_active_instance()
+        elif self.missing_instance_review:
+            self.fit_active_missing_view()
         else:
             self._sync_views()
         self._draw_keypoints()
@@ -2184,6 +2287,14 @@ class MultiviewWindow:
                 f"{key[0]} @ frame {key[1]} | "
                 f"{active_view} candidate {int(active_fish_idx) + 1}"
             )
+        elif self.missing_instance_review:
+            active_view = self._active_review_view()
+            self.frame_label.setText(
+                f"[missing fish {self.missing_instance_idx + 1}/"
+                f"{len(self.missing_instance_sequence)}] "
+                f"{key[0]} @ frame {key[1]} | {active_view}"
+            )
+            self._arm_missing_instance_add()
         else:
             self.frame_label.setText(
                 f"[{self.cur_idx + 1}/{len(self.group_keys)}] "
@@ -2226,6 +2337,15 @@ class MultiviewWindow:
                 self.instance_review_idx
             ]
             self.cur_idx = self._group_index_by_key[key]
+        elif self.missing_instance_sequence:
+            self.missing_instance_idx = min(
+                self.missing_instance_idx + 1,
+                len(self.missing_instance_sequence) - 1,
+            )
+            key, _view = self.missing_instance_sequence[
+                self.missing_instance_idx
+            ]
+            self.cur_idx = self._group_index_by_key[key]
         else:
             self.cur_idx = min(
                 self.cur_idx + 1, len(self.group_keys) - 1
@@ -2240,6 +2360,14 @@ class MultiviewWindow:
             )
             key, _view, _fish_idx = self.instance_review_sequence[
                 self.instance_review_idx
+            ]
+            self.cur_idx = self._group_index_by_key[key]
+        elif self.missing_instance_sequence:
+            self.missing_instance_idx = max(
+                self.missing_instance_idx - 1, 0
+            )
+            key, _view = self.missing_instance_sequence[
+                self.missing_instance_idx
             ]
             self.cur_idx = self._group_index_by_key[key]
         else:
@@ -2263,7 +2391,7 @@ class MultiviewWindow:
 
     def bump_zoom(self, factor):
         self.zoom = float(np.clip(self.zoom * factor, 0.05, 8.0))
-        if self.instance_review:
+        if self.instance_review or self.missing_instance_review:
             view = self._active_review_view()
             pane = self.panes.get(view) if view is not None else None
             if pane is not None:
@@ -2277,6 +2405,10 @@ class MultiviewWindow:
         self._update_status()
 
     def fit_zoom(self):
+        if self.missing_instance_review:
+            self.fit_active_missing_view()
+            self._update_status()
+            return
         # Pick a zoom that fits ~250 image-px in the smallest pane.
         if not self.panes:
             return
@@ -2348,6 +2480,10 @@ class MultiviewWindow:
             self.fit_active_instance()
             self._update_status()
             return
+        if self.missing_instance_review:
+            self.fit_active_missing_view()
+            self._update_status()
+            return
 
         fish_indices = range(len(self.cur_group.fish))
         points_by_view = fish_points_by_view(
@@ -2416,6 +2552,40 @@ class MultiviewWindow:
         self.zoom = zoom
         self._sync_views()
         self._update_status()
+
+    def fit_active_missing_view(self) -> None:
+        """Fit the whole deficient camera frame so the missing fish is visible."""
+        if self.cur_group is None:
+            return
+        view = self._active_review_view()
+        pane = self.panes.get(view) if view is not None else None
+        image = self.cur_group.images.get(view) if view is not None else None
+        if pane is None or image is None or image.ndim < 2:
+            return
+        image_h, image_w = image.shape[:2]
+        viewport = pane.view.viewport().size()
+        usable_w = max(1.0, float(viewport.width()) - 24.0)
+        usable_h = max(1.0, float(viewport.height()) - 24.0)
+        self.zoom = float(
+            np.clip(
+                min(usable_w / image_w, usable_h / image_h),
+                0.05,
+                8.0,
+            )
+        )
+        pane.set_focus((image_w / 2.0, image_h / 2.0), self.zoom)
+
+    def _arm_missing_instance_add(self) -> None:
+        """Force mouth→tail add mode for the active deficient view."""
+        if not self.missing_instance_review:
+            return
+        self.add_btn.blockSignals(True)
+        self.add_btn.setChecked(True)
+        self.add_btn.blockSignals(False)
+        self.add_mode = "place_mouth"
+        self.pending_view = None
+        self.pending_mouth = None
+        self.pending_fish_idx = None
 
     # -------------------- click + pan handlers --------------------
 
@@ -2510,6 +2680,15 @@ class MultiviewWindow:
         self._update_status()
 
     def _place_mouth(self, view: str, x: float, y: float):
+        active_view = self._active_review_view()
+        if (
+            self.missing_instance_review
+            and view != active_view
+        ):
+            self.status.showMessage(
+                f"Add the missing fish in {active_view}.", 4000
+            )
+            return
         self.pending_view = view
         self.pending_mouth = (x, y)
         self.add_mode = "place_tail"
@@ -2539,7 +2718,17 @@ class MultiviewWindow:
         fish_idx: Optional[int] = None
         decision_msg: str = ""
 
-        if self.instance_review:
+        if self.missing_instance_review:
+            # Identity is not part of this task: choose the first fish slot
+            # that is empty in the active view and avoid a calibration popup.
+            # The benchmark finalizer strips tracks after per-view QC.
+            fish_idx = candidates[0][0] if candidates else None
+            decision_msg = (
+                f"assigned to open ID_{fish_idx + 1}"
+                if fish_idx is not None
+                else "new fish"
+            )
+        elif self.instance_review:
             fish_idx = self._active_fish_idx()
             decision_msg = (
                 f"assigned to active candidate {int(fish_idx) + 1}"
@@ -2597,6 +2786,9 @@ class MultiviewWindow:
         self.status.showMessage(
             f"Instance placed in {view}: {decision_msg}.", 4000
         )
+        if self.missing_instance_review:
+            self._finish_missing_instance()
+            return
         # Reset state machine but stay in add mode for next instance.
         self.add_mode = "place_mouth"
         self.pending_view = None
@@ -2834,7 +3026,10 @@ class MultiviewWindow:
 
         for view, pane in self.panes.items():
             if (
-                self.instance_review
+                (
+                    self.instance_review
+                    or self.missing_instance_review
+                )
                 and view != self._active_review_view()
             ):
                 continue
@@ -3086,6 +3281,34 @@ class MultiviewWindow:
                     )
         self._draw_keypoints()
         self._update_status()
+
+    def _finish_missing_instance(self) -> None:
+        """Persist one targeted addition before moving to the next target."""
+        if not self._safe_save(
+            "targeted missing-fish autosave",
+            self.out_path,
+            embed=False,
+        ):
+            # Stay on the same target and re-arm only after the user has seen
+            # the save failure. This prevents an unsaved click from advancing.
+            self._arm_missing_instance_add()
+            return
+        if self.missing_instance_idx + 1 >= len(
+            self.missing_instance_sequence
+        ):
+            self.cancel_add()
+            self.status.showMessage(
+                "All targeted missing fish were saved. You can close this "
+                "window.",
+                0,
+            )
+            return
+        self.missing_instance_idx += 1
+        key, _view = self.missing_instance_sequence[
+            self.missing_instance_idx
+        ]
+        self.cur_idx = self._group_index_by_key[key]
+        self._render_current()
 
     def _place_missing_node(
         self,
@@ -3464,7 +3687,18 @@ class MultiviewWindow:
                 f"view={active_view} "
                 f"candidate={active_fish_idx + 1} [{decision}]"
             )
-        if not self.instance_review:
+        elif self.missing_instance_review and active_view is not None:
+            bits.append(
+                f"missing fish {self.missing_instance_idx + 1}/"
+                f"{len(self.missing_instance_sequence)}"
+            )
+            bits.append(
+                f"frame={self.cur_group.frame_idx} view={active_view}"
+            )
+        if not (
+            self.instance_review
+            or self.missing_instance_review
+        ):
             bits.append(f"focus_xyz=({self.focus_xyz[0]:.0f},"
                         f"{self.focus_xyz[1]:.0f},"
                         f"{self.focus_xyz[2]:.0f})mm")
@@ -3559,6 +3793,8 @@ class MultiviewWindow:
             self.status.showMessage(
                 f"Save ({label}) FAILED: {exc!s}.{extra}", 30000
             )
+            return False
+        return True
 
     def _do_save(self, *, out_path: Path, embed):
         import sleap_io as sio
@@ -3827,6 +4063,26 @@ def main(argv: list[str] | None = None) -> None:
             "the active candidate."
         ),
     )
+    ap.add_argument(
+        "--missing-instance-target",
+        action="append",
+        default=[],
+        metavar="EXPERIMENT:FRAME:VIEW",
+        help=(
+            "Show only this deficient camera frame, force mouth->tail add "
+            "mode, save immediately after commit, and advance. Repeat once "
+            "per deficient view."
+        ),
+    )
+    ap.add_argument(
+        "--expected-instances",
+        type=int,
+        default=3,
+        help=(
+            "Required per-view instance count for --missing-instance-target "
+            "(default: 3). Saved targets are skipped on resume."
+        ),
+    )
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--paths-config", default=None)
     ap.add_argument("--medaka-data-dir", default=None)
@@ -3867,8 +4123,32 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.instance_review and args.candidate_slp is None:
         ap.error("--instance-review requires --candidate-slp.")
+    if args.instance_review and args.missing_instance_target:
+        ap.error(
+            "--instance-review and --missing-instance-target are exclusive."
+        )
+    if args.candidate_slp is not None and args.missing_instance_target:
+        ap.error(
+            "--candidate-slp and --missing-instance-target are exclusive."
+        )
+    if args.expected_instances < 1:
+        ap.error("--expected-instances must be at least 1.")
+    try:
+        missing_instance_targets = [
+            parse_missing_instance_target(value)
+            for value in args.missing_instance_target
+        ]
+    except ValueError as exc:
+        ap.error(str(exc))
     if not args.input.is_file():
         ap.error(f"--in does not exist: {args.input}")
+    if (
+        missing_instance_targets
+        and args.input.resolve() == args.out.resolve()
+    ):
+        ap.error(
+            "--out must not overwrite --in in targeted missing-fish mode."
+        )
     if args.candidate_slp is not None:
         if not args.candidate_slp.is_file():
             ap.error(
@@ -3963,6 +4243,25 @@ def main(argv: list[str] | None = None) -> None:
     groups = build_groups(labels)
     keys = filter_groups(groups, min_views=args.min_views)
     print(f"  {len(keys)} groups (min_views={args.min_views}).")
+    missing_instance_sequence = []
+    if missing_instance_targets:
+        try:
+            missing_instance_sequence = build_missing_instance_sequence(
+                groups,
+                missing_instance_targets,
+                expected_instances=args.expected_instances,
+            )
+        except ValueError as exc:
+            ap.error(str(exc))
+        if not missing_instance_sequence:
+            ap.error(
+                "All --missing-instance-target views already have the "
+                f"expected {args.expected_instances} instances."
+            )
+        print(
+            f"  {len(missing_instance_sequence)} missing instance(s) queued "
+            f"across {len(missing_instance_targets)} requested view(s)."
+        )
     if args.instance_review:
         accepted_slot_keys, rejected_slot_keys = (
             review_slot_decisions_from_provenance(labels)
@@ -3999,6 +4298,7 @@ def main(argv: list[str] | None = None) -> None:
         candidate_groups=candidate_groups,
         candidate_artifact=candidate_artifact,
         instance_review=args.instance_review,
+        missing_instance_sequence=missing_instance_sequence,
     )
     win.window.show()
     sys.exit(app.exec_())
