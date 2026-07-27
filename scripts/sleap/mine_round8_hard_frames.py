@@ -50,7 +50,7 @@ EXPERIMENT = "20251225_K_1_2_FCMC"
 ROUND7_TAG = "round7_260704"
 ROUND7_MODEL_DIR = "retrain_20260704"
 RANDOM_SEED = 20260721
-FEATURE_CACHE_VERSION = 2
+FEATURE_CACHE_VERSION = 3
 SENTINEL_START = 96_612
 SENTINEL_END = 97_802
 
@@ -651,7 +651,11 @@ def _extract_view_features_hdf5(
                 mouth_grid_x[:, first] - mouth_grid_x[:, second],
                 mouth_grid_y[:, first] - mouth_grid_y[:, second],
             )
-            minimum_mouth_distance = np.minimum(minimum_mouth_distance, distance)
+            # ``maximum_instances`` is global to the video. Frames with fewer
+            # slots therefore contain NaNs for some later pairs. ``np.minimum``
+            # would let the first absent pair poison an otherwise finite
+            # distance; ``fmin`` keeps the finite value.
+            minimum_mouth_distance = np.fmin(minimum_mouth_distance, distance)
     minimum_mouth_distance[~np.isfinite(minimum_mouth_distance)] = np.nan
 
     residual = instances["residual_px"].to_numpy(dtype=float)

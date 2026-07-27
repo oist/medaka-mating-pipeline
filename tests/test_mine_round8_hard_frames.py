@@ -350,3 +350,49 @@ def test_new_only_seed_preserves_partial_and_empty_predictions(tmp_path: Path) -
     loaded = sio.load_slp(str(output_path))
     assert loaded.provenance["workflow"] == "round8_active_learning_new_only_seed"
     assert json.loads(json.dumps(loaded.provenance))["instructions"]
+
+
+def test_fast_features_ignore_absent_global_slots_in_mouth_distance(
+    tmp_path: Path,
+) -> None:
+    sio = pytest.importorskip("sleap_io")
+    video_path = tmp_path / "experiment" / "side1_cam" / "camera.avi"
+    _write_video(video_path)
+    video = sio.Video.from_filename(str(video_path))
+    skeleton = sio.Skeleton(nodes=["mouth", "tail"], edges=[("mouth", "tail")])
+
+    def predicted(mouth_x: float):
+        return sio.PredictedInstance.from_numpy(
+            points_data=np.array(
+                [[mouth_x, 5.0], [mouth_x + 2.0, 5.0]], dtype=float
+            ),
+            point_scores=np.array([0.9, 0.9]),
+            score=0.9,
+            skeleton=skeleton,
+        )
+
+    labels = sio.Labels(
+        skeletons=[skeleton],
+        videos=[video],
+        labeled_frames=[
+            sio.LabeledFrame(
+                video=video,
+                frame_idx=0,
+                instances=[predicted(float(index * 10)) for index in range(6)],
+            ),
+            sio.LabeledFrame(
+                video=video,
+                frame_idx=1,
+                instances=[predicted(0.0), predicted(12.0), predicted(40.0)],
+            ),
+        ],
+    )
+    slp_path = tmp_path / "predictions.slp"
+    sio.save_slp(labels, str(slp_path), embed=False, verbose=False)
+    features, _instances, metadata = _extract_view_features(
+        slp_path, config=FeatureConfig()
+    )
+    assert metadata["extraction_backend"] == "validated_native_hdf5"
+    distances = features.set_index("frame")["minimum_mouth_distance_px"]
+    assert distances.loc[0] == pytest.approx(10.0)
+    assert distances.loc[1] == pytest.approx(12.0)

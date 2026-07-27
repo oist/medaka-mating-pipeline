@@ -204,7 +204,7 @@ def test_merge_prediction_subsets_rejects_missing_positions(monkeypatch) -> None
             top_positions=[0],
             top_predictions=top,
             side_positions=[],
-            side_predictions=side,
+            side_predictions=None,
         )
 
 
@@ -225,7 +225,7 @@ def test_merge_prediction_subsets_rejects_duplicate_positions(
                 skeletons=["skeleton"],
             ),
             side_positions=[],
-            side_predictions=_FakeLabels([]),
+            side_predictions=None,
         )
 
 
@@ -272,7 +272,42 @@ def test_merge_prediction_subsets_caps_instances_by_score(monkeypatch) -> None:
         top_positions=[0],
         top_predictions=predictions,
         side_positions=[],
-        side_predictions=_FakeLabels([]),
+        side_predictions=None,
         max_instances=2,
     )
     assert [item.score for item in merged.labeled_frames[0].instances] == [0.9, 0.4]
+
+
+def test_merge_prediction_subsets_supports_side_only_seed(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "scripts.sleap.prepare_prediction_review_candidates."
+        "make_prediction_labels_self_contained",
+        lambda labels: labels,
+    )
+
+    class _FakeSioLabels:
+        def __init__(self, labeled_frames, skeletons, provenance):
+            self.labeled_frames = labeled_frames
+            self.skeletons = skeletons
+            self.provenance = provenance
+
+    monkeypatch.setitem(
+        __import__("sys").modules,
+        "sleap_io",
+        SimpleNamespace(Labels=_FakeSioLabels),
+    )
+    seed = _FakeLabels(
+        ["seed0", "seed1"],
+        skeletons=["seed-skeleton"],
+        provenance={"purpose": "side-only"},
+    )
+    side = _FakeLabels(["side0", "side1"], skeletons=["side-skeleton"])
+    merged = merge_prediction_subsets(
+        seed_labels=seed,
+        top_positions=[],
+        top_predictions=None,
+        side_positions=[0, 1],
+        side_predictions=side,
+    )
+    assert merged.labeled_frames == ["side0", "side1"]
+    assert merged.skeletons == ["side-skeleton"]

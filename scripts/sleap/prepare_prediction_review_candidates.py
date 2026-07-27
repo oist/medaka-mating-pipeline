@@ -174,6 +174,12 @@ def _prediction_frames_for_positions(
         )
     if len(set(positions)) != len(positions):
         raise ValueError("prediction subset positions contain duplicates")
+    if not positions:
+        if predictions is not None:
+            raise ValueError("empty prediction subset must not supply predictions")
+        return {}
+    if predictions is None:
+        raise ValueError("non-empty prediction subset is missing predictions")
     if len(predictions.labeled_frames) != len(positions):
         raise ValueError(
             "prediction LF count mismatch: "
@@ -245,7 +251,19 @@ def merge_prediction_subsets(
                 )
             )
         ordered = capped
-    skeletons = list(top_predictions.skeletons or side_predictions.skeletons)
+    prediction_sets = [
+        predictions
+        for predictions in (top_predictions, side_predictions)
+        if predictions is not None
+    ]
+    skeletons = next(
+        (
+            list(predictions.skeletons)
+            for predictions in prediction_sets
+            if predictions.skeletons
+        ),
+        [],
+    )
     if not skeletons:
         skeletons = list(seed_labels.skeletons)
     merged = sio.Labels(
@@ -296,10 +314,26 @@ def _load_or_predict(
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seed-slp", type=Path, required=True)
-    parser.add_argument("--top-centroid-model", type=Path, required=True)
-    parser.add_argument("--top-centered-instance-model", type=Path, required=True)
-    parser.add_argument("--side-centroid-model", type=Path, required=True)
-    parser.add_argument("--side-centered-instance-model", type=Path, required=True)
+    parser.add_argument(
+        "--top-centroid-model",
+        type=Path,
+        help="Required only when the seed contains top-camera frames.",
+    )
+    parser.add_argument(
+        "--top-centered-instance-model",
+        type=Path,
+        help="Required only when the seed contains top-camera frames.",
+    )
+    parser.add_argument(
+        "--side-centroid-model",
+        type=Path,
+        help="Required only when the seed contains side-camera frames.",
+    )
+    parser.add_argument(
+        "--side-centered-instance-model",
+        type=Path,
+        help="Required only when the seed contains side-camera frames.",
+    )
     parser.add_argument("--output-slp", type=Path, required=True)
     parser.add_argument("--provenance-json", type=Path, required=True)
     parser.add_argument(
@@ -341,13 +375,6 @@ def main(argv: list[str] | None = None) -> int:
             "side_cache": side_cache if args.side_predictions is None else None,
         }
     )
-    model_dirs = [
-        args.top_centroid_model,
-        args.top_centered_instance_model,
-        args.side_centroid_model,
-        args.side_centered_instance_model,
-    ]
-    validate_model_dirs(model_dirs)
     if not args.seed_slp.is_file():
         raise FileNotFoundError(f"seed package not found: {args.seed_slp}")
     for supplied in (args.top_predictions, args.side_predictions):
@@ -361,36 +388,56 @@ def main(argv: list[str] | None = None) -> int:
         f"Sparse selection: {len(top_positions)} top + "
         f"{len(side_positions)} side = {len(seed_labels.labeled_frames)} LFs"
     )
+    model_pairs = {
+        "top": [args.top_centroid_model, args.top_centered_instance_model],
+        "side": [args.side_centroid_model, args.side_centered_instance_model],
+    }
+    positions_by_name = {"top": top_positions, "side": side_positions}
+    for name, positions in positions_by_name.items():
+        pair = model_pairs[name]
+        if positions and any(path is None for path in pair):
+            raise ValueError(
+                f"{name} seed frames require both the centroid and "
+                "centered-instance model directories"
+            )
+        if not positions and any(path is not None for path in pair):
+            print(f"Ignoring unused {name} model pair: seed has no {name} frames")
+    required_model_dirs = [
+        path
+        for name, pair in model_pairs.items()
+        if positions_by_name[name]
+        for path in pair
+        if path is not None
+    ]
+    validate_model_dirs(required_model_dirs)
 
     args.cache_dir.mkdir(parents=True, exist_ok=True)
-    top_predictions = _load_or_predict(
-        name="top",
-        seed_labels=seed_labels,
-        positions=top_positions,
-        model_paths=[
-            args.top_centroid_model,
-            args.top_centered_instance_model,
-        ],
-        prediction_cache=top_cache,
-        supplied_predictions=args.top_predictions,
-        max_instances=args.max_instances,
-        batch_size=args.batch_size,
-        device=args.device,
-    )
-    side_predictions = _load_or_predict(
-        name="side",
-        seed_labels=seed_labels,
-        positions=side_positions,
-        model_paths=[
-            args.side_centroid_model,
-            args.side_centered_instance_model,
-        ],
-        prediction_cache=side_cache,
-        supplied_predictions=args.side_predictions,
-        max_instances=args.max_instances,
-        batch_size=args.batch_size,
-        device=args.device,
-    )
+    predictions_by_name = {}
+    for name, positions, supplied, cache in (
+        ("top", top_positions, args.top_predictions, top_cache),
+        ("side", side_positions, args.side_predictions, side_cache),
+    ):
+        if not positions:
+            if supplied is not None:
+                raise ValueError(
+                    f"--{name}-predictions was supplied but the seed has no "
+                    f"{name} frames"
+                )
+            predictions_by_name[name] = None
+            continue
+        predictions_by_name[name] = _load_or_predict(
+            name=name,
+            seed_labels=seed_labels,
+            positions=positions,
+            model_paths=[path for path in model_pairs[name] if path is not None],
+            prediction_cache=cache,
+            supplied_predictions=supplied,
+            max_instances=args.max_instances,
+            batch_size=args.batch_size,
+            device=args.device,
+        )
+    top_predictions = predictions_by_name["top"]
+    side_predictions = predictions_by_name["side"]
     merged = merge_prediction_subsets(
         seed_labels=seed_labels,
         top_positions=top_positions,
@@ -439,14 +486,22 @@ def main(argv: list[str] | None = None) -> int:
                 "side_centroid": args.side_centroid_model,
                 "side_centered_instance": args.side_centered_instance_model,
             }.items()
+            if path is not None
         },
         "candidate_overlay": {
             "path": str(args.output_slp.resolve()),
             "sha256": sha256_file(args.output_slp),
         },
         "component_prediction_caches": {
-            "top": str((args.top_predictions or top_cache).resolve()),
-            "side": str((args.side_predictions or side_cache).resolve()),
+            name: (
+                str((supplied or cache).resolve())
+                if positions_by_name[name]
+                else None
+            )
+            for name, supplied, cache in (
+                ("top", args.top_predictions, top_cache),
+                ("side", args.side_predictions, side_cache),
+            )
         },
     }
     args.provenance_json.parent.mkdir(parents=True, exist_ok=True)
