@@ -1,0 +1,103 @@
+{
+  "schema_version": "side-centered-instance-hitl-v1",
+  "stage": "finalize",
+  "config": {
+    "seed": 20260727,
+    "skip_initial_frames": 49800,
+    "time_bins": 30,
+    "selection_spacing_frames": 166,
+    "training_overlap_guard_frames": 20,
+    "locked_guard_frames": 166,
+    "planned_crop_size": 448,
+    "crop_ambiguity_px": 16,
+    "plausible_score": 0.2
+  },
+  "inputs": {
+    "pool_manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260727\\sleap_side_ci_active_learning\\candidate_pool_630.csv",
+      "size_bytes": 578445,
+      "mtime_ns": 1785141681651456200
+    },
+    "round7_instances": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260727\\sleap_side_ci_active_learning\\candidate_pool_630_round7_instances.csv",
+      "size_bytes": 709076,
+      "mtime_ns": 1785141681691596600
+    },
+    "round8_pool_candidates": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\side_ci_review210\\candidate_pool_630_round8_candidates.slp",
+      "size_bytes": 462483,
+      "mtime_ns": 1785142007105347600
+    }
+  },
+  "selection": {
+    "source_frames": 210,
+    "side_view_images": 420,
+    "expected_fish_instances": 1260,
+    "by_split": {
+      "train": 180,
+      "validation": 30
+    },
+    "by_experiment_and_split": {
+      "20251225_K_1_1_FCMC": {
+        "train": 70,
+        "validation": 10
+      },
+      "20251225_K_1_2_FCMC": {
+        "train": 40,
+        "validation": 10
+      },
+      "20251225_K_1_3_FCMC": {
+        "train": 70,
+        "validation": 10
+      }
+    },
+    "by_category": {
+      "close_contact_or_crossing": 51,
+      "round7_round8_tail_disagreement": 51,
+      "temporal_or_shared_tail": 39,
+      "long_body_crop_margin_proxy": 27,
+      "clean_diverse_control": 21,
+      "count_partial_or_low_confidence": 21
+    },
+    "by_review_batch": {
+      "1": 70,
+      "2": 70,
+      "3": 70
+    }
+  },
+  "artifacts": {
+    "manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260727\\sleap_side_ci_active_learning\\selection_210.csv",
+      "size_bytes": 76316,
+      "mtime_ns": 1785142061541709600
+    },
+    "blank_seed": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\side_ci_review210\\side_ci_review_210_blank.pkg.slp",
+      "size_bytes": 505083241,
+      "source_frame_count": 210,
+      "labeled_frame_count": 420,
+      "suggestion_count": 420,
+      "embedded": true
+    },
+    "expected_candidate_overlay": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\side_ci_review210\\side_ci_review_210_round8_candidates.slp",
+    "expected_labeled_output": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\side_ci_review210\\output\\side_ci_review_210_labeled.pkg.slp"
+  },
+  "validation": {
+    "node_names": [
+      "mouth",
+      "tail"
+    ],
+    "expected_labeled_frames": 420,
+    "observed_labeled_frames": 420,
+    "suggestions": 420,
+    "nonempty_labeled_frames": 0,
+    "passed": true
+  },
+  "scientific_notes": [
+    "Round 7 was used only for broad all-frame mining.",
+    "Round 8 sparse predictions were used for current-model reranking.",
+    "Large mouth disagreement is treated as centroid evidence rather than centered-instance disagreement.",
+    "Long body length is a crop-margin proxy, not a measured crop-offset sensitivity test.",
+    "The locked HITL-v2 benchmark and guard intervals remain excluded from training."
+  ]
+}

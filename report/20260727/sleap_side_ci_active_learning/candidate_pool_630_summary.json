@@ -1,0 +1,275 @@
+{
+  "schema_version": "side-centered-instance-hitl-v1",
+  "stage": "mine",
+  "config": {
+    "seed": 20260727,
+    "skip_initial_frames": 49800,
+    "time_bins": 30,
+    "selection_spacing_frames": 166,
+    "training_overlap_guard_frames": 20,
+    "locked_guard_frames": 166,
+    "planned_crop_size": 448,
+    "crop_ambiguity_px": 16,
+    "plausible_score": 0.2
+  },
+  "pool_counts": {
+    "source_frames": 630,
+    "side_view_images": 1260,
+    "by_experiment": {
+      "20251225_K_1_1_FCMC": 210,
+      "20251225_K_1_2_FCMC": 210,
+      "20251225_K_1_3_FCMC": 210
+    },
+    "by_category": {
+      "tail_confidence": 135,
+      "close_contact_or_crossing": 120,
+      "temporal_or_shared_tail": 120,
+      "clean_diverse_control": 105,
+      "long_body_crop_margin_proxy": 90,
+      "count_partial_or_low_confidence": 60
+    }
+  },
+  "exclusions": {
+    "sources": {
+      "locked_manifest": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260726\\sleap_hitl_benchmark_v2\\shared_benchmark_40_hitl_v2_manifest.csv",
+        "size_bytes": 12257,
+        "mtime_ns": 1785055672218942100
+      },
+      "future_locked_manifest": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\future_locked_test_annotation_queue_v1.csv",
+        "size_bytes": 539537,
+        "mtime_ns": 1784872502433257400
+      },
+      "previous_selection_manifest": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260721\\round8_active_learning\\selection_360.csv",
+        "size_bytes": 167674,
+        "mtime_ns": 1784627909057445900
+      },
+      "existing_train_labels": {
+        "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260722_round8\\side\\train_labels.pkg.slp",
+        "size_bytes": 3297858073,
+        "mtime_ns": 1784733323000000000
+      },
+      "existing_val_labels": {
+        "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260722_round8\\side\\val_labels.pkg.slp",
+        "size_bytes": 47830360,
+        "mtime_ns": 1784733334000000000
+      }
+    },
+    "existing_side_train_labeled_frames_read": 2764,
+    "existing_side_val_labeled_frames_read": 40,
+    "merged_interval_counts": {
+      "20251225_K_1_1_FCMC": 39,
+      "20251225_K_1_2_FCMC": 1057,
+      "20251225_K_1_3_FCMC": 38
+    }
+  },
+  "round7_features": {
+    "20251225_K_1_1_FCMC": {
+      "side1_cam": {
+        "cache_version": 3,
+        "source_slp": {
+          "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_1_FCMC\\round7_260704\\side1_cam.slp",
+          "size_bytes": 126442147,
+          "mtime_ns": 1783428041000000000
+        },
+        "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_1_FCMC/side1_cam/cam1_side.mp4",
+        "node_names": [
+          "mouth",
+          "tail"
+        ],
+        "n_frames": 348600,
+        "n_instances": 1044794,
+        "feature_config": {
+          "plausible_score": 0.2,
+          "low_score": 0.5,
+          "score_dispersion": 0.2,
+          "mouth_close_px": 25.0,
+          "association_gate_px": 80.0,
+          "association_margin_px": 15.0,
+          "nn_gate_px": 80.0,
+          "residual_floor_px": 15.0,
+          "residual_mad_multiplier": 6.0,
+          "residual_window_frames": 333
+        },
+        "extraction_backend": "validated_native_hdf5"
+      },
+      "side2_cam": {
+        "cache_version": 3,
+        "source_slp": {
+          "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_1_FCMC\\round7_260704\\side2_cam.slp",
+          "size_bytes": 126224080,
+          "mtime_ns": 1783428081000000000
+        },
+        "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_1_FCMC/side2_cam/cam2_side.mp4",
+        "node_names": [
+          "mouth",
+          "tail"
+        ],
+        "n_frames": 348600,
+        "n_instances": 1042799,
+        "feature_config": {
+          "plausible_score": 0.2,
+          "low_score": 0.5,
+          "score_dispersion": 0.2,
+          "mouth_close_px": 25.0,
+          "association_gate_px": 80.0,
+          "association_margin_px": 15.0,
+          "nn_gate_px": 80.0,
+          "residual_floor_px": 15.0,
+          "residual_mad_multiplier": 6.0,
+          "residual_window_frames": 333
+        },
+        "extraction_backend": "validated_native_hdf5"
+      }
+    },
+    "20251225_K_1_2_FCMC": {
+      "side1_cam": {
+        "cache_version": 3,
+        "source_slp": {
+          "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side1_cam.slp",
+          "size_bytes": 124868626,
+          "mtime_ns": 1783428163000000000
+        },
+        "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/side1_cam/cam1_side.mp4",
+        "node_names": [
+          "mouth",
+          "tail"
+        ],
+        "n_frames": 348600,
+        "n_instances": 1030361,
+        "feature_config": {
+          "plausible_score": 0.2,
+          "low_score": 0.5,
+          "score_dispersion": 0.2,
+          "mouth_close_px": 25.0,
+          "association_gate_px": 80.0,
+          "association_margin_px": 15.0,
+          "nn_gate_px": 80.0,
+          "residual_floor_px": 15.0,
+          "residual_mad_multiplier": 6.0,
+          "residual_window_frames": 333
+        },
+        "extraction_backend": "validated_native_hdf5"
+      },
+      "side2_cam": {
+        "cache_version": 3,
+        "source_slp": {
+          "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round7_260704\\side2_cam.slp",
+          "size_bytes": 125219974,
+          "mtime_ns": 1783428203000000000
+        },
+        "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/side2_cam/cam2_side.mp4",
+        "node_names": [
+          "mouth",
+          "tail"
+        ],
+        "n_frames": 348600,
+        "n_instances": 1033589,
+        "feature_config": {
+          "plausible_score": 0.2,
+          "low_score": 0.5,
+          "score_dispersion": 0.2,
+          "mouth_close_px": 25.0,
+          "association_gate_px": 80.0,
+          "association_margin_px": 15.0,
+          "nn_gate_px": 80.0,
+          "residual_floor_px": 15.0,
+          "residual_mad_multiplier": 6.0,
+          "residual_window_frames": 333
+        },
+        "extraction_backend": "validated_native_hdf5"
+      }
+    },
+    "20251225_K_1_3_FCMC": {
+      "side1_cam": {
+        "cache_version": 3,
+        "source_slp": {
+          "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_3_FCMC\\round7_260704\\side1_cam.slp",
+          "size_bytes": 125256921,
+          "mtime_ns": 1783428286000000000
+        },
+        "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_3_FCMC/side1_cam/cam1_side.mp4",
+        "node_names": [
+          "mouth",
+          "tail"
+        ],
+        "n_frames": 348600,
+        "n_instances": 1033924,
+        "feature_config": {
+          "plausible_score": 0.2,
+          "low_score": 0.5,
+          "score_dispersion": 0.2,
+          "mouth_close_px": 25.0,
+          "association_gate_px": 80.0,
+          "association_margin_px": 15.0,
+          "nn_gate_px": 80.0,
+          "residual_floor_px": 15.0,
+          "residual_mad_multiplier": 6.0,
+          "residual_window_frames": 333
+        },
+        "extraction_backend": "validated_native_hdf5"
+      },
+      "side2_cam": {
+        "cache_version": 3,
+        "source_slp": {
+          "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_3_FCMC\\round7_260704\\side2_cam.slp",
+          "size_bytes": 124888762,
+          "mtime_ns": 1783428328000000000
+        },
+        "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_3_FCMC/side2_cam/cam2_side.mp4",
+        "node_names": [
+          "mouth",
+          "tail"
+        ],
+        "n_frames": 348600,
+        "n_instances": 1030553,
+        "feature_config": {
+          "plausible_score": 0.2,
+          "low_score": 0.5,
+          "score_dispersion": 0.2,
+          "mouth_close_px": 25.0,
+          "association_gate_px": 80.0,
+          "association_margin_px": 15.0,
+          "nn_gate_px": 80.0,
+          "residual_floor_px": 15.0,
+          "residual_mad_multiplier": 6.0,
+          "residual_window_frames": 333
+        },
+        "extraction_backend": "validated_native_hdf5"
+      }
+    }
+  },
+  "artifacts": {
+    "pool_manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260727\\sleap_side_ci_active_learning\\candidate_pool_630.csv",
+      "size_bytes": 578445,
+      "mtime_ns": 1785141681651456200
+    },
+    "pool_round7_instances": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260727\\sleap_side_ci_active_learning\\candidate_pool_630_round7_instances.csv",
+      "size_bytes": 709076,
+      "mtime_ns": 1785141681691596600
+    },
+    "pool_blank_seed": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\side_ci_review210\\candidate_pool_630_blank.slp",
+      "size_bytes": 111436,
+      "source_frame_count": 630,
+      "labeled_frame_count": 1260,
+      "suggestion_count": 1260,
+      "embedded": false
+    }
+  },
+  "validation": {
+    "node_names": [
+      "mouth",
+      "tail"
+    ],
+    "expected_labeled_frames": 1260,
+    "observed_labeled_frames": 1260,
+    "suggestions": 1260,
+    "nonempty_labeled_frames": 0,
+    "passed": true
+  }
+}

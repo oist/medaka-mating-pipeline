@@ -1,0 +1,66 @@
+{
+  "schema_version": "side-centered-instance-hitl-v1",
+  "stage": "audit",
+  "passed": true,
+  "artifacts": {
+    "manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260727\\sleap_side_ci_active_learning\\selection_210.csv",
+      "size_bytes": 76316,
+      "mtime_ns": 1785142061541709600,
+      "sha256": "717f4f5b8b318148d2b2b28f114eacc604f89b598e01b255c2568844e9eb33ac"
+    },
+    "blank_seed": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\side_ci_review210\\side_ci_review_210_blank.pkg.slp",
+      "size_bytes": 505083241,
+      "mtime_ns": 1785142176460313500,
+      "sha256": "b68d48f957fee804dd1388fab94b1f7f359ac412545d03aa8770f6fcdcd5b7f4"
+    },
+    "candidate_overlay": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\side_ci_review210\\side_ci_review_210_round8_candidates.slp",
+      "size_bytes": 163770,
+      "mtime_ns": 1785142247750962700,
+      "sha256": "4fc6e79dd06d7739fa9a7c35ae578525c26a8b43b76cbf6dc66daa0ea6e03c98"
+    },
+    "deficient_views": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260727\\sleap_side_ci_active_learning\\round8_deficient_views.csv",
+      "size_bytes": 1372,
+      "mtime_ns": 1785142300800064000
+    }
+  },
+  "coverage": {
+    "source_frames": 210,
+    "expected_side_view_images": 420,
+    "blank_seed_labeled_frames": 420,
+    "candidate_labeled_frames": 420,
+    "same_order_as_manifest": true
+  },
+  "authoritative_seed": {
+    "instance_count": 0,
+    "node_names": [
+      "mouth",
+      "tail"
+    ],
+    "contains_model_predictions": false
+  },
+  "candidate_overlay": {
+    "instance_count": 1244,
+    "maximum_instances_per_view": 3,
+    "instance_types": [
+      "PredictedInstance"
+    ],
+    "deficient_view_count": 16,
+    "missing_instance_count": 16,
+    "authoritative_annotation": false
+  },
+  "embedded_frame_decode": {
+    "requested": true,
+    "readable_frames": 420,
+    "unique_shapes": [
+      [
+        1200,
+        1200,
+        3
+      ]
+    ]
+  }
+}
