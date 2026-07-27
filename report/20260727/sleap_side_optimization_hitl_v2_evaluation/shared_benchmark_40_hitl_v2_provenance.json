@@ -1,0 +1,157 @@
+{
+  "schema_version": "hitl-benchmark-final-v1",
+  "status": "locked_model_assisted_annotations",
+  "model_assisted_annotation": true,
+  "contains_model_predictions": false,
+  "contains_keypoint_coordinates": true,
+  "inputs": {
+    "base_slp": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\prediction_review40\\output\\prediction_review_40_labeled.pkg.slp",
+      "sha256": "b4f6253ba8a30106a6448cc26234081b31553e043b1661f950e13b3a702ee6da",
+      "provenance_sha256": "de8f64d4efd26c7b8a1b13c0c665e66dfec94c35f2063a9f91a64791edd2c7c4"
+    },
+    "replacement_slp": {
+      "path": "C:\\Users\\machi\\AppData\\Local\\Temp\\codex_medaka_fn_reviewer_20260727_a\\output\\replacement_review_2_complete_v2.pkg.slp",
+      "sha256": "fe20c17da43eb9424e469193ce77b3b059d7331269bce1cdfd10323ab07ee1f7",
+      "provenance_sha256": "89da5eba690a2e00eb7d9057ba31035b2ee63dfa3568e9dbb04cf39be6cc6643"
+    },
+    "selection_manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260726\\sleap_hitl_benchmark_v2\\shared_benchmark_40_hitl_v2_manifest.csv",
+      "sha256": "f26a238f81e763ba8a0925083b04021de39575e107cfc1f346514bc5803e175a"
+    }
+  },
+  "candidate_review_provenance": {
+    "present": true,
+    "sha256": "0db733571584a72f7c98b07b75958b8d8848803e12281d12a03fb30a1a44c2b0",
+    "candidate_artifact": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\prediction_replacement2\\data\\replacement_round8_candidates.slp",
+      "sha256": "778e3aaf5231cd5603215c78a390f734382c0579b077617d2e091309b2600852",
+      "size_bytes": 14554
+    }
+  },
+  "counts": {
+    "source_frames": 40,
+    "view_frames": 120,
+    "fish_per_view": 3,
+    "instances": 360,
+    "replacement_view_frames": 6,
+    "base_view_frames": 114,
+    "base_view_frames_dropped": 6,
+    "replacement_view_frames_dropped": 0,
+    "finite_mouths": 360,
+    "finite_tails": 360,
+    "visible_mouths": 353,
+    "visible_tails": 352,
+    "fully_labeled_instances": 345,
+    "partial_instances": 15,
+    "fully_labeled_view_frames": 105,
+    "partial_view_frames": 15
+  },
+  "artifacts": {
+    "locked_package": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\prediction_replacement2\\finalized_hitl_v2\\shared_benchmark_40_hitl_v2_locked.pkg.slp",
+      "sha256": "58b2788c9fa7b1ddf6eddaeac23665619c40a3bd9978c55602a850b6319ccec4",
+      "size_bytes": 159903430,
+      "embedded": true
+    },
+    "instance_ledger": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\prediction_replacement2\\finalized_hitl_v2\\shared_benchmark_40_hitl_v2_instance_ledger.csv",
+      "sha256": "3349808afabe42c1431bdd0d70559db2addefdac6a58a94ec430e599244815c1",
+      "rows": 360,
+      "columns": [
+        "selection_frame_key",
+        "source_frame_order",
+        "source_kind",
+        "experiment",
+        "frame_idx",
+        "view",
+        "fish_index",
+        "instance_key",
+        "mouth_x",
+        "mouth_y",
+        "mouth_finite",
+        "mouth_visible",
+        "tail_x",
+        "tail_y",
+        "tail_finite",
+        "tail_visible",
+        "fully_labeled",
+        "partial_annotation"
+      ]
+    },
+    "evaluation_manifest": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\prediction_replacement2\\finalized_hitl_v2\\shared_benchmark_40_hitl_v2_evaluation_manifest.csv",
+      "sha256": "eec7542e55f03d1963c58cca8abd4f17589c7aa60c83fc7b41de6e98ab424ba7",
+      "rows": 120,
+      "columns": [
+        "manifest_version",
+        "selection_seed",
+        "selection_rule",
+        "frame_key",
+        "experiment",
+        "view",
+        "camera",
+        "video_path",
+        "frame_idx",
+        "source_slp",
+        "source_slp_available",
+        "source_slp_size_bytes",
+        "source_slp_mtime_ns",
+        "source_video_index",
+        "source_labeled_frame_index",
+        "source_provenance",
+        "cohort",
+        "split_role",
+        "provenance_class",
+        "event_id",
+        "event_start_frame",
+        "event_end_frame",
+        "difficulty",
+        "source_category",
+        "node_visibility",
+        "instance_count",
+        "all_three_mouths_finite",
+        "strict_centroid_eligible",
+        "needs_manual_review",
+        "annotation_present",
+        "round7_event_exposed",
+        "round8_finetune_member",
+        "selection_reason",
+        "fully_labeled",
+        "partial_annotation",
+        "selection_frame_key",
+        "annotation_source",
+        "selection_experiment",
+        "selection_frame_idx",
+        "selection_event_id",
+        "selection_event_start_frame",
+        "selection_event_end_frame",
+        "selection_difficulty_hint",
+        "selection_source_category",
+        "selection_selection_source",
+        "selection_nearest_exposed_frame_distance",
+        "selection_guard_frames",
+        "selection_split_role",
+        "selection_annotation_source",
+        "selection_hitl_manifest_version",
+        "selection_replacement_status",
+        "selection_superseded_frame_key",
+        "selection_superseded_frame_idx",
+        "selection_superseded_event_id",
+        "selection_replacement_rank",
+        "selection_replacement_reason"
+      ]
+    }
+  },
+  "validation": {
+    "exact_40_source_frames": true,
+    "exact_120_view_frames": true,
+    "exactly_three_instances_per_view": true,
+    "single_canonical_mouth_tail_skeleton": true,
+    "all_instances_user_type": true,
+    "all_tracks_stripped": true,
+    "at_least_one_finite_node_per_instance": true,
+    "partial_nodes_allowed_and_flagged": true,
+    "inputs_unchanged": true
+  }
+}

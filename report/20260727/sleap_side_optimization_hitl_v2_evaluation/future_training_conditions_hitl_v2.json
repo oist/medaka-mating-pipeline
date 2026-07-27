@@ -1,0 +1,64 @@
+{
+  "schema_version": "sleap-side-future-training-conditions-v2",
+  "created_at": "2026-07-27",
+  "benchmark": {
+    "name": "shared_benchmark_40_hitl_v2",
+    "source_frames": 40,
+    "view_frames": 120,
+    "instances": 360,
+    "locked_slp_sha256": "58b2788c9fa7b1ddf6eddaeac23665619c40a3bd9978c55602a850b6319ccec4",
+    "evaluation_manifest_sha256": "eec7542e55f03d1963c58cca8abd4f17589c7aa60c83fc7b41de6e98ab424ba7"
+  },
+  "production_decision": {
+    "top": "round8",
+    "side": "round8",
+    "reason": "Round 8 has the best locked end-to-end OKS and detection on both views."
+  },
+  "future_conditions": [
+    {
+      "name": "sigma15__control",
+      "centroid_sigma": 1.5,
+      "centered_instance": "unchanged_control",
+      "status": "retain_for_future_training_not_promoted",
+      "role": "localization_focused",
+      "locked_full_topdown": {
+        "detect_rate": 0.938,
+        "mouth_p95_px": 4.599,
+        "tail_p95_px": 6.465,
+        "oks_mean": 0.611
+      }
+    },
+    {
+      "name": "sigma20__control",
+      "centroid_sigma": 2.0,
+      "centered_instance": "unchanged_control",
+      "status": "retain_as_detection_reference_not_promoted",
+      "role": "detection_focused",
+      "locked_full_topdown": {
+        "detect_rate": 0.954,
+        "mouth_p95_px": 6.175,
+        "tail_p95_px": 7.681,
+        "oks_mean": 0.597
+      }
+    },
+    {
+      "name": "crop448_rot90_jitter0_strictmouth_ohkmoff",
+      "status": "diagnostic_only_not_promoted",
+      "oracle_result": "improved",
+      "full_topdown_result": "regressed_against_control",
+      "causal_interpretation": "unsupported",
+      "reason": "Crop, rotation, strict-mouth filtering, and OHKM differ together; the OHKM-on twin is incomplete."
+    }
+  ],
+  "proposed_parameter_status": {
+    "crop_448": "bundled_not_isolated",
+    "rotation_side_plus_minus_90": "bundled_not_isolated",
+    "remove_mouth_missing_centered_instance_samples": "retain_as_structural_training_policy",
+    "crop_position_jitter_8_16_px": "do_not_add_to_locked_shortlist",
+    "disable_ohkm": "not_supported_as_an_isolated_claim",
+    "centroid_sigma_1_5": "retain_localization_condition",
+    "centroid_sigma_2_0": "retain_detection_condition",
+    "more_centroid_mouth_anchor_data": "recommended_next_data_investment",
+    "plateau_minus_40": "not_evaluated"
+  }
+}
