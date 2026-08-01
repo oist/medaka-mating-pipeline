@@ -4,7 +4,7 @@
 set -e
 cd "c:/Users/machi/Documents/GitHub/medaka-mating-pipeline"
 PY=.venv/Scripts/python.exe
-SEGID="C:/udmt_validation/segid/K_1_2"
+SEGID="Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2"
 
 echo "=== train FULL resnet18 (30 ep, fixed aug) ==="
 $PY -c "

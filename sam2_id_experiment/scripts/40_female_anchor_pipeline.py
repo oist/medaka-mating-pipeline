@@ -54,9 +54,9 @@ STAGES = ["slot-points", "detectron2", "link", "pool", "anchor", "per-frame-reso
 # are scratch paths, not network drives, and are fully overridable by flag.
 # Default anchor is the SWAP-CORRECTED clean female model (script 44); the embedder
 # is the frozen self-supervised model used to align the target's windows.
-DEFAULT_FEMALE_MODEL = r"C:\udmt_validation\segid\K_1_2\model_female_clean\model.pt"
-DEFAULT_MALE_MODEL = r"C:\udmt_validation\segid\K_1_2\model_male_clean\model.pt"
-DEFAULT_EMBEDDER = r"C:\udmt_validation\segid\K_1_2\model_resnet_full\model.pt"
+DEFAULT_FEMALE_MODEL = r"Z:\StephensU\medaka\runs\udmt_validation\segid\K_1_2\model_female_clean\model.pt"
+DEFAULT_MALE_MODEL = r"Z:\StephensU\medaka\runs\udmt_validation\segid\K_1_2\model_male_clean\model.pt"
+DEFAULT_EMBEDDER = r"Z:\StephensU\medaka\runs\udmt_validation\segid\K_1_2\model_resnet_full\model.pt"
 DEFAULT_DETECTRON_MODEL_DIR = REPO_ROOT / "outputs" / "20251225_K_1_2_FCMC" / "side_detectron2_model_firstprompt"
 DEFAULT_DETECTRON_VENV = REPO_ROOT / ".venv-detectron2" / "Scripts" / "python.exe"
 

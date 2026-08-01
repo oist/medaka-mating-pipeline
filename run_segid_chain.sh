@@ -4,7 +4,7 @@
 set -e
 cd "c:/Users/machi/Documents/GitHub/medaka-mating-pipeline"
 PY=.venv/Scripts/python.exe
-SEGID="C:/udmt_validation/segid/K_1_2"
+SEGID="Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2"
 TOPH5="outputs/20251225_K_1_2_FCMC/top_cam_f176300_181300_segpilot/detectron2_masks.h5"
 
 echo "[chain] waiting for top h5 lock to release ..."
@@ -22,14 +22,14 @@ echo "[chain] top h5 ready after ${n}x10s"
 echo "[chain] === top linkage ==="
 $PY -m sam2_id_experiment.scripts.33_build_segid_dataset \
   --view top_cam --masks "$TOPH5" \
-  --tracklet-bound-csv "C:/udmt_validation/tracklet_bind/top_cam.tracklet_bound.csv" \
+  --tracklet-bound-csv "Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind/top_cam.tracklet_bound.csv" \
   --video "Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/top_cam/cam0_top.mp4" \
   --window 176300 181300 --out-dir "$SEGID"
 
 echo "[chain] === assemble 3 views ==="
 $PY -m sam2_id_experiment.scripts.34_assemble_segid_training \
   --segid-dir "$SEGID" --views top_cam side1_cam side2_cam \
-  --tracklet-bound-dir "C:/udmt_validation/tracklet_bind" \
+  --tracklet-bound-dir "Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind" \
   --out-dir "$SEGID/pooled_all"
 
 echo "[chain] === train (20 epochs) ==="

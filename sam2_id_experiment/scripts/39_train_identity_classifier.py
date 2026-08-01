@@ -19,15 +19,15 @@ Compared with the self-supervised pair trainer, this script adds:
 Run::
 
     python -m sam2_id_experiment.scripts.39_train_identity_classifier \
-        --dataset C:/udmt_validation/segid/K_1_2/pooled_sides_full \
-        --mode all3 --out-dir C:/udmt_validation/segid/K_1_2/id_classifier_all3
+        --dataset Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/pooled_sides_full \
+        --mode all3 --out-dir Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/id_classifier_all3
 
 For the male-only question::
 
     python -m sam2_id_experiment.scripts.39_train_identity_classifier \
-        --dataset C:/udmt_validation/segid/K_1_2/pooled_sides_full \
+        --dataset Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/pooled_sides_full \
         --mode male --female-gid 1 \
-        --split window --out-dir C:/udmt_validation/segid/K_1_2/id_classifier_males
+        --split window --out-dir Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/id_classifier_males
 """
 
 import argparse

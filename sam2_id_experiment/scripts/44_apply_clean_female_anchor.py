@@ -21,8 +21,8 @@ Run::
 
     python -m sam2_id_experiment.scripts.44_apply_clean_female_anchor \
         --target-dataset runs/female_anchor/<exp>/round5_260611/pooled \
-        --model     C:/udmt_validation/segid/K_1_2/model_female_clean/model.pt \
-        --embedder  C:/udmt_validation/segid/K_1_2/model_resnet_full/model.pt \
+        --model     Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_female_clean/model.pt \
+        --embedder  Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_resnet_full/model.pt \
         --out-dir   runs/female_anchor/<exp>/round5_260611/female_anchor_clean
 """
 

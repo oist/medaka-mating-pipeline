@@ -4,8 +4,8 @@
 set -e
 cd "c:/Users/machi/Documents/GitHub/medaka-mating-pipeline"
 PY=.venv/Scripts/python.exe
-SEGID="C:/udmt_validation/segid/K_1_2"
-TB="C:/udmt_validation/tracklet_bind"
+SEGID="Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2"
+TB="Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind"
 DATA="Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC"
 
 # window  start  end  mask-relpath (under outputs/20251225_K_1_2_FCMC/<view>...)

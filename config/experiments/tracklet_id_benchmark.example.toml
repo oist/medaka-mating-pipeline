@@ -15,10 +15,10 @@ csv_3d = "Z:/StephensU/medaka/reconstruction_3d/round5_260611/20251225_K_1_2_FCM
 
 # Tracklet binder output dir (top_cam.tracklet_bound.csv etc + hardcore_events.csv).
 # Optional: tracklet_bind/hybrid are skipped (recorded unavailable) if missing.
-bind_dir = "C:/udmt_validation/tracklet_bind"
+bind_dir = "Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind"
 
 # Resolver output (required for window selection + motion_resolver/hybrid).
-resolved_events_csv = "C:/udmt_validation/tracklet_bind/hardcore_events_resolved.csv"
+resolved_events_csv = "Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind/hardcore_events_resolved.csv"
 
 # Optional appearance classifier (idtracker.ai trajectories.csv). Leave blank to
 # record it as unavailable with reproduce-instructions.
@@ -26,7 +26,7 @@ appearance_traj_csv = ""
 
 # Optional ground-truth event labels (k12.gt_review.csv style: center_frame, swap).
 # When present, GT scoring activates automatically.
-gt_csv = "C:/udmt_validation/k12.gt_review.csv"
+gt_csv = "Z:/StephensU/medaka/runs/udmt_validation/k12.gt_review.csv"
 
 # Results root (outside git). Defaults to runs_dir from paths.local.toml if blank.
 out_dir = ""

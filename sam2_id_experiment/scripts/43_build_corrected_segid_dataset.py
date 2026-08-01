@@ -24,9 +24,9 @@ id is reported in the manifest and is what you pass to ``37 --female-gid``.
 Run::
 
     python -m sam2_id_experiment.scripts.43_build_corrected_segid_dataset \
-        --dataset C:/udmt_validation/segid/K_1_2/pooled_sides_full \
-        --embedder C:/udmt_validation/segid/K_1_2/model_resnet_full/model.pt \
-        --out-dir  C:/udmt_validation/segid/K_1_2/pooled_sides_corrected \
+        --dataset Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/pooled_sides_full \
+        --embedder Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_resnet_full/model.pt \
+        --out-dir  Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/pooled_sides_corrected \
         --anchor-female-gid 1
 """
 

@@ -11,7 +11,7 @@ real crossings. The banner shows how many of the 3 fish are tracked per view.
 Run::
 
     python -m scripts.analysis.render_tracklet_bound_video \
-        --bind-dir C:/udmt_validation/tracklet_bind_stifd \
+        --bind-dir Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind_stifd \
         --video-top ... --video-side1 ... --video-side2 ... \
         --start-frame 170000 --end-frame 171000 --output out.mp4
 """
