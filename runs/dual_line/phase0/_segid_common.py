@@ -23,7 +23,7 @@ from sam2_id_experiment.src.id_model.resnet_embedder import (  # noqa: E402
     ResNet18Embedder,
 )
 
-SEGID = Path("C:/udmt_validation/segid/K_1_2")
+SEGID = Path("Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2")
 FEMALE_MODEL = SEGID / "model_female_clean" / "model.pt"
 EMBEDDER_MODEL = SEGID / "model_resnet_full" / "model.pt"
 

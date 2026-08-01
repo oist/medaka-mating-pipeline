@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-TB_DIR = Path("C:/udmt_validation/tracklet_bind_extend_smooth")
+TB_DIR = Path("Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind_extend_smooth")
 VIEWS = ["side1_cam", "side2_cam"]
 
 

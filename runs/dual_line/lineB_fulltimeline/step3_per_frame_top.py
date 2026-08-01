@@ -23,7 +23,7 @@ sys.path.insert(0, str(HERE.parent / "phase0"))
 import step2_per_frame_female as s2  # noqa: E402
 from _segid_common import device, forward, load_classifier  # noqa: E402
 
-TOP_MALE_MODEL = Path("C:/udmt_validation/segid/K_1_2/model_top_male/model.pt")
+TOP_MALE_MODEL = Path("Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_top_male/model.pt")
 TOP_VIDEO = Path(r"C:\Users\machi\AppData\Local\Temp\claude\c--Users-machi-Documents-GitHub-medaka-mating-pipeline\9d685e6e-fa9d-44ed-bbfb-964240c54875\scratchpad\videos\top_cam\cam0_top.mp4")
 VIEW = "top_cam"
 

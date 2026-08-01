@@ -34,7 +34,7 @@ sys.path.insert(0, str(HERE.parent / "phase0"))
 import step2_per_frame_female as s2  # noqa: E402  (square_crop, link_gid, load_points, read_frame_masks, CHUNKS, VIEWS, MASKS_Z, VIDEOS)
 from _segid_common import device, forward, load_classifier  # noqa: E402
 
-SEGID = Path("C:/udmt_validation/segid/K_1_2")
+SEGID = Path("Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2")
 MALE_MODEL = SEGID / "model_male_clean" / "model.pt"   # classes [gid_0, gid_2]; head -> P(gid_2)=P(M_beta)
 PER_FRAME_FEMALE = HERE / "step2" / "per_frame_female_0_348599.csv"
 FEMALE_MARGIN_THR = 0.30   # only use frames where the female slot is confident

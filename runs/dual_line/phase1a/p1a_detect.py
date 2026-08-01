@@ -49,7 +49,7 @@ def _extract_padded(arr: np.ndarray, bounds, fill: int = 0) -> np.ndarray:
     out[sy0 - y0:sy0 - y0 + (sy1 - sy0), sx0 - x0:sx0 - x0 + (sx1 - sx0)] = arr[sy0:sy1, sx0:sx1]
     return out
 
-EVENTS_CSV = "C:/udmt_validation/tracklet_bind/hardcore_events_resolved.csv"
+EVENTS_CSV = "Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind/hardcore_events_resolved.csv"
 VIDEOS = {
     "side1_cam": "Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/side1_cam/cam1_side.mp4",
     "side2_cam": "Z:/StephensU/medaka/medaka_202512/20251225_K_1_2_FCMC/side2_cam/cam2_side.mp4",

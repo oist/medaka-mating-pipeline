@@ -30,8 +30,8 @@ import step2_per_frame_female as s2  # noqa: E402
 
 TRACK = HERE / "step2" / "round5_260611_3d_individual_id.csv"
 TOP_VIDEO = Path(r"C:\Users\machi\AppData\Local\Temp\claude\c--Users-machi-Documents-GitHub-medaka-mating-pipeline\9d685e6e-fa9d-44ed-bbfb-964240c54875\scratchpad\videos\top_cam\cam0_top.mp4")
-TB = Path(r"C:\udmt_validation\tracklet_bind_extend_smooth\top_cam.tracklet_bound.csv")
-OUT = Path("C:/udmt_validation/segid/K_1_2/pooled_top_autolabeled")
+TB = Path(r"Z:\StephensU\medaka\runs\udmt_validation\tracklet_bind_extend_smooth\top_cam.tracklet_bound.csv")
+OUT = Path("Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/pooled_top_autolabeled")
 VIEW = "top_cam"
 WINDOWS = [(38000, 41000), (108000, 111000), (173000, 176000),
            (238000, 241000), (298000, 301000), (338000, 341000)]

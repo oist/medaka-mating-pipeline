@@ -30,7 +30,7 @@ import numpy as np
 import pandas as pd
 
 OUT = Path(__file__).resolve().parent
-SEG = Path("C:/udmt_validation/segid/K_1_2")
+SEG = Path("Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2")
 THREED = Path("Z:/StephensU/medaka/reconstruction_3d/round5_260611/20251225_K_1_2_FCMC/round5_260611_3d_identified.csv")
 # scene bins (mm), anchored to K_1_2 BORIS scale (wrap~8, touch~17, courtship~28, baseline~40)
 DIST_BINS = [0, 8, 20, 40, np.inf]

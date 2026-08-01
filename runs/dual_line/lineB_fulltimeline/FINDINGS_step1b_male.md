@@ -16,7 +16,7 @@ and stable per-frame separation).**
   female anchor only"). **The swap-correction fixed male-male exactly as it fixed the female** — the
   old weakness was cross-window label noise, not weak male appearance.
 - Deployment model (all 3 windows, tracklet split, best val crop balacc 0.96):
-  `C:/udmt_validation/segid/K_1_2/model_male_clean/model.pt` (classes [gid_0, gid_2]; head →
+  `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_male_clean/model.pt` (classes [gid_0, gid_2]; head →
   P(gid_2)=P(M_β)).
 
 ## 1b — per-frame probe on UNTRAINED windows (`step1b_male_probe.py`)

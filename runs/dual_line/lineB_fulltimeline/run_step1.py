@@ -5,7 +5,7 @@ runs the production crop build (33) per view per window, pools (34), and calls t
 globally via window_align (44) -> per-window female 3D-slot + a whole-track sexed CSV.
 
 Local: masks copied from Z: (detectron2_output) chunk-by-chunk; video read from Z:;
-tracklet-bound CSVs + models from C:/udmt_validation. Run with the repo .venv python.
+tracklet-bound CSVs + models from Z:/StephensU/medaka/runs/udmt_validation. Run with the repo .venv python.
 """
 from __future__ import annotations
 
@@ -22,9 +22,9 @@ SCRATCH = Path(r"C:\Users\machi\AppData\Local\Temp\claude\c--Users-machi-Documen
 MASKS_Z = Path(r"Z:\StephensU\medaka\detectron2_output\20251225_K_1_2_FCMC")
 # videos copied to local scratch -- network (Z:) frame-by-frame decode is ~4 fps vs ~100 fps local
 VIDEO_Z = Path(r"C:\Users\machi\AppData\Local\Temp\claude\c--Users-machi-Documents-GitHub-medaka-mating-pipeline\b07af347-293e-4fed-a208-e52ffcd113b6\scratchpad\videos")
-TB = Path(r"C:\udmt_validation\tracklet_bind_extend_smooth")
-FEMALE_MODEL = r"C:\udmt_validation\segid\K_1_2\model_female_clean\model.pt"
-EMBEDDER = r"C:\udmt_validation\segid\K_1_2\model_resnet_full\model.pt"
+TB = Path(r"Z:\StephensU\medaka\runs\udmt_validation\tracklet_bind_extend_smooth")
+FEMALE_MODEL = r"Z:\StephensU\medaka\runs\udmt_validation\segid\K_1_2\model_female_clean\model.pt"
+EMBEDDER = r"Z:\StephensU\medaka\runs\udmt_validation\segid\K_1_2\model_resnet_full\model.pt"
 THREED = r"Z:\StephensU\medaka\reconstruction_3d\round5_260611\20251225_K_1_2_FCMC\round5_260611_3d_identified.csv"
 
 CHUNKS = [(0, 43574), (43575, 87149), (87150, 130724), (130725, 174299),

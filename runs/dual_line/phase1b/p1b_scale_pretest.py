@@ -23,7 +23,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.append(str(HERE.parent / "phase0"))
 from _segid_common import FEMALE_MODEL, device, forward, load_classifier  # noqa: E402
 
-DATASET = Path("C:/udmt_validation/segid/K_1_2/pooled_sides_corrected")
+DATASET = Path("Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/pooled_sides_corrected")
 FEMALE_ALIGNED_ID = 1   # from correction_manifest.json
 N_SAMPLE = 6000
 

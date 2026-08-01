@@ -37,7 +37,7 @@ import numpy as np
 import pandas as pd
 
 OUT = Path(__file__).resolve().parent
-EVENTS = Path("C:/udmt_validation/tracklet_bind/hardcore_events_resolved.csv")
+EVENTS = Path("Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind/hardcore_events_resolved.csv")
 WINS = [(145000, 150000), (152000, 157000), (176300, 181300), (285000, 290000)]
 FEMALE_FISH = "ID_2"     # K_1_2 female (3D track id); confirmed by female_anchor_report
 # NOTE: the raw per-window 3D-bind `global_id` is PERMUTED across windows (the very problem

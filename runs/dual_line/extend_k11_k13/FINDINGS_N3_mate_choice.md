@@ -41,7 +41,7 @@ fish*. **Tell:** the C0 "male-vs-male" LOSO was too HIGH (K_1_3 0.99, K_1_1 0.95
 - Tracks: `runs/dual_line/extend_k11_k13/{K_1_1,K_1_3}/round5_260611_3d_individual_id_interp_debounced.csv`.
 - Analysis: `.../{K_1_1,K_1_3}/analysis/mate_choice_report.md` (+ png/csv). K_1_2:
   `runs/dual_line/lineB_fulltimeline/analysis_debounced/`.
-- Models: `C:/udmt_validation/segid/{K_1_1,K_1_3}/{model_female_clean_v2,model_male_clean_v2}/`.
+- Models: `Z:/StephensU/medaka/runs/udmt_validation/segid/{K_1_1,K_1_3}/{model_female_clean_v2,model_male_clean_v2}/`.
 
 ## Same-individuals-across-trials? → INCONCLUSIVE (appearance embedder is unreliable cross-video)
 `cross_trial_identity.py` embedded each experiment's 3 fish (aligned-ids) with the frozen K_1_2

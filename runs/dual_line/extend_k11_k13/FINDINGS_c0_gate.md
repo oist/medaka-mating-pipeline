@@ -37,6 +37,6 @@ to show the appearance signal exists and generalizes *before* committing HPC —
 Per-experiment Line B (re-validate female on full masks, retrain male + auto-labelled top per
 experiment, M1/M2 global-consistency check, stage-5 → 3-fish track) then `analyze_mate_choice` → N=3.
 
-Artifacts (gitignored scratch): `C:/udmt_validation/segid/{K_1_1,K_1_3}/{pooled_sides_corrected,
+Artifacts (gitignored scratch): `Z:/StephensU/medaka/runs/udmt_validation/segid/{K_1_1,K_1_3}/{pooled_sides_corrected,
 c0_male_loso}/`. Female reports: `runs/female_anchor/20251225_{K_1_1,K_1_3}_FCMC/round5_260611/
 female_anchor_clean/female_anchor_clean_report.json`.

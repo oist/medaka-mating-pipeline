@@ -29,7 +29,7 @@ from _segid_common import FEMALE_MODEL, device, forward, load_classifier  # noqa
 
 MASKS_Z = Path(r"Z:\StephensU\medaka\detectron2_output\20251225_K_1_2_FCMC")
 VIDEOS = Path(r"C:\Users\machi\AppData\Local\Temp\claude\c--Users-machi-Documents-GitHub-medaka-mating-pipeline\b07af347-293e-4fed-a208-e52ffcd113b6\scratchpad\videos")
-TB = Path(r"C:\udmt_validation\tracklet_bind_extend_smooth")
+TB = Path(r"Z:\StephensU\medaka\runs\udmt_validation\tracklet_bind_extend_smooth")
 CHUNKS = [(0, 43574), (43575, 87149), (87150, 130724), (130725, 174299),
           (174300, 217874), (217875, 261449), (261450, 305024), (305025, 348599)]
 VIEWS = [("side1_cam", "cam1_side"), ("side2_cam", "cam2_side")]

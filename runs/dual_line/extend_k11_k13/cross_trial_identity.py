@@ -16,10 +16,10 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
 from sam2_id_experiment.src.id_model.resnet_embedder import ResNet18Embedder  # noqa: E402
 
-EMBEDDER = r"C:/udmt_validation/segid/K_1_2/model_resnet_full/model.pt"
+EMBEDDER = r"Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_resnet_full/model.pt"
 # female aligned-id per experiment (K_1_2 from the original work; K_1_1/K_1_3 from the corrected fix)
 FEMALE_ALIGNED = {"K_1_1": 0, "K_1_2": 1, "K_1_3": 0}
-DS = {e: rf"C:/udmt_validation/segid/{e}/pooled_sides_corrected" for e in FEMALE_ALIGNED}
+DS = {e: rf"Z:/StephensU/medaka/runs/udmt_validation/segid/{e}/pooled_sides_corrected" for e in FEMALE_ALIGNED}
 
 
 def embed(crops, model, dev, bs=512):

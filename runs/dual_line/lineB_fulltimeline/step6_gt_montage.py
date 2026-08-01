@@ -25,7 +25,7 @@ sys.path.insert(0, str(REPO))
 from sam2_id_experiment.src.id_model import per_frame_resolve as pfr  # noqa: E402
 
 TRACK = HERE / "step2" / "round5_260611_3d_individual_id_interp.csv"
-SIDE1_TB = Path(r"C:\udmt_validation\tracklet_bind_extend_smooth\side1_cam.tracklet_bound.csv")
+SIDE1_TB = Path(r"Z:\StephensU\medaka\runs\udmt_validation\tracklet_bind_extend_smooth\side1_cam.tracklet_bound.csv")
 SIDE1_VID = Path(r"C:\Users\machi\AppData\Local\Temp\claude\c--Users-machi-Documents-GitHub-medaka-mating-pipeline\b07af347-293e-4fed-a208-e52ffcd113b6\scratchpad\videos\side1_cam\cam1_side.mp4")
 MASKS = Path(r"Z:\StephensU\medaka\detectron2_output\20251225_K_1_2_FCMC")
 CHUNKS = [(0, 43574), (43575, 87149), (87150, 130724), (130725, 174299),

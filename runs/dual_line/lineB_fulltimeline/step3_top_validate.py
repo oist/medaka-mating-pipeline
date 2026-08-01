@@ -17,8 +17,8 @@ sys.path.insert(0, str(HERE.parent / "phase0"))
 import step3_top_probe as p3  # noqa: E402
 from _segid_common import device, load_classifier  # noqa: E402
 
-TOP_F = "C:/udmt_validation/segid/K_1_2/model_top_female/model.pt"
-TOP_M = "C:/udmt_validation/segid/K_1_2/model_top_male/model.pt"
+TOP_F = "Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_top_female/model.pt"
+TOP_M = "Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_top_male/model.pt"
 
 
 def main():

@@ -26,7 +26,7 @@ sys.path.insert(0, str(HERE.parent / "phase0"))
 import step2_per_frame_female as s2  # noqa: E402
 from _segid_common import device, forward, load_classifier  # noqa: E402
 
-MALE_MODEL = Path("C:/udmt_validation/segid/K_1_2/model_male_clean/model.pt")
+MALE_MODEL = Path("Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_male_clean/model.pt")
 
 
 def main():
