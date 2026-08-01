@@ -1,0 +1,32 @@
+{
+  "schema_version": 2,
+  "status": "freeze_v3_authenticated_before_postfreeze_outputs",
+  "freeze": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\frozen_thresholds.json",
+    "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d",
+    "frozen_at": "2026-07-31T04:18:09.058553+09:00"
+  },
+  "audit_code_sha256": "9be8bb30fadc28a39428e35186a430bd484065528711ba47f9845e304286ccfc",
+  "recursive_stringified_structure_check": "PASS",
+  "source_contract_structured_equality": "PASS",
+  "cohort_interval_disjointness": "PASS",
+  "implementation_files_authenticated": 10,
+  "quality_and_completion_artifacts_authenticated": 17,
+  "training_geometry_artifacts_authenticated": 8,
+  "female_ledger_sha256": "ab0a173ac737a63311aec834c5832fc19475d4f7d1892b8193f8465bba67519f",
+  "quarantined_invalid_freezes_authenticated": 2,
+  "all_checked_training_artifacts_predate_freeze": true,
+  "production_finalists": [
+    "A1",
+    "A2",
+    "A3"
+  ],
+  "reference_only": [
+    "A0"
+  ],
+  "exploratory_only": [
+    "A4",
+    "A5"
+  ],
+  "postfreeze_output_roots_present_at_audit": []
+}

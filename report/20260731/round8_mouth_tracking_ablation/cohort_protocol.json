@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "created_before_critical_event_scoring": true,
+  "critical_event_confirmatory_status": "unblinded descriptive stress evidence only; an independent safety audit swept A4 cutoffs on frames 34000-35100 before frozen_thresholds.json existed",
+  "protocol_deviation_log": "protocol_deviations.json",
+  "experiment": "20251225_K_1_2_FCMC",
+  "round_tag": "round8_260729_snn031_m6",
+  "source_frame_rate_hz": 166,
+  "random_seed": 20260731,
+  "inclusive_frame_intervals": true,
+  "critical_event_exclusion": {
+    "event": [34547, 34555],
+    "excluded_from_all_tuning_and_validation": [33547, 35555],
+    "planned_smoke_window_after_threshold_freeze": [34000, 35100],
+    "actual_status": "opened early by independent safety review; never use this interval for hyperparameter selection or confirmatory claims",
+    "required_detail_window": [34540, 34565]
+  },
+  "training": {
+    "reviewed_contact_events": [
+      {
+        "name": "reviewed_event_1",
+        "frames": [72371, 73027],
+        "source": "report/20260716/mouth_tracking_ablation/THREE_WAY_TRACKING_COMPARISON.md"
+      },
+      {
+        "name": "reviewed_event_3",
+        "frames": [174316, 180515],
+        "source": "report/20260716/mouth_tracking_ablation/THREE_WAY_TRACKING_COMPARISON.md"
+      }
+    ],
+    "matched_control_windows": [
+      {
+        "name": "control_for_event_1",
+        "frames": [32264, 32920],
+        "selection": "length-matched prefix of preregistered 32264-35364 control, outside the critical-event exclusion"
+      },
+      {
+        "name": "control_for_event_3",
+        "frames": [21840, 28039],
+        "selection": "length-matched prefix of preregistered 21840-30840 control"
+      }
+    ]
+  },
+  "validation": {
+    "reviewed_contact_events": [
+      {
+        "name": "reviewed_event_2",
+        "frames": [96612, 97802],
+        "source": "report/20260716/mouth_tracking_ablation/THREE_WAY_TRACKING_COMPARISON.md"
+      }
+    ],
+    "matched_control_windows": [
+      {
+        "name": "control_for_event_2",
+        "frames": [151050, 152240],
+        "selection": "length-matched prefix of preregistered 151050-155050 control"
+      }
+    ]
+  },
+  "held_out": {
+    "reviewed_contact_events": [
+      {
+        "name": "reviewed_event_4",
+        "frames": [273617, 278182],
+        "source": "report/20260716/mouth_tracking_ablation/THREE_WAY_TRACKING_COMPARISON.md"
+      }
+    ],
+    "matched_control_windows": [
+      {
+        "name": "control_for_event_4",
+        "frames": [57363, 61928],
+        "selection": "length-matched prefix of preregistered 57363-67363 control"
+      }
+    ],
+    "round8_risk_windows": [
+      {
+        "name": "low_top_pair_separation_8_9_a",
+        "frames": [123124, 123274],
+        "center": 123199
+      },
+      {
+        "name": "low_top_pair_separation_8_9_b",
+        "frames": [136451, 136601],
+        "center": 136526
+      },
+      {
+        "name": "low_top_pair_separation_8_11",
+        "frames": [167108, 167258],
+        "center": 167183
+      }
+    ]
+  },
+  "clean_frame_policy": {
+    "eligible_sources": "training matched controls only; validation and held-out controls remain untouched until thresholds freeze",
+    "strict_finite_mouth": true,
+    "minimum_instances_per_view": 3,
+    "separation_filter": "all accepted mouths must be at least 1.5 robust per-view body lengths apart",
+    "prediction_error_estimator": "forward/backward reciprocal constant-velocity errors from robust multi-frame history",
+    "body_length_estimator": "per-view median finite mouth-to-tail length, reported but tail never used as an identity feature"
+  },
+  "selection_objective": {
+    "selection_data_rule": "Hyperparameters are selected on training only. Validation is reported without selection or tie-breaking. Held-out remains untouched until the timestamped configuration freeze. The critical cohort was opened early by an independent safety audit and is permanently descriptive/unblinded, never confirmatory.",
+    "deterministic_tie_break": "lowest complexity (smaller motion weight, shorter gap, larger ambiguity abstention margin), then lexicographic canonical JSON",
+    "primary": [
+      "training annotated female identity accuracy for selection; frozen-configuration validation accuracy is report-only and cannot change the finalist",
+      "observed female identity changes",
+      "false merges before false breaks"
+    ],
+    "guardrails": [
+      "unresolved fraction",
+      "all-three-direct non-interpolated coverage",
+      "3D speed-spike rate",
+      "hard motion-gate violations"
+    ],
+    "not_identity_proof": [
+      "lower refractive residual alone",
+      "smoother trajectories alone"
+    ]
+  },
+  "motion_sweep_candidates": [
+    {"velocity_weight": 0.25, "history_frames": 5, "uncertainty_growth_per_frame": 0.25, "max_motion_gap_frames": 20},
+    {"velocity_weight": 0.5, "history_frames": 5, "uncertainty_growth_per_frame": 0.25, "max_motion_gap_frames": 20},
+    {"velocity_weight": 1.0, "history_frames": 5, "uncertainty_growth_per_frame": 0.25, "max_motion_gap_frames": 20},
+    {"velocity_weight": 0.5, "history_frames": 9, "uncertainty_growth_per_frame": 0.25, "max_motion_gap_frames": 20},
+    {"velocity_weight": 1.0, "history_frames": 9, "uncertainty_growth_per_frame": 0.25, "max_motion_gap_frames": 20}
+  ],
+  "a3_acceleration_ablation_weights": [0.0, 0.05, 0.1],
+  "tracklet_cutoff_sweep": {
+    "separation_body_lengths": [0.35, 0.5, 0.65],
+    "assignment_ambiguity_margin_body_lengths": [0.05, 0.1],
+    "maximum_missing_gap_frames": [0, 2, 5],
+    "uncertainty_growth_body_lengths_per_missing_frame": 0.1,
+    "bridge_consistency": "forward/backward reciprocal best match required",
+    "priority": "purity over length; false merge is worse than recoverable break"
+  },
+  "metric_policy": {
+    "full_eligible_accuracy": "Every eligible annotation is in the denominator; missing or unresolved output is incorrect.",
+    "selective_mapped_accuracy": "Reported separately with mapped and abstained counts; never substituted for full-eligible accuracy.",
+    "control_label": "length-matched temporal control, not behavior-matched control",
+    "round8_risk_windows": "post-freeze stress set, not tuning or primary confirmatory data",
+    "female_ground_truth_limitation": "female-only ground truth cannot observe a male-to-male swap"
+  }
+}

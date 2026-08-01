@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "scope": "training length-matched temporal controls only",
+  "control_intervals_inclusive": [
+    [
+      32264,
+      32920
+    ],
+    [
+      21840,
+      28039
+    ]
+  ],
+  "minimum_separation_body_lengths": 1.5,
+  "minimum_mouth_score": 0.3,
+  "history_frames": 5,
+  "frozen_scales_path": "report\\20260731\\round8_mouth_tracking_ablation\\frozen_body_length_scales.json",
+  "frozen_scales_sha256": "63bf6de26bb85e76da97976ffa0158c8d4e27d7ea9e3208b627fe8ade2eb9209",
+  "frozen_scale_recorded_code_hashes_current": true,
+  "cache_sha256": {
+    "top_cam": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+    "side1_cam": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+    "side2_cam": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+  },
+  "views": {
+    "top_cam": {
+      "frozen_body_length_px": 109.58292697843919,
+      "independently_estimated_body_length_px": 109.58292697843919,
+      "body_length_absolute_difference_px": 0.0,
+      "control_frames": 6857,
+      "clean_frames": 947,
+      "clean_frame_fraction": 0.13810704389674786,
+      "displacement_px": {
+        "n": 2796,
+        "median": 1.6536391479580324,
+        "p95": 3.680812675306909,
+        "p99": 4.479483258061882,
+        "max": 8.127966872635177
+      },
+      "displacement_body_lengths": {
+        "n": 2796,
+        "median": 0.015090299132851155,
+        "p95": 0.03358928965304168,
+        "p99": 0.04087756534321479,
+        "max": 0.07417183585755455
+      },
+      "constant_velocity_prediction_error_px": {
+        "n": 2754,
+        "median": 0.8056541865523692,
+        "p95": 2.009604525984385,
+        "p99": 2.7860868868022606,
+        "max": 7.043868403879752
+      },
+      "constant_velocity_prediction_error_body_lengths": {
+        "n": 2754,
+        "median": 0.007352004630346152,
+        "p95": 0.018338664437935494,
+        "p99": 0.025424461306371497,
+        "max": 0.06427888538937873
+      }
+    },
+    "side1_cam": {
+      "frozen_body_length_px": 91.11906436144642,
+      "independently_estimated_body_length_px": 91.11906436144642,
+      "body_length_absolute_difference_px": 0.0,
+      "control_frames": 6857,
+      "clean_frames": 997,
+      "clean_frame_fraction": 0.1453988624763016,
+      "displacement_px": {
+        "n": 2913,
+        "median": 1.6424577575498986,
+        "p95": 4.306105436421235,
+        "p99": 5.595346332038772,
+        "max": 10.377402449570491
+      },
+      "displacement_body_lengths": {
+        "n": 2913,
+        "median": 0.018025401918468804,
+        "p95": 0.04725800760354603,
+        "p99": 0.06140697746679487,
+        "max": 0.1138883780501295
+      },
+      "constant_velocity_prediction_error_px": {
+        "n": 2847,
+        "median": 0.8045478763044529,
+        "p95": 2.036144476409272,
+        "p99": 2.6184593570848858,
+        "max": 10.543943973012908
+      },
+      "constant_velocity_prediction_error_body_lengths": {
+        "n": 2847,
+        "median": 0.008829632766124702,
+        "p95": 0.02234597656021136,
+        "p99": 0.0287366795898838,
+        "max": 0.1157161132733731
+      }
+    },
+    "side2_cam": {
+      "frozen_body_length_px": 86.47002765799765,
+      "independently_estimated_body_length_px": 86.47002765799765,
+      "body_length_absolute_difference_px": 0.0,
+      "control_frames": 6857,
+      "clean_frames": 1187,
+      "clean_frame_fraction": 0.1731077730786058,
+      "displacement_px": {
+        "n": 3453,
+        "median": 1.6399415045648291,
+        "p95": 3.779601337130022,
+        "p99": 5.2778074447189915,
+        "max": 43.91974654497524
+      },
+      "displacement_body_lengths": {
+        "n": 3453,
+        "median": 0.018965432867109187,
+        "p95": 0.0437099586931894,
+        "p99": 0.06103626409827851,
+        "max": 0.507918729003819
+      },
+      "constant_velocity_prediction_error_px": {
+        "n": 3378,
+        "median": 0.8614211599553688,
+        "p95": 2.188924665049049,
+        "p99": 3.4074544705856638,
+        "max": 44.459549132960845
+      },
+      "constant_velocity_prediction_error_body_lengths": {
+        "n": 3378,
+        "median": 0.009962077997273494,
+        "p95": 0.025314258874839093,
+        "p99": 0.039406191519478564,
+        "max": 0.5141613844372208
+      }
+    }
+  },
+  "limitations": [
+    "Clean-frame matching is a motion proxy, not biological ground truth.",
+    "Length-matched temporal controls are not behavior- or risk-matched.",
+    "Tail is used only to audit the frozen normalization scale."
+  ]
+}

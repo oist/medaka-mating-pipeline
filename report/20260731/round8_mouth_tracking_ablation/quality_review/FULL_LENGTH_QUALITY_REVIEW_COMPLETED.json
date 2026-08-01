@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "status": "full_length_independently_authenticated_scored_and_passed_with_identity_limitations",
+  "completed_at": "2026-07-31T07:57:38.6234940+09:00",
+  "stage": "full_length",
+  "role": "production_finalist_full_length_qc",
+  "independent_quality_verdict": "PASS",
+  "production_replacement_verdict": "NOT_ESTABLISHED",
+  "selection_or_tuning_performed": false,
+  "frozen_settings_changed": false,
+  "full_length_stage_modified_by_reviewer": false,
+  "inclusive_frame_interval": [
+    0,
+    348599
+  ],
+  "bindings": {
+    "freeze": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/frozen_thresholds.json",
+      "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    },
+    "heldout_quality_gate": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/HELDOUT_QUALITY_REVIEW_COMPLETED.json",
+      "sha256": "022fbca3f3d0c13d7388a83c42b3b2bad60ded00de2fe89fad428943e7f213cc"
+    },
+    "critical_quality_gate": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/CRITICAL_QUALITY_REVIEW_COMPLETED.json",
+      "sha256": "55a479e1b97a1054b7f195530d1505202d4d87935a1dd2f36b06f51e665fe83e"
+    },
+    "full_length_finalized": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/STAGE_FINALIZED.json",
+      "sha256": "a9a8ae25cca6ef0c94dc7996cf39680017b9bb58e20ab60473bced96284e07b0"
+    },
+    "full_length_completed": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/STAGE_COMPLETED.json",
+      "sha256": "7e9e826cc48965d2b0ada1569b63d7a77b3b2972a8e20649eff15bc2de00dca0"
+    },
+    "prepared_manifest": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/STAGE_PREPARED.json",
+      "sha256": "d9c14fcb973f0fa29877443802eeba643fd5b288245988414b13c53d9f1f4aa1"
+    },
+    "prelaunch_auth": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/prelaunch_auth.json",
+      "sha256": "bd1ef6119ff770121ad65c1ce87d772190c3d637c479940045ee84a5f81f8b7b"
+    },
+    "full_length_scorer": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/audit_and_score_full_length.py",
+      "sha256": "f2df63f2ccbddb41645b489e0934a8f0761dee3db17bb1a66d932b8283849ee5"
+    },
+    "sealed_base_scorer": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/audit_and_score_postfreeze.py",
+      "sha256": "5d7e4e8f87f40228ddd185f07476951a2009e468258719aed92b7d059345ca72"
+    },
+    "metric_helper": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/recompute_method_metrics.py",
+      "sha256": "11e7f14d9ca1e2a12e40cf2fcf8ff4c9d6d516846dd63eed894c6eda38e69242"
+    },
+    "confirmed_female_annotation_ledger": {
+      "path": "annotations/fish_sex_gt/20251225_K_1_2_FCMC/female_sex_gt.csv",
+      "sha256": "ab0a173ac737a63311aec834c5832fc19475d4f7d1892b8193f8465bba67519f"
+    },
+    "cohort_protocol": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/cohort_protocol.json",
+      "sha256": "8f81068ca50154ffb77eb8c32015ddbe2788e6dc395d7216c3b58e9d5956fb86"
+    },
+    "full_length_metrics": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_independent_metrics.json",
+      "sha256": "0230a938d70d05465677fec1fdad46e6abf1eb13483e093a17980de800684870"
+    },
+    "full_length_female_assignments": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_independent_female_assignments.csv",
+      "sha256": "2420ff3db22ffb26a788008c6eee5586e10d3e53a10282ee3f77fff3f363ed67"
+    },
+    "full_length_method_summary": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_independent_method_summary.csv",
+      "sha256": "4a8dbcc53744634e133b4625108dc40c653d0c1fe8d770b4e2b621185e0226e6"
+    },
+    "full_length_critical_event_rows": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_critical_event_rows_34547_34555.csv",
+      "sha256": "4f70a95dc708c8effc7a4b0b0389488113c65be1cd8f646a4f26481b93bca7e6"
+    },
+    "annotation_partition_summarizer": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/summarize_full_length_annotation_partitions.py",
+      "sha256": "9deaf8816e81727aff1c41eaf8c441313b4acef1ad6693c859442a929193d5bf"
+    },
+    "annotation_partition_json": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_annotation_partition_summary.json",
+      "sha256": "c13861f672de73db9f7098c500c813c158069e86ba23567ea966d34e5f897d61"
+    },
+    "annotation_partition_csv": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_annotation_partition_summary.csv",
+      "sha256": "cb3a3f05ff0e25dec585d4bca347bcf6348340d7dd61a90a0b9378fd52431234"
+    },
+    "scorer_execution_incident": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_scorer_execution_incident.json",
+      "sha256": "6ecf08b348f02bbc21ad87879160123809f8fd7e57259a893815f397fc71f66a"
+    },
+    "refractive_calibration": {
+      "manifest": {
+        "path": "calibration_results/fixed_refractive_192x192x186/calibration_manifest.json",
+        "sha256": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105"
+      },
+      "cam0": {
+        "path": "calibration_results/fixed_refractive_192x192x186/cam0_bundle_refractive.json",
+        "sha256": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c"
+      },
+      "cam1": {
+        "path": "calibration_results/fixed_refractive_192x192x186/cam1_bundle_refractive.json",
+        "sha256": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0"
+      },
+      "cam2": {
+        "path": "calibration_results/fixed_refractive_192x192x186/cam2_bundle_refractive.json",
+        "sha256": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+      }
+    }
+  },
+  "authentication": {
+    "finalized_current_inventory_files": 1442,
+    "completion_inventory_files_unchanged": 1438,
+    "process_records_authenticated": 8,
+    "process_exit_zero_and_stderr_empty": "8/8",
+    "geometry_blocks_contiguous": "698/698",
+    "geometry_fresh_resume_scientific_equivalence": "PASS",
+    "finalist_fresh_repeat_scientific_equivalence": {
+      "A1": "PASS",
+      "A2": "PASS",
+      "A3": "PASS"
+    },
+    "exact_three_row_frame_grids": {
+      "A1": "1045800/1045800",
+      "A2": "1045800/1045800",
+      "A3": "1045800/1045800"
+    },
+    "unchanged_A0_reference_authenticated": true,
+    "A4_A5_absent_from_full_length_execution": true,
+    "score_unit": "mm^2",
+    "calibration_backend": "refractive"
+  },
+  "resources": {
+    "stage_wall_seconds": 5314.740548799979,
+    "stage_peak_rss_bytes": 3418509312,
+    "shared_geometry_fresh": {
+      "wall_seconds": 1132.582968599978,
+      "peak_rss_bytes": 2546966528
+    },
+    "shared_geometry_resume": {
+      "wall_seconds": 9.511922999983653,
+      "peak_rss_bytes": 597413888
+    },
+    "A1_fresh": {
+      "wall_seconds": 618.1198206000263,
+      "peak_rss_bytes": 2643316736
+    },
+    "A1_repeat": {
+      "wall_seconds": 614.2905512000434,
+      "peak_rss_bytes": 2621231104
+    },
+    "A2_fresh": {
+      "wall_seconds": 691.2288978999713,
+      "peak_rss_bytes": 3404423168
+    },
+    "A2_repeat": {
+      "wall_seconds": 691.1521553000202,
+      "peak_rss_bytes": 3418509312
+    },
+    "A3_fresh": {
+      "wall_seconds": 773.1448774000164,
+      "peak_rss_bytes": 3395780608
+    },
+    "A3_repeat": {
+      "wall_seconds": 773.9153540999396,
+      "peak_rss_bytes": 3396063232
+    }
+  },
+  "full_length_metrics": {
+    "A0": {
+      "female_best_fixed_identity_correct": "221/300",
+      "female_mapped": "299/300",
+      "observed_female_identity_changes": 15,
+      "all_three_direct_fraction": 0.9895438898450947,
+      "unavailable_or_unresolved_fraction": 0.006441958309428189,
+      "identity_segments": 3,
+      "direct_jump_p95_mm": 1.3571642711444112,
+      "direct_jump_p99_mm": 4.859557970990442,
+      "jump_ge_7_5mm_count": 597,
+      "jump_gt_8mm_count": 0,
+      "residual_p95_mm2": 3.324703129629953,
+      "residual_p99_mm2": 22.412482766610186
+    },
+    "A1": {
+      "female_best_fixed_identity_correct": "180/300",
+      "female_mapped": "297/300",
+      "observed_female_identity_changes": 9,
+      "all_three_direct_fraction": 0.9835370051635112,
+      "unavailable_or_unresolved_fraction": 0.009188181296615031,
+      "identity_segments": 10,
+      "direct_jump_p95_mm": 1.122509340746078,
+      "direct_jump_p99_mm": 2.035663128519305,
+      "jump_ge_7_5mm_count": 166,
+      "jump_gt_8mm_count": 0,
+      "residual_p95_mm2": 1.0248434589243969,
+      "residual_p99_mm2": 3.0865813291900404
+    },
+    "A2": {
+      "female_best_fixed_identity_correct": "192/300",
+      "female_mapped": "297/300",
+      "observed_female_identity_changes": 9,
+      "all_three_direct_fraction": 0.9835370051635112,
+      "unavailable_or_unresolved_fraction": 0.009188181296615031,
+      "identity_segments": 10,
+      "direct_jump_p95_mm": 1.1225165633919896,
+      "direct_jump_p99_mm": 2.03568453570679,
+      "jump_ge_7_5mm_count": 166,
+      "jump_gt_8mm_count": 0,
+      "residual_p95_mm2": 1.0248272525977713,
+      "residual_p99_mm2": 3.0865813291900404
+    },
+    "A3": {
+      "female_best_fixed_identity_correct": "94/300",
+      "female_mapped": "297/300",
+      "observed_female_identity_changes": 19,
+      "all_three_direct_fraction": 0.9809954102122777,
+      "unavailable_or_unresolved_fraction": 0.0153184165232358,
+      "identity_segments": 117,
+      "direct_jump_p95_mm": 1.1197429098502891,
+      "direct_jump_p99_mm": 2.013044158939641,
+      "jump_ge_7_5mm_count": 160,
+      "jump_gt_8mm_count": 0,
+      "residual_p95_mm2": 1.021696730381267,
+      "residual_p99_mm2": 3.0469637417608126,
+      "assignment_audit_rows": 348600,
+      "resolved_assignment_rows": 341348,
+      "ambiguous_rows": 8140,
+      "constraint_conflict_rows": 0
+    }
+  },
+  "full_history_heldout_annotation_partition": {
+    "A0": {
+      "best_fixed_identity_correct": "9/9",
+      "observed_changes": 0
+    },
+    "A1": {
+      "best_fixed_identity_correct": "6/9",
+      "observed_changes": 1
+    },
+    "A2": {
+      "best_fixed_identity_correct": "6/9",
+      "observed_changes": 1
+    },
+    "A3": {
+      "best_fixed_identity_correct": "6/9",
+      "observed_changes": 1
+    },
+    "interpretation": "The bounded held-out 9/9 result came from tracks initialized inside each held-out window. It must not be quoted as continuity of the frame-0 full-history tracks."
+  },
+  "cross_method_findings": {
+    "A1_vs_A2": {
+      "candidate_set_equal_frames": "348598/348600",
+      "fixed_identity_coordinate_mismatch_rows": 228593,
+      "fixed_identity_assignment_different_frames": 114297,
+      "fixed_identity_assignment_different_fully_populated_frames": 113779,
+      "annotation_assignment_differences": "40/300",
+      "annotation_difference_partition": {
+        "training": 0,
+        "validation": 1,
+        "heldout": 0,
+        "critical_descriptive": 0,
+        "other_full_length": 39
+      },
+      "interpretation": "A1 and A2 have nearly identical geometry sets and aggregate QC but materially different long-run identity paths. The 0.60 versus 0.64 global female consistency difference is descriptive and does not promote A2 because none of the 40 differing annotations is held-out."
+    },
+    "A1_vs_A3": {
+      "candidate_set_equal_frames": "343509/348600",
+      "fixed_identity_assignment_different_frames": 320237,
+      "fixed_identity_assignment_different_fully_populated_frames": 313697,
+      "interpretation": "A3 differs materially in selected availability and identity paths and fragments three base identities into 117 segment-aware identities."
+    }
+  },
+  "critical_event_34547_34555": {
+    "role": "permanently_unblinded_descriptive_nonconfirmatory",
+    "A0": "Known centroid geometry-ID exchange remains present.",
+    "A1": {
+      "source_slots": {
+        "ID_1": 0,
+        "ID_2": 2,
+        "ID_3": 1
+      },
+      "source_slot_switches": 0,
+      "finite_direct_rows": "27/27"
+    },
+    "A2": {
+      "source_slots": {
+        "ID_1": 2,
+        "ID_2": 0,
+        "ID_3": 1
+      },
+      "source_slot_switches": 0,
+      "finite_direct_rows": "27/27"
+    },
+    "A3": {
+      "source_slots": {
+        "ID_1": 0,
+        "ID_2": 2,
+        "ID_3": 1
+      },
+      "source_slot_switches": 0,
+      "finite_direct_rows": "27/27",
+      "all_assignment_frames_resolved": true,
+      "assignment_margin_min": 15.02449257632033,
+      "assignment_margin_max": 17.714434235581315
+    },
+    "shared_local_geometry_and_jump_residual_distributions_A1_A2_A3": true,
+    "interpretation": "A1/A3 agree on source-slot labels, while A2 is globally permuted because of earlier full-history divergence. All three preserve stable local continuity, but no female annotation occurs in the exact event and male-to-male biological correctness is unobservable."
+  },
+  "method_decisions": {
+    "A0": "RETAIN as the unchanged reference/current comparator. Its higher full-history female consistency does not prove every male identity is correct, but current evidence does not justify replacing it in production.",
+    "A1": "RETAIN as the primary experimental mouth-only finalist. If one mouth-only output must be carried forward for biological validation, choose A1 by the preregistered parsimony rule, not as a proven A0 replacement.",
+    "A2": "INVESTIGATE the 114297-frame A1/A2 path divergence. Do not promote A2 based on its 0.04 descriptive global female-consistency difference; it adds runtime/memory and has no differing held-out annotation assignment.",
+    "A3": "REJECT as a production finalist: lower coverage, higher unresolved fraction, 117 segments, 19 observed female changes, and 94/300 best-fixed female consistency outweigh its slightly smoother aggregate tails.",
+    "A4": "REJECT as a standalone production reconstruction; retain only as a bounded high-purity/high-abstention diagnostic constraint source.",
+    "A5": "REJECT as a production/full-length finalist based on training and held-out identity/coverage regressions."
+  },
+  "limitations": {
+    "male_to_male_observability": "The confirmed ledger labels only the female; a male-to-male exchange can be invisible.",
+    "geometry_vs_identity": "Lower refractive residuals, smoother jumps, and stable source slots describe geometry/temporal continuity but are not biological identity proof.",
+    "bounded_vs_full_history": "A track initialized within a bounded window can have different segment/global identity continuity from a track linked from frame zero.",
+    "tracklet_metrics_at_full_length": "False-bridge, false-break, fragment-purity, and retained-tracklet metrics are not applicable to A1-A3 and were not rerun full length. A4/A5 remained excluded under the frozen finalist policy; their bounded sweep metrics remain in the main review."
+  },
+  "final_recommendation": "Full-length execution and QC PASS, but a production replacement for A0 is not established. Retain A0 as the reference, carry A1 forward as the simplest experimental mouth-only track, investigate A1/A2 identity-path divergence with male-resolving ground truth, and reject A3/A4/A5 as production finalists."
+}

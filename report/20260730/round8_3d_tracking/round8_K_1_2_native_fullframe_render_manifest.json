@@ -1,0 +1,106 @@
+{
+  "status": "completed_verified",
+  "created_at": "2026-07-31T00:29:14+09:00",
+  "experiment": "20251225_K_1_2_FCMC",
+  "round_tag": "round8_260729_snn031_m6",
+  "layout": {
+    "grid": "2x2",
+    "northwest": "top_cam SLEAP pose + final ID",
+    "northeast": "side1_cam SLEAP pose + final ID",
+    "southwest": "side2_cam SLEAP pose + final ID",
+    "southeast": "refractive 3D mouth trajectory + tail-to-mouth body arrow"
+  },
+  "render_policy": {
+    "identity_column": "final_fish_id",
+    "display_ids_in_color_order": [
+      "11",
+      "9",
+      "8"
+    ],
+    "identity_anchor": "resolved identified 3D centroid reprojected to each view, then matched to the nearest visible-node SLEAP instance within 60 px",
+    "two_dimensional_arrow": "direct matched SLEAP tail-to-mouth keypoints",
+    "three_dimensional_arrow": "direct three-view refractive triangulation of matched tail and mouth keypoints",
+    "three_dimensional_trail": "direct triangulated mouth keypoint only; never tail or centroid",
+    "trail_seconds_source_time": 5.0,
+    "trail_sample_step_source_frames": 5,
+    "trail_warmup_source_frames_at_chunk_boundary": 829,
+    "arrow_colored_thickness_pixels": 1,
+    "source_fps": 166.0,
+    "source_frame_step": 1,
+    "source_frames_rendered": "0, 1, 2, ..., 348599",
+    "playback_fps": 60.0,
+    "playback_speed_relative_to_source": 0.3614457831,
+    "playback_note": "Every source frame is present; 60 fps playback is 2.7667x slower than the 166 fps recording for ID-swap review.",
+    "panel_pixels": 1200,
+    "output_pixels": "2400x2400",
+    "xyz_limits_mm": [
+      -20.0,
+      220.0
+    ],
+    "calibration_backend": "fixed-interface refractive",
+    "encoder": "h264_nvenc",
+    "nvenc_cq": 24,
+    "pixel_format": "yuv420p",
+    "workers": 6,
+    "frames_per_worker": 58100,
+    "concatenation": "ffmpeg stream copy"
+  },
+  "inputs": {
+    "slp_dir": "Z:\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6",
+    "identified_3d_csv": {
+      "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d_identified.csv",
+      "sha256": "b2100d24cec8a660cff5888ceee1ade26c9990d900f1e67508e566aaab2870b6"
+    },
+    "video_dir": "Z:\\StephensU\\medaka\\medaka_202512\\20251225_K_1_2_FCMC",
+    "calibration_dir": "calibration_results\\fixed_refractive_192x192x186"
+  },
+  "implementation": {
+    "renderer": "scripts/visualization/render_qc_4panel_fast.py",
+    "renderer_sha256": "0598e71985303ca2c36f6db89d94f00909ce495725dd6b7686650cb46fbbfd90",
+    "test_file": "tests/test_render_qc_4panel_fast_geometry.py",
+    "test_file_sha256": "2db9e8446db3325b8067189685a59ee316ad5be5168684f55e59fb2993796838",
+    "focused_tests": "12 passed",
+    "change": "Added independent mouth-trail geometry sampling so every video frame can be rendered without drawing all 830 source positions in each five-second trail."
+  },
+  "output": {
+    "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_4panel_ids_native1200_fullframes_mouthtrail5s.mp4",
+    "bytes": 13774227168,
+    "sha256": "e1b301f2fcf7c42d6f1d81eb607686d0fdc08a70fab57daaf71c793271190412"
+  },
+  "media_validation": {
+    "codec_name": "h264",
+    "profile": "Main",
+    "width": 2400,
+    "height": 2400,
+    "pixel_format": "yuv420p",
+    "nominal_frame_rate": "60/1",
+    "indexed_frames": 348600,
+    "duration_seconds": 5809.997982,
+    "expected_duration_seconds": 5810.0,
+    "part_count": 6,
+    "indexed_frames_per_part": [
+      58100,
+      58100,
+      58100,
+      58100,
+      58100,
+      58100
+    ],
+    "indexed_part_frame_sum": 348600
+  },
+  "visual_validation": {
+    "benchmark_clip": ".codex_test_tmp\\round8_4panel_native_fullframe_smoke\\K_1_2_native1200_frames173475_174074.mp4",
+    "boundary_contact_sheet": ".codex_test_tmp\\K_1_2_native_boundaries\\all_seams_contact.png",
+    "end_contact_sheet": ".codex_test_tmp\\K_1_2_native_boundaries\\end_contact.png",
+    "source_frame_range": "PASS: decoded frame labels begin at 0 and end at 348599",
+    "chunk_seams": [
+      "PASS: 58099 -> 58100",
+      "PASS: 116199 -> 116200",
+      "PASS: 174299 -> 174300",
+      "PASS: 232399 -> 232400",
+      "PASS: 290499 -> 290500"
+    ],
+    "layout_and_style": "PASS: native 1200x1200 camera panels, thin matched SLEAP tail-to-mouth arrows with final IDs, and a 3D panel with thin direct tail-to-mouth arrows plus five-second mouth-only trails"
+  },
+  "identity_caveat": "Displayed identities are the Round8 final_fish_id structural binding. Rendering does not add Detectron2, segmentation, appearance features, or new biological identity evidence."
+}

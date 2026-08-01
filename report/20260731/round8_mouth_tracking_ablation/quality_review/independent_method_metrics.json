@@ -1,0 +1,175 @@
+{
+  "A0": {
+    "anchor": "centroid",
+    "csv": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d.csv",
+      "size_bytes": 77243436,
+      "sha256": "6f42483363dd3be4c1aa7ec758521a4f1fde72877be18b5e4dafc8eee14ffb03",
+      "id_column": "fish_id",
+      "normalized_scientific_sha256": "bb96662e991495a3db92cab3e7fb2c8dc1ff30569d1129c7cb30361f605b4ada"
+    },
+    "track_qc": {
+      "frame_min": 0,
+      "frame_max": 348599,
+      "frame_count": 348600,
+      "row_count": 1045800,
+      "identity_count": 3,
+      "identities": [
+        "ID_1",
+        "ID_2",
+        "ID_3"
+      ],
+      "finite_row_share": 0.9935580416905718,
+      "direct_noninterpolated_row_share": 0.9897351310001913,
+      "all_three_finite_frame_count": 344955,
+      "all_three_finite_frame_share": 0.9895438898450947,
+      "all_three_direct_noninterpolated_frame_count": 341844,
+      "all_three_direct_noninterpolated_frame_share": 0.9806196213425129,
+      "nonfinite_row_count": 6737,
+      "nonfinite_row_share": 0.006441958309428189,
+      "explicit_identity_unresolved_row_count": 0,
+      "explicit_identity_unresolved_row_share": 0.0,
+      "unavailable_or_unresolved_row_count": 6737,
+      "unavailable_or_unresolved_row_share": 0.006441958309428189,
+      "consecutive_jump_mm": {
+        "count": 1032817,
+        "median": 0.29570210543572695,
+        "p95": 1.310592004878502,
+        "p99": 4.518694469876985,
+        "max": 7.998792045177076
+      },
+      "consecutive_direct_jump_spike_rates": {
+        "ge_2_0mm": {
+          "count": 27581,
+          "share": 0.02670463402519517
+        },
+        "ge_4_0mm": {
+          "count": 12873,
+          "share": 0.01246396989979832
+        },
+        "ge_6_0mm": {
+          "count": 3558,
+          "share": 0.003444947168762714
+        },
+        "ge_7_5mm": {
+          "count": 417,
+          "share": 0.0004037501319207565
+        }
+      },
+      "consecutive_finite_including_filled_jump_mm": {
+        "count": 1039055,
+        "median": 0.29770471372549007,
+        "p95": 1.3571642711444112,
+        "p99": 4.859557970990442,
+        "max": 7.998792045177076
+      },
+      "consecutive_jump_ge_7_5mm_count": 417,
+      "consecutive_jump_gt_8mm_count": 0,
+      "consecutive_jump_gt_8mm_share": 0.0
+    },
+    "female_gt": {
+      "gate_px": 80.0,
+      "strict_gate_px": 8.0,
+      "mapped": {
+        "count": 300,
+        "mapped_count": 299,
+        "identity_counts": {
+          "ID_1": 38,
+          "ID_2": 40,
+          "ID_3": 221
+        },
+        "best_fixed_identity": "ID_3",
+        "selective_mapped_best_fixed_accuracy": 0.7391304347826086,
+        "full_eligible_best_fixed_accuracy": 0.7366666666666667,
+        "observed_identity_changes": 15
+      },
+      "strict_two_view": {
+        "count": 277,
+        "mapped_count": 277,
+        "identity_counts": {
+          "ID_1": 27,
+          "ID_2": 39,
+          "ID_3": 211
+        },
+        "best_fixed_identity": "ID_3",
+        "selective_mapped_best_fixed_accuracy": 0.7617328519855595,
+        "full_eligible_best_fixed_accuracy": 0.7617328519855595,
+        "observed_identity_changes": 15
+      },
+      "critical_event_bracket": [
+        {
+          "method": "A0",
+          "anchor": "centroid",
+          "annotation_id": "8f13fc42-f90f-5610-a3f4-b28314f773e8",
+          "frame": 34146,
+          "side1_distance_px": NaN,
+          "side1_method_id": "",
+          "side2_distance_px": 9.74814078707354,
+          "side2_method_id": "ID_1",
+          "mapping_status": "one_view",
+          "consensus_method_id": "ID_1",
+          "strict_two_view": false
+        },
+        {
+          "method": "A0",
+          "anchor": "centroid",
+          "annotation_id": "a9c5138c-22ac-5a93-b2d5-c979dade9ff8",
+          "frame": 34736,
+          "side1_distance_px": 0.7949843230068102,
+          "side1_method_id": "ID_3",
+          "side2_distance_px": 3.925882939463802,
+          "side2_method_id": "ID_3",
+          "mapping_status": "agree",
+          "consensus_method_id": "ID_3",
+          "strict_two_view": true
+        }
+      ],
+      "limitation": "The ledger labels only the female. A male-to-male exchange cannot change any female assignment and is therefore unobservable."
+    },
+    "pre_link_qc": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_best_pre_link.json",
+      "size_bytes": 348811915,
+      "sha256": "93f322114e10b2fae897f28375237c719a86964b232e3fd686ccd2561fba9068",
+      "frame_records": 348600,
+      "all_three_finite_frame_count": 344936,
+      "all_three_finite_frame_share": 0.9894893861158921,
+      "residual_score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "residual_pooled": {
+        "count": 1038835,
+        "median": 0.21657177941754888,
+        "p95": 3.324703129629953,
+        "p99": 22.412482766610186,
+        "max": 6646.176641765475
+      },
+      "residual_by_prelink_label": {
+        "a": {
+          "count": 348600,
+          "median": 0.1013268518146148,
+          "p95": 0.4161136997268454,
+          "p99": 1.7243688870134324,
+          "max": 1787.7376529425449
+        },
+        "b": {
+          "count": 345299,
+          "median": 0.23418313174235963,
+          "p95": 1.6986188750915934,
+          "p99": 18.087683073329174,
+          "max": 6050.996778397872
+        },
+        "c": {
+          "count": 344936,
+          "median": 0.40618858808012204,
+          "p95": 16.531144139334828,
+          "p99": 26.28506117485615,
+          "max": 6646.176641765475
+        }
+      }
+    },
+    "linked_json": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_best.json",
+      "size_bytes": 338770313,
+      "sha256": "ae4b727bb6679a825e3a9dac143a85fa04c41cfe620c4be875e3b0187a28f2b2"
+    }
+  }
+}

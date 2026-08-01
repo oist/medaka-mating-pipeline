@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "status": "PASS_PLUMBING_ONLY",
+  "frames": [32264, 32320],
+  "cohort": "training length-matched temporal control",
+  "purpose": "bounded noncritical implementation smoke; not hyperparameter evidence",
+  "geometry": {
+    "summary": "smoke_training_control_geometry/geometry_summary.json",
+    "summary_sha256": "fc11c347d8e348560f16b820b7b2e5d65be73ee174e64ca00dcb436a20699d4e",
+    "selected_geometry_sha256": "aee3d2f140d6a35d28fc2f2bf1ba475ebcb15ce5e3962ee8747ff4024d1e5be6",
+    "frames": 57,
+    "selected_rows": 171,
+    "independent_equivalence": {
+      "source": "INDEPENDENT_AUDIT.md",
+      "result": "PASS: identical slot tuples and cardinality; maximum XYZ difference 0.0 mm; maximum residual difference 0.0 mm^2 versus production extra-candidate selector"
+    }
+  },
+  "relink_smoke": {
+    "A1": {
+      "summary": "smoke_training_control_relink_a1/a1_summary.json",
+      "summary_sha256": "fdb31ea62b89dc7230a14514a9124e1798e6f1fa4fb3119029e6b36af5625dfb"
+    },
+    "A2": {
+      "summary": "smoke_training_control_relink_a2/a2_summary.json",
+      "summary_sha256": "253e85af65a213014cc1e1475885bcd98b48fea164b16a009dd0502a8fc08870",
+      "contract": "constant velocity only; tangent_weight=0; acceleration_weight=0"
+    },
+    "A3": {
+      "summary": "smoke_training_control_relink_a3/a3_summary.json",
+      "summary_sha256": "df1e91f2736bcbdb5a893f984d4a465e40a1f06e3f92d20400011c877e6d94d9",
+      "contract": "same velocity settings plus acceleration_weight=0.1 and bounded deferral; tangent_weight=0"
+    }
+  },
+  "fill_regression": "PASS: all A1/A2/A3 filled smoke outputs have 171/171 finite rows and 8 explicitly interpolated rows after removing direct NaN rows before bounded filling.",
+  "resource_measurement_policy": "Internal peak RSS is advisory because its scope excludes some input/output phases. All finalist full runs must use monitor_processes.ps1 around the complete process tree; that external result is authoritative.",
+  "superseded_smoke_note": "Earlier A2/A3 plumbing invocations with tangent_weight=0.25 and A2 acceleration_weight=0.1 were overwritten and are ineligible as controlled-method evidence."
+}

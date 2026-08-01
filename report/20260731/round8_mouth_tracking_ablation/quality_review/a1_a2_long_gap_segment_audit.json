@@ -1,0 +1,85 @@
+{
+  "audit": "A1/A2 long-gap state retirement and reseed segment semantics",
+  "mouth_ablation_sha256": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+  "setup": {
+    "frames": [
+      0,
+      102
+    ],
+    "max_gap_frames": 100,
+    "meaning": "At frame 102, all states are older than the allowed gap and the production linker retires then re-seeds them."
+  },
+  "methods": {
+    "A1": {
+      "last_frame_rows": [
+        {
+          "frame": 102,
+          "fish_id": "ID_1",
+          "X": 100.0,
+          "identity_status": "new_segment_after_max_gap_reseed",
+          "identity_segment": 1
+        },
+        {
+          "frame": 102,
+          "fish_id": "ID_2",
+          "X": 110.0,
+          "identity_status": "new_segment_after_max_gap_reseed",
+          "identity_segment": 1
+        },
+        {
+          "frame": 102,
+          "fish_id": "ID_3",
+          "X": 120.0,
+          "identity_status": "new_segment_after_max_gap_reseed",
+          "identity_segment": 1
+        }
+      ],
+      "identity_segments": [
+        0,
+        1
+      ],
+      "status_values": [
+        "new_segment_after_max_gap_reseed",
+        "resolved_position_only",
+        "unresolved_missing_geometry"
+      ]
+    },
+    "A2": {
+      "last_frame_rows": [
+        {
+          "frame": 102,
+          "fish_id": "ID_1",
+          "X": 100.0,
+          "identity_status": "new_segment_after_max_gap_reseed",
+          "identity_segment": 1
+        },
+        {
+          "frame": 102,
+          "fish_id": "ID_2",
+          "X": 110.0,
+          "identity_status": "new_segment_after_max_gap_reseed",
+          "identity_segment": 1
+        },
+        {
+          "frame": 102,
+          "fish_id": "ID_3",
+          "X": 120.0,
+          "identity_status": "new_segment_after_max_gap_reseed",
+          "identity_segment": 1
+        }
+      ],
+      "identity_segments": [
+        0,
+        1
+      ],
+      "status_values": [
+        "new_segment_after_max_gap_reseed",
+        "resolved_velocity",
+        "unresolved_missing_geometry"
+      ]
+    }
+  },
+  "expected_safe_semantics": "A reseed after exceeding max_gap_frames must start a new identity segment or remain explicitly unresolved.",
+  "result": "PASS",
+  "finding": "Both A1 and A2 expose the post-retirement reseed as identity_segment=1 and mark the boundary explicitly."
+}

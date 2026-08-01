@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-30T05:29:33.151920+09:00",
+  "tag": "round8_260729_snn031_m6",
+  "overall_decision": "review",
+  "interpretation": "Execution and structural/integrity QC completed successfully. The result remains review rather than biological-identity pass because no labeled ground truth was available and smooth contacts/crossings cannot be excluded by bounded continuity.",
+  "core_artifacts": [
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\round8_260729_snn031_m6_inference_manifest.json",
+      "size_bytes": 28243,
+      "sha256": "7417753f417666d31572c5b39519f48a820c990b57f867db0aa2abdc31647098"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\round8_3d_quality.json",
+      "size_bytes": 201099,
+      "sha256": "770d7a9f0e8aa31143e935e2ceac6519aebcf5ed9d488ee03af8dedbeb51e00f"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\round8_3d_quality_summary.csv",
+      "size_bytes": 2074,
+      "sha256": "41d00770cb1edaadaad1c6d4f9d7904c559d32ae255219156deda0420c7ff03e"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\round8_3d_quality_report.md",
+      "size_bytes": 6513,
+      "sha256": "a067ca534e444138410f2f3c7ed8640c775c60ae68595d519741bbae1c941ebd"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\round8_visual_qc_windows.csv",
+      "size_bytes": 6537,
+      "sha256": "3b392d83c1ded5c9770044dffa1fba5004577424befc084f48d2b25c747fcec7"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\round8_visual_qc_windows.json",
+      "size_bytes": 24248,
+      "sha256": "effd188f94352483c38d0a35e221aac7ece24615add2f3a968914006f67f9b8f"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\evaluate_round8_quality.py",
+      "size_bytes": 33112,
+      "sha256": "f20227ae0804784deb298bb9df53f8d8fea9c6277b3aa7158fce5393f40ccb26"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\select_round8_risk_windows.py",
+      "size_bytes": 14431,
+      "sha256": "8581fdc1f970de752b9d4afc5294caebf7c0876ec3a9313ca3d6c7f4dbb84bf8"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\summarize_round8_quality.py",
+      "size_bytes": 15222,
+      "sha256": "19555e141d499d688e78ef249dad5691401b24d316acd40d44cc83c2f20f454e"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\build_round8_visual_manifest.py",
+      "size_bytes": 6636,
+      "sha256": "c940695c61f47be2783b981b3f44e208f9c644483a96e6266ddb4b5040bf6a10"
+    }
+  ],
+  "source_inference_qc": [
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\source_inference_qc\\round8_260729_snn031_m6_20251225_K_1_1_FCMC_qc.json",
+      "size_bytes": 30466,
+      "sha256": "85b59afa835694a6e08338ac699153ea00a21d5f2eb2987e2418a203af5d0d56"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\source_inference_qc\\round8_260729_snn031_m6_20251225_K_1_2_FCMC_qc.json",
+      "size_bytes": 30440,
+      "sha256": "29c3aeabfd3be4a6b40d48459f347da481da17d2959fb9b6717457b970df7e25"
+    },
+    {
+      "path": "report\\20260730\\round8_3d_tracking\\source_inference_qc\\round8_260729_snn031_m6_20251225_K_1_3_FCMC_qc.json",
+      "size_bytes": 30468,
+      "sha256": "7b81608b03ca57b2c3dd73ebe93d90e201cc90b7e0b52660a2b105bdf0b83da2"
+    }
+  ],
+  "visual_manifest": {
+    "path": ".codex_test_tmp\\round8_3d_visual_qc\\round8_visual_qc_manifest.json",
+    "size_bytes": 6856,
+    "sha256": "8284818e4d0464a92d71ecb64220dd125bfe6241ef5e22119d6e7f4592a5bfcf"
+  }
+}

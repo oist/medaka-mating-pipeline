@@ -1,0 +1,24 @@
+{
+  "schema_version": "round8_detached_stage_launcher_exit_v3",
+  "status": "completed",
+  "launched_at": "2026-07-31T05:37:17.2898942+09:00",
+  "finished_at": "2026-07-31T05:38:16.7704857+09:00",
+  "pid": 36212,
+  "exit_code": 0,
+  "command": [
+    ".venv\\Scripts\\python.exe",
+    "report\\20260731\\round8_mouth_tracking_ablation\\run_bounded_postfreeze_stage_v5.py",
+    "critical",
+    "--execute-prepared"
+  ],
+  "stdout": {
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\detached_launcher.stdout.log",
+    "bytes": 204,
+    "sha256": "0ea071ade721a2d325881f3ffef36ae919696e5f9bf09b63821979b9d4ea1572"
+  },
+  "stderr": {
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\detached_launcher.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

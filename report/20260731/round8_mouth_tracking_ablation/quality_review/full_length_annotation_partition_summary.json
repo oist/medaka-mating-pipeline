@@ -1,0 +1,474 @@
+{
+  "bindings": {
+    "assignments": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\full_length_independent_female_assignments.csv",
+      "sha256": "2420ff3db22ffb26a788008c6eee5586e10d3e53a10282ee3f77fff3f363ed67"
+    },
+    "cohort_protocol": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\cohort_protocol.json",
+      "sha256": "8f81068ca50154ffb77eb8c32015ddbe2788e6dc395d7216c3b58e9d5956fb86"
+    }
+  },
+  "interpretation": "Bounded-window scores describe tracks initialized inside each window. These partition scores describe the same annotation frames after full-history linking from frame zero; they are not interchangeable. Female-only assignments cannot observe a male-to-male exchange.",
+  "methods": {
+    "A0": {
+      "critical_descriptive": {
+        "best_fixed_correct": 1,
+        "best_fixed_identity": "11",
+        "eligible": 2,
+        "full_eligible_best_fixed_accuracy": 0.5,
+        "identity_counts": {
+          "11": 1,
+          "8": 1
+        },
+        "mapped": 2,
+        "observed_identity_changes": 1,
+        "selective_mapped_best_fixed_accuracy": 0.5
+      },
+      "heldout": {
+        "best_fixed_correct": 9,
+        "best_fixed_identity": "8",
+        "eligible": 9,
+        "full_eligible_best_fixed_accuracy": 1.0,
+        "identity_counts": {
+          "8": 9
+        },
+        "mapped": 9,
+        "observed_identity_changes": 0,
+        "selective_mapped_best_fixed_accuracy": 1.0
+      },
+      "other_full_length": {
+        "best_fixed_correct": 201,
+        "best_fixed_identity": "8",
+        "eligible": 271,
+        "full_eligible_best_fixed_accuracy": 0.7416974169741697,
+        "identity_counts": {
+          "11": 30,
+          "8": 201,
+          "9": 39
+        },
+        "mapped": 270,
+        "observed_identity_changes": 15,
+        "selective_mapped_best_fixed_accuracy": 0.7444444444444445
+      },
+      "training": {
+        "best_fixed_correct": 8,
+        "best_fixed_identity": "8",
+        "eligible": 15,
+        "full_eligible_best_fixed_accuracy": 0.5333333333333333,
+        "identity_counts": {
+          "11": 7,
+          "8": 8
+        },
+        "mapped": 15,
+        "observed_identity_changes": 1,
+        "selective_mapped_best_fixed_accuracy": 0.5333333333333333
+      },
+      "validation": {
+        "best_fixed_correct": 2,
+        "best_fixed_identity": "8",
+        "eligible": 3,
+        "full_eligible_best_fixed_accuracy": 0.6666666666666666,
+        "identity_counts": {
+          "8": 2,
+          "9": 1
+        },
+        "mapped": 3,
+        "observed_identity_changes": 1,
+        "selective_mapped_best_fixed_accuracy": 0.6666666666666666
+      }
+    },
+    "A1": {
+      "critical_descriptive": {
+        "best_fixed_correct": 2,
+        "best_fixed_identity": "ID_3#identity_segment=3",
+        "eligible": 2,
+        "full_eligible_best_fixed_accuracy": 1.0,
+        "identity_counts": {
+          "ID_3#identity_segment=3": 2
+        },
+        "mapped": 2,
+        "observed_identity_changes": 0,
+        "selective_mapped_best_fixed_accuracy": 1.0
+      },
+      "heldout": {
+        "best_fixed_correct": 6,
+        "best_fixed_identity": "ID_1#identity_segment=0",
+        "eligible": 9,
+        "full_eligible_best_fixed_accuracy": 0.6666666666666666,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 6,
+          "ID_3#identity_segment=3": 3
+        },
+        "mapped": 9,
+        "observed_identity_changes": 1,
+        "selective_mapped_best_fixed_accuracy": 0.6666666666666666
+      },
+      "other_full_length": {
+        "best_fixed_correct": 167,
+        "best_fixed_identity": "ID_1#identity_segment=0",
+        "eligible": 271,
+        "full_eligible_best_fixed_accuracy": 0.6162361623616236,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 167,
+          "ID_2#identity_segment=4": 32,
+          "ID_3#identity_segment=3": 69
+        },
+        "mapped": 268,
+        "observed_identity_changes": 9,
+        "selective_mapped_best_fixed_accuracy": 0.6231343283582089
+      },
+      "training": {
+        "best_fixed_correct": 6,
+        "best_fixed_identity": "ID_2#identity_segment=4",
+        "eligible": 15,
+        "full_eligible_best_fixed_accuracy": 0.4,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 6,
+          "ID_2#identity_segment=4": 6,
+          "ID_3#identity_segment=3": 3
+        },
+        "mapped": 15,
+        "observed_identity_changes": 2,
+        "selective_mapped_best_fixed_accuracy": 0.4
+      },
+      "validation": {
+        "best_fixed_correct": 1,
+        "best_fixed_identity": "ID_2#identity_segment=4",
+        "eligible": 3,
+        "full_eligible_best_fixed_accuracy": 0.3333333333333333,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 1,
+          "ID_2#identity_segment=4": 1,
+          "ID_3#identity_segment=3": 1
+        },
+        "mapped": 3,
+        "observed_identity_changes": 2,
+        "selective_mapped_best_fixed_accuracy": 0.3333333333333333
+      }
+    },
+    "A2": {
+      "critical_descriptive": {
+        "best_fixed_correct": 2,
+        "best_fixed_identity": "ID_3#identity_segment=3",
+        "eligible": 2,
+        "full_eligible_best_fixed_accuracy": 1.0,
+        "identity_counts": {
+          "ID_3#identity_segment=3": 2
+        },
+        "mapped": 2,
+        "observed_identity_changes": 0,
+        "selective_mapped_best_fixed_accuracy": 1.0
+      },
+      "heldout": {
+        "best_fixed_correct": 6,
+        "best_fixed_identity": "ID_1#identity_segment=0",
+        "eligible": 9,
+        "full_eligible_best_fixed_accuracy": 0.6666666666666666,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 6,
+          "ID_3#identity_segment=3": 3
+        },
+        "mapped": 9,
+        "observed_identity_changes": 1,
+        "selective_mapped_best_fixed_accuracy": 0.6666666666666666
+      },
+      "other_full_length": {
+        "best_fixed_correct": 178,
+        "best_fixed_identity": "ID_1#identity_segment=0",
+        "eligible": 271,
+        "full_eligible_best_fixed_accuracy": 0.6568265682656826,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 178,
+          "ID_2#identity_segment=4": 21,
+          "ID_3#identity_segment=3": 69
+        },
+        "mapped": 268,
+        "observed_identity_changes": 9,
+        "selective_mapped_best_fixed_accuracy": 0.664179104477612
+      },
+      "training": {
+        "best_fixed_correct": 6,
+        "best_fixed_identity": "ID_2#identity_segment=4",
+        "eligible": 15,
+        "full_eligible_best_fixed_accuracy": 0.4,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 6,
+          "ID_2#identity_segment=4": 6,
+          "ID_3#identity_segment=3": 3
+        },
+        "mapped": 15,
+        "observed_identity_changes": 2,
+        "selective_mapped_best_fixed_accuracy": 0.4
+      },
+      "validation": {
+        "best_fixed_correct": 2,
+        "best_fixed_identity": "ID_1#identity_segment=0",
+        "eligible": 3,
+        "full_eligible_best_fixed_accuracy": 0.6666666666666666,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 2,
+          "ID_3#identity_segment=3": 1
+        },
+        "mapped": 3,
+        "observed_identity_changes": 2,
+        "selective_mapped_best_fixed_accuracy": 0.6666666666666666
+      }
+    },
+    "A3": {
+      "critical_descriptive": {
+        "best_fixed_correct": 2,
+        "best_fixed_identity": "ID_3#identity_segment=25",
+        "eligible": 2,
+        "full_eligible_best_fixed_accuracy": 1.0,
+        "identity_counts": {
+          "ID_3#identity_segment=25": 2
+        },
+        "mapped": 2,
+        "observed_identity_changes": 0,
+        "selective_mapped_best_fixed_accuracy": 1.0
+      },
+      "heldout": {
+        "best_fixed_correct": 6,
+        "best_fixed_identity": "ID_2#identity_segment=38",
+        "eligible": 9,
+        "full_eligible_best_fixed_accuracy": 0.6666666666666666,
+        "identity_counts": {
+          "ID_2#identity_segment=26": 3,
+          "ID_2#identity_segment=38": 6
+        },
+        "mapped": 9,
+        "observed_identity_changes": 1,
+        "selective_mapped_best_fixed_accuracy": 0.6666666666666666
+      },
+      "other_full_length": {
+        "best_fixed_correct": 88,
+        "best_fixed_identity": "ID_2#identity_segment=38",
+        "eligible": 271,
+        "full_eligible_best_fixed_accuracy": 0.3247232472324723,
+        "identity_counts": {
+          "ID_1#identity_segment=23": 4,
+          "ID_1#identity_segment=24": 3,
+          "ID_1#identity_segment=28": 7,
+          "ID_1#identity_segment=31": 4,
+          "ID_1#identity_segment=32": 19,
+          "ID_2#identity_segment=24": 7,
+          "ID_2#identity_segment=26": 21,
+          "ID_2#identity_segment=27": 2,
+          "ID_2#identity_segment=29": 4,
+          "ID_2#identity_segment=32": 5,
+          "ID_2#identity_segment=33": 14,
+          "ID_2#identity_segment=37": 7,
+          "ID_2#identity_segment=38": 88,
+          "ID_3#identity_segment=24": 5,
+          "ID_3#identity_segment=25": 4,
+          "ID_3#identity_segment=29": 8,
+          "ID_3#identity_segment=30": 5,
+          "ID_3#identity_segment=35": 55,
+          "ID_3#identity_segment=36": 1,
+          "ID_3#identity_segment=37": 5
+        },
+        "mapped": 268,
+        "observed_identity_changes": 19,
+        "selective_mapped_best_fixed_accuracy": 0.3283582089552239
+      },
+      "training": {
+        "best_fixed_correct": 6,
+        "best_fixed_identity": "ID_2#identity_segment=24",
+        "eligible": 15,
+        "full_eligible_best_fixed_accuracy": 0.4,
+        "identity_counts": {
+          "ID_1#identity_segment=24": 1,
+          "ID_1#identity_segment=28": 2,
+          "ID_2#identity_segment=24": 6,
+          "ID_3#identity_segment=35": 6
+        },
+        "mapped": 15,
+        "observed_identity_changes": 3,
+        "selective_mapped_best_fixed_accuracy": 0.4
+      },
+      "validation": {
+        "best_fixed_correct": 1,
+        "best_fixed_identity": "ID_2#identity_segment=32",
+        "eligible": 3,
+        "full_eligible_best_fixed_accuracy": 0.3333333333333333,
+        "identity_counts": {
+          "ID_1#identity_segment=32": 1,
+          "ID_2#identity_segment=32": 1,
+          "ID_3#identity_segment=35": 1
+        },
+        "mapped": 3,
+        "observed_identity_changes": 2,
+        "selective_mapped_best_fixed_accuracy": 0.3333333333333333
+      }
+    }
+  },
+  "pairwise_assignment_differences": [
+    {
+      "annotations": 2,
+      "different_assignments": 0,
+      "left": "A1",
+      "partition": "critical_descriptive",
+      "right": "A2"
+    },
+    {
+      "annotations": 9,
+      "different_assignments": 0,
+      "left": "A1",
+      "partition": "heldout",
+      "right": "A2"
+    },
+    {
+      "annotations": 271,
+      "different_assignments": 39,
+      "left": "A1",
+      "partition": "other_full_length",
+      "right": "A2"
+    },
+    {
+      "annotations": 15,
+      "different_assignments": 0,
+      "left": "A1",
+      "partition": "training",
+      "right": "A2"
+    },
+    {
+      "annotations": 3,
+      "different_assignments": 1,
+      "left": "A1",
+      "partition": "validation",
+      "right": "A2"
+    },
+    {
+      "annotations": 2,
+      "different_assignments": 2,
+      "left": "A1",
+      "partition": "critical_descriptive",
+      "right": "A3"
+    },
+    {
+      "annotations": 9,
+      "different_assignments": 9,
+      "left": "A1",
+      "partition": "heldout",
+      "right": "A3"
+    },
+    {
+      "annotations": 271,
+      "different_assignments": 268,
+      "left": "A1",
+      "partition": "other_full_length",
+      "right": "A3"
+    },
+    {
+      "annotations": 15,
+      "different_assignments": 15,
+      "left": "A1",
+      "partition": "training",
+      "right": "A3"
+    },
+    {
+      "annotations": 3,
+      "different_assignments": 3,
+      "left": "A1",
+      "partition": "validation",
+      "right": "A3"
+    },
+    {
+      "annotations": 2,
+      "different_assignments": 2,
+      "left": "A2",
+      "partition": "critical_descriptive",
+      "right": "A3"
+    },
+    {
+      "annotations": 9,
+      "different_assignments": 9,
+      "left": "A2",
+      "partition": "heldout",
+      "right": "A3"
+    },
+    {
+      "annotations": 271,
+      "different_assignments": 268,
+      "left": "A2",
+      "partition": "other_full_length",
+      "right": "A3"
+    },
+    {
+      "annotations": 15,
+      "different_assignments": 15,
+      "left": "A2",
+      "partition": "training",
+      "right": "A3"
+    },
+    {
+      "annotations": 3,
+      "different_assignments": 3,
+      "left": "A2",
+      "partition": "validation",
+      "right": "A3"
+    }
+  ],
+  "partition_definitions": {
+    "critical_descriptive": [
+      [
+        34000,
+        35100
+      ]
+    ],
+    "heldout": [
+      [
+        273617,
+        278182
+      ],
+      [
+        57363,
+        61928
+      ],
+      [
+        123124,
+        123274
+      ],
+      [
+        136451,
+        136601
+      ],
+      [
+        167108,
+        167258
+      ]
+    ],
+    "other_full_length": "all annotations outside registered bounded cohorts",
+    "training": [
+      [
+        72371,
+        73027
+      ],
+      [
+        174316,
+        180515
+      ],
+      [
+        32264,
+        32920
+      ],
+      [
+        21840,
+        28039
+      ]
+    ],
+    "validation": [
+      [
+        96612,
+        97802
+      ],
+      [
+        151050,
+        152240
+      ]
+    ]
+  },
+  "schema_version": 1,
+  "status": "full_length_annotation_partitions_independently_summarized"
+}

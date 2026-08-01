@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "html": "report.html",
+  "stages": {
+    "validation": "passed",
+    "package": "passed",
+    "verification": "structural_only"
+  },
+  "browserWarning": {
+    "code": "browser_unavailable",
+    "message": "No installed Chromium headless-shell executable was found. Portable tooling did not download a browser."
+  },
+  "counts": {
+    "blocks": 20,
+    "charts": 2,
+    "html": 0,
+    "metrics": 3,
+    "tables": 2
+  },
+  "sourceDialog": "not_verified",
+  "sourceInteraction": "not_verified",
+  "viewports": [],
+  "timings": {
+    "validateAndPackageMs": 199.9,
+    "staticChartExtractionMs": 51.6,
+    "structuralVerificationMs": 4.5,
+    "totalMs": 205.3
+  },
+  "qa_note": "Exact payload equality plus required runtime, reader, and semantic-fallback roots passed. Enhanced-reader browser interaction and viewport QA were not run because no compatible installed Chromium headless-shell was available."
+}

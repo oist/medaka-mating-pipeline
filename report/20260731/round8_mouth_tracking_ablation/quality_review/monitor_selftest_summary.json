@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "process_ids": [
+    1280
+  ],
+  "sampling_interval_seconds": 0.2,
+  "monitor_started_at": "2026-07-31T03:12:48.4405897+09:00",
+  "process_started_at": "2026-07-31T03:12:48.4405897+09:00",
+  "finished_at": "2026-07-31T03:12:50.8974239+09:00",
+  "wall_seconds": 2.4568342,
+  "samples": 11,
+  "max_sampled_working_set_bytes": 82382848,
+  "max_reported_peak_working_set_bytes": 82632704,
+  "peak_memory_method": "0.2 s Get-Process sampling; sums all explicitly supplied wrapper and worker process IDs"
+}

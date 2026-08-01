@@ -1,0 +1,789 @@
+{
+  "schema_version": "saion_sleap_inference_run_manifest_v1",
+  "run_tag": "round8_260729_snn031_m6",
+  "status": "completed_qc_passed",
+  "created_at": "2026-07-29T19:19:11+09:00",
+  "updated_at": "2026-07-30T02:44:03.514902+09:00",
+  "requested_work_root": "/work/StephenU/makoto-hiroi",
+  "authorized_work_root": "/work/StephensU/makoto-hiroi",
+  "root_discrepancy_resolution": "User explicitly authorized the plural StephensU allocation after singular StephenU was verified missing and /work was non-writable.",
+  "execution_source": {
+    "mode": "authoritative reviewed copied scripts under run_scripts; repository clone is provenance-only and not imported or executed",
+    "root": "/work/StephensU/makoto-hiroi/run_scripts/scripts",
+    "files": {
+      "hpc/sleap_chunk.slurm": "b3e07774bec715487574775b95b964c3b26621bd8cd43d224ba4b63e75a0d331",
+      "hpc/submit_experiment.sh": "07c69f1fb8fdb4f85563875abdbf9fcfa45a0523a63843680ceb9b8374e1d3aa",
+      "hpc/submit_batch.sh": "281368ddaea3e1d80f7b7e3c12080d0df1adf84b9480e7de2a49202af4ccc8c2",
+      "hpc/merge_chunks.sh": "ff0c5385eec5c8df5fc4b6ca1eaa043fd0f73bf624862c396d3f0fee386e0f47",
+      "tracking/slp_merge.py": "3616a30ada5f1dd8e62fbae6d98b9a1e2f7d053fadf384fc645fa93dfa3c0650",
+      "tracking/main.py": "918b9e71e075afacccb0bee9906d137b5ae99f77d19da1eae1b2b46504cf8472",
+      "merge_atomic_round8.py": "bfb794061388966bf3c59770f9ca8e3661152d50143645337bfd84a4d594ee25",
+      "qc_round8.py": "705a96ff2c0a7acac9f1ffd3ddb9ebb1405eb276614d5be80df3044bf754a6a8",
+      "sleap/visualize_predictions.py": "6e452243cd7ff29e6ca7773cb84bb4ffdbdefc58979fa10448f5f2754087e4fb"
+    },
+    "remote_bash_syntax_check": "passed",
+    "repository_clone": {
+      "path": "/work/StephensU/makoto-hiroi/medaka-mating-pipeline",
+      "head": "632a94d3c087a1f57b04c2e0f321b0e8fb2a26be",
+      "status": "clean detached HEAD",
+      "used_for_execution": false
+    },
+    "transfer_artifacts": {
+      "saion-run-scripts.tar.gz": "794c416d2ab82454ab387ddfa0b3a67de21dc71263d4b9e5ca960fd681fe50d7",
+      "saion-working-overlay.tar.gz": "178e6707fdaf46cb0236a40a82cac47e6b814dc427ce81cc2c464547bf9d0f4a",
+      "medaka-mating-pipeline.bundle": "eca4611111363dd66e0cf0e89b83292a3bff935c7527199fd7cc3c187cabf271"
+    },
+    "require_all_views_gate": true,
+    "existing_slp_validation_interpreter": "module CLI shebang interpreter",
+    "watcher_accounting_key": "JobID (not JobIDRaw; verified against live smoke arrays)"
+  },
+  "configuration": {
+    "partition": "largegpu",
+    "runtime_mode": "sleap-nn track native Torch",
+    "sleap_module": "sleap-nn/0.3.1",
+    "modulepath_extra": "/apps/unit/StephensU/.modulefiles",
+    "max_instances": 6,
+    "batch_size": 12,
+    "chunks_per_view": 4,
+    "task_time_limit": "12:00:00",
+    "gpus_per_task": 1,
+    "no_empty_frames": true,
+    "process_every_frame": true
+  },
+  "paths": {
+    "input_root": "/bucket/StephensU/medaka/medaka_202512",
+    "work_output_root": "/work/StephensU/makoto-hiroi/medaka_sleap",
+    "bucket_output_root": "/bucket/StephensU/medaka/sleap_output",
+    "logs": "/work/StephensU/makoto-hiroi/logs",
+    "runstate": "/work/StephensU/makoto-hiroi/runstate",
+    "smoke": "/work/StephensU/makoto-hiroi/smoke"
+  },
+  "models": {
+    "top_centroid": {
+      "path": "/bucket/StephensU/medaka/sleap_models/retrain_20260722_round8/top/runs/round8_260723_strictmouth.centroid_n1382",
+      "best_ckpt_bytes": 94300395,
+      "sha256": "12e6775377e22a70885ca155b5b4252e2b8b1db207cf9dfb001531b06fce4ba5",
+      "training_config_bytes": 5229
+    },
+    "top_instance": {
+      "path": "/bucket/StephensU/medaka/sleap_models/retrain_20260722_round8/top/runs/round8_260723_strictmouth.centered_instance_n1382",
+      "best_ckpt_bytes": 849143405,
+      "sha256": "adbca7bf2506303d428a8707458094478903f5c1739285ca0cca49163fb0fb3f",
+      "training_config_bytes": 5358
+    },
+    "side_centroid": {
+      "path": "/bucket/StephensU/medaka/sleap_models/retrain_20260722_round8/side/runs/round8_260723_strictmouth.centroid_n2764",
+      "best_ckpt_bytes": 94300459,
+      "sha256": "a0b3b8a58d8aebf94ec528e4a6a5a42fe3dd9cc6e781cbab396b4754584e919d",
+      "training_config_bytes": 5235
+    },
+    "side_instance": {
+      "path": "/bucket/StephensU/medaka/sleap_models/retrain_20260722_round8/side/runs/round8_260723_strictmouth.centered_instance_n2764",
+      "best_ckpt_bytes": 849143405,
+      "sha256": "0d4930a437a9cd61022c98b16ff9386af3782abea364da069edecf0ab139eab1",
+      "training_config_bytes": 5364
+    }
+  },
+  "software_probe": {
+    "job_id": "4671809",
+    "state": "COMPLETED",
+    "exit_code": "0:0",
+    "elapsed": "00:00:32",
+    "node": "saion-gpu24",
+    "python": "3.13.11",
+    "sleap_nn": "0.3.1",
+    "sleap_io": "0.9.2",
+    "torch": "2.13.0+cu132",
+    "cuda_available": true,
+    "cuda_version": "13.2",
+    "cudnn_version": "92000",
+    "gpu": "NVIDIA A100-SXM4-80GB",
+    "gpu_memory_mib": 81920,
+    "driver": "580.105.08",
+    "stdout": "/work/StephensU/makoto-hiroi/logs/envprobe_4671809.out",
+    "stderr": "/work/StephensU/makoto-hiroi/logs/envprobe_4671809.err"
+  },
+  "experiments": [
+    {
+      "name": "20251225_K_1_1_FCMC",
+      "total_frames_by_view": {
+        "top_cam": 348600,
+        "side1_cam": 348600,
+        "side2_cam": 348600
+      },
+      "video_bytes": {
+        "top_cam": 5632738311,
+        "side1_cam": 4902677562,
+        "side2_cam": 5602025257
+      },
+      "bucket_destination": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_1_FCMC/round8_260729_snn031_m6",
+      "destination_preflight": "absent",
+      "production_status": "qc_passed",
+      "bucket_output": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_1_FCMC/round8_260729_snn031_m6",
+      "merge_report": {
+        "path": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_1_FCMC_merge_report.json",
+        "sha256": "f01d62e479e3fd5e7383df3560edfd3b390751c41bf2b115d4cc45e9eb284104",
+        "status": "completed"
+      },
+      "qc_report": {
+        "path": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_1_FCMC_qc.json",
+        "sha256": "85b59afa835694a6e08338ac699153ea00a21d5f2eb2987e2418a203af5d0d56",
+        "status": "passed"
+      },
+      "overlay_qc": {
+        "frame_range_inclusive": [
+          174295,
+          174315
+        ],
+        "midpoint_frame_inspected": 174305,
+        "visual_verdict": "PASS",
+        "assessment": "Mouth/tail markers visually fall on fish with plausible placement in top_cam, side1_cam, and reflection-heavy side2_cam.",
+        "files": [
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_1_FCMC/round8_260729_snn031_m6/side1_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 178496,
+            "sha256": "774b64250df5545ddbef4c559fa65bc45774ad5ea161c539cd8881a49e1d6504"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_1_FCMC/round8_260729_snn031_m6/side1_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 347289,
+            "sha256": "48453a4be5cb1a99190a146e46d943d43e7b2dbfa1e3ff3e2f09a8325c5c16c3"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_1_FCMC/round8_260729_snn031_m6/side2_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 177949,
+            "sha256": "9e1c2f7e35a1df908d8af65095f0a6ee8b0a095e6fec468c4bee885b6bfb2b04"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_1_FCMC/round8_260729_snn031_m6/side2_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 347935,
+            "sha256": "67e2c36ef8591d8fb58305b287784843314244a4dbcdee324b941786dc54660c"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_1_FCMC/round8_260729_snn031_m6/top_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 184443,
+            "sha256": "2da15ba93ca952f0f050c6f1edbd8cb6804e20285abaf75479b82ca9f276f473"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_1_FCMC/round8_260729_snn031_m6/top_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 361909,
+            "sha256": "bacd127017c6a023de82a86b6b36f0fba43867d8f264a31318bd4df9999023f7"
+          }
+        ]
+      }
+    },
+    {
+      "name": "20251225_K_1_2_FCMC",
+      "total_frames_by_view": {
+        "top_cam": 348600,
+        "side1_cam": 348600,
+        "side2_cam": 348600
+      },
+      "video_bytes": {
+        "top_cam": 5067172992,
+        "side1_cam": 4725704044,
+        "side2_cam": 5321776955
+      },
+      "bucket_destination": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_2_FCMC/round8_260729_snn031_m6",
+      "destination_preflight": "absent",
+      "production_status": "qc_passed",
+      "bucket_output": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_2_FCMC/round8_260729_snn031_m6",
+      "merge_report": {
+        "path": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_2_FCMC_merge_report.json",
+        "sha256": "fee04c8fe6a3f49a86676bf8aacb836299b83dc0490e2fdfdcbd9432436ff5a8",
+        "status": "completed"
+      },
+      "qc_report": {
+        "path": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_2_FCMC_qc.json",
+        "sha256": "29c3aeabfd3be4a6b40d48459f347da481da17d2959fb9b6717457b970df7e25",
+        "status": "passed"
+      },
+      "overlay_qc": {
+        "frame_range_inclusive": [
+          174295,
+          174315
+        ],
+        "midpoint_frame_inspected": 174305,
+        "visual_verdict": "PASS",
+        "assessment": "All three real fish appear represented; side views also contain an ambiguous extra candidate, expected under max_instances=6 and requiring 3D selector/QC.",
+        "files": [
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_2_FCMC/round8_260729_snn031_m6/side1_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 174916,
+            "sha256": "7d3b7eaec46e85e15146d1b3521d449d9f8cf38f853b8b18e23744ef1e1e3680"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_2_FCMC/round8_260729_snn031_m6/side1_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 336678,
+            "sha256": "a4d04ed8386e5f4fdbffac933a1f24ff7d747e881ebbabf74edb47d110db7d0d"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_2_FCMC/round8_260729_snn031_m6/side2_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 170432,
+            "sha256": "293e1fd554761b097ffc938cb402ce6a802660541bd85ca01562195c04bc803e"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_2_FCMC/round8_260729_snn031_m6/side2_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 328277,
+            "sha256": "9ec53776365fa182ae94df61a2e82ba381a6a78645d6ff28fe34d1226f836293"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_2_FCMC/round8_260729_snn031_m6/top_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 181871,
+            "sha256": "0c4a53d9374749c44a4c0b617cb87287202adda093f00b52a47dd669f731e258"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_2_FCMC/round8_260729_snn031_m6/top_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 330594,
+            "sha256": "b0c6bfecb8793b85f4b10493d4609d002d3654e294af4ad7a7848c63d6a58207"
+          }
+        ]
+      }
+    },
+    {
+      "name": "20251225_K_1_3_FCMC",
+      "total_frames_by_view": {
+        "top_cam": 348600,
+        "side1_cam": 348600,
+        "side2_cam": 348600
+      },
+      "video_bytes": {
+        "top_cam": 5008367115,
+        "side1_cam": 4590744067,
+        "side2_cam": 5135575615
+      },
+      "bucket_destination": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6",
+      "destination_preflight": "absent",
+      "production_status": "qc_passed",
+      "bucket_output": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6",
+      "merge_report": {
+        "path": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_3_FCMC_merge_report.json",
+        "sha256": "18932c9ae174e9372720530af2f8f0fe76875da3c95a4d331f4b9485ab4cd826",
+        "status": "completed"
+      },
+      "qc_report": {
+        "path": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_3_FCMC_qc.json",
+        "sha256": "7b81608b03ca57b2c3dd73ebe93d90e201cc90b7e0b52660a2b105bdf0b83da2",
+        "status": "passed"
+      },
+      "overlay_qc": {
+        "frame_range_inclusive": [
+          174295,
+          174315
+        ],
+        "midpoint_frame_inspected": 174305,
+        "visual_verdict": "PASS",
+        "assessment": "Mouth/tail markers visually fall on fish with plausible placement in top_cam, side1_cam, and reflection-heavy side2_cam.",
+        "files": [
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 168838,
+            "sha256": "19b258f3ee927c74e1bb11f03a601d8ec708a4f5986064a37321c41125d1083a"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 311139,
+            "sha256": "b5d5de37ebae30c87fed8077eea97352be786625bea7a3343871ee875bef1a25"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 165576,
+            "sha256": "f7845604529fd96394a4749187055085f6a01a06e8859303d753f0b8e6770c91"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 315990,
+            "sha256": "ba46a45d528b325d383b3ea9d3720c68863b97f0bd5df05f6bac03ac21a435e5"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam.frames_174295-174315.overlay.mid.jpg",
+            "size_bytes": 172696,
+            "sha256": "0951e796a4e98333ba3a9ad51987fe8f7f8fc29355dddadba5a40caed298298d"
+          },
+          {
+            "path": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam.frames_174295-174315.overlay.mp4",
+            "size_bytes": 316940,
+            "sha256": "991456b922afac28933f0ffbb06e47842993a9f28ac27ab5a4eac173d44e0afe"
+          }
+        ]
+      }
+    }
+  ],
+  "smoke_jobs": [
+    {
+      "view": "top_cam",
+      "job_id": "4671822",
+      "array": "0-1",
+      "frame_ranges": [
+        [
+          0,
+          63
+        ],
+        [
+          348536,
+          348599
+        ]
+      ],
+      "output_dir": "/work/StephensU/makoto-hiroi/smoke/round8_260729_snn031_m6/top_cam",
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "tasks_completed": 2
+    },
+    {
+      "view": "side1_cam",
+      "job_id": "4671824",
+      "array": "0-1",
+      "frame_ranges": [
+        [
+          0,
+          63
+        ],
+        [
+          348536,
+          348599
+        ]
+      ],
+      "output_dir": "/work/StephensU/makoto-hiroi/smoke/round8_260729_snn031_m6/side1_cam",
+      "state": "COMPLETED",
+      "exit_code": "0:0",
+      "tasks_completed": 2
+    }
+  ],
+  "full_array_jobs": [
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "view": "top_cam",
+      "job_id": "4671834",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_1_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "view": "side1_cam",
+      "job_id": "4671835",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_1_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "view": "side2_cam",
+      "job_id": "4671836",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_1_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "view": "top_cam",
+      "job_id": "4671843",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_2_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "view": "side1_cam",
+      "job_id": "4671844",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_2_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "view": "side2_cam",
+      "job_id": "4671845",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_2_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "view": "top_cam",
+      "job_id": "4671846",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_3_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "view": "side1_cam",
+      "job_id": "4671847",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_3_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "view": "side2_cam",
+      "job_id": "4671848",
+      "tasks": 4,
+      "submission_log": "/work/StephensU/makoto-hiroi/logs/production_submit_20251225_K_1_3_FCMC.log",
+      "array": "0-3",
+      "state": "COMPLETED",
+      "chunk_ranges": [
+        [
+          0,
+          87149
+        ],
+        [
+          87150,
+          174299
+        ],
+        [
+          174300,
+          261449
+        ],
+        [
+          261450,
+          348599
+        ]
+      ],
+      "exit_code": "0:0",
+      "tasks_completed": 4
+    }
+  ],
+  "recoveries": [],
+  "qc_report": null,
+  "smoke_attempts": [
+    {
+      "at": "2026-07-29T19:29:33+09:00",
+      "classification": "pre_submission_rejected",
+      "job_id": null,
+      "reason": "sbatch rejected CRLF worker; no scheduler job created",
+      "resolution": "final coordinator-deployed bundle LF-normalized and audited"
+    }
+  ],
+  "smoke_qc": {
+    "path": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_smoke_qc.json",
+    "sha256": "04a3a7e1ff13b806bee50f60b0d67c7a14c923736866a5789f0958e41b49f8e7",
+    "passed": true,
+    "accounting_path": "/work/StephensU/makoto-hiroi/runstate/smoke_sacct.tsv"
+  },
+  "smoke_runtime_variance": {
+    "probe_node": {
+      "node": "saion-gpu24",
+      "driver": "580.105.08"
+    },
+    "smoke_node": {
+      "node": "saion-gpu26",
+      "driver": "595.58.03"
+    },
+    "common": {
+      "gpu": "NVIDIA A100-SXM4-80GB",
+      "python": "3.13.11",
+      "sleap_nn": "0.3.1",
+      "sleap_io": "0.9.2",
+      "torch": "2.13.0+cu132",
+      "cuda": "13.2"
+    },
+    "smoke_log_example": "/work/StephensU/makoto-hiroi/smoke/round8_260729_snn031_m6/top_cam/slurm_4671822_0.out"
+  },
+  "dry_runs": [
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "status": "PASS",
+      "log": "/work/StephensU/makoto-hiroi/logs/dry_run_20251225_K_1_1_FCMC.log",
+      "sha256": "b4f702752d14d048d3bee37f86ddb3cdf5be777ee22e6d183b3a4ceb25e8136f"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "status": "PASS",
+      "log": "/work/StephensU/makoto-hiroi/logs/dry_run_20251225_K_1_2_FCMC.log",
+      "sha256": "4ccb6a7b2c45907e69369e25bcd852787024321d1fd28ee0a63848d18ef16f59"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "status": "PASS",
+      "log": "/work/StephensU/makoto-hiroi/logs/dry_run_20251225_K_1_3_FCMC.log",
+      "sha256": "89d36fc5f38d225ea4fac816952587f3e1d1a93a8f311347f06172ebe7235186"
+    }
+  ],
+  "production_config_record": {
+    "path": "/work/StephensU/makoto-hiroi/runstate/production_config.tsv",
+    "sha256": "f9be19d2c2da30883853aba9b6c5c9306c28f7173c39d9b15fcdd9436f1371e0",
+    "dry_run_completion_path": "/work/StephensU/makoto-hiroi/runstate/dry_run_completed.tsv",
+    "dry_run_completion_sha256": "e31ca2b92ce295023975f45c006204cbc2e2e9afb56f7a1fb8f764ed1294cb1d",
+    "chunk_ranges_per_view": [
+      [
+        0,
+        87149
+      ],
+      [
+        87150,
+        174299
+      ],
+      [
+        174300,
+        261449
+      ],
+      [
+        261450,
+        348599
+      ]
+    ],
+    "expected_arrays": 9,
+    "expected_tasks": 36,
+    "require_all_views": true
+  },
+  "watchers": [
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "log": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_1_FCMC/round8_260729_snn031_m6/merge_and_copy.log",
+      "gate": "all 12 child tasks for experiment must be COMPLETED 0:0 in sacct before copy",
+      "pid": 1193445,
+      "launch_status": "exited_copy_completed",
+      "copy_completion_verified_at": "2026-07-29T22:27:44.474381+09:00"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "log": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_2_FCMC/round8_260729_snn031_m6/merge_and_copy.log",
+      "gate": "all 12 child tasks for experiment must be COMPLETED 0:0 in sacct before copy",
+      "pid": 1193511,
+      "launch_status": "exited_copy_completed",
+      "copy_completion_verified_at": "2026-07-30T01:29:46.251619+09:00"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "log": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/merge_and_copy.log",
+      "gate": "all 12 child tasks for experiment must be COMPLETED 0:0 in sacct before copy",
+      "pid": 1193579,
+      "launch_status": "exited_copy_completed",
+      "copy_completion_verified_at": "2026-07-30T02:40:50.957562+09:00"
+    }
+  ],
+  "production_submission": {
+    "array_record": "/work/StephensU/makoto-hiroi/runstate/production_arrays.tsv",
+    "exact_array_count": 9,
+    "exact_task_count": 36,
+    "initial_squeue": "/work/StephensU/makoto-hiroi/runstate/production_initial_squeue.txt",
+    "initial_sacct": "/work/StephensU/makoto-hiroi/runstate/production_initial_sacct.tsv",
+    "hash_record": "/work/StephensU/makoto-hiroi/runstate/production_submission_hashes.txt"
+  },
+  "production_progress": {
+    "completed_experiments": [
+      "20251225_K_1_1_FCMC",
+      "20251225_K_1_2_FCMC",
+      "20251225_K_1_3_FCMC"
+    ],
+    "completed_experiment_count": 3,
+    "expected_experiment_count": 3,
+    "remaining_experiments": []
+  },
+  "postprocessing": {
+    "20251225_K_1_1_FCMC": {
+      "recorded_at": "2026-07-29T22:27:44.474381+09:00",
+      "merge_report": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_1_FCMC_merge_report.json",
+      "qc_report": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_1_FCMC_qc.json",
+      "overlay_dir": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_1_FCMC/round8_260729_snn031_m6",
+      "visual_verdict": "PASS"
+    },
+    "20251225_K_1_2_FCMC": {
+      "recorded_at": "2026-07-30T01:29:46.251619+09:00",
+      "merge_report": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_2_FCMC_merge_report.json",
+      "qc_report": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_2_FCMC_qc.json",
+      "overlay_dir": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_2_FCMC/round8_260729_snn031_m6",
+      "visual_verdict": "PASS"
+    },
+    "20251225_K_1_3_FCMC": {
+      "recorded_at": "2026-07-30T02:40:50.957562+09:00",
+      "merge_report": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_3_FCMC_merge_report.json",
+      "qc_report": "/work/StephensU/makoto-hiroi/manifests/round8_260729_snn031_m6_20251225_K_1_3_FCMC_qc.json",
+      "overlay_dir": "/work/StephensU/makoto-hiroi/smoke/qc_overlays/20251225_K_1_3_FCMC/round8_260729_snn031_m6",
+      "visual_verdict": "PASS"
+    }
+  },
+  "terminal_status_evidence": {
+    "finalized_at": "2026-07-30T02:44:03.514902+09:00",
+    "previous_manifest_sha256": "9037f0b44bd870ac924c552b24081228d546fa7442023953332b20dcc51b7e46",
+    "experiments": {
+      "20251225_K_1_1_FCMC": {
+        "production_status": "qc_passed",
+        "qc_report_status": "passed",
+        "visual_verdict": "PASS",
+        "qc_report_sha256": "85b59afa835694a6e08338ac699153ea00a21d5f2eb2987e2418a203af5d0d56"
+      },
+      "20251225_K_1_2_FCMC": {
+        "production_status": "qc_passed",
+        "qc_report_status": "passed",
+        "visual_verdict": "PASS",
+        "qc_report_sha256": "29c3aeabfd3be4a6b40d48459f347da481da17d2959fb9b6717457b970df7e25"
+      },
+      "20251225_K_1_3_FCMC": {
+        "production_status": "qc_passed",
+        "qc_report_status": "passed",
+        "visual_verdict": "PASS",
+        "qc_report_sha256": "7b81608b03ca57b2c3dd73ebe93d90e201cc90b7e0b52660a2b105bdf0b83da2"
+      }
+    }
+  }
+}

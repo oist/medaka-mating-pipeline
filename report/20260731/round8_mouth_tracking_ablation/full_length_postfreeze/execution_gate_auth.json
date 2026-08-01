@@ -1,0 +1,34 @@
+{
+  "authenticated_at": "2026-07-31T05:53:14.215611+09:00",
+  "critical_quality": {
+    "independent_quality_verdict": "PASS",
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\CRITICAL_QUALITY_REVIEW_COMPLETED.json",
+    "sha256": "55a479e1b97a1054b7f195530d1505202d4d87935a1dd2f36b06f51e665fe83e",
+    "status": "critical_descriptive_independently_authenticated_scored_and_passed",
+    "verified_required_bindings": {
+      "critical_completed_sha256": "e493fdcc449034c4f9dd22e3f124283fe8d3cd06d9bd50b0c46002e440367706",
+      "critical_finalized_sha256": "fe432101a7580f4e540d3c4537ae8b1c774a2b5231d8cc0900a790e250d3149c",
+      "freeze_sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    }
+  },
+  "freeze_sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d",
+  "predecessor_finalized": {
+    "critical": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\STAGE_FINALIZED.json",
+      "sha256": "fe432101a7580f4e540d3c4537ae8b1c774a2b5231d8cc0900a790e250d3149c"
+    },
+    "heldout": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\STAGE_FINALIZED.json",
+      "sha256": "3b58e073c9cf6c97348e1f0c8cdbb9ca5c15d689ee222b450df1c91dc3303152"
+    },
+    "validation": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\STAGE_FINALIZED.json",
+      "sha256": "297249d8cc9cdff2e0a5c850884f795e238b6911b42605e440d70397bc6fb706"
+    }
+  },
+  "runner_sha256": "32a8452da10f0b53ec555cef1212aa4dabbda13ba7e146f7d508deca5c0fb87d",
+  "schema_version": "round8_full_length_execution_gate_v1",
+  "selection_or_tuning_performed": false,
+  "settings_changed": false,
+  "status": "critical_quality_pass_authenticated"
+}

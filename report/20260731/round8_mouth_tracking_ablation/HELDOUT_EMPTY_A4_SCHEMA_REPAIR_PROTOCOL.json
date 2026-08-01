@@ -1,0 +1,56 @@
+{
+  "schema_version": "round8_postfreeze_execution_repair_v1",
+  "status": "registered_before_fresh_heldout_replacement_attempt",
+  "freeze_sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d",
+  "deviation": {
+    "id": "heldout_a4_abstention_zero_column_a5_interface",
+    "scope": "technical post-freeze execution only",
+    "selection_or_tuning_impact": "none",
+    "description": "An authenticated A4 insufficient_three_path_solution abstention wrote a valid zero-row, zero-column selected-observation parquet. The frozen A5 hint builder requires its input columns before it can produce the intended zero-hint fallback.",
+    "critical_opened": false
+  },
+  "failed_attempt": {
+    "quarantine": "report\\20260731\\round8_mouth_tracking_ablation\\quarantine_failed_heldout_attempt_runner1f737_20260731_0457",
+    "failed_attempt_finalized_sha256": "75a506ce112b8df00b49024f039ddb6ef554637620840bf5f9a78c73204a85d5",
+    "failed_attempt_inventory_manifest_sha256": "d4ccda6fcd1995c359f97b3a1e99c8153a85c362cc35259a805130ce691ba644",
+    "original_runner_sha256": "1f737fb484d0b81fb52bcd1dc2551aea35ec1137ff3010bb8bc82d487aef4a7d",
+    "original_prepared_manifest_sha256": "d1defd0543b74318a1573b92a64e026179969310571b587a1b80b3601efddf97",
+    "original_prelaunch_auth_sha256": "eecebccc56e682cac5265d81ac3b08e3b1e0fd1214d2d9f8d79d18d98411d42b",
+    "failed_window": "low_top_pair_separation_8_9_b",
+    "failed_step": "A5_hints",
+    "original_a4_selected_sha256": "27f5e0c19c42ee7ecfbdfaf9e683bb5fc2aea4e42078206202720a77b544c90e",
+    "original_a4_selected_shape": [0, 0],
+    "original_a4_status": "insufficient_three_path_solution"
+  },
+  "repair": {
+    "adapter_path": "report\\20260731\\round8_mouth_tracking_ablation\\adapt_a4_empty_selection_for_a5.py",
+    "adapter_sha256": "eea6877f16204f63a9fea4820e92a6696f8b24bdddfcc4fab57e2b25a5ffa95b",
+    "policy": [
+      "Never alter an A4 output or its advertised hash.",
+      "For a nonempty A4 selection, make a byte-identical A5-input copy.",
+      "For an authenticated A4 abstention with zero rows and zero columns, write a separate zero-row copy with the canonical 29-column schema and dtypes.",
+      "Add no scientific row, identity evidence, threshold, reset, or hint.",
+      "Require the frozen hint builder to emit exactly zero hints and zero forced resets for an adapted abstention.",
+      "Require A5 and frozen A3 direct outputs to match exactly on frame, fish_id, source_index, hypothesis_id, X, Y, Z, and identity_segment for an adapted abstention."
+    ]
+  },
+  "replacement_execution": {
+    "mode": "fresh whole heldout rerun of all five preregistered windows",
+    "reuse_of_failed_output_as_new_output": false,
+    "overlapping_successful_artifacts": "must be scientifically hash-identical to the quarantined attempt, including every geometry block parquet and status JSON; expected timestamp, runtime summary, process-record, and log drift are excluded",
+    "failed_quarantine_gate": "before preparation, verify every path, byte count, and SHA-256 in the 403-file FAILED_ATTEMPT_FINALIZED inventory; the finalized sidecar itself is the only excluded file",
+    "frozen_thresholds_changed": false,
+    "canonical_implementation_changed": false,
+    "heldout_role": "sole_postfreeze_generalization_evidence",
+    "critical_must_remain_unopened": true
+  },
+  "prelaunch_audit_blocks": [
+    {
+      "runner_path": "report\\20260731\\round8_mouth_tracking_ablation\\run_bounded_postfreeze_stage_v3.py",
+      "runner_sha256": "cbf6d5d1ce86effa4514413715dd26ae0663934468bd8d9076fd9e1c756a26be",
+      "status": "blocked_before_preparation",
+      "reason": "The v3 baseline authenticated advertised aggregate geometry output but did not enumerate every geometry block parquet and status JSON, and it pinned the failed-attempt sidecar without replaying its complete inventory.",
+      "scientific_children_launched": 0
+    }
+  ]
+}

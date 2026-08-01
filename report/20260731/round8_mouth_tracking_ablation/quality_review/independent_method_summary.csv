@@ -1,0 +1,2 @@
+method,anchor,female_mapped,female_full_eligible_accuracy,female_selective_mapped_accuracy,female_observed_identity_changes,all_three_direct_share,explicit_identity_unresolved_share,nonfinite_row_share,jump_p95_mm,jump_p99_mm,jump_ge_7_5mm,jump_gt_8mm,residual_unit,residual_p95,residual_p99
+A0,centroid,299,0.7366666666666667,0.7391304347826086,15,0.9806196213425129,0.0,0.006441958309428189,1.310592004878502,4.518694469876985,417,0,mm^2,3.324703129629953,22.412482766610186

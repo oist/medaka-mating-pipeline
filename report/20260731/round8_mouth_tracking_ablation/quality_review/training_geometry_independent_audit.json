@@ -1,0 +1,589 @@
+{
+  "schema_version": 1,
+  "scope": "Independent audit of training-only geometry outputs. No validation, held-out, or critical-event method output was read.",
+  "windows": {
+    "reviewed_event_1": {
+      "expected_interval_inclusive": [
+        72371,
+        73027
+      ],
+      "expected_frame_count": 657,
+      "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_geometry\\reviewed_event_1\\geometry_summary.json",
+      "summary_sha256": "8caa81dcae463622b7bb3e50006642c36b31face5e16e8b8688d1b3b4bfdd45f",
+      "parquet_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_geometry\\reviewed_event_1\\strict_mouth_selected_geometry.parquet",
+      "parquet_sha256": "8db09b6411e9e0d7528c9256c86c73f32e3f160d7324f55263c526ba6cb9fd94",
+      "summary_status": "completed",
+      "summary_output_hash_matches": true,
+      "summary_interval_matches": true,
+      "rows": 1971,
+      "unique_frames_with_rows": 657,
+      "finite_xyz_and_residual_rows": 1971,
+      "nonfinite_xyz_or_residual_rows": 0,
+      "all_three_direct_frames": 657,
+      "all_three_direct_fraction": 1.0,
+      "frames_with_0_1_2_3plus_direct": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 657,
+        "greater_than_3": 0
+      },
+      "missing_frame_count": 0,
+      "first_missing_frames": [],
+      "outside_interval_row_count": 0,
+      "duplicate_frame_hypothesis_rows": 0,
+      "view_count_rows": {
+        "2": 290,
+        "3": 1681
+      },
+      "ray_residual_mm2": {
+        "count": 1971,
+        "median": 0.1046399207904109,
+        "p95": 0.7109715676571898,
+        "p99": 1.53653636145592,
+        "max": 169.19925694079896
+      },
+      "ray_residual_mm2_by_view_count": {
+        "2": {
+          "count": 290,
+          "median": 0.040206999964582324,
+          "p95": 0.1689710406204481,
+          "p99": 0.2983347270999072,
+          "max": 0.8160906405929318
+        },
+        "3": {
+          "count": 1681,
+          "median": 0.12016439165645752,
+          "p95": 0.7905526618772493,
+          "p99": 1.896859925060883,
+          "max": 169.19925694079896
+        }
+      },
+      "normalized_configuration": {
+        "schema_version": "mouth_ablation_v1",
+        "action": "geometry",
+        "block_frames": 500,
+        "evaluation_batch_frames": 128,
+        "xyz_bounds": [
+          -20.0,
+          220.0
+        ],
+        "num_candidates": 6,
+        "num_individuals": 3,
+        "anchor_node": "mouth",
+        "require_anchor_node": true,
+        "filter_fp": false,
+        "visible_node_centroid": false,
+        "tail_coordinates_consumed": false,
+        "calibration_backend": "refractive",
+        "score_unit": "mm^2",
+        "calibration_provenance": {
+          "backend": "refractive",
+          "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+          "model_files": {
+            "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+            "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+            "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+          },
+          "camera_order": [
+            "cam0",
+            "cam1",
+            "cam2"
+          ],
+          "two_view_method": "direct_refracted_ray_intersection",
+          "score_unit": "mm^2",
+          "default_score_profile": "production_fast",
+          "score_profiles": {
+            "production_fast": {
+              "unit": "mm^2",
+              "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+            },
+            "legacy_combined": {
+              "unit": "mm^2",
+              "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+            }
+          },
+          "ray_system_guard": {
+            "minimum_rank": 3,
+            "maximum_condition_number": 10000000000.0,
+            "failure_xyz": "NaN",
+            "failure_score": "infinity"
+          },
+          "requested_backend": "refractive",
+          "resolved_backend": "refractive"
+        },
+        "calibration_file_sha256": {
+          "calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+          "cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+          "cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+          "cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+        },
+        "cache_sha256": {
+          "top_cam": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+          "side1_cam": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+          "side2_cam": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+        },
+        "code_sha256": {
+          "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+          "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+          "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+          "scripts\\reconstruction_3d\\tracklet_first_assignment.py": "6786b082c7fc8a5e48153287eb49928adcee98642fca9d5f1e84548192c221ea",
+          "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+        }
+      },
+      "normalized_configuration_sha256": "99ca2128ee76a2b4152807ac1296e2dd6f76b5ed9954baf801c423b3d1ca5741",
+      "calibration_sha256": "e47cf63189122d1fe71a8cc7806ba9884fbc87f06bb36a3c2eccbb4c3e478d6d",
+      "cache_metadata_sha256": "9069d7a09495eaf6877bbb59c773e611641c6130965d0abdb8c51ebf088831c2",
+      "code_sha256": {
+        "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+        "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+        "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+        "scripts\\reconstruction_3d\\tracklet_first_assignment.py": "6786b082c7fc8a5e48153287eb49928adcee98642fca9d5f1e84548192c221ea",
+        "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+      },
+      "resource_summary": null
+    },
+    "control_for_event_1": {
+      "expected_interval_inclusive": [
+        32264,
+        32920
+      ],
+      "expected_frame_count": 657,
+      "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_geometry\\control_for_event_1\\geometry_summary.json",
+      "summary_sha256": "6c8ac2e0dc0c96495031d85c326885c6310069461a7a4be4074f465d6aa70892",
+      "parquet_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_geometry\\control_for_event_1\\strict_mouth_selected_geometry.parquet",
+      "parquet_sha256": "31e831080aa0fdd089d9d1c4f0a163b5e00dddfc3c05fae816848d5a6e756f79",
+      "summary_status": "completed",
+      "summary_output_hash_matches": true,
+      "summary_interval_matches": true,
+      "rows": 1971,
+      "unique_frames_with_rows": 657,
+      "finite_xyz_and_residual_rows": 1971,
+      "nonfinite_xyz_or_residual_rows": 0,
+      "all_three_direct_frames": 657,
+      "all_three_direct_fraction": 1.0,
+      "frames_with_0_1_2_3plus_direct": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 657,
+        "greater_than_3": 0
+      },
+      "missing_frame_count": 0,
+      "first_missing_frames": [],
+      "outside_interval_row_count": 0,
+      "duplicate_frame_hypothesis_rows": 0,
+      "view_count_rows": {
+        "2": 59,
+        "3": 1912
+      },
+      "ray_residual_mm2": {
+        "count": 1971,
+        "median": 0.6611320381151508,
+        "p95": 1.7681889449741612,
+        "p99": 268.29104722651505,
+        "max": 354.070130372133
+      },
+      "ray_residual_mm2_by_view_count": {
+        "2": {
+          "count": 59,
+          "median": 0.03064196805486891,
+          "p95": 1.4238679842429809,
+          "p99": 3.6440040781054943,
+          "max": 4.538765293702157
+        },
+        "3": {
+          "count": 1912,
+          "median": 0.6863393845123218,
+          "p95": 1.7677721436915619,
+          "p99": 268.3674223106915,
+          "max": 354.070130372133
+        }
+      },
+      "normalized_configuration": {
+        "schema_version": "mouth_ablation_v1",
+        "action": "geometry",
+        "block_frames": 500,
+        "evaluation_batch_frames": 128,
+        "xyz_bounds": [
+          -20.0,
+          220.0
+        ],
+        "num_candidates": 6,
+        "num_individuals": 3,
+        "anchor_node": "mouth",
+        "require_anchor_node": true,
+        "filter_fp": false,
+        "visible_node_centroid": false,
+        "tail_coordinates_consumed": false,
+        "calibration_backend": "refractive",
+        "score_unit": "mm^2",
+        "calibration_provenance": {
+          "backend": "refractive",
+          "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+          "model_files": {
+            "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+            "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+            "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+          },
+          "camera_order": [
+            "cam0",
+            "cam1",
+            "cam2"
+          ],
+          "two_view_method": "direct_refracted_ray_intersection",
+          "score_unit": "mm^2",
+          "default_score_profile": "production_fast",
+          "score_profiles": {
+            "production_fast": {
+              "unit": "mm^2",
+              "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+            },
+            "legacy_combined": {
+              "unit": "mm^2",
+              "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+            }
+          },
+          "ray_system_guard": {
+            "minimum_rank": 3,
+            "maximum_condition_number": 10000000000.0,
+            "failure_xyz": "NaN",
+            "failure_score": "infinity"
+          },
+          "requested_backend": "refractive",
+          "resolved_backend": "refractive"
+        },
+        "calibration_file_sha256": {
+          "calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+          "cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+          "cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+          "cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+        },
+        "cache_sha256": {
+          "top_cam": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+          "side1_cam": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+          "side2_cam": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+        },
+        "code_sha256": {
+          "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+          "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+          "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+          "scripts\\reconstruction_3d\\tracklet_first_assignment.py": "6786b082c7fc8a5e48153287eb49928adcee98642fca9d5f1e84548192c221ea",
+          "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+        }
+      },
+      "normalized_configuration_sha256": "99ca2128ee76a2b4152807ac1296e2dd6f76b5ed9954baf801c423b3d1ca5741",
+      "calibration_sha256": "e47cf63189122d1fe71a8cc7806ba9884fbc87f06bb36a3c2eccbb4c3e478d6d",
+      "cache_metadata_sha256": "9069d7a09495eaf6877bbb59c773e611641c6130965d0abdb8c51ebf088831c2",
+      "code_sha256": {
+        "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+        "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+        "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+        "scripts\\reconstruction_3d\\tracklet_first_assignment.py": "6786b082c7fc8a5e48153287eb49928adcee98642fca9d5f1e84548192c221ea",
+        "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+      },
+      "resource_summary": null
+    },
+    "reviewed_event_3": {
+      "expected_interval_inclusive": [
+        174316,
+        180515
+      ],
+      "expected_frame_count": 6200,
+      "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_geometry\\reviewed_event_3\\geometry_summary.json",
+      "summary_sha256": "22c953cc0d6a750fb1b728362b505cfc7867ba935b352ff3014a2484bc2dcef4",
+      "parquet_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_geometry\\reviewed_event_3\\strict_mouth_selected_geometry.parquet",
+      "parquet_sha256": "9519a363adc3f1a7b0bae50a9747e12914c14fcc0fb931cb7be83d8f824df13d",
+      "summary_status": "completed",
+      "summary_output_hash_matches": true,
+      "summary_interval_matches": true,
+      "rows": 18600,
+      "unique_frames_with_rows": 6200,
+      "finite_xyz_and_residual_rows": 18600,
+      "nonfinite_xyz_or_residual_rows": 0,
+      "all_three_direct_frames": 6200,
+      "all_three_direct_fraction": 1.0,
+      "frames_with_0_1_2_3plus_direct": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 6200,
+        "greater_than_3": 0
+      },
+      "missing_frame_count": 0,
+      "first_missing_frames": [],
+      "outside_interval_row_count": 0,
+      "duplicate_frame_hypothesis_rows": 0,
+      "view_count_rows": {
+        "2": 349,
+        "3": 18251
+      },
+      "ray_residual_mm2": {
+        "count": 18600,
+        "median": 0.1746231344264858,
+        "p95": 0.8077516059474769,
+        "p99": 1.7791368177568945,
+        "max": 90.922269711161
+      },
+      "ray_residual_mm2_by_view_count": {
+        "2": {
+          "count": 349,
+          "median": 0.060693248351763804,
+          "p95": 0.435470193002036,
+          "p99": 1.3270904354758035,
+          "max": 1.6556004419052002
+        },
+        "3": {
+          "count": 18251,
+          "median": 0.17626095294383068,
+          "p95": 0.8100334744496336,
+          "p99": 1.7922180282407156,
+          "max": 90.922269711161
+        }
+      },
+      "normalized_configuration": {
+        "schema_version": "mouth_ablation_v1",
+        "action": "geometry",
+        "block_frames": 500,
+        "evaluation_batch_frames": 128,
+        "xyz_bounds": [
+          -20.0,
+          220.0
+        ],
+        "num_candidates": 6,
+        "num_individuals": 3,
+        "anchor_node": "mouth",
+        "require_anchor_node": true,
+        "filter_fp": false,
+        "visible_node_centroid": false,
+        "tail_coordinates_consumed": false,
+        "calibration_backend": "refractive",
+        "score_unit": "mm^2",
+        "calibration_provenance": {
+          "backend": "refractive",
+          "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+          "model_files": {
+            "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+            "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+            "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+          },
+          "camera_order": [
+            "cam0",
+            "cam1",
+            "cam2"
+          ],
+          "two_view_method": "direct_refracted_ray_intersection",
+          "score_unit": "mm^2",
+          "default_score_profile": "production_fast",
+          "score_profiles": {
+            "production_fast": {
+              "unit": "mm^2",
+              "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+            },
+            "legacy_combined": {
+              "unit": "mm^2",
+              "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+            }
+          },
+          "ray_system_guard": {
+            "minimum_rank": 3,
+            "maximum_condition_number": 10000000000.0,
+            "failure_xyz": "NaN",
+            "failure_score": "infinity"
+          },
+          "requested_backend": "refractive",
+          "resolved_backend": "refractive"
+        },
+        "calibration_file_sha256": {
+          "calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+          "cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+          "cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+          "cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+        },
+        "cache_sha256": {
+          "top_cam": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+          "side1_cam": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+          "side2_cam": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+        },
+        "code_sha256": {
+          "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+          "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+          "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+          "scripts\\reconstruction_3d\\tracklet_first_assignment.py": "6786b082c7fc8a5e48153287eb49928adcee98642fca9d5f1e84548192c221ea",
+          "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+        }
+      },
+      "normalized_configuration_sha256": "99ca2128ee76a2b4152807ac1296e2dd6f76b5ed9954baf801c423b3d1ca5741",
+      "calibration_sha256": "e47cf63189122d1fe71a8cc7806ba9884fbc87f06bb36a3c2eccbb4c3e478d6d",
+      "cache_metadata_sha256": "9069d7a09495eaf6877bbb59c773e611641c6130965d0abdb8c51ebf088831c2",
+      "code_sha256": {
+        "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+        "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+        "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+        "scripts\\reconstruction_3d\\tracklet_first_assignment.py": "6786b082c7fc8a5e48153287eb49928adcee98642fca9d5f1e84548192c221ea",
+        "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+      },
+      "resource_summary": null
+    },
+    "control_for_event_3": {
+      "expected_interval_inclusive": [
+        21840,
+        28039
+      ],
+      "expected_frame_count": 6200,
+      "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_geometry\\control_for_event_3\\geometry_summary.json",
+      "summary_sha256": "54f9002aa7dbc8348ffbceb3aeb4443810efa0e3e8635dd11caf66ba688acb0b",
+      "parquet_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_geometry\\control_for_event_3\\strict_mouth_selected_geometry.parquet",
+      "parquet_sha256": "7be2e1584ff74ef7fa6fa4fa970349787e585f604a1f158e0183b9eb8604dd99",
+      "summary_status": "completed",
+      "summary_output_hash_matches": true,
+      "summary_interval_matches": true,
+      "rows": 18600,
+      "unique_frames_with_rows": 6200,
+      "finite_xyz_and_residual_rows": 18600,
+      "nonfinite_xyz_or_residual_rows": 0,
+      "all_three_direct_frames": 6200,
+      "all_three_direct_fraction": 1.0,
+      "frames_with_0_1_2_3plus_direct": {
+        "0": 0,
+        "1": 0,
+        "2": 0,
+        "3": 6200,
+        "greater_than_3": 0
+      },
+      "missing_frame_count": 0,
+      "first_missing_frames": [],
+      "outside_interval_row_count": 0,
+      "duplicate_frame_hypothesis_rows": 0,
+      "view_count_rows": {
+        "2": 1675,
+        "3": 16925
+      },
+      "ray_residual_mm2": {
+        "count": 18600,
+        "median": 0.2469422096539282,
+        "p95": 1.3700229143479352,
+        "p99": 4.834664541715986,
+        "max": 155.08296965039938
+      },
+      "ray_residual_mm2_by_view_count": {
+        "2": {
+          "count": 1675,
+          "median": 0.09617743132087918,
+          "p95": 0.8611338675906134,
+          "p99": 1.4552348666091013,
+          "max": 9.357301461940118
+        },
+        "3": {
+          "count": 16925,
+          "median": 0.2601134612424327,
+          "p95": 1.4323238534618534,
+          "p99": 5.063404271247304,
+          "max": 155.08296965039938
+        }
+      },
+      "normalized_configuration": {
+        "schema_version": "mouth_ablation_v1",
+        "action": "geometry",
+        "block_frames": 500,
+        "evaluation_batch_frames": 128,
+        "xyz_bounds": [
+          -20.0,
+          220.0
+        ],
+        "num_candidates": 6,
+        "num_individuals": 3,
+        "anchor_node": "mouth",
+        "require_anchor_node": true,
+        "filter_fp": false,
+        "visible_node_centroid": false,
+        "tail_coordinates_consumed": false,
+        "calibration_backend": "refractive",
+        "score_unit": "mm^2",
+        "calibration_provenance": {
+          "backend": "refractive",
+          "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+          "model_files": {
+            "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+            "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+            "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+          },
+          "camera_order": [
+            "cam0",
+            "cam1",
+            "cam2"
+          ],
+          "two_view_method": "direct_refracted_ray_intersection",
+          "score_unit": "mm^2",
+          "default_score_profile": "production_fast",
+          "score_profiles": {
+            "production_fast": {
+              "unit": "mm^2",
+              "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+            },
+            "legacy_combined": {
+              "unit": "mm^2",
+              "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+            }
+          },
+          "ray_system_guard": {
+            "minimum_rank": 3,
+            "maximum_condition_number": 10000000000.0,
+            "failure_xyz": "NaN",
+            "failure_score": "infinity"
+          },
+          "requested_backend": "refractive",
+          "resolved_backend": "refractive"
+        },
+        "calibration_file_sha256": {
+          "calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+          "cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+          "cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+          "cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+        },
+        "cache_sha256": {
+          "top_cam": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+          "side1_cam": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+          "side2_cam": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+        },
+        "code_sha256": {
+          "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+          "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+          "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+          "scripts\\reconstruction_3d\\tracklet_first_assignment.py": "6786b082c7fc8a5e48153287eb49928adcee98642fca9d5f1e84548192c221ea",
+          "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+        }
+      },
+      "normalized_configuration_sha256": "99ca2128ee76a2b4152807ac1296e2dd6f76b5ed9954baf801c423b3d1ca5741",
+      "calibration_sha256": "e47cf63189122d1fe71a8cc7806ba9884fbc87f06bb36a3c2eccbb4c3e478d6d",
+      "cache_metadata_sha256": "9069d7a09495eaf6877bbb59c773e611641c6130965d0abdb8c51ebf088831c2",
+      "code_sha256": {
+        "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+        "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+        "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+        "scripts\\reconstruction_3d\\tracklet_first_assignment.py": "6786b082c7fc8a5e48153287eb49928adcee98642fca9d5f1e84548192c221ea",
+        "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+      },
+      "resource_summary": null
+    }
+  },
+  "cross_window": {
+    "normalized_configuration_equal": true,
+    "calibration_provenance_equal": true,
+    "candidate_cache_metadata_equal": true,
+    "code_hash_manifest_equal": true,
+    "normalized_configuration_sha256": [
+      "99ca2128ee76a2b4152807ac1296e2dd6f76b5ed9954baf801c423b3d1ca5741"
+    ],
+    "calibration_sha256": [
+      "e47cf63189122d1fe71a8cc7806ba9884fbc87f06bb36a3c2eccbb4c3e478d6d"
+    ],
+    "cache_metadata_sha256": [
+      "9069d7a09495eaf6877bbb59c773e611641c6130965d0abdb8c51ebf088831c2"
+    ],
+    "code_manifest_sha256": [
+      "6ef323af76d663dcbc9baafb21c746e690d3fc02abd05d7180cde376ec6c7027"
+    ]
+  },
+  "overall_pass": true
+}

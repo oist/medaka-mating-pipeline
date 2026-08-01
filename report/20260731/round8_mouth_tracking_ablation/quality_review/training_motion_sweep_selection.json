@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "status": "training_only_motion_configuration_selected",
+  "selected_a2_config": "A2_v025_h5",
+  "selected_configuration": {
+    "method": "A2",
+    "velocity_weight": 0.25,
+    "history_frames": 5
+  },
+  "ranking": [
+    {
+      "config": "A2_v025_h5",
+      "female_full_eligible_accuracy": 1.0,
+      "female_observed_identity_changes": 0,
+      "jump_ge_7_5mm_count": 7,
+      "unavailable_rows": 38,
+      "velocity_weight": 0.25,
+      "history_frames": 5,
+      "canonical_configuration": "{\"history_frames\":5,\"method\":\"A2\",\"velocity_weight\":0.25}",
+      "rank": 1
+    },
+    {
+      "config": "A2_v050_h5",
+      "female_full_eligible_accuracy": 1.0,
+      "female_observed_identity_changes": 0,
+      "jump_ge_7_5mm_count": 7,
+      "unavailable_rows": 38,
+      "velocity_weight": 0.5,
+      "history_frames": 5,
+      "canonical_configuration": "{\"history_frames\":5,\"method\":\"A2\",\"velocity_weight\":0.5}",
+      "rank": 2
+    },
+    {
+      "config": "A2_v050_h9",
+      "female_full_eligible_accuracy": 1.0,
+      "female_observed_identity_changes": 0,
+      "jump_ge_7_5mm_count": 7,
+      "unavailable_rows": 38,
+      "velocity_weight": 0.5,
+      "history_frames": 9,
+      "canonical_configuration": "{\"history_frames\":9,\"method\":\"A2\",\"velocity_weight\":0.5}",
+      "rank": 3
+    },
+    {
+      "config": "A2_v100_h5",
+      "female_full_eligible_accuracy": 1.0,
+      "female_observed_identity_changes": 0,
+      "jump_ge_7_5mm_count": 7,
+      "unavailable_rows": 38,
+      "velocity_weight": 1.0,
+      "history_frames": 5,
+      "canonical_configuration": "{\"history_frames\":5,\"method\":\"A2\",\"velocity_weight\":1.0}",
+      "rank": 4
+    },
+    {
+      "config": "A2_v100_h9",
+      "female_full_eligible_accuracy": 1.0,
+      "female_observed_identity_changes": 0,
+      "jump_ge_7_5mm_count": 7,
+      "unavailable_rows": 38,
+      "velocity_weight": 1.0,
+      "history_frames": 9,
+      "canonical_configuration": "{\"history_frames\":9,\"method\":\"A2\",\"velocity_weight\":1.0}",
+      "rank": 5
+    }
+  ],
+  "tie_break_order": [
+    "maximize full-eligible female accuracy, summed after independent fixed-label mapping within each window",
+    "minimize observed female identity changes",
+    "minimize direct adjacent jumps >=7.5 mm (false-merge/swap proxy)",
+    "minimize unavailable direct rows (false-break proxy)",
+    "lower velocity weight",
+    "shorter motion history",
+    "lexicographic canonical configuration JSON"
+  ],
+  "female_training_denominator": 15,
+  "a2_direct_hashes_by_training_window": {
+    "reviewed_event_1": [
+      "81731d72a097ee745a2f062a9d787f2c6312bcbc57a26d1d9b595f9c0203e834"
+    ],
+    "control_for_event_1": [
+      "5fe7eeb9ee5db57eb17900a0df91360b620e4e1e3967f6e5757e721bac5b3f47"
+    ],
+    "reviewed_event_3": [
+      "4f00b1441899509534578abb63e3158da4ee14170b61cc7e6c26d4b9173691fd"
+    ],
+    "control_for_event_3": [
+      "80e38f872b6eabd3ce6b292c821d131921849d933ed89481d24ef1ae0c0dde13"
+    ]
+  },
+  "all_a2_direct_outputs_byte_identical_within_each_window": true,
+  "female_denominator_assessment": {
+    "sufficient_to_estimate_generalization": false,
+    "reason": "Only 15 confirmed female annotations occur across the four training windows (per-window counts reviewed_event_1=2, control_for_event_1=1, reviewed_event_3=6, control_for_event_3=6). This can detect gross within-window changes but is too small to distinguish close configurations reliably.",
+    "distinct_primary_accuracy_change_signatures": 1
+  },
+  "ground_truth_limitation": "Female-only ground truth cannot detect a male-to-male identity swap.",
+  "data_scope": "Training windows only. Validation, held-out, and critical-event method outputs were not read."
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-07-31T07:40:34.9253357+09:00",
+  "status": "closed_no_output_divergence",
+  "scope": "quality-review scorer process supervision only",
+  "scientific_stage_outputs_changed": false,
+  "quality_scorer_changed_after_initial_run": true,
+  "incident": {
+    "initial_foreground_wrapper_result": "timed_out_after_14_seconds",
+    "initial_scorer_child_survived_wrapper_timeout": true,
+    "later_background_duplicate_started": true,
+    "later_duplicate_pids_stopped_before_quality_outputs_were_written": [
+      22196,
+      29136
+    ],
+    "original_scorer_completed_at": "2026-07-31T07:37:04+09:00",
+    "duplicate_stdout_log_bytes": 0,
+    "duplicate_stderr_log_bytes": 0
+  },
+  "closure": {
+    "first_clean_foreground_rerun_exit_code": 0,
+    "first_clean_foreground_rerun_wall_seconds_approx": 69,
+    "first_clean_rerun_all_four_output_hashes_identical_to_original_run": true,
+    "preseal_provenance_review": {
+      "result": "BLOCKED_THEN_CORRECTED",
+      "change": "Added exact metric-helper, confirmed-female-ledger, and refractive calibration manifest/bundle hash assertions and output bindings.",
+      "metric_definitions_changed": false,
+      "scientific_stage_outputs_changed": false,
+      "intermediate_metric_json_sealed": false
+    },
+    "corrected_final_scorer_rerun_exit_code": 0,
+    "corrected_final_scorer_rerun_wall_seconds_approx": 72,
+    "corrected_csv_hashes_identical_to_preseal_runs": true,
+    "final_preseal_review_enhancement": {
+      "change": "Added fixed-identity divergence frame counts and fully populated divergence frame counts to pairwise method comparisons.",
+      "existing_metric_definitions_changed": false,
+      "csv_outputs_changed": false,
+      "final_rerun_exit_code": 0,
+      "final_rerun_wall_seconds_approx": 70
+    },
+    "final_resource_rollup_correction": {
+      "change": "Parsed full-stage process keys as method.purpose so runtime and peak memory roll up by A1, A2, A3, and shared_geometry rather than by fresh/repeat/resume.",
+      "scientific_metrics_changed": false,
+      "csv_outputs_changed": false,
+      "final_rerun_exit_code": 0,
+      "final_rerun_wall_seconds_approx": 70
+    },
+    "outputs": {
+      "full_length_independent_metrics.json": "0230a938d70d05465677fec1fdad46e6abf1eb13483e093a17980de800684870",
+      "full_length_independent_female_assignments.csv": "2420ff3db22ffb26a788008c6eee5586e10d3e53a10282ee3f77fff3f363ed67",
+      "full_length_independent_method_summary.csv": "4a8dbcc53744634e133b4625108dc40c653d0c1fe8d770b4e2b621185e0226e6",
+      "full_length_critical_event_rows_34547_34555.csv": "4f70a95dc708c8effc7a4b0b0389488113c65be1cd8f646a4f26481b93bca7e6"
+    }
+  },
+  "interpretation": "The process incident affected only supervision: the later duplicate was stopped before output creation and a clean rerun reproduced every then-current review-output hash. Across pre-seal reruns the metric JSON changed only through provenance bindings, pairwise diagnostic counts, and resource-rollup metadata. Core method, annotation, and critical-event scientific metrics and all CSV hashes were unchanged. Only the corrected current artifacts may be sealed."
+}

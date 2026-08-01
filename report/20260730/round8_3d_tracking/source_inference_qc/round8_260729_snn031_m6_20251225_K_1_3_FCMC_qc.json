@@ -1,0 +1,820 @@
+{
+  "expected_total_source_frames": 348600,
+  "experiment": "20251225_K_1_3_FCMC",
+  "finished_at": "2026-07-30T02:37:06.728069+09:00",
+  "logs": {
+    "error_hits": [],
+    "expected_task_logs": 24,
+    "files": [
+      {
+        "name": "slurm_4671846_0.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671846_0.out",
+        "sha256": "d49451e442c9dcee0efa59d14383cc341976e10ef55d55123bf0f23254d81f6a",
+        "size_bytes": 4371,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671846_1.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671846_1.out",
+        "sha256": "2a8e9eced4e5cc96d6fcc96d31b54df10918c6f43e57d697255250191fb5c30d",
+        "size_bytes": 4199,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671846_2.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671846_2.out",
+        "sha256": "3b349c1706fa74cd7ce1ceaa3992e4c5b854fc34999164fc92fea010c19c4fec",
+        "size_bytes": 4194,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671846_3.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671846_3.out",
+        "sha256": "ead77d0b20576ee367b3dc5af2be34fe643d5609f270d71a1b102a8379837f2d",
+        "size_bytes": 4203,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671847_0.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671847_0.out",
+        "sha256": "80b327e9adb9772f7bc3725ba95d56c4737ec134435cfe7d3dcb1cca79212ffb",
+        "size_bytes": 4388,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671847_1.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671847_1.out",
+        "sha256": "b6a9a31b1017eb4654bc44e20ea918359e2920cc32faafdf842525c97a530ce5",
+        "size_bytes": 4207,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671847_2.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671847_2.out",
+        "sha256": "bfcb97c6381c004c587f1d3cbce2c15a6e4c7f3c813aec2abc749d28f95d379a",
+        "size_bytes": 4204,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671847_3.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671847_3.out",
+        "sha256": "449ddb83f7d08b0331e86e79e52e85c73e72a97175978e4145896f34b9a22cdb",
+        "size_bytes": 4214,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671848_0.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671848_0.out",
+        "sha256": "bc9fe4bd5990448e28fb5e8a1471294432862aea0690cf977472f849eb080aff",
+        "size_bytes": 4389,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671848_1.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671848_1.out",
+        "sha256": "a849d62846867a2618530799c46ea1b6690304f6d0060ad152533f8c08483b2e",
+        "size_bytes": 4207,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671848_2.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671848_2.out",
+        "sha256": "4cb3c4826467bf46823a7d0a3a297180a0b861c619259c2c37eff317cfe3aaf3",
+        "size_bytes": 4204,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671848_3.err",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size_bytes": 0,
+        "work_bucket_identical": true
+      },
+      {
+        "name": "slurm_4671848_3.out",
+        "sha256": "92411706afb20ef1b715a93ae779e7b00530569a900fc4f6ff11a99932ec49f2",
+        "size_bytes": 4204,
+        "work_bucket_identical": true
+      }
+    ],
+    "nonempty_stderr": [],
+    "work_bucket_identical_count": 24
+  },
+  "scheduler": {
+    "array_ids": [
+      "4671846",
+      "4671847",
+      "4671848"
+    ],
+    "tasks": [
+      {
+        "elapsed": "01:38:56",
+        "exit_code": "0:0",
+        "job_id": "4671846_0",
+        "node": "saion-gpu26",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "01:48:24",
+        "exit_code": "0:0",
+        "job_id": "4671846_1",
+        "node": "saion-gpu26",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "01:31:54",
+        "exit_code": "0:0",
+        "job_id": "4671846_2",
+        "node": "saion-gpu25",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "00:38:15",
+        "exit_code": "0:0",
+        "job_id": "4671846_3",
+        "node": "saion-gpu24",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "00:37:24",
+        "exit_code": "0:0",
+        "job_id": "4671847_0",
+        "node": "saion-gpu24",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "01:11:59",
+        "exit_code": "0:0",
+        "job_id": "4671847_1",
+        "node": "saion-gpu26",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "00:54:19",
+        "exit_code": "0:0",
+        "job_id": "4671847_2",
+        "node": "saion-gpu25",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "00:37:09",
+        "exit_code": "0:0",
+        "job_id": "4671847_3",
+        "node": "saion-gpu24",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "00:37:24",
+        "exit_code": "0:0",
+        "job_id": "4671848_0",
+        "node": "saion-gpu24",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "02:00:28",
+        "exit_code": "0:0",
+        "job_id": "4671848_1",
+        "node": "saion-gpu26",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "01:35:47",
+        "exit_code": "0:0",
+        "job_id": "4671848_2",
+        "node": "saion-gpu25",
+        "state": "COMPLETED"
+      },
+      {
+        "elapsed": "00:41:51",
+        "exit_code": "0:0",
+        "job_id": "4671848_3",
+        "node": "saion-gpu25",
+        "state": "COMPLETED"
+      }
+    ]
+  },
+  "schema_version": 1,
+  "started_at": "2026-07-30T02:34:36.070879+09:00",
+  "status": "passed",
+  "tag": "round8_260729_snn031_m6",
+  "views": {
+    "side1_cam": {
+      "chunk_count": 4,
+      "chunks": [
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam.frames_0-87149.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            0,
+            87149
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 87149,
+          "frame_min": 0,
+          "instances_per_labeled_frame_distribution": {
+            "1": 804,
+            "2": 6383,
+            "3": 75615,
+            "4": 3362,
+            "5": 480,
+            "6": 503
+          },
+          "labeled_frames": 87147,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 3,
+          "name": "side1_cam.frames_0-87149.slp",
+          "sha256": "e187b72ca977c868f45d93dd88c43202083312e78a73de25434e777493f85dba",
+          "size_bytes": 31413764,
+          "skeleton_count": 1,
+          "total_instances": 259281,
+          "unique_labeled_frame_indices": 87147,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam/cam1_side.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam/side1_cam.frames_0-87149.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam.frames_87150-174299.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            87150,
+            174299
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 174299,
+          "frame_min": 87150,
+          "instances_per_labeled_frame_distribution": {
+            "1": 399,
+            "2": 5713,
+            "3": 77890,
+            "4": 3042,
+            "5": 98,
+            "6": 7
+          },
+          "labeled_frames": 87149,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 1,
+          "name": "side1_cam.frames_87150-174299.slp",
+          "sha256": "45da117bc814443b3de3cb34fa6ad0560d00de4e590996119da367f2aaf53b0e",
+          "size_bytes": 31295462,
+          "skeleton_count": 1,
+          "total_instances": 258195,
+          "unique_labeled_frame_indices": 87149,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam/cam1_side.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam/side1_cam.frames_87150-174299.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam.frames_174300-261449.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            174300,
+            261449
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 261449,
+          "frame_min": 174300,
+          "instances_per_labeled_frame_distribution": {
+            "1": 160,
+            "2": 5387,
+            "3": 77948,
+            "4": 3446,
+            "5": 190,
+            "6": 13
+          },
+          "labeled_frames": 87144,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 6,
+          "name": "side1_cam.frames_174300-261449.slp",
+          "sha256": "bc1dfa52896016f280c9b445d61c4a79c1601f5563bd1cc90e0999e73e2113b9",
+          "size_bytes": 31447337,
+          "skeleton_count": 1,
+          "total_instances": 259590,
+          "unique_labeled_frame_indices": 87144,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam/cam1_side.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam/side1_cam.frames_174300-261449.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam.frames_261450-348599.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            261450,
+            348599
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 348599,
+          "frame_min": 261450,
+          "instances_per_labeled_frame_distribution": {
+            "1": 133,
+            "2": 2882,
+            "3": 80864,
+            "4": 3140,
+            "5": 127,
+            "6": 4
+          },
+          "labeled_frames": 87150,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 0,
+          "name": "side1_cam.frames_261450-348599.slp",
+          "sha256": "8c297f9bdc7b72424c79bcea60da07c38c4d9dcb88e54098ea672fd92f12e71e",
+          "size_bytes": 31678415,
+          "skeleton_count": 1,
+          "total_instances": 261708,
+          "unique_labeled_frame_indices": 87150,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam/cam1_side.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam/side1_cam.frames_261450-348599.slp"
+        }
+      ],
+      "cross_chunk_duplicate_frame_indices_count": 0,
+      "declared_chunk_coverage_inclusive": [
+        0,
+        348599
+      ],
+      "merged": {
+        "duplicate_frame_indices": [],
+        "duplicate_frame_indices_count": 0,
+        "frame_max": 348599,
+        "frame_min": 0,
+        "instances_per_labeled_frame_distribution": {
+          "1": 1496,
+          "2": 20365,
+          "3": 312317,
+          "4": 12990,
+          "5": 895,
+          "6": 527
+        },
+        "labeled_frames": 348590,
+        "loadable": true,
+        "max_instances_per_labeled_frame": 6,
+        "sha256": "7f71dc1332c30f28df851632f5c3f39a33d244dcc258ba21e9a8da99523ddde6",
+        "size_bytes": 125785788,
+        "skeleton_count": 1,
+        "total_instances": 1038774,
+        "unique_labeled_frame_indices": 348590,
+        "video_count": 1,
+        "video_references": [
+          "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_3_FCMC/side1_cam/cam1_side.mp4"
+        ]
+      },
+      "merged_actual_indices_equal_chunk_union": true,
+      "merged_missing_unlabeled_source_indices": 10,
+      "merged_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side1_cam.slp",
+      "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_3_FCMC/side1_cam/cam1_side.mp4",
+      "source_video_size_bytes": 4590744067
+    },
+    "side2_cam": {
+      "chunk_count": 4,
+      "chunks": [
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam.frames_0-87149.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            0,
+            87149
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 87149,
+          "frame_min": 0,
+          "instances_per_labeled_frame_distribution": {
+            "1": 775,
+            "2": 6628,
+            "3": 76267,
+            "4": 2887,
+            "5": 251,
+            "6": 342
+          },
+          "labeled_frames": 87150,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 0,
+          "name": "side2_cam.frames_0-87149.slp",
+          "sha256": "77ca860f4ae5196f300cdb3918ac293357d1e5d38f3ad53fe83bebd0ff4bbace",
+          "size_bytes": 31240126,
+          "skeleton_count": 1,
+          "total_instances": 257687,
+          "unique_labeled_frame_indices": 87150,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam/cam2_side.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam/side2_cam.frames_0-87149.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam.frames_87150-174299.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            87150,
+            174299
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 174299,
+          "frame_min": 87150,
+          "instances_per_labeled_frame_distribution": {
+            "1": 519,
+            "2": 5985,
+            "3": 76611,
+            "4": 3873,
+            "5": 153,
+            "6": 9
+          },
+          "labeled_frames": 87150,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 0,
+          "name": "side2_cam.frames_87150-174299.slp",
+          "sha256": "5cdeb113d615b7e7dee1ba4a8ea188940e24deca322a8b5cf92dbaa56ccd49d0",
+          "size_bytes": 31343240,
+          "skeleton_count": 1,
+          "total_instances": 258633,
+          "unique_labeled_frame_indices": 87150,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam/cam2_side.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam/side2_cam.frames_87150-174299.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam.frames_174300-261449.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            174300,
+            261449
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 261449,
+          "frame_min": 174300,
+          "instances_per_labeled_frame_distribution": {
+            "1": 68,
+            "2": 3989,
+            "3": 79540,
+            "4": 3297,
+            "5": 252,
+            "6": 4
+          },
+          "labeled_frames": 87150,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 0,
+          "name": "side2_cam.frames_174300-261449.slp",
+          "sha256": "b791b0b6459ce93c8ad498b19d1cefdd1aab7dd0636177d1cb4c624e3bd7d860",
+          "size_bytes": 31616285,
+          "skeleton_count": 1,
+          "total_instances": 261138,
+          "unique_labeled_frame_indices": 87150,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam/cam2_side.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam/side2_cam.frames_174300-261449.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam.frames_261450-348599.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            261450,
+            348599
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 348599,
+          "frame_min": 261450,
+          "instances_per_labeled_frame_distribution": {
+            "1": 81,
+            "2": 2836,
+            "3": 80823,
+            "4": 3235,
+            "5": 159,
+            "6": 8
+          },
+          "labeled_frames": 87142,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 8,
+          "name": "side2_cam.frames_261450-348599.slp",
+          "sha256": "38691cd6f148adc6c5c99fbee7d7f2dbe32c3b7b4c81f55ce92bb9b024a7e439",
+          "size_bytes": 31710500,
+          "skeleton_count": 1,
+          "total_instances": 262005,
+          "unique_labeled_frame_indices": 87142,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam/cam2_side.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam/side2_cam.frames_261450-348599.slp"
+        }
+      ],
+      "cross_chunk_duplicate_frame_indices_count": 0,
+      "declared_chunk_coverage_inclusive": [
+        0,
+        348599
+      ],
+      "merged": {
+        "duplicate_frame_indices": [],
+        "duplicate_frame_indices_count": 0,
+        "frame_max": 348599,
+        "frame_min": 0,
+        "instances_per_labeled_frame_distribution": {
+          "1": 1443,
+          "2": 19438,
+          "3": 313241,
+          "4": 13292,
+          "5": 815,
+          "6": 363
+        },
+        "labeled_frames": 348592,
+        "loadable": true,
+        "max_instances_per_labeled_frame": 6,
+        "sha256": "447230918033c4f51d888a470a267ec41165b6ef3f4338b0ef20dda7bf7f164b",
+        "size_bytes": 125860961,
+        "skeleton_count": 1,
+        "total_instances": 1039463,
+        "unique_labeled_frame_indices": 348592,
+        "video_count": 1,
+        "video_references": [
+          "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_3_FCMC/side2_cam/cam2_side.mp4"
+        ]
+      },
+      "merged_actual_indices_equal_chunk_union": true,
+      "merged_missing_unlabeled_source_indices": 8,
+      "merged_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/side2_cam.slp",
+      "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_3_FCMC/side2_cam/cam2_side.mp4",
+      "source_video_size_bytes": 5135575615
+    },
+    "top_cam": {
+      "chunk_count": 4,
+      "chunks": [
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam.frames_0-87149.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            0,
+            87149
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 87149,
+          "frame_min": 0,
+          "instances_per_labeled_frame_distribution": {
+            "1": 967,
+            "2": 4801,
+            "3": 79947,
+            "4": 1218,
+            "5": 99,
+            "6": 33
+          },
+          "labeled_frames": 87065,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 6,
+          "missing_unlabeled_indices_within_declared_range": 85,
+          "name": "top_cam.frames_0-87149.slp",
+          "sha256": "38928f6cbe74ddc017f8da49db2ab55e9e43e7e53e23a7e6a6c27a0ebfaf6a00",
+          "size_bytes": 31050452,
+          "skeleton_count": 1,
+          "total_instances": 255975,
+          "unique_labeled_frame_indices": 87065,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam/cam0_top.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam/top_cam.frames_0-87149.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam.frames_87150-174299.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            87150,
+            174299
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 174299,
+          "frame_min": 87150,
+          "instances_per_labeled_frame_distribution": {
+            "1": 510,
+            "2": 6078,
+            "3": 79281,
+            "4": 1273,
+            "5": 8
+          },
+          "labeled_frames": 87150,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 5,
+          "missing_unlabeled_indices_within_declared_range": 0,
+          "name": "top_cam.frames_87150-174299.slp",
+          "sha256": "34421355d71835fa9a29d133585138be18905da81e41596b874887bfbd314146",
+          "size_bytes": 31017106,
+          "skeleton_count": 1,
+          "total_instances": 255641,
+          "unique_labeled_frame_indices": 87150,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam/cam0_top.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam/top_cam.frames_87150-174299.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam.frames_174300-261449.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            174300,
+            261449
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 261449,
+          "frame_min": 174300,
+          "instances_per_labeled_frame_distribution": {
+            "1": 272,
+            "2": 5718,
+            "3": 79249,
+            "4": 1868,
+            "5": 43
+          },
+          "labeled_frames": 87150,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 5,
+          "missing_unlabeled_indices_within_declared_range": 0,
+          "name": "top_cam.frames_174300-261449.slp",
+          "sha256": "1af25203a1cd4fd8cf4f6e3f3817182ffd302eaad0a2ad36119ab538a9946bee",
+          "size_bytes": 31180715,
+          "skeleton_count": 1,
+          "total_instances": 257142,
+          "unique_labeled_frame_indices": 87150,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam/cam0_top.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam/top_cam.frames_174300-261449.slp"
+        },
+        {
+          "actual_indices_within_declared_range": true,
+          "bucket_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam.frames_261450-348599.slp",
+          "declared_frame_count": 87150,
+          "declared_range_inclusive": [
+            261450,
+            348599
+          ],
+          "duplicate_frame_indices": [],
+          "duplicate_frame_indices_count": 0,
+          "frame_max": 348599,
+          "frame_min": 261450,
+          "instances_per_labeled_frame_distribution": {
+            "1": 82,
+            "2": 4192,
+            "3": 81379,
+            "4": 1472,
+            "5": 25
+          },
+          "labeled_frames": 87150,
+          "loadable": true,
+          "max_instances_per_labeled_frame": 5,
+          "missing_unlabeled_indices_within_declared_range": 0,
+          "name": "top_cam.frames_261450-348599.slp",
+          "sha256": "1398753821e9c4bafc2fddb038dcab25545a233bd0b2d7c0ba14a9dd6563fef0",
+          "size_bytes": 31341381,
+          "skeleton_count": 1,
+          "total_instances": 258616,
+          "unique_labeled_frame_indices": 87150,
+          "video_count": 1,
+          "video_references": [
+            "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam/cam0_top.mp4"
+          ],
+          "work_bucket_identical": true,
+          "work_path": "/work/StephensU/makoto-hiroi/medaka_sleap/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam/top_cam.frames_261450-348599.slp"
+        }
+      ],
+      "cross_chunk_duplicate_frame_indices_count": 0,
+      "declared_chunk_coverage_inclusive": [
+        0,
+        348599
+      ],
+      "merged": {
+        "duplicate_frame_indices": [],
+        "duplicate_frame_indices_count": 0,
+        "frame_max": 348599,
+        "frame_min": 0,
+        "instances_per_labeled_frame_distribution": {
+          "1": 1831,
+          "2": 20789,
+          "3": 319856,
+          "4": 5831,
+          "5": 175,
+          "6": 33
+        },
+        "labeled_frames": 348515,
+        "loadable": true,
+        "max_instances_per_labeled_frame": 6,
+        "sha256": "566792488415f5b1a0caa91acfa54155bd2ea8cc0efd79e7cadcbaa928b79b5c",
+        "size_bytes": 124540482,
+        "skeleton_count": 1,
+        "total_instances": 1027374,
+        "unique_labeled_frame_indices": 348515,
+        "video_count": 1,
+        "video_references": [
+          "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_3_FCMC/top_cam/cam0_top.mp4"
+        ]
+      },
+      "merged_actual_indices_equal_chunk_union": true,
+      "merged_missing_unlabeled_source_indices": 85,
+      "merged_path": "/bucket/StephensU/medaka/sleap_output/20251225_K_1_3_FCMC/round8_260729_snn031_m6/top_cam.slp",
+      "source_video": "/bucket/StephensU/medaka/medaka_202512/20251225_K_1_3_FCMC/top_cam/cam0_top.mp4",
+      "source_video_size_bytes": 5008367115
+    }
+  }
+}

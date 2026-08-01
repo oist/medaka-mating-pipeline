@@ -1,0 +1,582 @@
+{
+  "schema_version": 1,
+  "status": "critical_event_independently_scored_descriptive_only",
+  "role": "permanently_unblinded_descriptive_nonconfirmatory",
+  "confirmatory": false,
+  "selection_or_tuning_performed": false,
+  "may_change_frozen_settings_or_finalists": false,
+  "inclusive_detail_window": [
+    34540,
+    34565
+  ],
+  "inclusive_assignment_rows": [
+    34547,
+    34555
+  ],
+  "methods": {
+    "A0": {
+      "inclusive_frames": [
+        34547,
+        34555
+      ],
+      "expected_rows": 27,
+      "rows": 27,
+      "finite_direct_rows": 27,
+      "unavailable_or_unresolved_rows": 0,
+      "direct_jump_mm": {
+        "n": 24,
+        "median": 0.44772954048239616,
+        "p95": 5.9634992997047975,
+        "p99": 6.274650279098177,
+        "max": 6.3437199141793
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "n": 27,
+        "median": 2.286009449687329,
+        "p95": 12.111481035983283,
+        "p99": 12.603463771446663,
+        "max": 12.77336196845604
+      },
+      "source_index_values_by_identity": {},
+      "source_index_switches": 0,
+      "identity_status_counts": {},
+      "normalized_scientific_sha256": "7a84f5a62ce923137553b2d3ab61396161ed53a35867d7bb8361fdf6dc162ea8"
+    },
+    "A1": {
+      "inclusive_frames": [
+        34547,
+        34555
+      ],
+      "expected_rows": 27,
+      "rows": 27,
+      "finite_direct_rows": 27,
+      "unavailable_or_unresolved_rows": 0,
+      "direct_jump_mm": {
+        "n": 24,
+        "median": 0.38383160044453957,
+        "p95": 0.4594010612081011,
+        "p99": 0.5823974914392775,
+        "max": 0.618648785307292
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "n": 27,
+        "median": 0.6396589628162037,
+        "p95": 2.339141509678752,
+        "p99": 2.8557047367420605,
+        "max": 3.0326001489978585
+      },
+      "source_index_values_by_identity": {
+        "ID_1": [
+          0
+        ],
+        "ID_2": [
+          1
+        ],
+        "ID_3": [
+          2
+        ]
+      },
+      "source_index_switches": 0,
+      "identity_status_counts": {
+        "resolved_position_only": 27
+      },
+      "normalized_scientific_sha256": "29e5fcfffffec75beb22542c7eecacf4f4e85b465a33380a408aad90b1deb85a"
+    },
+    "A2": {
+      "inclusive_frames": [
+        34547,
+        34555
+      ],
+      "expected_rows": 27,
+      "rows": 27,
+      "finite_direct_rows": 27,
+      "unavailable_or_unresolved_rows": 0,
+      "direct_jump_mm": {
+        "n": 24,
+        "median": 0.38383160044453957,
+        "p95": 0.4594010612081011,
+        "p99": 0.5823974914392775,
+        "max": 0.618648785307292
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "n": 27,
+        "median": 0.6396589628162037,
+        "p95": 2.339141509678752,
+        "p99": 2.8557047367420605,
+        "max": 3.0326001489978585
+      },
+      "source_index_values_by_identity": {
+        "ID_1": [
+          0
+        ],
+        "ID_2": [
+          1
+        ],
+        "ID_3": [
+          2
+        ]
+      },
+      "source_index_switches": 0,
+      "identity_status_counts": {
+        "resolved_velocity": 27
+      },
+      "normalized_scientific_sha256": "29e5fcfffffec75beb22542c7eecacf4f4e85b465a33380a408aad90b1deb85a"
+    },
+    "A3": {
+      "inclusive_frames": [
+        34547,
+        34555
+      ],
+      "expected_rows": 27,
+      "rows": 27,
+      "finite_direct_rows": 27,
+      "unavailable_or_unresolved_rows": 0,
+      "direct_jump_mm": {
+        "n": 24,
+        "median": 0.38383160044453957,
+        "p95": 0.4594010612081011,
+        "p99": 0.5823974914392775,
+        "max": 0.618648785307292
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "n": 27,
+        "median": 0.6396589628162037,
+        "p95": 2.339141509678752,
+        "p99": 2.8557047367420605,
+        "max": 3.0326001489978585
+      },
+      "source_index_values_by_identity": {
+        "ID_1": [
+          0
+        ],
+        "ID_2": [
+          1
+        ],
+        "ID_3": [
+          2
+        ]
+      },
+      "source_index_switches": 0,
+      "identity_status_counts": {
+        "resolved_immediate": 27
+      },
+      "normalized_scientific_sha256": "29e5fcfffffec75beb22542c7eecacf4f4e85b465a33380a408aad90b1deb85a"
+    },
+    "A4": {
+      "inclusive_frames": [
+        34547,
+        34555
+      ],
+      "expected_rows": 27,
+      "rows": 27,
+      "finite_direct_rows": 0,
+      "unavailable_or_unresolved_rows": 27,
+      "direct_jump_mm": {
+        "n": 0,
+        "median": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "n": 0,
+        "median": null,
+        "p95": null,
+        "p99": null,
+        "max": null
+      },
+      "source_index_values_by_identity": {},
+      "source_index_switches": 0,
+      "identity_status_counts": {
+        "unassigned_tracklet_path": 27
+      },
+      "normalized_scientific_sha256": "5dbd505e994a496d77a895b51b00aa6113429f0053d5446a2a73cd8254915ad0"
+    },
+    "A5": {
+      "inclusive_frames": [
+        34547,
+        34555
+      ],
+      "expected_rows": 27,
+      "rows": 27,
+      "finite_direct_rows": 27,
+      "unavailable_or_unresolved_rows": 0,
+      "direct_jump_mm": {
+        "n": 24,
+        "median": 0.38383160044453957,
+        "p95": 0.4594010612081011,
+        "p99": 0.5823974914392775,
+        "max": 0.618648785307292
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "n": 27,
+        "median": 0.6396589628162037,
+        "p95": 2.339141509678752,
+        "p99": 2.8557047367420605,
+        "max": 3.0326001489978585
+      },
+      "source_index_values_by_identity": {
+        "ID_1": [
+          0
+        ],
+        "ID_2": [
+          1
+        ],
+        "ID_3": [
+          2
+        ]
+      },
+      "source_index_switches": 0,
+      "identity_status_counts": {
+        "resolved_immediate": 27
+      },
+      "normalized_scientific_sha256": "29e5fcfffffec75beb22542c7eecacf4f4e85b465a33380a408aad90b1deb85a"
+    }
+  },
+  "deferred_assignment_margins": {
+    "A3": {
+      "rows": 9,
+      "all_resolved": true,
+      "ambiguous_rows": 0,
+      "constraint_conflict_rows": 0,
+      "assignment_margin": {
+        "n": 9,
+        "median": 16.03048547771285,
+        "p95": 17.644301564178473,
+        "p99": 17.700407701300747,
+        "max": 17.714434235581315
+      },
+      "per_frame": [
+        {
+          "frame": 34547,
+          "best_cost": 1.9023066145366787,
+          "second_cost": 19.616740850118,
+          "assignment_margin": 17.714434235581315,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34548,
+          "best_cost": 1.1009051362191522,
+          "second_cost": 18.640007693293363,
+          "assignment_margin": 17.539102557074212,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34549,
+          "best_cost": 1.07094057525523,
+          "second_cost": 18.342886252194955,
+          "assignment_margin": 17.271945676939726,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34550,
+          "best_cost": 1.3419254761684556,
+          "second_cost": 17.372410953881307,
+          "assignment_margin": 16.03048547771285,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34551,
+          "best_cost": 1.287121716435944,
+          "second_cost": 16.963182244604212,
+          "assignment_margin": 15.676060528168268,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34552,
+          "best_cost": 0.6321477684654943,
+          "second_cost": 17.198089626556715,
+          "assignment_margin": 16.56594185809122,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34553,
+          "best_cost": 1.0844019732179988,
+          "second_cost": 16.848719401700755,
+          "assignment_margin": 15.764317428482755,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34554,
+          "best_cost": 1.0677892864269505,
+          "second_cost": 16.512862857538813,
+          "assignment_margin": 15.445073571111864,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34555,
+          "best_cost": 1.3033252437564864,
+          "second_cost": 16.327817820076817,
+          "assignment_margin": 15.02449257632033,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        }
+      ]
+    },
+    "A5": {
+      "rows": 9,
+      "all_resolved": true,
+      "ambiguous_rows": 0,
+      "constraint_conflict_rows": 0,
+      "assignment_margin": {
+        "n": 9,
+        "median": 16.03048547771285,
+        "p95": 17.644301564178473,
+        "p99": 17.700407701300747,
+        "max": 17.714434235581315
+      },
+      "per_frame": [
+        {
+          "frame": 34547,
+          "best_cost": 1.9023066145366787,
+          "second_cost": 19.616740850118,
+          "assignment_margin": 17.714434235581315,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34548,
+          "best_cost": 1.1009051362191522,
+          "second_cost": 18.640007693293363,
+          "assignment_margin": 17.539102557074212,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34549,
+          "best_cost": 1.07094057525523,
+          "second_cost": 18.342886252194955,
+          "assignment_margin": 17.271945676939726,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34550,
+          "best_cost": 1.3419254761684556,
+          "second_cost": 17.372410953881307,
+          "assignment_margin": 16.03048547771285,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34551,
+          "best_cost": 1.287121716435944,
+          "second_cost": 16.963182244604212,
+          "assignment_margin": 15.676060528168268,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34552,
+          "best_cost": 0.6321477684654943,
+          "second_cost": 17.198089626556715,
+          "assignment_margin": 16.56594185809122,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34553,
+          "best_cost": 1.0844019732179988,
+          "second_cost": 16.848719401700755,
+          "assignment_margin": 15.764317428482755,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34554,
+          "best_cost": 1.0677892864269505,
+          "second_cost": 16.512862857538813,
+          "assignment_margin": 15.445073571111864,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        },
+        {
+          "frame": 34555,
+          "best_cost": 1.3033252437564864,
+          "second_cost": 16.327817820076817,
+          "assignment_margin": 15.02449257632033,
+          "hypotheses_retained": 2,
+          "ambiguous": false,
+          "constraint_conflict": false,
+          "resolved": true
+        }
+      ]
+    }
+  },
+  "a5_hint_rows_in_assignment_interval": 0,
+  "strict_mouth_core_identical_A1_A2_A3_A5": true,
+  "a0_known_geometry_swap": {
+    "gate_audit_34547_to_34548": {
+      "row_previous_labels": [
+        "b",
+        "c"
+      ],
+      "column_current_labels": [
+        "b",
+        "c"
+      ],
+      "euclidean_distance_mm": [
+        [
+          2.848587058774009,
+          5.510631464608808
+        ],
+        [
+          4.6098895730607,
+          11.153372980536458
+        ]
+      ],
+      "feasible_at_8mm": [
+        [
+          true,
+          true
+        ],
+        [
+          true,
+          false
+        ]
+      ],
+      "straight_cost_mm": 14.001960039310468,
+      "crossed_cost_mm": 10.120521037669509,
+      "straight_feasible": false,
+      "crossed_feasible": true,
+      "top_detection_slots_before": {
+        "b": 2,
+        "c": 1
+      },
+      "top_detection_slots_after": {
+        "b": 2,
+        "c": 1
+      },
+      "interpretation": "The same top detection slots define the straight continuation. Its c-to-c 3D step exceeds 8 mm; both crossed steps are below 8 mm."
+    },
+    "linked_ID_1_group_34547": [
+      13.403691410039206,
+      182.95366153834786,
+      11.067042598119395
+    ],
+    "linked_ID_1_group_34548": [
+      8.949584409234603,
+      186.18823040865686,
+      10.811007078419548
+    ],
+    "linked_ID_3_group_34547": [
+      20.097191444493724,
+      185.83900620247428,
+      10.892423810227031
+    ],
+    "linked_ID_3_group_34548": [
+      16.055114617507936,
+      183.7768152815469,
+      11.704867904428573
+    ],
+    "interpretation": "The A0 centroid geometry linker exchanges the two close geometry trajectories at 34547->34548 because the straight c-to-c edge is infeasible at 8 mm."
+  },
+  "raw_trigger": {
+    "top_target_before_instance": 1,
+    "top_target_after_instance": 1,
+    "top_mouth_before_xy": [
+      952.2501831054688,
+      1016.4949951171875
+    ],
+    "top_mouth_after_xy": [
+      952.4544677734375,
+      1016.61328125
+    ],
+    "top_centroid_before_xy": [
+      898.3199462890625,
+      1001.4847717285156
+    ],
+    "top_centroid_after_xy": [
+      952.4544677734375,
+      1016.61328125
+    ],
+    "top_mouth_displacement_px": 0.23605896463137938,
+    "top_visible_node_centroid_displacement_px": 56.20870232165036,
+    "side_view_close_pair_pose_count": {
+      "side1_cam": {
+        "34547": 1,
+        "34548": 1
+      },
+      "side2_cam": {
+        "34547": 1,
+        "34548": 1
+      }
+    },
+    "total_instance_count": {
+      "top_cam": {
+        "34547": 3,
+        "34548": 3
+      },
+      "side1_cam": {
+        "34547": 2,
+        "34548": 2
+      },
+      "side2_cam": {
+        "34547": 2,
+        "34548": 2
+      }
+    }
+  },
+  "ground_truth_limitation": "There is no female annotation in 34547-34555. The two close fish are male under the available ledger, so biological correctness and a male-to-male exchange are not directly observable.",
+  "descriptive_interpretation": "A1/A2/A3/A5 retain stable source indices and identical strict-mouth scientific rows across 34547-34555 while A4 explicitly abstains. This is evidence of internal mouth-trajectory continuity, not biological identity proof.",
+  "bindings": {
+    "critical_finalized": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\STAGE_FINALIZED.json",
+      "sha256": "fe432101a7580f4e540d3c4537ae8b1c774a2b5231d8cc0900a790e250d3149c"
+    },
+    "raw_trigger_audit": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\critical_event_raw_audit.json",
+      "sha256": "dabbb35b11034ba7abb1de9fb78a5189dafdfa41e14d354072989f8d9dce7973"
+    },
+    "a0_geometry_audit": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\critical_event_existing_geometry.json",
+      "sha256": "59320ae82c7c2d6a0d29f1fc84c0d44e62f866a507538cdb37e9a405547a737f"
+    },
+    "exact_assignment_rows": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\postfreeze_critical_event_assignments_34547_34555.csv",
+      "sha256": "e69e7442bfa9c074a4d8bebcbd46fb1849ff72fa4472214b9242c505d8fbb343"
+    }
+  }
+}

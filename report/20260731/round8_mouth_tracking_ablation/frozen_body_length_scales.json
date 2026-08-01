@@ -1,0 +1,57 @@
+{
+  "schema_version": "mouth_tracklet_ablation_v1",
+  "status": "frozen_training_control_scale",
+  "created_at": "2026-07-31T03:29:21.245308+09:00",
+  "training_control_intervals": [
+    [
+      32264,
+      32920
+    ],
+    [
+      21840,
+      28039
+    ]
+  ],
+  "eligible_data": "training length-matched temporal controls only",
+  "tail_usage": "mouth-to-tail distance is used only for this per-view normalization scale; tail never enters admission or identity",
+  "body_length_px": {
+    "top_cam": 109.58292697843919,
+    "side1_cam": 91.11906436144642,
+    "side2_cam": 86.47002765799765
+  },
+  "cache_sha256": {
+    "top_cam": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+    "side1_cam": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+    "side2_cam": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+  },
+  "code_sha256": {
+    "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+    "scripts\\reconstruction_3d\\conservative_mouth_tracklets.py": "a454ae0b6e59cfd51bdea4b60de29438fc8c407c861e05befd80d3e1d9da2631",
+    "scripts\\reconstruction_3d\\mouth_tracklet_ablation.py": "1e75e10654b5d6c233ec3ea5ff2f8c969dac3dd41027031cd332d3c88096d4e0"
+  },
+  "command": [
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\.venv\\Scripts\\python.exe",
+    "-m",
+    "scripts.reconstruction_3d.mouth_tracklet_ablation",
+    "freeze-scales",
+    "--cache-dir",
+    "report\\20260731\\round8_mouth_tracking_ablation\\candidate_cache_strict_mouth_unfiltered_nodescores",
+    "--training-control",
+    "32264",
+    "32920",
+    "--training-control",
+    "21840",
+    "28039",
+    "--output",
+    "report\\20260731\\round8_mouth_tracking_ablation\\frozen_body_length_scales.json"
+  ],
+  "wall_seconds": 0.6886440999805927,
+  "peak_rss_bytes": 182636544,
+  "peak_memory_method": "0.1 s psutil RSS sampling of process tree around complete action",
+  "git": {
+    "head": "632a94d3c087a1f57b04c2e0f321b0e8fb2a26be",
+    "branch": "main",
+    "status_short": "M pyproject.toml\n M scripts/hpc/sleap_chunk.slurm\n M scripts/hpc/submit_batch.sh\n M scripts/hpc/submit_experiment.sh\n M scripts/reconstruction_3d/candidate_cache.py\n M scripts/reconstruction_3d/fill_missing_3d.py\n M scripts/reconstruction_3d/reconstruct_from_slp.py\n M scripts/reconstruction_3d/windowed_tracklet_core.py\n M scripts/sleap/compare_rounds_topdown.py\n M scripts/sleap/run_topdown_optimization_training.py\n M scripts/sleap/train_strict_anchor.py\n M scripts/tracking/main.py\n M scripts/tracking/slp_merge.py\n M scripts/tracking/track_simple_nn.py\n M scripts/visualization/render_qc_4panel_fast.py\n M tests/test_candidate_cache.py\n M tests/test_eval_topdown_vs_bottomup.py\n M tests/test_fp_filters_and_fill.py\n M tests/test_render_qc_4panel_fast_geometry.py\n M tests/test_strict_anchor_training.py\n M tests/test_topdown_optimization_training.py\n M tests/test_track_simple_nn_motion.py\n M uv.lock\n?? .codex_test_tmp/\n?? .test_tmp_round9b/\n?? report/20260724/sleap_topdown_optimization/PHASE1_NEW_SESSION_PROMPT.md\n?? report/20260728/\n?? report/20260729/\n?? report/20260730/\n?? report/20260731/\n?? scripts/reconstruction_3d/conservative_cross_view_paths.py\n?? scripts/reconstruction_3d/conservative_mouth_tracklets.py\n?? scripts/reconstruction_3d/deferred_identity_tracking.py\n?? scripts/reconstruction_3d/mouth_ablation.py\n?? scripts/reconstruction_3d/mouth_tracklet_ablation.py\n?? scripts/sleap/design_round9b_split.py\n?? scripts/sleap/prepare_side_cumulative_training.py\n?? tests/test_conservative_cross_view_paths.py\n?? tests/test_conservative_mouth_tracklets.py\n?? tests/test_deferred_identity_tracking.py\n?? tests/test_design_round9b_split.py\n?? tests/test_mouth_ablation.py\n?? tests/test_mouth_tracklet_ablation.py\n?? tests/test_prepare_side_cumulative_training.py\n?? tests/test_slp_merge_round_tags.py"
+  },
+  "configuration_hash": "9c42513597a2bd7cf109cddeaece47643dee48147ac9214136977e5a7685d7bf"
+}

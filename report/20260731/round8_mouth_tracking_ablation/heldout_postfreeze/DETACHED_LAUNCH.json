@@ -1,0 +1,22 @@
+{
+  "schema_version": "round8_detached_stage_launcher_v3",
+  "status": "launched",
+  "launched_at": "2026-07-31T05:14:09.6621159+09:00",
+  "pid": 36396,
+  "command": [
+    ".venv\\Scripts\\python.exe",
+    "report\\20260731\\round8_mouth_tracking_ablation\\run_bounded_postfreeze_stage_v4.py",
+    "heldout",
+    "--execute-prepared"
+  ],
+  "working_directory": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline",
+  "stdout_path": "report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\detached_launcher.stdout.log",
+  "stderr_path": "report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\detached_launcher.stderr.log",
+  "runner_sha256": "0aaeac2293db434f3794b02a992ab208f4dc061162b8da017f6c85d94a21e818",
+  "prepared_manifest_sha256": "72557e96b34c2582c58419bbaa1e71ae6379b89f7e8e3624a42fbc1e5c216037",
+  "preauth_sha256": "871420dd5b55ed4d3b5b69beb91dc12035644e1c30c919199e590d0737c1f61b",
+  "predecessor_finalized_sha256": "297249d8cc9cdff2e0a5c850884f795e238b6911b42605e440d70397bc6fb706",
+  "adapter_sha256": "eea6877f16204f63a9fea4820e92a6696f8b24bdddfcc4fab57e2b25a5ffa95b",
+  "repair_protocol_sha256": "d42a5095829f60b8ede4fa1b8f4dd6cfa490592f468641f2439a4a20d0e6f42a",
+  "failed_attempt_finalized_sha256": "75a506ce112b8df00b49024f039ddb6ef554637620840bf5f9a78c73204a85d5"
+}

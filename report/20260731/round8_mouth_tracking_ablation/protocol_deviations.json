@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "deviations": [
+    {
+      "id": "critical_a4_cutoff_safety_audit_before_freeze",
+      "detected_at": "2026-07-31T02:18:43.5456358+09:00",
+      "status": "recorded_and_contained",
+      "scope": {
+        "frames": [34000, 35100],
+        "method_family": ["A4", "A5"],
+        "unique_cutoff_configurations": 18,
+        "views_per_configuration": 3,
+        "view_configuration_evaluations": 54,
+        "purpose": "independent purity/safety audit of reciprocal per-view tracklet bridges"
+      },
+      "deviation": "The critical interval was evaluated across cutoff configurations before frozen_thresholds.json existed.",
+      "containment": [
+        "The critical interval is permanently unblinded descriptive stress evidence and cannot support confirmatory claims.",
+        "No critical result may enter hyperparameter selection, tie-breaking, body-length estimation, or clean-motion estimation.",
+        "All selection remains training-only; validation remains report-only.",
+        "The held-out cohort remains untouched and is the confirmatory cohort after freeze."
+      ],
+      "artifacts": {
+        "quality_review/critical_event_tracklet_bridge_audit.json": {
+          "sha256": "3ee3e693dc870a5df44a379e377475e17815072b86893b2ebea1034a0e14db2e",
+          "last_write_time": "2026-07-31T02:22:22.3455775+09:00"
+        },
+        "quality_review/critical_event_tracklet_bridge_sweep.csv": {
+          "sha256": "4dc4c3eb84164181d76f24fdbefe6156dd17d3e698c5bf615a1020ad701bddf8",
+          "last_write_time": "2026-07-31T02:18:43.5416254+09:00"
+        }
+      },
+      "selection_impact": "none permitted"
+    },
+    {
+      "id": "a4_count_mismatch_safeguard_informed_by_unblinded_critical_audit",
+      "detected_at": "2026-07-31T02:31:00+09:00",
+      "status": "recorded_and_contained",
+      "deviation": "The A4 retained-tracklet count-mismatch abstention rule was developed after inspection of the unblinded critical safety audit.",
+      "containment": [
+        "Critical-event abstention under this rule is designed safety behavior, not independent evidence of biological identity recovery.",
+        "The critical interval remains descriptive only and cannot select or validate the rule.",
+        "Training-only selection remains mandatory.",
+        "Held-out performance is the only post-freeze generalization evidence for this safeguard."
+      ],
+      "selection_impact": "critical evidence excluded; training-only selection and untouched held-out confirmation required"
+    },
+    {
+      "id": "a5_high_confidence_hint_safeguards_informed_by_unblinded_critical_audit",
+      "detected_at": "2026-07-31T03:27:00+09:00",
+      "status": "recorded_and_contained",
+      "deviation": "The A5 exact-candidate hint safeguards and high-confidence eligibility thresholds were shaped after inspection of the unblinded critical safety audit.",
+      "containment": [
+        "The critical interval is permanently descriptive only and cannot select, tune, validate, or break ties among A5 hint thresholds.",
+        "A5 hint thresholds and the frozen A2/A3/A4 dependencies are selected and frozen from authorized training events and length-matched training controls only.",
+        "Validation remains report-only and cannot alter the frozen configuration.",
+        "The untouched held-out cohort is the only post-freeze generalization evidence for the A5 safeguard."
+      ],
+      "selection_impact": "critical evidence excluded; training-only threshold freeze required before validation, with held-out as the sole post-freeze generalization test"
+    }
+  ]
+}

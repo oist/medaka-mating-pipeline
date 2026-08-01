@@ -1,0 +1,584 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "Round8 strict-mouth identity-tracking comparison",
+    "description": "Controlled, independently audited comparison of A0 through A5 for 20251225_K_1_2_FCMC.",
+    "generatedAt": "2026-07-31T08:02:38+09:00",
+    "filters": [],
+    "cards": [
+      {
+        "id": "a0_consistency_card",
+        "description": "Full-history female annotations assigned to A0's most frequent single segment-aware identity.",
+        "dataset": "headline_metrics",
+        "sourceId": "full_metrics",
+        "metrics": [
+          {
+            "label": "A0 female best-fixed",
+            "field": "a0_consistency",
+            "format": "percent"
+          }
+        ]
+      },
+      {
+        "id": "a1_changes_card",
+        "description": "Observed female identity changes on the full-length track, compared with A0.",
+        "dataset": "headline_metrics",
+        "sourceId": "full_metrics",
+        "metrics": [
+          {
+            "label": "A1 female changes",
+            "field": "a1_changes",
+            "format": "number"
+          },
+          {
+            "label": "A0 reference",
+            "field": "a0_changes",
+            "format": "number"
+          }
+        ]
+      },
+      {
+        "id": "a1_jumps_card",
+        "description": "Direct adjacent 3D steps at or above 7.5 mm on the full-length track, compared with A0.",
+        "dataset": "headline_metrics",
+        "sourceId": "full_metrics",
+        "metrics": [
+          {
+            "label": "A1 jumps ≥7.5 mm",
+            "field": "a1_large_jumps",
+            "format": "number"
+          },
+          {
+            "label": "A0 reference",
+            "field": "a0_large_jumps",
+            "format": "number"
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "female_consistency_chart",
+        "title": "Full-history female best-fixed consistency",
+        "subtitle": "All 300 female annotations; unmapped observations remain in the denominator",
+        "showDescription": true,
+        "type": "horizontalBar",
+        "dataset": "full_metrics",
+        "sourceId": "full_metrics",
+        "encodings": {
+          "x": {
+            "field": "method",
+            "type": "nominal",
+            "label": "Method"
+          },
+          "y": {
+            "field": "female_best_fixed_rate",
+            "type": "quantitative",
+            "format": "percent",
+            "label": "Best-fixed consistency"
+          },
+          "tooltip": [
+            {
+              "field": "female_best_fixed_n",
+              "type": "quantitative",
+              "label": "Best-fixed annotations"
+            },
+            {
+              "field": "mapped_n",
+              "type": "quantitative",
+              "label": "Mapped annotations"
+            },
+            {
+              "field": "identity_changes",
+              "type": "quantitative",
+              "label": "Observed changes"
+            }
+          ]
+        },
+        "xAxisTitle": "Method",
+        "yAxisTitle": "Share of 300 female annotations",
+        "valueFormat": "percent",
+        "maxRows": 4
+      },
+      {
+        "id": "large_jump_chart",
+        "title": "Full-length jumps at or above 7.5 mm",
+        "subtitle": "Direct adjacent finite 3D steps; no method exceeded the fixed 8 mm gate",
+        "showDescription": true,
+        "type": "horizontalBar",
+        "dataset": "full_metrics",
+        "sourceId": "full_metrics",
+        "encodings": {
+          "x": {
+            "field": "method",
+            "type": "nominal",
+            "label": "Method"
+          },
+          "y": {
+            "field": "jumps_ge_7_5_mm",
+            "type": "quantitative",
+            "format": "number",
+            "label": "Large jumps"
+          },
+          "tooltip": [
+            {
+              "field": "jump_p95_mm",
+              "type": "quantitative",
+              "label": "Jump p95",
+              "unit": "mm"
+            },
+            {
+              "field": "jump_p99_mm",
+              "type": "quantitative",
+              "label": "Jump p99",
+              "unit": "mm"
+            }
+          ]
+        },
+        "xAxisTitle": "Method",
+        "yAxisTitle": "Count of direct adjacent steps ≥7.5 mm",
+        "valueFormat": "number",
+        "maxRows": 4
+      }
+    ],
+    "tables": [
+      {
+        "id": "full_comparison_table",
+        "title": "Full-length identity and geometry QC",
+        "subtitle": "Frames 0–348599; A0 is the unchanged reference and A1–A3 are frozen finalists",
+        "showDescription": true,
+        "dataset": "full_metrics",
+        "density": "spacious",
+        "sourceId": "full_metrics",
+        "defaultSort": {
+          "field": "method",
+          "direction": "asc"
+        },
+        "columns": [
+          {
+            "field": "method",
+            "label": "Method",
+            "type": "text"
+          },
+          {
+            "field": "female_best_fixed_rate",
+            "label": "Female best-fixed",
+            "type": "percent",
+            "format": "percent",
+            "align": "right"
+          },
+          {
+            "field": "mapped_n",
+            "label": "Mapped / 300",
+            "type": "number",
+            "format": "number",
+            "align": "right"
+          },
+          {
+            "field": "identity_changes",
+            "label": "Changes",
+            "type": "number",
+            "format": "number",
+            "align": "right"
+          },
+          {
+            "field": "all_three_direct",
+            "label": "All-three direct",
+            "type": "percent",
+            "format": "percent",
+            "align": "right"
+          },
+          {
+            "field": "unavailable_fraction",
+            "label": "Unavailable",
+            "type": "percent",
+            "format": "percent",
+            "align": "right"
+          },
+          {
+            "field": "identity_segments",
+            "label": "Segments",
+            "type": "number",
+            "format": "number",
+            "align": "right"
+          },
+          {
+            "field": "jumps_ge_7_5_mm",
+            "label": "Jumps ≥7.5 mm",
+            "type": "number",
+            "format": "number",
+            "align": "right"
+          }
+        ]
+      },
+      {
+        "id": "heldout_context_table",
+        "title": "Held-out consistency changes with track history",
+        "subtitle": "The same nine held-out female annotations under isolated-window initialization and frame-zero linking",
+        "showDescription": true,
+        "dataset": "heldout_context",
+        "density": "spacious",
+        "sourceId": "heldout_query",
+        "defaultSort": {
+          "field": "method",
+          "direction": "asc"
+        },
+        "columns": [
+          {
+            "field": "method",
+            "label": "Method",
+            "type": "text"
+          },
+          {
+            "field": "bounded_correct",
+            "label": "Bounded correct / 9",
+            "type": "number",
+            "format": "number",
+            "align": "right"
+          },
+          {
+            "field": "global_correct",
+            "label": "Global correct / 9",
+            "type": "number",
+            "format": "number",
+            "align": "right"
+          },
+          {
+            "field": "global_changes",
+            "label": "Global changes",
+            "type": "number",
+            "format": "number",
+            "align": "right"
+          }
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "id": "full_metrics",
+        "label": "Independent full-length method summary",
+        "path": "report_source_queries.sql",
+        "query": {
+          "engine": "DuckDB",
+          "language": "sql",
+          "executed_at": "2026-07-31T07:54:20+09:00",
+          "description": "Independently scored full-length identity, coverage, jump, residual, and segmentation metrics.",
+          "sql": "SELECT CASE method WHEN 'A0' THEN 'A0 centroid reference' WHEN 'A1' THEN 'A1 strict mouth' WHEN 'A2' THEN 'A2 selected motion' WHEN 'A3' THEN 'A3 deferred' END AS method, female_full_accuracy AS female_best_fixed_rate, CAST(round(female_full_accuracy * female_eligible) AS INTEGER) AS female_best_fixed_n, female_mapped AS mapped_n, female_identity_changes AS identity_changes, all_three_direct_fraction AS all_three_direct, unavailable_or_unresolved_fraction AS unavailable_fraction, identity_count AS identity_segments, direct_jump_p95_mm AS jump_p95_mm, direct_jump_p99_mm AS jump_p99_mm, jump_ge_7_5mm_count AS jumps_ge_7_5_mm, jump_gt_8mm_count AS jumps_gt_8_mm, residual_p95_mm2, residual_p99_mm2 FROM read_csv_auto('quality_review/full_length_independent_method_summary.csv', header = true) WHERE method IN ('A0', 'A1', 'A2', 'A3') ORDER BY method;",
+          "tables_used": [
+            "quality_review/full_length_independent_method_summary.csv"
+          ],
+          "filters": [
+            "Experiment 20251225_K_1_2_FCMC",
+            "Frames 0 through 348599",
+            "A0 unchanged reference and frozen A1 through A3 outputs"
+          ],
+          "metric_definitions": [
+            "Female best-fixed consistency is the number of 300 annotations assigned to the most frequent single segment-aware identity; unmapped annotations remain in the denominator.",
+            "Identity changes count adjacent changes among mapped female annotations in frame order.",
+            "Large jumps count direct adjacent finite 3D steps at or above 7.5 mm."
+          ]
+        }
+      },
+      {
+        "id": "heldout_query",
+        "label": "Held-out bounded-versus-global context query",
+        "path": "report_source_queries.sql",
+        "query": {
+          "engine": "DuckDB",
+          "language": "sql",
+          "executed_at": "2026-07-31T08:02:38+09:00",
+          "description": "Materializes the independently reviewed held-out annotation partition for the report table.",
+          "sql": "SELECT * FROM (VALUES ('A0 centroid reference', 9, 9, 0), ('A1 strict mouth', 9, 6, 1), ('A2 selected motion', 9, 6, 1), ('A3 deferred', 9, 6, 1)) AS heldout_context(method, bounded_correct, global_correct, global_changes) ORDER BY method;",
+          "tables_used": [
+            "quality_review/full_length_annotation_partition_summary.json",
+            "QUALITY_REVIEW.md"
+          ],
+          "filters": [
+            "The same nine registered held-out female annotation frames",
+            "Bounded tracks initialized within each window versus global tracks linked from frame zero"
+          ],
+          "metric_definitions": [
+            "Correct means assigned to the best-fixed segment-aware identity within the stated tracking context.",
+            "Global changes count observed identity changes across the nine annotation frames on the frame-zero track."
+          ]
+        }
+      },
+      {
+        "id": "quality_review",
+        "label": "Independent quality review",
+        "path": "QUALITY_REVIEW.md",
+        "query": {
+          "engine": "reviewed-document",
+          "language": "markdown",
+          "executed_at": "2026-07-31T07:58:08+09:00",
+          "description": "Independent review of provenance, training selection, bounded post-freeze evidence, critical diagnosis, full-length metrics, and recommendation.",
+          "tables_used": [
+            "QUALITY_REVIEW.md"
+          ],
+          "filters": [
+            "Controlled Round8 comparison for 20251225_K_1_2_FCMC"
+          ],
+          "metric_definitions": [
+            "Bounded held-out results initialize tracking inside each registered window.",
+            "Global held-out results read the same annotation frames from tracks linked from frame zero."
+          ]
+        }
+      },
+      {
+        "id": "audit",
+        "label": "Independent execution and provenance audit",
+        "path": "INDEPENDENT_AUDIT.md",
+        "query": {
+          "engine": "reviewed-document",
+          "language": "markdown",
+          "executed_at": "2026-07-31T07:59:36+09:00",
+          "description": "Independent command, hash, replay, metric-reproduction, and final-seal audit.",
+          "tables_used": [
+            "INDEPENDENT_AUDIT.md"
+          ],
+          "filters": [
+            "Final authoritative quality seal"
+          ],
+          "metric_definitions": [
+            "Seal binding pass means every recursively declared SHA-256 binding re-hashed exactly."
+          ]
+        }
+      },
+      {
+        "id": "freeze",
+        "label": "Frozen Round8 thresholds",
+        "path": "frozen_thresholds.json",
+        "query": {
+          "engine": "reviewed-file",
+          "language": "json",
+          "executed_at": "2026-07-31T04:18:09+09:00",
+          "description": "Authenticated training-only method settings, finalist policy, inputs, and contained protocol deviations.",
+          "tables_used": [
+            "frozen_thresholds.json"
+          ],
+          "filters": [
+            "Freeze completed before validation and held-out evaluation"
+          ],
+          "metric_definitions": [
+            "A1 through A3 are full-length finalists; A4 and A5 are bounded exploratory methods."
+          ]
+        }
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# Round8 strict-mouth identity-tracking comparison"
+      },
+      {
+        "id": "technical_summary",
+        "type": "markdown",
+        "body": "## Round8 fixes the local centroid failure, but does not earn production promotion\n\nThe reported `34547→34548` crossover is mechanically reproduced: the relevant mouth moved only **0.2361 px**, while the visible-node centroid moved **56.2087 px** after the tail disappeared. Strict-mouth A1–A3 avoid that local centroid-induced crossover. However, the close pair is male and the available truth identifies only the female, so male-to-male correctness remains unobservable.\n\n**Decision:** retain A0 as the current reference; carry A1 only as the simplest experimental mouth-only candidate; investigate A1/A2's global divergence; reject A3/A4/A5 for production."
+      },
+      {
+        "id": "headline_strip",
+        "type": "metric-strip",
+        "cardIds": [
+          "a0_consistency_card",
+          "a1_changes_card",
+          "a1_jumps_card"
+        ]
+      },
+      {
+        "id": "full_identity_finding",
+        "type": "markdown",
+        "sourceId": "full_metrics",
+        "body": "## Full-history identity evidence still favors A0\n\nAcross all **300** female annotations, A0 keeps **221** on its most frequent single segment-aware identity, versus **180** for A1, **192** for A2, and **94** for A3. A1/A2 reduce observed changes from **15** to **9**, but neither preserves one global female identity as often as A0. A3's **117** segments and **19** changes make its fragmentation unacceptable."
+      },
+      {
+        "id": "female_consistency_chart_block",
+        "type": "chart",
+        "chartId": "female_consistency_chart"
+      },
+      {
+        "id": "consistency_interpretation",
+        "type": "markdown",
+        "sourceId": "full_metrics",
+        "body": "The chart measures **best-fixed female consistency**, not three-fish identity accuracy. Unmapped annotations stay in the denominator, and the metric cannot detect a male-to-male exchange. A2's descriptive advantage over A1 is non-confirmatory: their 40 annotation disagreements include none in held-out, training, or the exact critical interval."
+      },
+      {
+        "id": "geometry_finding",
+        "type": "markdown",
+        "sourceId": "full_metrics",
+        "body": "## Mouth-only trajectories are smoother, but smoothness is not identity truth\n\nA1 cuts jumps at or above **7.5 mm** from A0's **597** to **166**, with lower jump and refractive-residual tails. A2 is nearly identical in aggregate, and A3 is slightly smoother again. Those are useful geometry and temporal-stability gains, but they do not identify which male is which."
+      },
+      {
+        "id": "large_jump_chart_block",
+        "type": "chart",
+        "chartId": "large_jump_chart"
+      },
+      {
+        "id": "full_table_block",
+        "type": "table",
+        "tableId": "full_comparison_table"
+      },
+      {
+        "id": "heldout_finding",
+        "type": "markdown",
+        "sourceId": "quality_review",
+        "body": "## Bounded 9/9 held-out performance falls to 6/9 with full track history\n\nA1–A3 each scored **9/9** with zero changes when initialized inside the five held-out windows. Reading the same nine frames from tracks linked from frame zero gives only **6/9** and one change for each; A0 remains **9/9** with zero changes. Window restart can hide an earlier label permutation, so the bounded result cannot be substituted for production-length continuity."
+      },
+      {
+        "id": "heldout_table_block",
+        "type": "table",
+        "tableId": "heldout_context_table"
+      },
+      {
+        "id": "method_selection",
+        "type": "markdown",
+        "sourceId": "freeze",
+        "body": "## Training froze A1–A3; A4/A5 failed completeness or identity gates\n\nA1 and all eligible A2/A3 training settings tied at **15/15** female consistency with zero changes, so registered parsimony tie-breaks selected A2 velocity weight `0.25` and A3 acceleration weight `0.05`. The 18-setting A4 sweep selected separation `0.35`, ambiguity margin `0.05`, and gap `0`, but left **91.16%** of training rows unavailable. A5 then regressed A3 to **6/15** with eight changes and was excluded from full-length execution."
+      },
+      {
+        "id": "critical_finding",
+        "type": "markdown",
+        "sourceId": "quality_review",
+        "body": "## The critical event diagnoses anchor failure, not biological identity\n\nBounded A1–A3/A5 are finite and locally stable for all **27** rows at frames `34547–34555`; A4 abstains on all 27. In full-history context, A1/A3 and A2 enter with different source-slot permutations because their paths diverged earlier. The interval was also opened before freeze during an A4 safety audit. It is permanently descriptive and cannot prove the correct male labels or select a method."
+      },
+      {
+        "id": "scope_methods",
+        "type": "markdown",
+        "sourceId": "freeze",
+        "body": "## Scope, definitions, and fixed method contract\n\nNo SLEAP inference was rerun. Every variant used authenticated six-slot strict finite-mouth caches, the fixed-interface refractive backend, three selected fish, bounds `[-20, 220]`, no positive shift, and identity gates of `8 mm` nominal jump, `80 mm` hard cap, and `100` frames maximum gap. A0 is the unchanged centroid reference. A1 is position-only strict-mouth relinking; A2 adds velocity prediction; A3 defers ambiguous assignments; A4 constructs reciprocal per-view tracklets; A5 feeds conservative A4 hints into A3."
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "body": "## What the evidence cannot establish\n\n- The female-only ledger cannot score male-to-male identity exchange.\n- Training, validation, and held-out contain only 15, 3, and 9 female annotations.\n- Length-matched controls are not behavior- or risk-matched.\n- The critical interval is unblinded and descriptive only.\n- Window initialization can hide prior global label permutations.\n- Lower jump and residual tails show smoother geometry, not biological correctness."
+      },
+      {
+        "id": "recommendation",
+        "type": "markdown",
+        "body": "## Keep A0; validate A1 with three-fish identity truth\n\n1. Keep A0 unchanged in production and retain its exact-hash output as the baseline.\n2. Carry A1 as the primary experimental mouth-only output because it is the simplest and least expensive tied candidate.\n3. Do not promote A2 until male-resolving truth explains its **114,297-frame** fixed-ID divergence from A1.\n4. Reject A3 for production; keep A4 only as an abstaining diagnostic; reject A5.\n5. Acquire persistent identity labels for all three fish across pre-crossing, crossing, and recovery frames, prioritizing A1/A2 disagreement intervals and `34547→34548`."
+      },
+      {
+        "id": "audit_status",
+        "type": "markdown",
+        "sourceId": "audit",
+        "body": "## Independent audit is complete\n\nThe final full-length quality seal is SHA-256 `7e9896716a693ce81287320af1aacd6ab686f909ad4f5cc8de43af54dc03cc92`. The auditor verified **24/24** recursive bindings and independently reproduced all **1,200** projected annotation assignments, the full QC summaries, annotation partitions, critical global slot mappings, and resource rollups."
+      },
+      {
+        "id": "further_questions",
+        "type": "markdown",
+        "body": "## Questions for the next round\n\n- Which earlier crossing starts the A1/A2 global label permutation?\n- Do all-three-fish labels confirm that A1's local strict-mouth continuation is biologically correct at the reported close pair?\n- Can a full-history relinker reduce A0's jump spikes without sacrificing its female continuity or fragmenting identities?"
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-07-31T08:02:38+09:00",
+    "status": "ready",
+    "datasets": {
+      "headline_metrics": [
+        {
+          "a0_consistency": 0.7366666667,
+          "a1_changes": 9,
+          "a0_changes": 15,
+          "a1_large_jumps": 166,
+          "a0_large_jumps": 597
+        }
+      ],
+      "full_metrics": [
+        {
+          "method": "A0 centroid reference",
+          "female_best_fixed_rate": 0.7366666667,
+          "female_best_fixed_n": 221,
+          "mapped_n": 299,
+          "identity_changes": 15,
+          "all_three_direct": 0.98954389,
+          "unavailable_fraction": 0.00644196,
+          "identity_segments": 3,
+          "jump_p95_mm": 1.357164,
+          "jump_p99_mm": 4.859558,
+          "jumps_ge_7_5_mm": 597,
+          "jumps_gt_8_mm": 0,
+          "residual_p95_mm2": 3.324703,
+          "residual_p99_mm2": 22.412483
+        },
+        {
+          "method": "A1 strict mouth",
+          "female_best_fixed_rate": 0.6,
+          "female_best_fixed_n": 180,
+          "mapped_n": 297,
+          "identity_changes": 9,
+          "all_three_direct": 0.983537005,
+          "unavailable_fraction": 0.009188181,
+          "identity_segments": 10,
+          "jump_p95_mm": 1.122509,
+          "jump_p99_mm": 2.035663,
+          "jumps_ge_7_5_mm": 166,
+          "jumps_gt_8_mm": 0,
+          "residual_p95_mm2": 1.024843,
+          "residual_p99_mm2": 3.086581
+        },
+        {
+          "method": "A2 selected motion",
+          "female_best_fixed_rate": 0.64,
+          "female_best_fixed_n": 192,
+          "mapped_n": 297,
+          "identity_changes": 9,
+          "all_three_direct": 0.983537005,
+          "unavailable_fraction": 0.009188181,
+          "identity_segments": 10,
+          "jump_p95_mm": 1.122509,
+          "jump_p99_mm": 2.035663,
+          "jumps_ge_7_5_mm": 166,
+          "jumps_gt_8_mm": 0,
+          "residual_p95_mm2": 1.024843,
+          "residual_p99_mm2": 3.0866
+        },
+        {
+          "method": "A3 deferred",
+          "female_best_fixed_rate": 0.3133333333,
+          "female_best_fixed_n": 94,
+          "mapped_n": 297,
+          "identity_changes": 19,
+          "all_three_direct": 0.98099541,
+          "unavailable_fraction": 0.015318417,
+          "identity_segments": 117,
+          "jump_p95_mm": 1.119743,
+          "jump_p99_mm": 2.013044,
+          "jumps_ge_7_5_mm": 160,
+          "jumps_gt_8_mm": 0,
+          "residual_p95_mm2": 1.021697,
+          "residual_p99_mm2": 3.046964
+        }
+      ],
+      "heldout_context": [
+        {
+          "method": "A0 centroid reference",
+          "bounded_correct": 9,
+          "global_correct": 9,
+          "global_changes": 0
+        },
+        {
+          "method": "A1 strict mouth",
+          "bounded_correct": 9,
+          "global_correct": 6,
+          "global_changes": 1
+        },
+        {
+          "method": "A2 selected motion",
+          "bounded_correct": 9,
+          "global_correct": 6,
+          "global_changes": 1
+        },
+        {
+          "method": "A3 deferred",
+          "bounded_correct": 9,
+          "global_correct": 6,
+          "global_changes": 1
+        }
+      ]
+    }
+  },
+  "sources": []
+}

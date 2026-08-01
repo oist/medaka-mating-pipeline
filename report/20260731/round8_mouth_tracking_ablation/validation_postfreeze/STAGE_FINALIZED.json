@@ -1,0 +1,1540 @@
+{
+  "bindings": {
+    "completed_marker": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\STAGE_COMPLETED.json",
+      "sha256": "7b11328f9304c9ad2a472d93125c0e108ea3e810e4a06e616b9da09128f32fa8"
+    },
+    "freeze": {
+      "frozen_at": "2026-07-31T04:18:09.058553+09:00",
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\frozen_thresholds.json",
+      "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    },
+    "postcompletion_auth": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\postcompletion_auth.json",
+      "sha256": "0b5fa6e8f1048d37ed49d637b9a8ea77dd6d4634be3ef527163e9be16bd98582"
+    },
+    "prelaunch_auth": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\prelaunch_auth.json",
+      "sha256": "abdfe584b902c3e904712231f5b4ba1b701c89b5d7c7cac8af0ed7870eb2c514"
+    },
+    "prepared_manifest": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\STAGE_PREPARED.json",
+      "sha256": "3fb4e79994df34c5d0d140a1ed5f24d5358970114230950d7cd9addb74eabae6"
+    },
+    "runner": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\run_bounded_postfreeze_stage.py",
+      "sha256": "54ec5698f84c6c65aa2e0aff226dd208445ab1db51c35a60bed8e396f3abab16"
+    }
+  },
+  "completed_marker_inventory_validation": {
+    "checked_artifact_count": 181,
+    "expected_post_marker_append": {
+      "actual": {
+        "bytes": 194,
+        "sha256": "60e9d1458ce9de2d1f6837628ca5c0c6014c93c04f0a4f95d635193ebffc9b24"
+      },
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\detached_launcher.stdout.log",
+      "recorded": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "interpretation": "Every marker-inventoried artifact except detached launcher stdout is unchanged. The sole mismatch is the expected final JSON line written by the runner after its atomic marker was created.",
+    "recorded_artifact_count": 181,
+    "result": "PASS",
+    "unchanged_artifact_count": 180,
+    "unchanged_artifacts": {
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\DETACHED_LAUNCH.json": {
+        "bytes": 962,
+        "sha256": "561fc3f71702cafaf182504c43ea9595bdbf6c0e53ba66ba8a9c24950f5b84c8"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\INTERRUPTED_LAUNCH_20260731_043346.json": {
+        "bytes": 1217,
+        "sha256": "9047506507769e875f52af369351ef424ed3957514e536900c57ec89ae454558"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\STAGE_PREPARED.json": {
+        "bytes": 22161,
+        "sha256": "3fb4e79994df34c5d0d140a1ed5f24d5358970114230950d7cd9addb74eabae6"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1.stdout.log": {
+        "bytes": 6200,
+        "sha256": "1d2c2cf748511a30f199dfa48c5609d36dc42f588035899719861c574938df69"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1_direct.csv": {
+        "bytes": 508465,
+        "sha256": "e0017ccfbfdad43aa07bcc8f9bc6b9a2e2b919735108f12bd14e863e7965179c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1_filled.csv": {
+        "bytes": 355943,
+        "sha256": "054a296a2a537db3c5ec4afaa1e401d14ed86fb75c57e99d8fbe26151d9599b0"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1_summary.json": {
+        "bytes": 6198,
+        "sha256": "b644b7db8ddf54c61d9a8b30d5d934ba6e1308620ba722c4130bc975292e0ebf"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2.stdout.log": {
+        "bytes": 6245,
+        "sha256": "ac03d897ae1a56995886b268086b2fc834d53a927b3e3117905e88ff02f9d3f6"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2_direct.csv": {
+        "bytes": 490600,
+        "sha256": "fea2a5c8713f2bf207274df0a3b70e9a0af0ac973504e269739e44a631c6a5e3"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2_filled.csv": {
+        "bytes": 338078,
+        "sha256": "d3401152ea189d97ee22489585476076779df60b9e460b7b7494344ebbe3a47a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2_summary.json": {
+        "bytes": 6243,
+        "sha256": "e08ecd9304e22ee74f0b9b00494a0658d6f5d861bdd395f4e1d687bef4e495e1"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3.stdout.log": {
+        "bytes": 7768,
+        "sha256": "59fcf6a3ec911bb25bdbcb1c4a0a8fbcc17b0fefad3ff33f81c1e662657bbbc6"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_assignment_audit.csv": {
+        "bytes": 65258,
+        "sha256": "bdb11fb73dcae5329675da722fb96f21bb5cb82c7abe0ac8e52aa8107f00e82b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_direct.csv": {
+        "bytes": 494173,
+        "sha256": "74f9b0f66111541f51a41d9aadd8500697c30d670f829515831458d06fa918d6"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_filled.csv": {
+        "bytes": 341651,
+        "sha256": "d3ac66444ff7b4434d53ffcb9b5fe50242d3508d8b5ca368c2d401ac5d178319"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_summary.json": {
+        "bytes": 7766,
+        "sha256": "affbeda84c1c2cd87b5f05d1c5229277b9c47b0a12fc86cedf51ebf95e5f95dd"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_unresolved_intervals.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4.resume.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4.resume.stdout.log": {
+        "bytes": 28292,
+        "sha256": "90c799d3fc41bf504e70e2dcc79ae997257445086ecd61d21e97e5fb96afaca4"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4.stdout.log": {
+        "bytes": 28292,
+        "sha256": "2c3aaa939ee720518c7c1fd4f9df83917d8b7c5d5fc1a55ed2a8d17de7d1f325"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_admissible_hypotheses.parquet": {
+        "bytes": 3004252,
+        "sha256": "635693723ff6ac0ad64c66b62233b99938d9db317a6589914c46d63662adbd6d"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_direct.csv": {
+        "bytes": 255125,
+        "sha256": "75ec822ba538be249190254c4cb424f4d4708e8b9cbddc132d28c574f917cd60"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_filled.csv": {
+        "bytes": 259940,
+        "sha256": "0606381e01aecea73727da4db155de4792d24abd562a363897ba75efc92ef8df"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_group_dispositions.csv": {
+        "bytes": 80952,
+        "sha256": "7d7ba0ed413e850a33ce96ced4dcc46761f57ea479b3cba3665122b716edf478"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_group_observations.parquet": {
+        "bytes": 3411691,
+        "sha256": "1509562cf929fba68e96af5ffb0505bbe408a3c2d21fb337a25a86a11cb09cd6"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_groups.csv": {
+        "bytes": 349430,
+        "sha256": "d22b1ca11555312dfa6aad2d8933f6176c269201e35f44a917a4460227b55438"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_links.csv": {
+        "bytes": 1923,
+        "sha256": "19b0758591d5ef2326ef3b3268f5fc2c87d1d9b877175f884d9781fa0427f2ce"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_paths.csv": {
+        "bytes": 471,
+        "sha256": "5f85f49498c82453640f2473d050225903ffe8638d467f27c142e341e64f91ff"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_selected_observations.parquet": {
+        "bytes": 33443,
+        "sha256": "caa8e4fe044166e1fafe63b790facae0cea79d0df793bd37b7cb7d904e735347"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_summary.json": {
+        "bytes": 28290,
+        "sha256": "43b7c82e3de0ecc4a6782caee3333e9d830e7364b86f2ebbf48164ba793bc154"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151050_151299.parquet": {
+        "bytes": 644041,
+        "sha256": "188645e7794c60bc6d7587c006476ed99f354a435391a460fe40f8949ca8586e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151050_151299.status.json": {
+        "bytes": 319,
+        "sha256": "59c7131f0bef6c83b253d30f6d8bd109746bc75ff46dd1a54df5f5f254f81d15"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151300_151549.parquet": {
+        "bytes": 631447,
+        "sha256": "9a0536c60d494976b9fb9951c15820437e094e4f6dfc49d7970e4ccf4973e27c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151300_151549.status.json": {
+        "bytes": 319,
+        "sha256": "08ceebe783fe4a734132282199a7ee319094344dfcd18bdb89dbe5263cbd8d03"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151550_151799.parquet": {
+        "bytes": 638413,
+        "sha256": "7f700ce88616261018467b795d77b671c32353dd6aa359a26bd097682c12f31e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151550_151799.status.json": {
+        "bytes": 319,
+        "sha256": "52e518b0deae2bea118d1dbff195e69dd4e68e00bfdafaa7cb3644b19248cf6e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151800_152049.parquet": {
+        "bytes": 584189,
+        "sha256": "b57ec7cbf02bf053f5454ba8a944981d1ecd20bf5ecab27dbf20d0bdedb592d5"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151800_152049.status.json": {
+        "bytes": 319,
+        "sha256": "9c71808a2da2a97e134f809d401107ac5e3255922f9d163df7922848beca8d10"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f152050_152240.parquet": {
+        "bytes": 473865,
+        "sha256": "1121137703a62c197dd64ba57af69d63b60b14af701878fcc22877d83eb8e2fc"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f152050_152240.status.json": {
+        "bytes": 318,
+        "sha256": "5e19013b1d3f3b2f8df242f93990f7d124ad60583d8d95b692f0fd7ee38d2100"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side1_cam.bridges.parquet": {
+        "bytes": 98897,
+        "sha256": "2918ca7f0a09d212637615ebf25b11f23701c7769ff788072561d629893f2cf1"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side1_cam.dispositions.parquet": {
+        "bytes": 14268,
+        "sha256": "d3ee1ea7364389daa78ad800c4b37ab40efc5afa75b5c4812834f7fd2f6bfc66"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side1_cam.summary.json": {
+        "bytes": 1036,
+        "sha256": "3ffadf6788e6b2117a3157e9a2e1a67b99c7faf0663ebdc53e5b61fee0db6a65"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side1_cam.tracklets.parquet": {
+        "bytes": 88197,
+        "sha256": "d5e53af558e2b1e67635826cebc188afa3c94e707ff44b1ae4d881fe6a201532"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side2_cam.bridges.parquet": {
+        "bytes": 98210,
+        "sha256": "808c92a1172de23343736f8bb1eef2bd1d33dc4e4ac1f94d2d37f90d04787ad3"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side2_cam.dispositions.parquet": {
+        "bytes": 14596,
+        "sha256": "4f158500c633510cf8a6ed5e9c7e8c58edc4ee8bf9d1ae391c3e13e1caa934f6"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side2_cam.summary.json": {
+        "bytes": 1034,
+        "sha256": "9abc2e99d79dbee6a10b8dd05f4396686b39cbd4cbb2ea51a051073d4d7b9389"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side2_cam.tracklets.parquet": {
+        "bytes": 86860,
+        "sha256": "a04a8a52e70cf64ff4d93bce956e27da1c6a26633b1a780e21d632af5897e8cb"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\top_cam.bridges.parquet": {
+        "bytes": 101173,
+        "sha256": "b1f974178df068db1a14e27d1a0eb423731bd450e901a5b4af220fe0f73c916a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\top_cam.dispositions.parquet": {
+        "bytes": 13828,
+        "sha256": "6e39b143f80ca247c392b5a87a8e20eacea74af769801d4ae2740464a103f474"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\top_cam.summary.json": {
+        "bytes": 1025,
+        "sha256": "810e59dfabb448df49254c6619c9eaef2c10a8ddb108d915f75f14e0c4c2cf24"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\top_cam.tracklets.parquet": {
+        "bytes": 89661,
+        "sha256": "425e6691ce70a9e83aa55c950424275975e9f852c7376a496f1ac06aad62d114"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5.stdout.log": {
+        "bytes": 13214,
+        "sha256": "2784b96adca48dd56b97a7684d59939bc4219ae37a516187c8f95e79ea1d16bd"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_assignment_audit.csv": {
+        "bytes": 65997,
+        "sha256": "551190650fc67af8cc1272fc892556637f8af98f8ef3f55ef68544b5cd4ecc89"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_direct.csv": {
+        "bytes": 496321,
+        "sha256": "d59b535ed3454a89c592efac3f4e9406b68a4a339d3ac97f70c2ab659ea73707"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_filled.csv": {
+        "bytes": 343799,
+        "sha256": "7d9c08b2640981b23cc47fafd4e0385d6c3d55161726c02c193f4010a21800b2"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_forced_reset_frames.json": {
+        "bytes": 36,
+        "sha256": "5e3591fc92f24628367cb03e7706db0381e10e3f077c75587f1b0c8a2c6aceff"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_hint_application_audit.csv": {
+        "bytes": 14268,
+        "sha256": "19a94b92d1e2fd7f81888c4176dd365efe513fc9bb5068b166ccdf2a7ff33c6f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_hints.csv": {
+        "bytes": 29318,
+        "sha256": "dae2c6bda73639e29bfa94c1cf1f0039e6ce181d514af7cacc2b791f0d276ae3"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_hints_summary.json": {
+        "bytes": 7867,
+        "sha256": "81f208fac082d574ca8b7bec1b7a7b010f4fb39f56ca35185eb6353486e6da5f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_summary.json": {
+        "bytes": 13212,
+        "sha256": "5709dd04fbd66171827932a54f30a8a719039dff890db432ab4a33619bc17f9c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_unresolved_intervals.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\hints.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\hints.stdout.log": {
+        "bytes": 7869,
+        "sha256": "4ec73c7f6cf365628eb065d2f77969df794af265b7943869c872127fa31f3f54"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry.resume.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry.resume.stdout.log": {
+        "bytes": 14046,
+        "sha256": "4305652c7c2f45f5e1878cd4adb876061bcfa784e0d3cff7cf4e6c457052dd42"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry.stdout.log": {
+        "bytes": 14044,
+        "sha256": "8da5ef10249b65c6478f550320acc4ca2e8e2cbae31207813cec41754e60487f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f151050_151549.parquet": {
+        "bytes": 105210,
+        "sha256": "9a00c2fdc81c9c1e87ea9955b3321a1372473095d3cb925084b99a7ecdde0cbf"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f151050_151549.status.json": {
+        "bytes": 354,
+        "sha256": "6ecac09fa87868ba71e1452fbc91a79fa15147ea530dde072f1c679259612430"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f151550_152049.parquet": {
+        "bytes": 105421,
+        "sha256": "c0bb44b6624535ba03455cc404557b475d8fdf227492d8f5a57e4370af3bbdba"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f151550_152049.status.json": {
+        "bytes": 355,
+        "sha256": "465de13c407b77d82715adb29cb55f7ef5e8e61dec58a5fa3cf93b7f5ace4c0d"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f152050_152240.parquet": {
+        "bytes": 45195,
+        "sha256": "f4d27c2f7096195dc2fff6eac7993c65d794e3b6d8f83dbdc2b23b64d3822850"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f152050_152240.status.json": {
+        "bytes": 354,
+        "sha256": "39c1e9cba9bbfca4a650f1bca781503c93492172ae620b29834b50deb62a1792"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_summary.json": {
+        "bytes": 14044,
+        "sha256": "eedb2b669a87d0f8ca7efb15a1bb5c884695e78a3279890f8377eee7aa287076"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\strict_mouth_selected_geometry.parquet": {
+        "bytes": 242034,
+        "sha256": "4ef524c48fe83d4fdfdf68c268b421831622989854c5a45ba2ce1290a0978116"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\detached_launcher.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\postcompletion_auth.json": {
+        "bytes": 4016,
+        "sha256": "0b5fa6e8f1048d37ed49d637b9a8ea77dd6d4634be3ef527163e9be16bd98582"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\prelaunch_auth.json": {
+        "bytes": 4016,
+        "sha256": "abdfe584b902c3e904712231f5b4ba1b701c89b5d7c7cac8af0ed7870eb2c514"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A1.json": {
+        "bytes": 1775,
+        "sha256": "b7f8ed1b380388f211f2c804ba3a93740d95893aad4775bdcb5de9dda922817f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A2.json": {
+        "bytes": 1820,
+        "sha256": "fbf1354f960b30dcfb529627bf00601dd3bf22ca88d7f959803e1288cdc48099"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A3.json": {
+        "bytes": 2088,
+        "sha256": "63aca02dbda6e09a27f9952158e6c2b2832f38daf914b499460479ace492940e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A4.json": {
+        "bytes": 2024,
+        "sha256": "81accfce5978dec995d247c51041b470cfc97244a7b90f63b9ab277a4ba659e4"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A4_resume.json": {
+        "bytes": 2045,
+        "sha256": "9466ecf4f6b49c05768d83ac6eb7ad9bf1802ca72931db79129bb80247270ef5"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A5.json": {
+        "bytes": 2676,
+        "sha256": "0ec14f74055db5a2f3baab83b920249fb7450eae9344146e86719dc486d453e1"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A5_hints.json": {
+        "bytes": 1989,
+        "sha256": "a1faf372ee701cf4662e08c14fb5a62d5a4f09d42d9571e9a5921137c2da3d77"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.geometry.json": {
+        "bytes": 1632,
+        "sha256": "3f0b0402974b43b03230a388ab06fce8b9385f9d2f448b07673cfdab12cd3f7d"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.geometry_resume.json": {
+        "bytes": 1653,
+        "sha256": "0e5aec5bd9030a93a5b8fabea59c816965463e60eafd2df09205ab640a4dba22"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A1.json": {
+        "bytes": 1759,
+        "sha256": "5623dab203472e3ad79845e65a461a16be7598db2257774e59ff3ba2f4c79bc5"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A2.json": {
+        "bytes": 1804,
+        "sha256": "82cf138737b91daad28d5c6e7b2338d9f1e5b97b4b8e823c047c4e9ef501450b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A3.json": {
+        "bytes": 2071,
+        "sha256": "a57965f183ae13a2a2737fdfd783055107af8d78b50b0222f63d69f6d7348acb"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A4.json": {
+        "bytes": 2010,
+        "sha256": "8213cf464bbcc42d0fe30a06b7798bfaa9c513047bfe6b511bb3b82ff54040b0"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A4_resume.json": {
+        "bytes": 2030,
+        "sha256": "d250ab31ab7adc4b67025a994548c4866f9ae2ae9f82f99c0f0801874364613d"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A5.json": {
+        "bytes": 2648,
+        "sha256": "e7382186ebd9cc505d7bcd6d33cebe9964b18ee3790bef8f1088260ec444005a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A5_hints.json": {
+        "bytes": 1970,
+        "sha256": "ef73df8611ac4b160ea8dfc1799bc6a5cb13d067d9690e5e03c51c8aea82955b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.geometry.json": {
+        "bytes": 1618,
+        "sha256": "f7161d186020aaab85f4f8fafeef1eb7fea52d8c2d1daa3a55adf4bbfc6a5171"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.geometry_resume.json": {
+        "bytes": 1638,
+        "sha256": "f1aaa98eb46be6eebc17d8fc3f88fd0069ebbd266c4afb06baa6f124e3991e89"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1.stdout.log": {
+        "bytes": 6213,
+        "sha256": "6b274337dc22ebb99fe0a247a859dce1461405564e546e61018a72a124b051ec"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1_direct.csv": {
+        "bytes": 504651,
+        "sha256": "6e67c96b93169d530fd5ca3fa0b3b63d2a3cbfce4b0722d5039a8096f3fb08c5"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1_filled.csv": {
+        "bytes": 352258,
+        "sha256": "8783dc4ba2210ee766a06909a37670b01191f67257058c4c3ef66f54894027f8"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1_summary.json": {
+        "bytes": 6211,
+        "sha256": "8cd291acfb720cf5c040ec9041be2c87470ed03b48e3547e09ba40f219a7b1bf"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2.stdout.log": {
+        "bytes": 6258,
+        "sha256": "b4b7fb49a6814e8cc8b92a82b577f7727a3dbf555c35122674692c737b6daa06"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2_direct.csv": {
+        "bytes": 486826,
+        "sha256": "7404b6812a505a140e45e9ed6d17d76392a1259c2b80073e1c864b89b3677394"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2_filled.csv": {
+        "bytes": 334433,
+        "sha256": "dff97abb3095278e5ee1c2bf7a4bf8896823b0ef76417fc669ed07cca88bf74e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2_summary.json": {
+        "bytes": 6256,
+        "sha256": "48b76db5d44451b8a0cca390ed4236bb5e57ae52e144d1986b7f78ede9b807d0"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3.stdout.log": {
+        "bytes": 7776,
+        "sha256": "4cb285f576df290f6a68822973c6338592ee14a343de4a38ac297e57c7f31a5e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_assignment_audit.csv": {
+        "bytes": 65033,
+        "sha256": "4ea1b6bb2578a344d806d26df0095522e3bd4a6fd353e385a7b7596d6a2c10ce"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_direct.csv": {
+        "bytes": 490727,
+        "sha256": "444e2e50fd4b3993abca4ba2b8aff6f44e0aa5a4c901799196481fa5e70ab91b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_filled.csv": {
+        "bytes": 338334,
+        "sha256": "6667d06b2f59e66e57f164cfa7218fc54456e16c659f6f335043c5b3acaa3329"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_summary.json": {
+        "bytes": 7774,
+        "sha256": "2ccce37ea6b6a53c0303452dea37a85b3f8df5bd87f570066a6613dc2e029638"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_unresolved_intervals.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4.resume.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4.resume.stdout.log": {
+        "bytes": 28209,
+        "sha256": "8cfa20a02091c3ff4aee4dfedf41e74f1c980a0b3af6a5e1d7da0132bf8034aa"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4.stdout.log": {
+        "bytes": 28209,
+        "sha256": "8c60bca2151c4c4745174c76b4fc4b2eca7fcb8653cd47141499c094680336bd"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_admissible_hypotheses.parquet": {
+        "bytes": 2661258,
+        "sha256": "91de10f613b50676ef4def1a15a036f78668ced2c9d6d5d14c5a7b549e141aa3"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_direct.csv": {
+        "bytes": 232582,
+        "sha256": "d7909fde22922ea7a0e60c8c8b8303b9d8b0eebd8082b6045cd69c06ee662a36"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_filled.csv": {
+        "bytes": 242450,
+        "sha256": "62cd7dfd3bea29ba267025b1b67aa83203f7e3d157aa969397ccd0bc54830e41"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_group_dispositions.csv": {
+        "bytes": 71165,
+        "sha256": "8eccb2561456c830778e9a0f1aeba9bc511c7b53e54c8f76837d93a71eba5f4c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_group_observations.parquet": {
+        "bytes": 3021740,
+        "sha256": "4f76256630bda9b94a806ef2a00403b16ab0506215c00ef8160d656f985f452f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_groups.csv": {
+        "bytes": 321228,
+        "sha256": "4aa28db9752d5a605c792ef8f5d95913b08d3ca754c080fd64f6edd2b5f7b920"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_links.csv": {
+        "bytes": 1060,
+        "sha256": "820b01fcddde2b7fa388c8b7019d39832c0df1d6a32c221a4cd1b53f71e30832"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_paths.csv": {
+        "bytes": 273,
+        "sha256": "29eb43c2d0c400b618a606cf593cabf358d5baf7aa3cd97221ec0a850ebad5ff"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_selected_observations.parquet": {
+        "bytes": 25796,
+        "sha256": "22eb445fb762c1528f3cd85b0f1609ce1837dcc2e4ca7bb3be80de523c07c78c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_summary.json": {
+        "bytes": 28207,
+        "sha256": "043ddf422ca265f4f3e283c1ed7757806f313d4e628d9c7cd0f2fba4ad5ad6f8"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f096612_096861.parquet": {
+        "bytes": 547917,
+        "sha256": "b1c8f89cb0f6615852ea17637b8d9dde184fff369a2d5ef7b02696889bc6b1d9"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f096612_096861.status.json": {
+        "bytes": 317,
+        "sha256": "02224c8e8110c0c3b65a3f9bf04a633a8548f9cb61f2890b2d9495f34b5476aa"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f096862_097111.parquet": {
+        "bytes": 546265,
+        "sha256": "77d7db8b9db2dde4e0a1332a74793e77e5682bf8eaaccc9696f74559d19911ba"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f096862_097111.status.json": {
+        "bytes": 317,
+        "sha256": "296ffc676b3b8303030b113963f96c1a3dddb25f212437c56a6278ff84900163"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097112_097361.parquet": {
+        "bytes": 424097,
+        "sha256": "1708ec181f34305d8bd19b2d459f68641e7eede29427b8025cff3d29ff739409"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097112_097361.status.json": {
+        "bytes": 316,
+        "sha256": "a05da8da997a8c866edddb3bb072352d8aa241e38a9ede5bb79653a4950ae7d9"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097362_097611.parquet": {
+        "bytes": 612850,
+        "sha256": "8e1522128fbc6d97afc8b22fda82fcaa87a0b70265c71564ef6c17a7f5956992"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097362_097611.status.json": {
+        "bytes": 317,
+        "sha256": "92816592ab91c5b5f73588c6b28e170191b89796d1db08b22ea393aae05ff62f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097612_097802.parquet": {
+        "bytes": 500269,
+        "sha256": "1f62969675665ae04a39e951feaeaf7a913243f8f57f4a1a10f438d05d1b09e7"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097612_097802.status.json": {
+        "bytes": 317,
+        "sha256": "437fd9d48ab05b6e7d21353d492778fbe5e0e03674a617ed11b1afb2010c6d1c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side1_cam.bridges.parquet": {
+        "bytes": 101488,
+        "sha256": "9191da7264aa5cbc1a77fafe3b148402376c13b110bbe2edd155e2f7226712eb"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side1_cam.dispositions.parquet": {
+        "bytes": 13849,
+        "sha256": "70c5129c99f1df0b79759e7c1d81183a0933b588e7887707f694cdde4cd23417"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side1_cam.summary.json": {
+        "bytes": 1037,
+        "sha256": "dcf8451e2c07b8bb96d9073e2c38e0f88d08ebc90c1159a743e13a092a3a890a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side1_cam.tracklets.parquet": {
+        "bytes": 86123,
+        "sha256": "2019d99cc71f750a5e150359bb1856f8b625b7e680b37c156c33a1f9058ff76b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side2_cam.bridges.parquet": {
+        "bytes": 95765,
+        "sha256": "955248df7f0567dfde4dc2411b5f1a3e1b59a59757e61e29373477cfa5485bf7"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side2_cam.dispositions.parquet": {
+        "bytes": 14249,
+        "sha256": "a1833665dab404e331dc4649a0a3827f52b469c75feab1a8ecaa7f25160cbd6b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side2_cam.summary.json": {
+        "bytes": 1024,
+        "sha256": "5977c6c30534c7e685bf3aa30355287c9c9b1b60f843f11b894ec5fceed69b96"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side2_cam.tracklets.parquet": {
+        "bytes": 80329,
+        "sha256": "32e2a8fc631da5152c054adf2cc9077e226cb05a79553cabf4754ce5304b3297"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\top_cam.bridges.parquet": {
+        "bytes": 104478,
+        "sha256": "5c7f3340dd07121282a2f2ecd25644104b6f6c98dafb55915a6adb37e37b453b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\top_cam.dispositions.parquet": {
+        "bytes": 14325,
+        "sha256": "5e290407eb314a66fcd9f6bbe5eaf77d4f1933247283d9de7d9cc2e508bb713b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\top_cam.summary.json": {
+        "bytes": 1036,
+        "sha256": "a74b5830cf1b71eaf2aa8acc0c61a83bca42c5ed21e4d637c590f92f78c22d52"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\top_cam.tracklets.parquet": {
+        "bytes": 83929,
+        "sha256": "6b4f8d290bd3119fbf503f13fe2f0f3717c4b373dd6bf2d204355f9435a27a75"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5.stdout.log": {
+        "bytes": 13147,
+        "sha256": "16b87df923191d4dac5565927e07d92d60597cda54bb7773275bc6d74867b1fe"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_assignment_audit.csv": {
+        "bytes": 65033,
+        "sha256": "4ea1b6bb2578a344d806d26df0095522e3bd4a6fd353e385a7b7596d6a2c10ce"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_direct.csv": {
+        "bytes": 490727,
+        "sha256": "444e2e50fd4b3993abca4ba2b8aff6f44e0aa5a4c901799196481fa5e70ab91b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_filled.csv": {
+        "bytes": 338334,
+        "sha256": "6667d06b2f59e66e57f164cfa7218fc54456e16c659f6f335043c5b3acaa3329"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_forced_reset_frames.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_hint_application_audit.csv": {
+        "bytes": 5544,
+        "sha256": "eadf55841e526c849892b123b6f77de5608ca2c718f602a66b1fedafee292d98"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_hints.csv": {
+        "bytes": 11961,
+        "sha256": "fbe31d5de2ecdb3eb02d52f2ec002c5c22a6787fab629617cb7305dfbcf79a6a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_hints_summary.json": {
+        "bytes": 6964,
+        "sha256": "1d6c9d43ca413261069cce924a35231875e9622f6f9251691b08a1d302981ba9"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_summary.json": {
+        "bytes": 13145,
+        "sha256": "043cb5a3de31e9e34e592ea558fb96dee0bc81fab2570a690872a8d5e6f98d43"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_unresolved_intervals.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\hints.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\hints.stdout.log": {
+        "bytes": 6966,
+        "sha256": "0d1b8dedf2f6a1dc4bb044dab692ba40ee7e106eaa36587337db02c83b55bdc2"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry.resume.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry.resume.stdout.log": {
+        "bytes": 14035,
+        "sha256": "1c885ee30d8c84786d43f15a3efd821cfa57c4a583a4d4cecc22c47cbad8618a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry.stdout.log": {
+        "bytes": 14034,
+        "sha256": "be2e4ea5bd22c0b408a10a855ecd183f6903407dc4b973407fd0994cd8e14e69"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f096612_097111.parquet": {
+        "bytes": 104645,
+        "sha256": "5125be3030ac2a3284bf62ad217a4d0d44875e742d85804a25391e2652b47179"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f096612_097111.status.json": {
+        "bytes": 353,
+        "sha256": "d86c973d2f6dc9f3337820fcb7c4911bf59c77eafde11de9d8c362c282d15345"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f097112_097611.parquet": {
+        "bytes": 105052,
+        "sha256": "2f94977df43961463434dd6252dcd8bd44eb147dbc336c3b4c6b9ca23f4f8f8a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f097112_097611.status.json": {
+        "bytes": 353,
+        "sha256": "764464b26d65d295f91dd42a9b19ebaf45e6ab59987ea199ad29b28624e2f6ff"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f097612_097802.parquet": {
+        "bytes": 45287,
+        "sha256": "caadd518efe87176ec7276abd3ccd28aa84a6279c18e270347ebea06c15ba400"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f097612_097802.status.json": {
+        "bytes": 352,
+        "sha256": "42564bb1a5aa140aa50def1ad35562fd664b85743c770071eda5d5f36a61d0d9"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_summary.json": {
+        "bytes": 14033,
+        "sha256": "d9a6852352135bd91c1a2def12230be147cd0cd889b96fb843ca8d0c2979052c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\strict_mouth_selected_geometry.parquet": {
+        "bytes": 241189,
+        "sha256": "50620a96f5cc32deb2086888f8076f1b820f344b176b0d74a807a1e66cf52b96"
+      }
+    }
+  },
+  "current_stage_inventory": {
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\DETACHED_LAUNCH.json": {
+      "bytes": 962,
+      "sha256": "561fc3f71702cafaf182504c43ea9595bdbf6c0e53ba66ba8a9c24950f5b84c8"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\INTERRUPTED_LAUNCH_20260731_043346.json": {
+      "bytes": 1217,
+      "sha256": "9047506507769e875f52af369351ef424ed3957514e536900c57ec89ae454558"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\STAGE_COMPLETED.json": {
+      "bytes": 85753,
+      "sha256": "7b11328f9304c9ad2a472d93125c0e108ea3e810e4a06e616b9da09128f32fa8"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\STAGE_PREPARED.json": {
+      "bytes": 22161,
+      "sha256": "3fb4e79994df34c5d0d140a1ed5f24d5358970114230950d7cd9addb74eabae6"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1.stdout.log": {
+      "bytes": 6200,
+      "sha256": "1d2c2cf748511a30f199dfa48c5609d36dc42f588035899719861c574938df69"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1_direct.csv": {
+      "bytes": 508465,
+      "sha256": "e0017ccfbfdad43aa07bcc8f9bc6b9a2e2b919735108f12bd14e863e7965179c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1_filled.csv": {
+      "bytes": 355943,
+      "sha256": "054a296a2a537db3c5ec4afaa1e401d14ed86fb75c57e99d8fbe26151d9599b0"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A1\\a1_summary.json": {
+      "bytes": 6198,
+      "sha256": "b644b7db8ddf54c61d9a8b30d5d934ba6e1308620ba722c4130bc975292e0ebf"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2.stdout.log": {
+      "bytes": 6245,
+      "sha256": "ac03d897ae1a56995886b268086b2fc834d53a927b3e3117905e88ff02f9d3f6"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2_direct.csv": {
+      "bytes": 490600,
+      "sha256": "fea2a5c8713f2bf207274df0a3b70e9a0af0ac973504e269739e44a631c6a5e3"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2_filled.csv": {
+      "bytes": 338078,
+      "sha256": "d3401152ea189d97ee22489585476076779df60b9e460b7b7494344ebbe3a47a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A2\\a2_summary.json": {
+      "bytes": 6243,
+      "sha256": "e08ecd9304e22ee74f0b9b00494a0658d6f5d861bdd395f4e1d687bef4e495e1"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3.stdout.log": {
+      "bytes": 7768,
+      "sha256": "59fcf6a3ec911bb25bdbcb1c4a0a8fbcc17b0fefad3ff33f81c1e662657bbbc6"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_assignment_audit.csv": {
+      "bytes": 65258,
+      "sha256": "bdb11fb73dcae5329675da722fb96f21bb5cb82c7abe0ac8e52aa8107f00e82b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_direct.csv": {
+      "bytes": 494173,
+      "sha256": "74f9b0f66111541f51a41d9aadd8500697c30d670f829515831458d06fa918d6"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_filled.csv": {
+      "bytes": 341651,
+      "sha256": "d3ac66444ff7b4434d53ffcb9b5fe50242d3508d8b5ca368c2d401ac5d178319"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_summary.json": {
+      "bytes": 7766,
+      "sha256": "affbeda84c1c2cd87b5f05d1c5229277b9c47b0a12fc86cedf51ebf95e5f95dd"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A3\\a3_unresolved_intervals.json": {
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4.resume.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4.resume.stdout.log": {
+      "bytes": 28292,
+      "sha256": "90c799d3fc41bf504e70e2dcc79ae997257445086ecd61d21e97e5fb96afaca4"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4.stdout.log": {
+      "bytes": 28292,
+      "sha256": "2c3aaa939ee720518c7c1fd4f9df83917d8b7c5d5fc1a55ed2a8d17de7d1f325"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_admissible_hypotheses.parquet": {
+      "bytes": 3004252,
+      "sha256": "635693723ff6ac0ad64c66b62233b99938d9db317a6589914c46d63662adbd6d"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_direct.csv": {
+      "bytes": 255125,
+      "sha256": "75ec822ba538be249190254c4cb424f4d4708e8b9cbddc132d28c574f917cd60"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_filled.csv": {
+      "bytes": 259940,
+      "sha256": "0606381e01aecea73727da4db155de4792d24abd562a363897ba75efc92ef8df"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_group_dispositions.csv": {
+      "bytes": 80952,
+      "sha256": "7d7ba0ed413e850a33ce96ced4dcc46761f57ea479b3cba3665122b716edf478"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_group_observations.parquet": {
+      "bytes": 3411691,
+      "sha256": "1509562cf929fba68e96af5ffb0505bbe408a3c2d21fb337a25a86a11cb09cd6"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_groups.csv": {
+      "bytes": 349430,
+      "sha256": "d22b1ca11555312dfa6aad2d8933f6176c269201e35f44a917a4460227b55438"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_links.csv": {
+      "bytes": 1923,
+      "sha256": "19b0758591d5ef2326ef3b3268f5fc2c87d1d9b877175f884d9781fa0427f2ce"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_paths.csv": {
+      "bytes": 471,
+      "sha256": "5f85f49498c82453640f2473d050225903ffe8638d467f27c142e341e64f91ff"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_selected_observations.parquet": {
+      "bytes": 33443,
+      "sha256": "caa8e4fe044166e1fafe63b790facae0cea79d0df793bd37b7cb7d904e735347"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\a4_summary.json": {
+      "bytes": 28290,
+      "sha256": "43b7c82e3de0ecc4a6782caee3333e9d830e7364b86f2ebbf48164ba793bc154"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151050_151299.parquet": {
+      "bytes": 644041,
+      "sha256": "188645e7794c60bc6d7587c006476ed99f354a435391a460fe40f8949ca8586e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151050_151299.status.json": {
+      "bytes": 319,
+      "sha256": "59c7131f0bef6c83b253d30f6d8bd109746bc75ff46dd1a54df5f5f254f81d15"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151300_151549.parquet": {
+      "bytes": 631447,
+      "sha256": "9a0536c60d494976b9fb9951c15820437e094e4f6dfc49d7970e4ccf4973e27c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151300_151549.status.json": {
+      "bytes": 319,
+      "sha256": "08ceebe783fe4a734132282199a7ee319094344dfcd18bdb89dbe5263cbd8d03"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151550_151799.parquet": {
+      "bytes": 638413,
+      "sha256": "7f700ce88616261018467b795d77b671c32353dd6aa359a26bd097682c12f31e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151550_151799.status.json": {
+      "bytes": 319,
+      "sha256": "52e518b0deae2bea118d1dbff195e69dd4e68e00bfdafaa7cb3644b19248cf6e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151800_152049.parquet": {
+      "bytes": 584189,
+      "sha256": "b57ec7cbf02bf053f5454ba8a944981d1ecd20bf5ecab27dbf20d0bdedb592d5"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f151800_152049.status.json": {
+      "bytes": 319,
+      "sha256": "9c71808a2da2a97e134f809d401107ac5e3255922f9d163df7922848beca8d10"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f152050_152240.parquet": {
+      "bytes": 473865,
+      "sha256": "1121137703a62c197dd64ba57af69d63b60b14af701878fcc22877d83eb8e2fc"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\hypothesis_blocks\\admissible_f152050_152240.status.json": {
+      "bytes": 318,
+      "sha256": "5e19013b1d3f3b2f8df242f93990f7d124ad60583d8d95b692f0fd7ee38d2100"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side1_cam.bridges.parquet": {
+      "bytes": 98897,
+      "sha256": "2918ca7f0a09d212637615ebf25b11f23701c7769ff788072561d629893f2cf1"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side1_cam.dispositions.parquet": {
+      "bytes": 14268,
+      "sha256": "d3ee1ea7364389daa78ad800c4b37ab40efc5afa75b5c4812834f7fd2f6bfc66"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side1_cam.summary.json": {
+      "bytes": 1036,
+      "sha256": "3ffadf6788e6b2117a3157e9a2e1a67b99c7faf0663ebdc53e5b61fee0db6a65"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side1_cam.tracklets.parquet": {
+      "bytes": 88197,
+      "sha256": "d5e53af558e2b1e67635826cebc188afa3c94e707ff44b1ae4d881fe6a201532"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side2_cam.bridges.parquet": {
+      "bytes": 98210,
+      "sha256": "808c92a1172de23343736f8bb1eef2bd1d33dc4e4ac1f94d2d37f90d04787ad3"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side2_cam.dispositions.parquet": {
+      "bytes": 14596,
+      "sha256": "4f158500c633510cf8a6ed5e9c7e8c58edc4ee8bf9d1ae391c3e13e1caa934f6"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side2_cam.summary.json": {
+      "bytes": 1034,
+      "sha256": "9abc2e99d79dbee6a10b8dd05f4396686b39cbd4cbb2ea51a051073d4d7b9389"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\side2_cam.tracklets.parquet": {
+      "bytes": 86860,
+      "sha256": "a04a8a52e70cf64ff4d93bce956e27da1c6a26633b1a780e21d632af5897e8cb"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\top_cam.bridges.parquet": {
+      "bytes": 101173,
+      "sha256": "b1f974178df068db1a14e27d1a0eb423731bd450e901a5b4af220fe0f73c916a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\top_cam.dispositions.parquet": {
+      "bytes": 13828,
+      "sha256": "6e39b143f80ca247c392b5a87a8e20eacea74af769801d4ae2740464a103f474"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\top_cam.summary.json": {
+      "bytes": 1025,
+      "sha256": "810e59dfabb448df49254c6619c9eaef2c10a8ddb108d915f75f14e0c4c2cf24"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A4\\per_view_tracklets\\top_cam.tracklets.parquet": {
+      "bytes": 89661,
+      "sha256": "425e6691ce70a9e83aa55c950424275975e9f852c7376a496f1ac06aad62d114"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5.stdout.log": {
+      "bytes": 13214,
+      "sha256": "2784b96adca48dd56b97a7684d59939bc4219ae37a516187c8f95e79ea1d16bd"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_assignment_audit.csv": {
+      "bytes": 65997,
+      "sha256": "551190650fc67af8cc1272fc892556637f8af98f8ef3f55ef68544b5cd4ecc89"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_direct.csv": {
+      "bytes": 496321,
+      "sha256": "d59b535ed3454a89c592efac3f4e9406b68a4a339d3ac97f70c2ab659ea73707"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_filled.csv": {
+      "bytes": 343799,
+      "sha256": "7d9c08b2640981b23cc47fafd4e0385d6c3d55161726c02c193f4010a21800b2"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_forced_reset_frames.json": {
+      "bytes": 36,
+      "sha256": "5e3591fc92f24628367cb03e7706db0381e10e3f077c75587f1b0c8a2c6aceff"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_hint_application_audit.csv": {
+      "bytes": 14268,
+      "sha256": "19a94b92d1e2fd7f81888c4176dd365efe513fc9bb5068b166ccdf2a7ff33c6f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_hints.csv": {
+      "bytes": 29318,
+      "sha256": "dae2c6bda73639e29bfa94c1cf1f0039e6ce181d514af7cacc2b791f0d276ae3"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_hints_summary.json": {
+      "bytes": 7867,
+      "sha256": "81f208fac082d574ca8b7bec1b7a7b010f4fb39f56ca35185eb6353486e6da5f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_summary.json": {
+      "bytes": 13212,
+      "sha256": "5709dd04fbd66171827932a54f30a8a719039dff890db432ab4a33619bc17f9c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\a5_unresolved_intervals.json": {
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\hints.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\A5\\hints.stdout.log": {
+      "bytes": 7869,
+      "sha256": "4ec73c7f6cf365628eb065d2f77969df794af265b7943869c872127fa31f3f54"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry.resume.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry.resume.stdout.log": {
+      "bytes": 14046,
+      "sha256": "4305652c7c2f45f5e1878cd4adb876061bcfa784e0d3cff7cf4e6c457052dd42"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry.stdout.log": {
+      "bytes": 14044,
+      "sha256": "8da5ef10249b65c6478f550320acc4ca2e8e2cbae31207813cec41754e60487f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f151050_151549.parquet": {
+      "bytes": 105210,
+      "sha256": "9a00c2fdc81c9c1e87ea9955b3321a1372473095d3cb925084b99a7ecdde0cbf"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f151050_151549.status.json": {
+      "bytes": 354,
+      "sha256": "6ecac09fa87868ba71e1452fbc91a79fa15147ea530dde072f1c679259612430"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f151550_152049.parquet": {
+      "bytes": 105421,
+      "sha256": "c0bb44b6624535ba03455cc404557b475d8fdf227492d8f5a57e4370af3bbdba"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f151550_152049.status.json": {
+      "bytes": 355,
+      "sha256": "465de13c407b77d82715adb29cb55f7ef5e8e61dec58a5fa3cf93b7f5ace4c0d"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f152050_152240.parquet": {
+      "bytes": 45195,
+      "sha256": "f4d27c2f7096195dc2fff6eac7993c65d794e3b6d8f83dbdc2b23b64d3822850"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_blocks\\geometry_f152050_152240.status.json": {
+      "bytes": 354,
+      "sha256": "39c1e9cba9bbfca4a650f1bca781503c93492172ae620b29834b50deb62a1792"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\geometry_summary.json": {
+      "bytes": 14044,
+      "sha256": "eedb2b669a87d0f8ca7efb15a1bb5c884695e78a3279890f8377eee7aa287076"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\control_for_event_2\\geometry\\strict_mouth_selected_geometry.parquet": {
+      "bytes": 242034,
+      "sha256": "4ef524c48fe83d4fdfdf68c268b421831622989854c5a45ba2ce1290a0978116"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\detached_launcher.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\detached_launcher.stdout.log": {
+      "bytes": 194,
+      "sha256": "60e9d1458ce9de2d1f6837628ca5c0c6014c93c04f0a4f95d635193ebffc9b24"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\postcompletion_auth.json": {
+      "bytes": 4016,
+      "sha256": "0b5fa6e8f1048d37ed49d637b9a8ea77dd6d4634be3ef527163e9be16bd98582"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\prelaunch_auth.json": {
+      "bytes": 4016,
+      "sha256": "abdfe584b902c3e904712231f5b4ba1b701c89b5d7c7cac8af0ed7870eb2c514"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A1.json": {
+      "bytes": 1775,
+      "sha256": "b7f8ed1b380388f211f2c804ba3a93740d95893aad4775bdcb5de9dda922817f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A2.json": {
+      "bytes": 1820,
+      "sha256": "fbf1354f960b30dcfb529627bf00601dd3bf22ca88d7f959803e1288cdc48099"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A3.json": {
+      "bytes": 2088,
+      "sha256": "63aca02dbda6e09a27f9952158e6c2b2832f38daf914b499460479ace492940e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A4.json": {
+      "bytes": 2024,
+      "sha256": "81accfce5978dec995d247c51041b470cfc97244a7b90f63b9ab277a4ba659e4"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A4_resume.json": {
+      "bytes": 2045,
+      "sha256": "9466ecf4f6b49c05768d83ac6eb7ad9bf1802ca72931db79129bb80247270ef5"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A5.json": {
+      "bytes": 2676,
+      "sha256": "0ec14f74055db5a2f3baab83b920249fb7450eae9344146e86719dc486d453e1"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.A5_hints.json": {
+      "bytes": 1989,
+      "sha256": "a1faf372ee701cf4662e08c14fb5a62d5a4f09d42d9571e9a5921137c2da3d77"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.geometry.json": {
+      "bytes": 1632,
+      "sha256": "3f0b0402974b43b03230a388ab06fce8b9385f9d2f448b07673cfdab12cd3f7d"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\control_for_event_2.geometry_resume.json": {
+      "bytes": 1653,
+      "sha256": "0e5aec5bd9030a93a5b8fabea59c816965463e60eafd2df09205ab640a4dba22"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A1.json": {
+      "bytes": 1759,
+      "sha256": "5623dab203472e3ad79845e65a461a16be7598db2257774e59ff3ba2f4c79bc5"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A2.json": {
+      "bytes": 1804,
+      "sha256": "82cf138737b91daad28d5c6e7b2338d9f1e5b97b4b8e823c047c4e9ef501450b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A3.json": {
+      "bytes": 2071,
+      "sha256": "a57965f183ae13a2a2737fdfd783055107af8d78b50b0222f63d69f6d7348acb"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A4.json": {
+      "bytes": 2010,
+      "sha256": "8213cf464bbcc42d0fe30a06b7798bfaa9c513047bfe6b511bb3b82ff54040b0"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A4_resume.json": {
+      "bytes": 2030,
+      "sha256": "d250ab31ab7adc4b67025a994548c4866f9ae2ae9f82f99c0f0801874364613d"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A5.json": {
+      "bytes": 2648,
+      "sha256": "e7382186ebd9cc505d7bcd6d33cebe9964b18ee3790bef8f1088260ec444005a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.A5_hints.json": {
+      "bytes": 1970,
+      "sha256": "ef73df8611ac4b160ea8dfc1799bc6a5cb13d067d9690e5e03c51c8aea82955b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.geometry.json": {
+      "bytes": 1618,
+      "sha256": "f7161d186020aaab85f4f8fafeef1eb7fea52d8c2d1daa3a55adf4bbfc6a5171"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\process_records\\reviewed_event_2.geometry_resume.json": {
+      "bytes": 1638,
+      "sha256": "f1aaa98eb46be6eebc17d8fc3f88fd0069ebbd266c4afb06baa6f124e3991e89"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1.stdout.log": {
+      "bytes": 6213,
+      "sha256": "6b274337dc22ebb99fe0a247a859dce1461405564e546e61018a72a124b051ec"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1_direct.csv": {
+      "bytes": 504651,
+      "sha256": "6e67c96b93169d530fd5ca3fa0b3b63d2a3cbfce4b0722d5039a8096f3fb08c5"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1_filled.csv": {
+      "bytes": 352258,
+      "sha256": "8783dc4ba2210ee766a06909a37670b01191f67257058c4c3ef66f54894027f8"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A1\\a1_summary.json": {
+      "bytes": 6211,
+      "sha256": "8cd291acfb720cf5c040ec9041be2c87470ed03b48e3547e09ba40f219a7b1bf"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2.stdout.log": {
+      "bytes": 6258,
+      "sha256": "b4b7fb49a6814e8cc8b92a82b577f7727a3dbf555c35122674692c737b6daa06"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2_direct.csv": {
+      "bytes": 486826,
+      "sha256": "7404b6812a505a140e45e9ed6d17d76392a1259c2b80073e1c864b89b3677394"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2_filled.csv": {
+      "bytes": 334433,
+      "sha256": "dff97abb3095278e5ee1c2bf7a4bf8896823b0ef76417fc669ed07cca88bf74e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A2\\a2_summary.json": {
+      "bytes": 6256,
+      "sha256": "48b76db5d44451b8a0cca390ed4236bb5e57ae52e144d1986b7f78ede9b807d0"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3.stdout.log": {
+      "bytes": 7776,
+      "sha256": "4cb285f576df290f6a68822973c6338592ee14a343de4a38ac297e57c7f31a5e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_assignment_audit.csv": {
+      "bytes": 65033,
+      "sha256": "4ea1b6bb2578a344d806d26df0095522e3bd4a6fd353e385a7b7596d6a2c10ce"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_direct.csv": {
+      "bytes": 490727,
+      "sha256": "444e2e50fd4b3993abca4ba2b8aff6f44e0aa5a4c901799196481fa5e70ab91b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_filled.csv": {
+      "bytes": 338334,
+      "sha256": "6667d06b2f59e66e57f164cfa7218fc54456e16c659f6f335043c5b3acaa3329"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_summary.json": {
+      "bytes": 7774,
+      "sha256": "2ccce37ea6b6a53c0303452dea37a85b3f8df5bd87f570066a6613dc2e029638"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A3\\a3_unresolved_intervals.json": {
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4.resume.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4.resume.stdout.log": {
+      "bytes": 28209,
+      "sha256": "8cfa20a02091c3ff4aee4dfedf41e74f1c980a0b3af6a5e1d7da0132bf8034aa"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4.stdout.log": {
+      "bytes": 28209,
+      "sha256": "8c60bca2151c4c4745174c76b4fc4b2eca7fcb8653cd47141499c094680336bd"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_admissible_hypotheses.parquet": {
+      "bytes": 2661258,
+      "sha256": "91de10f613b50676ef4def1a15a036f78668ced2c9d6d5d14c5a7b549e141aa3"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_direct.csv": {
+      "bytes": 232582,
+      "sha256": "d7909fde22922ea7a0e60c8c8b8303b9d8b0eebd8082b6045cd69c06ee662a36"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_filled.csv": {
+      "bytes": 242450,
+      "sha256": "62cd7dfd3bea29ba267025b1b67aa83203f7e3d157aa969397ccd0bc54830e41"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_group_dispositions.csv": {
+      "bytes": 71165,
+      "sha256": "8eccb2561456c830778e9a0f1aeba9bc511c7b53e54c8f76837d93a71eba5f4c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_group_observations.parquet": {
+      "bytes": 3021740,
+      "sha256": "4f76256630bda9b94a806ef2a00403b16ab0506215c00ef8160d656f985f452f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_groups.csv": {
+      "bytes": 321228,
+      "sha256": "4aa28db9752d5a605c792ef8f5d95913b08d3ca754c080fd64f6edd2b5f7b920"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_links.csv": {
+      "bytes": 1060,
+      "sha256": "820b01fcddde2b7fa388c8b7019d39832c0df1d6a32c221a4cd1b53f71e30832"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_paths.csv": {
+      "bytes": 273,
+      "sha256": "29eb43c2d0c400b618a606cf593cabf358d5baf7aa3cd97221ec0a850ebad5ff"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_selected_observations.parquet": {
+      "bytes": 25796,
+      "sha256": "22eb445fb762c1528f3cd85b0f1609ce1837dcc2e4ca7bb3be80de523c07c78c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\a4_summary.json": {
+      "bytes": 28207,
+      "sha256": "043ddf422ca265f4f3e283c1ed7757806f313d4e628d9c7cd0f2fba4ad5ad6f8"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f096612_096861.parquet": {
+      "bytes": 547917,
+      "sha256": "b1c8f89cb0f6615852ea17637b8d9dde184fff369a2d5ef7b02696889bc6b1d9"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f096612_096861.status.json": {
+      "bytes": 317,
+      "sha256": "02224c8e8110c0c3b65a3f9bf04a633a8548f9cb61f2890b2d9495f34b5476aa"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f096862_097111.parquet": {
+      "bytes": 546265,
+      "sha256": "77d7db8b9db2dde4e0a1332a74793e77e5682bf8eaaccc9696f74559d19911ba"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f096862_097111.status.json": {
+      "bytes": 317,
+      "sha256": "296ffc676b3b8303030b113963f96c1a3dddb25f212437c56a6278ff84900163"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097112_097361.parquet": {
+      "bytes": 424097,
+      "sha256": "1708ec181f34305d8bd19b2d459f68641e7eede29427b8025cff3d29ff739409"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097112_097361.status.json": {
+      "bytes": 316,
+      "sha256": "a05da8da997a8c866edddb3bb072352d8aa241e38a9ede5bb79653a4950ae7d9"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097362_097611.parquet": {
+      "bytes": 612850,
+      "sha256": "8e1522128fbc6d97afc8b22fda82fcaa87a0b70265c71564ef6c17a7f5956992"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097362_097611.status.json": {
+      "bytes": 317,
+      "sha256": "92816592ab91c5b5f73588c6b28e170191b89796d1db08b22ea393aae05ff62f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097612_097802.parquet": {
+      "bytes": 500269,
+      "sha256": "1f62969675665ae04a39e951feaeaf7a913243f8f57f4a1a10f438d05d1b09e7"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\hypothesis_blocks\\admissible_f097612_097802.status.json": {
+      "bytes": 317,
+      "sha256": "437fd9d48ab05b6e7d21353d492778fbe5e0e03674a617ed11b1afb2010c6d1c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side1_cam.bridges.parquet": {
+      "bytes": 101488,
+      "sha256": "9191da7264aa5cbc1a77fafe3b148402376c13b110bbe2edd155e2f7226712eb"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side1_cam.dispositions.parquet": {
+      "bytes": 13849,
+      "sha256": "70c5129c99f1df0b79759e7c1d81183a0933b588e7887707f694cdde4cd23417"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side1_cam.summary.json": {
+      "bytes": 1037,
+      "sha256": "dcf8451e2c07b8bb96d9073e2c38e0f88d08ebc90c1159a743e13a092a3a890a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side1_cam.tracklets.parquet": {
+      "bytes": 86123,
+      "sha256": "2019d99cc71f750a5e150359bb1856f8b625b7e680b37c156c33a1f9058ff76b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side2_cam.bridges.parquet": {
+      "bytes": 95765,
+      "sha256": "955248df7f0567dfde4dc2411b5f1a3e1b59a59757e61e29373477cfa5485bf7"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side2_cam.dispositions.parquet": {
+      "bytes": 14249,
+      "sha256": "a1833665dab404e331dc4649a0a3827f52b469c75feab1a8ecaa7f25160cbd6b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side2_cam.summary.json": {
+      "bytes": 1024,
+      "sha256": "5977c6c30534c7e685bf3aa30355287c9c9b1b60f843f11b894ec5fceed69b96"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\side2_cam.tracklets.parquet": {
+      "bytes": 80329,
+      "sha256": "32e2a8fc631da5152c054adf2cc9077e226cb05a79553cabf4754ce5304b3297"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\top_cam.bridges.parquet": {
+      "bytes": 104478,
+      "sha256": "5c7f3340dd07121282a2f2ecd25644104b6f6c98dafb55915a6adb37e37b453b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\top_cam.dispositions.parquet": {
+      "bytes": 14325,
+      "sha256": "5e290407eb314a66fcd9f6bbe5eaf77d4f1933247283d9de7d9cc2e508bb713b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\top_cam.summary.json": {
+      "bytes": 1036,
+      "sha256": "a74b5830cf1b71eaf2aa8acc0c61a83bca42c5ed21e4d637c590f92f78c22d52"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A4\\per_view_tracklets\\top_cam.tracklets.parquet": {
+      "bytes": 83929,
+      "sha256": "6b4f8d290bd3119fbf503f13fe2f0f3717c4b373dd6bf2d204355f9435a27a75"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5.stdout.log": {
+      "bytes": 13147,
+      "sha256": "16b87df923191d4dac5565927e07d92d60597cda54bb7773275bc6d74867b1fe"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_assignment_audit.csv": {
+      "bytes": 65033,
+      "sha256": "4ea1b6bb2578a344d806d26df0095522e3bd4a6fd353e385a7b7596d6a2c10ce"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_direct.csv": {
+      "bytes": 490727,
+      "sha256": "444e2e50fd4b3993abca4ba2b8aff6f44e0aa5a4c901799196481fa5e70ab91b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_filled.csv": {
+      "bytes": 338334,
+      "sha256": "6667d06b2f59e66e57f164cfa7218fc54456e16c659f6f335043c5b3acaa3329"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_forced_reset_frames.json": {
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_hint_application_audit.csv": {
+      "bytes": 5544,
+      "sha256": "eadf55841e526c849892b123b6f77de5608ca2c718f602a66b1fedafee292d98"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_hints.csv": {
+      "bytes": 11961,
+      "sha256": "fbe31d5de2ecdb3eb02d52f2ec002c5c22a6787fab629617cb7305dfbcf79a6a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_hints_summary.json": {
+      "bytes": 6964,
+      "sha256": "1d6c9d43ca413261069cce924a35231875e9622f6f9251691b08a1d302981ba9"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_summary.json": {
+      "bytes": 13145,
+      "sha256": "043cb5a3de31e9e34e592ea558fb96dee0bc81fab2570a690872a8d5e6f98d43"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\a5_unresolved_intervals.json": {
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\hints.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\A5\\hints.stdout.log": {
+      "bytes": 6966,
+      "sha256": "0d1b8dedf2f6a1dc4bb044dab692ba40ee7e106eaa36587337db02c83b55bdc2"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry.resume.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry.resume.stdout.log": {
+      "bytes": 14035,
+      "sha256": "1c885ee30d8c84786d43f15a3efd821cfa57c4a583a4d4cecc22c47cbad8618a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry.stdout.log": {
+      "bytes": 14034,
+      "sha256": "be2e4ea5bd22c0b408a10a855ecd183f6903407dc4b973407fd0994cd8e14e69"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f096612_097111.parquet": {
+      "bytes": 104645,
+      "sha256": "5125be3030ac2a3284bf62ad217a4d0d44875e742d85804a25391e2652b47179"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f096612_097111.status.json": {
+      "bytes": 353,
+      "sha256": "d86c973d2f6dc9f3337820fcb7c4911bf59c77eafde11de9d8c362c282d15345"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f097112_097611.parquet": {
+      "bytes": 105052,
+      "sha256": "2f94977df43961463434dd6252dcd8bd44eb147dbc336c3b4c6b9ca23f4f8f8a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f097112_097611.status.json": {
+      "bytes": 353,
+      "sha256": "764464b26d65d295f91dd42a9b19ebaf45e6ab59987ea199ad29b28624e2f6ff"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f097612_097802.parquet": {
+      "bytes": 45287,
+      "sha256": "caadd518efe87176ec7276abd3ccd28aa84a6279c18e270347ebea06c15ba400"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_blocks\\geometry_f097612_097802.status.json": {
+      "bytes": 352,
+      "sha256": "42564bb1a5aa140aa50def1ad35562fd664b85743c770071eda5d5f36a61d0d9"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\geometry_summary.json": {
+      "bytes": 14033,
+      "sha256": "d9a6852352135bd91c1a2def12230be147cd0cd889b96fb843ca8d0c2979052c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\reviewed_event_2\\geometry\\strict_mouth_selected_geometry.parquet": {
+      "bytes": 241189,
+      "sha256": "50620a96f5cc32deb2086888f8076f1b820f344b176b0d74a807a1e66cf52b96"
+    }
+  },
+  "current_stage_inventory_count": 182,
+  "finalized_at": "2026-07-31T04:40:45.520837+09:00",
+  "finalizer": {
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\finalize_bounded_postfreeze_stage.py",
+    "sha256": "379e94ccfb3979f36e418cdcf304f442c4cc935640a1c72b27f95e496c50dee7"
+  },
+  "heldout_or_later_stage_opened": false,
+  "inventory_scope": "all current files under the stage root, including STAGE_COMPLETED.json and closed outer-launch logs, excluding only STAGE_FINALIZED.json",
+  "outer_launcher": {
+    "command": [
+      ".venv\\Scripts\\python.exe",
+      "report\\20260731\\round8_mouth_tracking_ablation\\run_bounded_postfreeze_stage.py",
+      "validation",
+      "--execute-prepared"
+    ],
+    "exit_code": 0,
+    "exit_code_evidence": "launcher process closed, stderr is empty, and final stdout is valid JSON binding the completed marker path and SHA-256",
+    "launch_record": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\DETACHED_LAUNCH.json",
+      "sha256": "561fc3f71702cafaf182504c43ea9595bdbf6c0e53ba66ba8a9c24950f5b84c8"
+    },
+    "launched_at": "2026-07-31T04:35:22.7964247+09:00",
+    "pid": 26660,
+    "stderr": {
+      "bytes": 0,
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\detached_launcher.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 194,
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\detached_launcher.stdout.log",
+      "sha256": "60e9d1458ce9de2d1f6837628ca5c0c6014c93c04f0a4f95d635193ebffc9b24"
+    },
+    "working_directory": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline"
+  },
+  "role": "report_only_no_selection_or_tie_breaking",
+  "schema_version": "round8_bounded_postfreeze_finalized_v1",
+  "scientific_results_changed_during_finalization": false,
+  "selection_or_tuning_performed": false,
+  "stage": "validation",
+  "status": "finalized_and_fully_authenticated"
+}

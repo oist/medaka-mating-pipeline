@@ -1,0 +1,27 @@
+{
+  "schema_version": "round8_adapter_contract_smoke_v1",
+  "status": "PASS",
+  "adapter_sha256": "eea6877f16204f63a9fea4820e92a6696f8b24bdddfcc4fab57e2b25a5ffa95b",
+  "mode": "zero_row_zero_column_abstention_schema_normalized",
+  "source_sha256": "27f5e0c19c42ee7ecfbdfaf9e683bb5fc2aea4e42078206202720a77b544c90e",
+  "source_rows": 0,
+  "source_columns": 0,
+  "output_sha256": "3587eb23f128decb77f5af7be6fdad1ffb5338d3c54ac7544139b031ed157f4c",
+  "output_rows": 0,
+  "output_columns": 29,
+  "required_builder_columns": 16,
+  "identity_information_added": false,
+  "thresholds_changed": false,
+  "frozen_builder_zero_hint_check": {
+    "status": "PASS",
+    "summary_sha256": "ab7882675f2b2b81c17a972974ae879e3801d43f92b5cbe39b5b212292dbfab6",
+    "hint_rows": 0,
+    "mapped_segments": 0,
+    "forced_reset_frames": [],
+    "a2_identity_segments": [
+      "0"
+    ],
+    "hints_sha256": "b76f0e29cfafbdedb50e26b68c61fd0dfdbc8353abc28446b4caa5aa865439be",
+    "reset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  }
+}

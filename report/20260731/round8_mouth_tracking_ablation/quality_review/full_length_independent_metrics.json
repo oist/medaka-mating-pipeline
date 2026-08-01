@@ -1,0 +1,1076 @@
+{
+  "a3_assignment_audit": {
+    "ambiguous_rows": 8140,
+    "assignment_margin": {
+      "max": 80.96143930561347,
+      "median": 16.611433846705168,
+      "n": 7895,
+      "p95": 20.391338854624387,
+      "p99": 20.71007845935619
+    },
+    "constraint_conflict_rows": 0,
+    "critical_event": {
+      "all_resolved": true,
+      "ambiguous_rows": 0,
+      "assignment_margin": {
+        "max": 17.714434235581315,
+        "median": 16.03048547771285,
+        "n": 9,
+        "p95": 17.644301564178473,
+        "p99": 17.700407701300747
+      },
+      "constraint_conflict_rows": 0,
+      "inclusive_frames": [
+        34547,
+        34555
+      ],
+      "rows": 9
+    },
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\A3\\a3_assignment_audit.csv",
+    "resolved_rows": 341348,
+    "rows": 348600,
+    "sha256": "62524676e6d2345cdd013d361692878bdfd235ff9b66cd5651646af6442544ba"
+  },
+  "authentication": {
+    "a0_unchanged_reference_authenticated": true,
+    "completion_inventory_files_unchanged": 1438,
+    "finalist_fresh_repeat_checks_passed": 3,
+    "finalized_current_inventory_files": 1442,
+    "forbidden_A4_A5_absent": true,
+    "geometry_resume_passed": true,
+    "process_records_authenticated": 8,
+    "result": "PASS"
+  },
+  "bindings": {
+    "base_scorer": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\audit_and_score_postfreeze.py",
+      "sha256": "5d7e4e8f87f40228ddd185f07476951a2009e468258719aed92b7d059345ca72"
+    },
+    "confirmed_female_annotation_ledger": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\annotations\\fish_sex_gt\\20251225_K_1_2_FCMC\\female_sex_gt.csv",
+      "sha256": "ab0a173ac737a63311aec834c5832fc19475d4f7d1892b8193f8465bba67519f"
+    },
+    "critical_quality_seal": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\CRITICAL_QUALITY_REVIEW_COMPLETED.json",
+      "sha256": "55a479e1b97a1054b7f195530d1505202d4d87935a1dd2f36b06f51e665fe83e"
+    },
+    "freeze": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\frozen_thresholds.json",
+      "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    },
+    "full_length_completed": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\STAGE_COMPLETED.json",
+      "sha256": "7e9e826cc48965d2b0ada1569b63d7a77b3b2972a8e20649eff15bc2de00dca0"
+    },
+    "full_length_finalized": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\STAGE_FINALIZED.json",
+      "sha256": "a9a8ae25cca6ef0c94dc7996cf39680017b9bb58e20ab60473bced96284e07b0"
+    },
+    "metric_helper": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\recompute_method_metrics.py",
+      "sha256": "11e7f14d9ca1e2a12e40cf2fcf8ff4c9d6d516846dd63eed894c6eda38e69242"
+    },
+    "prepared_manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\STAGE_PREPARED.json",
+      "sha256": "d9c14fcb973f0fa29877443802eeba643fd5b288245988414b13c53d9f1f4aa1"
+    },
+    "refractive_calibration": {
+      "calibration_manifest.json": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\calibration_manifest.json",
+        "sha256": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105"
+      },
+      "cam0_bundle_refractive.json": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+        "sha256": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c"
+      },
+      "cam1_bundle_refractive.json": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+        "sha256": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0"
+      },
+      "cam2_bundle_refractive.json": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json",
+        "sha256": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+      }
+    }
+  },
+  "critical_event_34547_34555": {
+    "biological_identity_limitation": "The available ledger has no female row in this interval and cannot observe a male-to-male exchange. Residual, smoothness, and source-slot continuity are not biological identity proof.",
+    "female_annotation_rows": 0,
+    "methods": {
+      "A0": {
+        "direct_jump_mm": {
+          "max": 6.3437199141793,
+          "median": 0.44772954048239616,
+          "n": 24,
+          "p95": 5.9634992997047975,
+          "p99": 6.274650279098177
+        },
+        "direct_or_prelink_ray_residual_mm2": {
+          "max": 12.77336196845604,
+          "median": 2.286009449687329,
+          "n": 27,
+          "p95": 12.111481035983283,
+          "p99": 12.603463771446663
+        },
+        "finite_direct_rows": 27,
+        "identity_status_counts": {},
+        "inclusive_frames": [
+          34547,
+          34555
+        ],
+        "normalized_scientific_sha256": "7a84f5a62ce923137553b2d3ab61396161ed53a35867d7bb8361fdf6dc162ea8",
+        "rows": 27,
+        "source_index_switches": 0,
+        "source_index_values_by_identity": {},
+        "unavailable_or_unresolved_rows": 0
+      },
+      "A1": {
+        "direct_jump_mm": {
+          "max": 0.618648785307292,
+          "median": 0.38383160044453957,
+          "n": 24,
+          "p95": 0.4594010612081011,
+          "p99": 0.5823974914392775
+        },
+        "direct_or_prelink_ray_residual_mm2": {
+          "max": 3.0326001489978585,
+          "median": 0.6396589628162037,
+          "n": 27,
+          "p95": 2.339141509678752,
+          "p99": 2.8557047367420605
+        },
+        "finite_direct_rows": 27,
+        "identity_status_counts": {
+          "identity_status:resolved_position_only": 27
+        },
+        "inclusive_frames": [
+          34547,
+          34555
+        ],
+        "normalized_scientific_sha256": "01367f539744ebe86fab571e731ea909f206d1ecdb0bad3d2eca8c3b978641e5",
+        "rows": 27,
+        "source_index_switches": 0,
+        "source_index_values_by_identity": {
+          "ID_1": [
+            0
+          ],
+          "ID_2": [
+            2
+          ],
+          "ID_3": [
+            1
+          ]
+        },
+        "unavailable_or_unresolved_rows": 0
+      },
+      "A2": {
+        "direct_jump_mm": {
+          "max": 0.618648785307292,
+          "median": 0.38383160044453957,
+          "n": 24,
+          "p95": 0.4594010612081011,
+          "p99": 0.5823974914392775
+        },
+        "direct_or_prelink_ray_residual_mm2": {
+          "max": 3.0326001489978585,
+          "median": 0.6396589628162037,
+          "n": 27,
+          "p95": 2.339141509678752,
+          "p99": 2.8557047367420605
+        },
+        "finite_direct_rows": 27,
+        "identity_status_counts": {
+          "identity_status:resolved_velocity": 27
+        },
+        "inclusive_frames": [
+          34547,
+          34555
+        ],
+        "normalized_scientific_sha256": "09461af1232ac76a66411de4eb0a7a940f0a459a330ece5cfd39f1007049bac3",
+        "rows": 27,
+        "source_index_switches": 0,
+        "source_index_values_by_identity": {
+          "ID_1": [
+            2
+          ],
+          "ID_2": [
+            0
+          ],
+          "ID_3": [
+            1
+          ]
+        },
+        "unavailable_or_unresolved_rows": 0
+      },
+      "A3": {
+        "direct_jump_mm": {
+          "max": 0.618648785307292,
+          "median": 0.38383160044453957,
+          "n": 24,
+          "p95": 0.4594010612081011,
+          "p99": 0.5823974914392775
+        },
+        "direct_or_prelink_ray_residual_mm2": {
+          "max": 3.0326001489978585,
+          "median": 0.6396589628162037,
+          "n": 27,
+          "p95": 2.339141509678752,
+          "p99": 2.8557047367420605
+        },
+        "finite_direct_rows": 27,
+        "identity_status_counts": {
+          "identity_status:resolved_immediate": 27
+        },
+        "inclusive_frames": [
+          34547,
+          34555
+        ],
+        "normalized_scientific_sha256": "8b6c3d229cdec809841a2dbc1cbc73765153dafa20b26f4d45774b6f6ed44c2e",
+        "rows": 27,
+        "source_index_switches": 0,
+        "source_index_values_by_identity": {
+          "ID_1": [
+            0
+          ],
+          "ID_2": [
+            2
+          ],
+          "ID_3": [
+            1
+          ]
+        },
+        "unavailable_or_unresolved_rows": 0
+      }
+    },
+    "role": "descriptive_nonconfirmatory"
+  },
+  "cross_method": {
+    "A1_A2_A3_normalized_scientific_identical": false,
+    "pairwise": {
+      "A1_vs_A2": {
+        "candidate_set_different_frames": 2,
+        "candidate_set_equal_frames": 348598,
+        "coordinate_exact_mismatch_rows": 228593,
+        "finite_availability_mismatch_rows": 806,
+        "finite_pair_distance_mm": {
+          "max": 297.28020467086645,
+          "n": 1035788,
+          "p95": 146.20379786697788,
+          "p99": 219.28918856663643
+        },
+        "fixed_identity_assignment_different_frames": 114297,
+        "fixed_identity_assignment_different_fully_populated_frames": 113779,
+        "fixed_identity_coordinate_equal_rows": 817207,
+        "rows": 1045800,
+        "same_frame_identity_grid": true
+      },
+      "A1_vs_A3": {
+        "candidate_set_different_frames": 5091,
+        "candidate_set_equal_frames": 343509,
+        "coordinate_exact_mismatch_rows": 712635,
+        "finite_availability_mismatch_rows": 9513,
+        "finite_pair_distance_mm": {
+          "max": 297.13970861438054,
+          "n": 1028229,
+          "p95": 211.1427496637769,
+          "p99": 240.61427698782384
+        },
+        "fixed_identity_assignment_different_frames": 320237,
+        "fixed_identity_assignment_different_fully_populated_frames": 313697,
+        "fixed_identity_coordinate_equal_rows": 333165,
+        "rows": 1045800,
+        "same_frame_identity_grid": false
+      },
+      "A2_vs_A3": {
+        "candidate_set_different_frames": 5091,
+        "candidate_set_equal_frames": 343509,
+        "coordinate_exact_mismatch_rows": 703858,
+        "finite_availability_mismatch_rows": 9379,
+        "finite_pair_distance_mm": {
+          "max": 297.28020467086645,
+          "n": 1028296,
+          "p95": 212.99334209627318,
+          "p99": 245.48572784729365
+        },
+        "fixed_identity_assignment_different_frames": 329655,
+        "fixed_identity_assignment_different_fully_populated_frames": 323163,
+        "fixed_identity_coordinate_equal_rows": 341942,
+        "rows": 1045800,
+        "same_frame_identity_grid": false
+      }
+    }
+  },
+  "frozen_settings_changed": false,
+  "inclusive_frame_interval": [
+    0,
+    348599
+  ],
+  "methods": {
+    "A0": {
+      "direct_jump_mm": {
+        "max": 7.998792045177076,
+        "median": 0.29770471372549007,
+        "n": 1039055,
+        "p95": 1.3571642711444112,
+        "p99": 4.859557970990442
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "max": 6646.176641765475,
+        "median": 0.21657177941754888,
+        "n": 1038835,
+        "p95": 3.324703129629953,
+        "p99": 22.412482766610186
+      },
+      "female_identity": {
+        "best_fixed_identity": "8",
+        "count": 300,
+        "full_eligible_best_fixed_accuracy": 0.7366666666666667,
+        "identity_counts": {
+          "11": 38,
+          "8": 221,
+          "9": 40
+        },
+        "mapped_count": 299,
+        "observed_identity_changes": 15,
+        "selective_mapped_best_fixed_accuracy": 0.7391304347826086
+      },
+      "identity_status_counts": {},
+      "jump_ge_7_5mm_count": 597,
+      "jump_gt_8mm_count": 0,
+      "normalized_scientific_sha256": "3bcd29029e276430c41b3b3b1d9c1f4f2f12e565ddad55ef2752e0c29f8fd5a2",
+      "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d_identified.csv",
+      "sha256": "b2100d24cec8a660cff5888ceee1ade26c9990d900f1e67508e566aaab2870b6",
+      "source_index_switch_count": null,
+      "track_qc": {
+        "all_three_direct_noninterpolated_frame_count": 344955,
+        "all_three_direct_noninterpolated_frame_share": 0.9895438898450947,
+        "all_three_finite_frame_count": 344955,
+        "all_three_finite_frame_share": 0.9895438898450947,
+        "base_identities": [
+          "11",
+          "8",
+          "9"
+        ],
+        "base_identity_count": 3,
+        "consecutive_direct_jump_spike_rates": {
+          "ge_2_0mm": {
+            "count": 31022,
+            "share": 0.029855974900269956
+          },
+          "ge_4_0mm": {
+            "count": 15518,
+            "share": 0.014934724340867423
+          },
+          "ge_6_0mm": {
+            "count": 4477,
+            "share": 0.004308722829879073
+          },
+          "ge_7_5mm": {
+            "count": 597,
+            "share": 0.0005745605381813283
+          }
+        },
+        "consecutive_finite_including_filled_jump_mm": {
+          "count": 1039055,
+          "max": 7.998792045177076,
+          "median": 0.29770471372549007,
+          "p95": 1.3571642711444112,
+          "p99": 4.859557970990442
+        },
+        "consecutive_jump_ge_7_5mm_count": 597,
+        "consecutive_jump_gt_8mm_count": 0,
+        "consecutive_jump_gt_8mm_share": 0.0,
+        "consecutive_jump_mm": {
+          "count": 1039055,
+          "max": 7.998792045177076,
+          "median": 0.29770471372549007,
+          "p95": 1.3571642711444112,
+          "p99": 4.859557970990442
+        },
+        "direct_noninterpolated_row_share": 0.9935580416905718,
+        "direct_ray_residual_mm2": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "explicit_identity_unresolved_row_count": 0,
+        "explicit_identity_unresolved_row_share": 0.0,
+        "finite_row_share": 0.9935580416905718,
+        "frame_count": 348600,
+        "frame_max": 348599,
+        "frame_min": 0,
+        "identities": [
+          "11",
+          "8",
+          "9"
+        ],
+        "identity_count": 3,
+        "nonfinite_row_count": 6737,
+        "nonfinite_row_share": 0.006441958309428189,
+        "row_count": 1045800,
+        "segment_boundary_direct_distance_mm": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "segment_boundary_direct_frame_gap": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "segment_boundary_direct_pair_count": 0,
+        "unavailable_or_unresolved_row_count": 6737,
+        "unavailable_or_unresolved_row_share": 0.006441958309428189
+      }
+    },
+    "A1": {
+      "direct_jump_mm": {
+        "max": 7.997551564163911,
+        "median": 0.32970301088212683,
+        "n": 1034952,
+        "p95": 1.122509340746078,
+        "p99": 2.035663128519305
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "max": 5820.797844013716,
+        "median": 0.1925047407828086,
+        "n": 1036191,
+        "p95": 1.0248434589243969,
+        "p99": 3.0865813291900404
+      },
+      "female_identity": {
+        "best_fixed_identity": "ID_1#identity_segment=0",
+        "count": 300,
+        "full_eligible_best_fixed_accuracy": 0.6,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 180,
+          "ID_2#identity_segment=4": 39,
+          "ID_3#identity_segment=3": 78
+        },
+        "mapped_count": 297,
+        "observed_identity_changes": 9,
+        "selective_mapped_best_fixed_accuracy": 0.6060606060606061
+      },
+      "identity_status_counts": {
+        "identity_status:new_segment_after_max_gap_reseed": 7,
+        "identity_status:resolved_position_only": 1036184,
+        "identity_status:unresolved_missing_geometry": 9609
+      },
+      "jump_ge_7_5mm_count": 166,
+      "jump_gt_8mm_count": 0,
+      "normalized_scientific_sha256": "7250d758d8544b63d50922bfa3bdbb221c13592c048571f50b222523ca811e57",
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\A1\\a1_direct.csv",
+      "sha256": "8d09df43398a3abf07bf523dc53e48f24950bc33c77e2ac64be7f1921a81d3d1",
+      "source_index_switch_count": 209786,
+      "track_qc": {
+        "all_three_direct_noninterpolated_frame_count": 342861,
+        "all_three_direct_noninterpolated_frame_share": 0.9835370051635112,
+        "all_three_finite_frame_count": 342861,
+        "all_three_finite_frame_share": 0.9835370051635112,
+        "base_identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "base_identity_count": 3,
+        "consecutive_direct_jump_spike_rates": {
+          "ge_2_0mm": {
+            "count": 10757,
+            "share": 0.01039371874251173
+          },
+          "ge_4_0mm": {
+            "count": 2524,
+            "share": 0.002438760444928847
+          },
+          "ge_6_0mm": {
+            "count": 760,
+            "share": 0.0007343335729579729
+          },
+          "ge_7_5mm": {
+            "count": 166,
+            "share": 0.00016039391198818882
+          }
+        },
+        "consecutive_finite_including_filled_jump_mm": {
+          "count": 1034952,
+          "max": 7.997551564163911,
+          "median": 0.32970301088212683,
+          "p95": 1.122509340746078,
+          "p99": 2.035663128519305
+        },
+        "consecutive_jump_ge_7_5mm_count": 166,
+        "consecutive_jump_gt_8mm_count": 0,
+        "consecutive_jump_gt_8mm_share": 0.0,
+        "consecutive_jump_mm": {
+          "count": 1034952,
+          "max": 7.997551564163911,
+          "median": 0.32970301088212683,
+          "p95": 1.122509340746078,
+          "p99": 2.035663128519305
+        },
+        "direct_noninterpolated_row_share": 0.990811818703385,
+        "direct_ray_residual_mm2": {
+          "count": 1036191,
+          "max": 5820.797844013716,
+          "median": 0.1925047407828086,
+          "p95": 1.0248434589243969,
+          "p99": 3.0865813291900404
+        },
+        "explicit_identity_unresolved_row_count": 9609,
+        "explicit_identity_unresolved_row_share": 0.009188181296615031,
+        "finite_row_share": 0.990811818703385,
+        "frame_count": 348600,
+        "frame_max": 348599,
+        "frame_min": 0,
+        "identities": [
+          "ID_1#identity_segment=0",
+          "ID_2#identity_segment=0",
+          "ID_2#identity_segment=1",
+          "ID_2#identity_segment=2",
+          "ID_2#identity_segment=3",
+          "ID_2#identity_segment=4",
+          "ID_3#identity_segment=0",
+          "ID_3#identity_segment=1",
+          "ID_3#identity_segment=2",
+          "ID_3#identity_segment=3"
+        ],
+        "identity_count": 10,
+        "nonfinite_row_count": 9609,
+        "nonfinite_row_share": 0.009188181296615031,
+        "row_count": 1045800,
+        "segment_boundary_direct_distance_mm": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "segment_boundary_direct_frame_gap": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "segment_boundary_direct_pair_count": 0,
+        "unavailable_or_unresolved_row_count": 9609,
+        "unavailable_or_unresolved_row_share": 0.009188181296615031
+      }
+    },
+    "A2": {
+      "direct_jump_mm": {
+        "max": 7.997551564163911,
+        "median": 0.32970301088212683,
+        "n": 1034952,
+        "p95": 1.1225165633919896,
+        "p99": 2.03568453570679
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "max": 5820.797844013716,
+        "median": 0.1925047289016088,
+        "n": 1036191,
+        "p95": 1.0248272525977713,
+        "p99": 3.0865813291900404
+      },
+      "female_identity": {
+        "best_fixed_identity": "ID_1#identity_segment=0",
+        "count": 300,
+        "full_eligible_best_fixed_accuracy": 0.64,
+        "identity_counts": {
+          "ID_1#identity_segment=0": 192,
+          "ID_2#identity_segment=4": 27,
+          "ID_3#identity_segment=3": 78
+        },
+        "mapped_count": 297,
+        "observed_identity_changes": 9,
+        "selective_mapped_best_fixed_accuracy": 0.6464646464646465
+      },
+      "identity_status_counts": {
+        "identity_status:new_segment_after_max_gap_reseed": 7,
+        "identity_status:resolved_velocity": 1036184,
+        "identity_status:unresolved_missing_geometry": 9609
+      },
+      "jump_ge_7_5mm_count": 166,
+      "jump_gt_8mm_count": 0,
+      "normalized_scientific_sha256": "89fcb8405448ae47a3ed43641de21ca14ea6b3d62a8ec2d2b5d35993547fa21a",
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\A2\\a2_direct.csv",
+      "sha256": "97245b45803b52da1fdec2bdfbf5e315beddbf4c78fc4b8395ec5c2431253d5d",
+      "source_index_switch_count": 209788,
+      "track_qc": {
+        "all_three_direct_noninterpolated_frame_count": 342861,
+        "all_three_direct_noninterpolated_frame_share": 0.9835370051635112,
+        "all_three_finite_frame_count": 342861,
+        "all_three_finite_frame_share": 0.9835370051635112,
+        "base_identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "base_identity_count": 3,
+        "consecutive_direct_jump_spike_rates": {
+          "ge_2_0mm": {
+            "count": 10758,
+            "share": 0.0103946849708972
+          },
+          "ge_4_0mm": {
+            "count": 2523,
+            "share": 0.0024377942165433758
+          },
+          "ge_6_0mm": {
+            "count": 760,
+            "share": 0.0007343335729579729
+          },
+          "ge_7_5mm": {
+            "count": 166,
+            "share": 0.00016039391198818882
+          }
+        },
+        "consecutive_finite_including_filled_jump_mm": {
+          "count": 1034952,
+          "max": 7.997551564163911,
+          "median": 0.32970301088212683,
+          "p95": 1.1225165633919896,
+          "p99": 2.03568453570679
+        },
+        "consecutive_jump_ge_7_5mm_count": 166,
+        "consecutive_jump_gt_8mm_count": 0,
+        "consecutive_jump_gt_8mm_share": 0.0,
+        "consecutive_jump_mm": {
+          "count": 1034952,
+          "max": 7.997551564163911,
+          "median": 0.32970301088212683,
+          "p95": 1.1225165633919896,
+          "p99": 2.03568453570679
+        },
+        "direct_noninterpolated_row_share": 0.990811818703385,
+        "direct_ray_residual_mm2": {
+          "count": 1036191,
+          "max": 5820.797844013716,
+          "median": 0.1925047289016088,
+          "p95": 1.0248272525977713,
+          "p99": 3.0865813291900404
+        },
+        "explicit_identity_unresolved_row_count": 9609,
+        "explicit_identity_unresolved_row_share": 0.009188181296615031,
+        "finite_row_share": 0.990811818703385,
+        "frame_count": 348600,
+        "frame_max": 348599,
+        "frame_min": 0,
+        "identities": [
+          "ID_1#identity_segment=0",
+          "ID_2#identity_segment=0",
+          "ID_2#identity_segment=1",
+          "ID_2#identity_segment=2",
+          "ID_2#identity_segment=3",
+          "ID_2#identity_segment=4",
+          "ID_3#identity_segment=0",
+          "ID_3#identity_segment=1",
+          "ID_3#identity_segment=2",
+          "ID_3#identity_segment=3"
+        ],
+        "identity_count": 10,
+        "nonfinite_row_count": 9609,
+        "nonfinite_row_share": 0.009188181296615031,
+        "row_count": 1045800,
+        "segment_boundary_direct_distance_mm": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "segment_boundary_direct_frame_gap": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "segment_boundary_direct_pair_count": 0,
+        "unavailable_or_unresolved_row_count": 9609,
+        "unavailable_or_unresolved_row_share": 0.009188181296615031
+      }
+    },
+    "A3": {
+      "direct_jump_mm": {
+        "max": 7.997551564163911,
+        "median": 0.33026969352836244,
+        "n": 1028441,
+        "p95": 1.1197429098502891,
+        "p99": 2.013044158939641
+      },
+      "direct_or_prelink_ray_residual_mm2": {
+        "max": 1716.129549911354,
+        "median": 0.19262972053510974,
+        "n": 1029780,
+        "p95": 1.021696730381267,
+        "p99": 3.0469637417608126
+      },
+      "female_identity": {
+        "best_fixed_identity": "ID_2#identity_segment=38",
+        "count": 300,
+        "full_eligible_best_fixed_accuracy": 0.31333333333333335,
+        "identity_counts": {
+          "ID_1#identity_segment=23": 4,
+          "ID_1#identity_segment=24": 4,
+          "ID_1#identity_segment=28": 9,
+          "ID_1#identity_segment=31": 4,
+          "ID_1#identity_segment=32": 20,
+          "ID_2#identity_segment=24": 13,
+          "ID_2#identity_segment=26": 24,
+          "ID_2#identity_segment=27": 2,
+          "ID_2#identity_segment=29": 4,
+          "ID_2#identity_segment=32": 6,
+          "ID_2#identity_segment=33": 14,
+          "ID_2#identity_segment=37": 7,
+          "ID_2#identity_segment=38": 94,
+          "ID_3#identity_segment=24": 5,
+          "ID_3#identity_segment=25": 6,
+          "ID_3#identity_segment=29": 8,
+          "ID_3#identity_segment=30": 5,
+          "ID_3#identity_segment=35": 62,
+          "ID_3#identity_segment=36": 1,
+          "ID_3#identity_segment=37": 5
+        },
+        "mapped_count": 297,
+        "observed_identity_changes": 19,
+        "selective_mapped_best_fixed_accuracy": 0.3164983164983165
+      },
+      "identity_status_counts": {
+        "identity_status:new_segment_after_unresolved": 114,
+        "identity_status:resolved_after_lookahead": 8400,
+        "identity_status:resolved_immediate": 1021266,
+        "identity_status:unresolved": 2916,
+        "identity_status:unresolved_insufficient_geometry": 10614,
+        "identity_status:unresolved_unassigned_identity": 2490
+      },
+      "jump_ge_7_5mm_count": 160,
+      "jump_gt_8mm_count": 0,
+      "normalized_scientific_sha256": "41ebcbc9a06fedbe082d8b8e460649c65ebf0f5e8c9d31c2c925727aad26ff29",
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\A3\\a3_direct.csv",
+      "sha256": "0b508de8c38365c601b6323f4475b283343aca236d2d72abc3064bbb4b9fb166",
+      "source_index_switch_count": 209228,
+      "track_qc": {
+        "all_three_direct_noninterpolated_frame_count": 341975,
+        "all_three_direct_noninterpolated_frame_share": 0.9809954102122777,
+        "all_three_finite_frame_count": 341975,
+        "all_three_finite_frame_share": 0.9809954102122777,
+        "base_identities": [
+          "ID_1",
+          "ID_2",
+          "ID_3"
+        ],
+        "base_identity_count": 3,
+        "consecutive_direct_jump_spike_rates": {
+          "ge_2_0mm": {
+            "count": 10440,
+            "share": 0.010151287239618023
+          },
+          "ge_4_0mm": {
+            "count": 2432,
+            "share": 0.0023647443071600606
+          },
+          "ge_6_0mm": {
+            "count": 727,
+            "share": 0.0007068951937933241
+          },
+          "ge_7_5mm": {
+            "count": 160,
+            "share": 0.00015557528336579348
+          }
+        },
+        "consecutive_finite_including_filled_jump_mm": {
+          "count": 1028441,
+          "max": 7.997551564163911,
+          "median": 0.33026969352836244,
+          "p95": 1.1197429098502891,
+          "p99": 2.013044158939641
+        },
+        "consecutive_jump_ge_7_5mm_count": 160,
+        "consecutive_jump_gt_8mm_count": 0,
+        "consecutive_jump_gt_8mm_share": 0.0,
+        "consecutive_jump_mm": {
+          "count": 1028441,
+          "max": 7.997551564163911,
+          "median": 0.33026969352836244,
+          "p95": 1.1197429098502891,
+          "p99": 2.013044158939641
+        },
+        "direct_noninterpolated_row_share": 0.9846815834767642,
+        "direct_ray_residual_mm2": {
+          "count": 1029780,
+          "max": 1716.129549911354,
+          "median": 0.19262972053510974,
+          "p95": 1.021696730381267,
+          "p99": 3.0469637417608126
+        },
+        "explicit_identity_unresolved_row_count": 16020,
+        "explicit_identity_unresolved_row_share": 0.0153184165232358,
+        "finite_row_share": 0.9846815834767642,
+        "frame_count": 348600,
+        "frame_max": 348599,
+        "frame_min": 0,
+        "identities": [
+          "ID_1#identity_segment=0",
+          "ID_1#identity_segment=1",
+          "ID_1#identity_segment=10",
+          "ID_1#identity_segment=11",
+          "ID_1#identity_segment=12",
+          "ID_1#identity_segment=13",
+          "ID_1#identity_segment=14",
+          "ID_1#identity_segment=15",
+          "ID_1#identity_segment=16",
+          "ID_1#identity_segment=17",
+          "ID_1#identity_segment=18",
+          "ID_1#identity_segment=19",
+          "ID_1#identity_segment=2",
+          "ID_1#identity_segment=20",
+          "ID_1#identity_segment=21",
+          "ID_1#identity_segment=22",
+          "ID_1#identity_segment=23",
+          "ID_1#identity_segment=24",
+          "ID_1#identity_segment=25",
+          "ID_1#identity_segment=26",
+          "ID_1#identity_segment=27",
+          "ID_1#identity_segment=28",
+          "ID_1#identity_segment=29",
+          "ID_1#identity_segment=3",
+          "ID_1#identity_segment=30",
+          "ID_1#identity_segment=31",
+          "ID_1#identity_segment=32",
+          "ID_1#identity_segment=33",
+          "ID_1#identity_segment=34",
+          "ID_1#identity_segment=35",
+          "ID_1#identity_segment=36",
+          "ID_1#identity_segment=37",
+          "ID_1#identity_segment=38",
+          "ID_1#identity_segment=4",
+          "ID_1#identity_segment=5",
+          "ID_1#identity_segment=6",
+          "ID_1#identity_segment=7",
+          "ID_1#identity_segment=8",
+          "ID_1#identity_segment=9",
+          "ID_2#identity_segment=0",
+          "ID_2#identity_segment=1",
+          "ID_2#identity_segment=10",
+          "ID_2#identity_segment=11",
+          "ID_2#identity_segment=12",
+          "ID_2#identity_segment=13",
+          "ID_2#identity_segment=14",
+          "ID_2#identity_segment=15",
+          "ID_2#identity_segment=16",
+          "ID_2#identity_segment=17",
+          "ID_2#identity_segment=18",
+          "ID_2#identity_segment=19",
+          "ID_2#identity_segment=2",
+          "ID_2#identity_segment=20",
+          "ID_2#identity_segment=21",
+          "ID_2#identity_segment=22",
+          "ID_2#identity_segment=23",
+          "ID_2#identity_segment=24",
+          "ID_2#identity_segment=25",
+          "ID_2#identity_segment=26",
+          "ID_2#identity_segment=27",
+          "ID_2#identity_segment=28",
+          "ID_2#identity_segment=29",
+          "ID_2#identity_segment=3",
+          "ID_2#identity_segment=30",
+          "ID_2#identity_segment=31",
+          "ID_2#identity_segment=32",
+          "ID_2#identity_segment=33",
+          "ID_2#identity_segment=34",
+          "ID_2#identity_segment=35",
+          "ID_2#identity_segment=36",
+          "ID_2#identity_segment=37",
+          "ID_2#identity_segment=38",
+          "ID_2#identity_segment=4",
+          "ID_2#identity_segment=5",
+          "ID_2#identity_segment=6",
+          "ID_2#identity_segment=7",
+          "ID_2#identity_segment=8",
+          "ID_2#identity_segment=9",
+          "ID_3#identity_segment=0",
+          "ID_3#identity_segment=1",
+          "ID_3#identity_segment=10",
+          "ID_3#identity_segment=11",
+          "ID_3#identity_segment=12",
+          "ID_3#identity_segment=13",
+          "ID_3#identity_segment=14",
+          "ID_3#identity_segment=15",
+          "ID_3#identity_segment=16",
+          "ID_3#identity_segment=17",
+          "ID_3#identity_segment=18",
+          "ID_3#identity_segment=19",
+          "ID_3#identity_segment=2",
+          "ID_3#identity_segment=20",
+          "ID_3#identity_segment=21",
+          "ID_3#identity_segment=22",
+          "ID_3#identity_segment=23",
+          "ID_3#identity_segment=24",
+          "ID_3#identity_segment=25",
+          "ID_3#identity_segment=26",
+          "ID_3#identity_segment=27",
+          "ID_3#identity_segment=28",
+          "ID_3#identity_segment=29",
+          "ID_3#identity_segment=3",
+          "ID_3#identity_segment=30",
+          "ID_3#identity_segment=31",
+          "ID_3#identity_segment=32",
+          "ID_3#identity_segment=33",
+          "ID_3#identity_segment=34",
+          "ID_3#identity_segment=35",
+          "ID_3#identity_segment=36",
+          "ID_3#identity_segment=37",
+          "ID_3#identity_segment=38",
+          "ID_3#identity_segment=4",
+          "ID_3#identity_segment=5",
+          "ID_3#identity_segment=6",
+          "ID_3#identity_segment=7",
+          "ID_3#identity_segment=8",
+          "ID_3#identity_segment=9"
+        ],
+        "identity_count": 117,
+        "nonfinite_row_count": 16020,
+        "nonfinite_row_share": 0.0153184165232358,
+        "row_count": 1045800,
+        "segment_boundary_direct_distance_mm": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "segment_boundary_direct_frame_gap": {
+          "count": 0,
+          "max": null,
+          "median": null,
+          "p95": null,
+          "p99": null
+        },
+        "segment_boundary_direct_pair_count": 0,
+        "unavailable_or_unresolved_row_count": 16020,
+        "unavailable_or_unresolved_row_share": 0.0153184165232358
+      }
+    }
+  },
+  "resources": {
+    "measurement_contract": "Wall time and peak RSS are authenticated external process-runner measurements. Each full-stage key is parsed as method.purpose; fresh and repeat are separate purposes of the same method.",
+    "per_method_rollup": {
+      "A1": {
+        "max_peak_rss_bytes": 2643316736,
+        "process_count": 2,
+        "summed_wall_seconds": 1232.4103718000697
+      },
+      "A2": {
+        "max_peak_rss_bytes": 3418509312,
+        "process_count": 2,
+        "summed_wall_seconds": 1382.3810531999916
+      },
+      "A3": {
+        "max_peak_rss_bytes": 3396063232,
+        "process_count": 2,
+        "summed_wall_seconds": 1547.060231499956
+      },
+      "shared_geometry": {
+        "max_peak_rss_bytes": 2546966528,
+        "process_count": 2,
+        "summed_wall_seconds": 1142.0948915999616
+      }
+    },
+    "process_records": [
+      {
+        "index": 0,
+        "method": "A1",
+        "peak_rss_bytes": 2643316736,
+        "purpose": "fresh",
+        "record_key": "A1.fresh",
+        "record_sha256": "80a193ccb42c3581d855e93639b11e5e8f323da27f8cae66746f7957aa08fc14",
+        "wall_seconds": 618.1198206000263,
+        "window": null
+      },
+      {
+        "index": 1,
+        "method": "A1",
+        "peak_rss_bytes": 2621231104,
+        "purpose": "repeat",
+        "record_key": "A1.repeat",
+        "record_sha256": "961af347fd70217d8f9ebb0bde303e85951579b2b5d884d8755bbf78d77db8c2",
+        "wall_seconds": 614.2905512000434,
+        "window": null
+      },
+      {
+        "index": 2,
+        "method": "A2",
+        "peak_rss_bytes": 3404423168,
+        "purpose": "fresh",
+        "record_key": "A2.fresh",
+        "record_sha256": "08eb390e842958fcc8a4096fed200ab07cc65104952ada4fb4c5a27b414d873d",
+        "wall_seconds": 691.2288978999713,
+        "window": null
+      },
+      {
+        "index": 3,
+        "method": "A2",
+        "peak_rss_bytes": 3418509312,
+        "purpose": "repeat",
+        "record_key": "A2.repeat",
+        "record_sha256": "a1353583d4e6a6ffc51e1958812b8603f7ed67100f75d068b028c0bb06215c0d",
+        "wall_seconds": 691.1521553000202,
+        "window": null
+      },
+      {
+        "index": 4,
+        "method": "A3",
+        "peak_rss_bytes": 3395780608,
+        "purpose": "fresh",
+        "record_key": "A3.fresh",
+        "record_sha256": "b1ec01b9c0a2a72a99145a8a1830e6674e63d36b421e7be940179c796532a8c0",
+        "wall_seconds": 773.1448774000164,
+        "window": null
+      },
+      {
+        "index": 5,
+        "method": "A3",
+        "peak_rss_bytes": 3396063232,
+        "purpose": "repeat",
+        "record_key": "A3.repeat",
+        "record_sha256": "49b3904569db00a92b4fa9d8e03e8c1fdb71e793dbf85616db7150a1041c1830",
+        "wall_seconds": 773.9153540999396,
+        "window": null
+      },
+      {
+        "index": 6,
+        "method": "shared_geometry",
+        "peak_rss_bytes": 2546966528,
+        "purpose": "fresh",
+        "record_key": "shared_geometry.fresh",
+        "record_sha256": "deae64a64d27dfad7a7d460f5728f5647cafad2d1b0b687c98950ed0f39d6c1f",
+        "wall_seconds": 1132.582968599978,
+        "window": null
+      },
+      {
+        "index": 7,
+        "method": "shared_geometry",
+        "peak_rss_bytes": 597413888,
+        "purpose": "resume",
+        "record_key": "shared_geometry.resume",
+        "record_sha256": "fb2094653e418f6b981d3cab7903c6202de04b121a8705be0c325b6dd8a21071",
+        "wall_seconds": 9.511922999983653,
+        "window": null
+      }
+    ],
+    "stage_peak_rss_bytes": 3418509312,
+    "stage_wall_seconds": 5314.740548799979
+  },
+  "role": "production_finalist_full_length_qc",
+  "schema_version": 1,
+  "selection_or_tuning_performed": false,
+  "stage": "full_length",
+  "status": "full_length_independently_authenticated_and_scored"
+}

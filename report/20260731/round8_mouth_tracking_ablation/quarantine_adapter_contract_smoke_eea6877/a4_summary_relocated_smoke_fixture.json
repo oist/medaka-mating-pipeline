@@ -1,0 +1,445 @@
+{
+  "schema_version": "mouth_tracklet_ablation_v1",
+  "status": "insufficient_three_path_solution",
+  "configuration_hash": "7991f4730444d5e7e0421c81cfc2012cdeca421a2f85abc8eacbab2087dd15e0",
+  "configuration": {
+    "schema_version": "mouth_tracklet_ablation_v1",
+    "frame_start": 136451,
+    "frame_end": 136601,
+    "hypothesis_block_frames": 250,
+    "evaluation_batch_frames": 128,
+    "xyz_bounds": [
+      -20.0,
+      220.0
+    ],
+    "num_candidates": 6,
+    "num_individuals": 3,
+    "anchor": "strict_finite_mouth",
+    "tail_identity_features": false,
+    "frozen_body_scales_path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\frozen_body_length_scales.json",
+    "frozen_body_scales_sha256": "63bf6de26bb85e76da97976ffa0158c8d4e27d7ea9e3208b627fe8ade2eb9209",
+    "frozen_body_length_px": {
+      "top_cam": 109.58292697843919,
+      "side1_cam": 91.11906436144642,
+      "side2_cam": 86.47002765799765
+    },
+    "tracklet_config": {
+      "separation_body_lengths": 0.35,
+      "assignment_ambiguity_margin_body_lengths": 0.05,
+      "maximum_missing_gap_frames": 0,
+      "uncertainty_growth_body_lengths_per_missing_frame": 0.1,
+      "base_prediction_gate_body_lengths": 1.0,
+      "maximum_displacement_body_lengths_per_frame": 1.0,
+      "motion_history_frames": 5,
+      "minimum_mouth_score": 0.3,
+      "minimum_fragment_observations": 2
+    },
+    "group_config": {
+      "minimum_support_frames": 3,
+      "minimum_median_mouth_confidence": 0.3,
+      "maximum_median_ray_residual_mm2": 5.0,
+      "support_tau_frames": 20.0,
+      "support_bonus_weight": 2.0,
+      "residual_weight": 0.5,
+      "residual_mad_weight": 0.25,
+      "confidence_weight": 0.5,
+      "missing_view_penalty": 0.75,
+      "reject_retained_count_mismatch": true
+    },
+    "path_config": {
+      "number_of_paths": 3,
+      "beam_width": 256,
+      "maximum_link_gap_frames": 100,
+      "max_jump_mm": 8.0,
+      "max_jump_hard_cap_mm": 80.0,
+      "velocity_link_weight": 1.0,
+      "maximum_velocity_angle_degrees": 120.0,
+      "all_views_break_penalty": 0.5,
+      "segment_restart_penalty": 1.0,
+      "eligible_group_drop_cost": 0.5
+    },
+    "cache_sha256": {
+      "top_cam": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+      "side1_cam": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+      "side2_cam": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+    },
+    "calibration_file_sha256": {
+      "calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+      "cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+      "cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+      "cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+    },
+    "calibration": {
+      "requested_backend": "refractive",
+      "resolved_backend": "refractive",
+      "score_unit": "mm^2",
+      "provenance": {
+        "backend": "refractive",
+        "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+        "model_files": {
+          "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+          "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+          "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+        },
+        "camera_order": [
+          "cam0",
+          "cam1",
+          "cam2"
+        ],
+        "two_view_method": "direct_refracted_ray_intersection",
+        "score_unit": "mm^2",
+        "default_score_profile": "production_fast",
+        "score_profiles": {
+          "production_fast": {
+            "unit": "mm^2",
+            "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+          },
+          "legacy_combined": {
+            "unit": "mm^2",
+            "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+          }
+        },
+        "ray_system_guard": {
+          "minimum_rank": 3,
+          "maximum_condition_number": 10000000000.0,
+          "failure_xyz": "NaN",
+          "failure_score": "infinity"
+        },
+        "requested_backend": "refractive",
+        "resolved_backend": "refractive"
+      },
+      "file_sha256": {
+        "calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+        "cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+        "cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+        "cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+      }
+    },
+    "code_sha256": {
+      "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+      "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+      "scripts\\reconstruction_3d\\conservative_cross_view_paths.py": "4bed90ac17656c7792baf62105ea2acb8253b034846123c215e378d8d3757c8a",
+      "scripts\\reconstruction_3d\\conservative_mouth_tracklets.py": "a454ae0b6e59cfd51bdea4b60de29438fc8c407c861e05befd80d3e1d9da2631",
+      "scripts\\reconstruction_3d\\mouth_tracklet_ablation.py": "1e75e10654b5d6c233ec3ea5ff2f8c969dac3dd41027031cd332d3c88096d4e0",
+      "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+    }
+  },
+  "command": [
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\.venv\\Scripts\\python.exe",
+    "-m",
+    "scripts.reconstruction_3d.mouth_tracklet_ablation",
+    "run",
+    "--cache-dir",
+    "report\\20260731\\round8_mouth_tracking_ablation\\candidate_cache_strict_mouth_unfiltered_nodescores",
+    "--paths-config",
+    "configs\\paths.local.toml",
+    "--frozen-scales",
+    "report\\20260731\\round8_mouth_tracking_ablation\\frozen_body_length_scales.json",
+    "--output-dir",
+    "report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4",
+    "--frame-start",
+    "136451",
+    "--frame-end",
+    "136601",
+    "--hypothesis-block-frames",
+    "250",
+    "--evaluation-batch-frames",
+    "128",
+    "--xyz-bounds",
+    "-20",
+    "220",
+    "--separation-body-lengths",
+    "0.35",
+    "--ambiguity-margin-body-lengths",
+    "0.05",
+    "--maximum-missing-gap-frames",
+    "0",
+    "--minimum-mouth-score",
+    "0.3",
+    "--minimum-fragment-observations",
+    "2",
+    "--minimum-group-support",
+    "3",
+    "--beam-width",
+    "256"
+  ],
+  "started_at": "2026-07-31T04:57:12.484438+09:00",
+  "finished_at": "2026-07-31T04:57:13.446161+09:00",
+  "wall_seconds": 0.961474800016731,
+  "peak_rss_bytes": 181153792,
+  "peak_memory_method": "0.1 s psutil RSS sampling of process tree around complete action",
+  "reused_hypothesis_blocks": 1,
+  "hypothesis_blocks": 1,
+  "admissible_hypothesis_rows": 56,
+  "per_view_tracklet_summary": {
+    "top_cam": {
+      "schema_version": 1,
+      "anchor": "strict_finite_mouth",
+      "candidate_slots_are_biological_identities": false,
+      "body_length_px": 109.58292697843919,
+      "body_length_source": "training_control_frozen",
+      "config": {
+        "separation_body_lengths": 0.35,
+        "assignment_ambiguity_margin_body_lengths": 0.05,
+        "maximum_missing_gap_frames": 0,
+        "uncertainty_growth_body_lengths_per_missing_frame": 0.1,
+        "base_prediction_gate_body_lengths": 1.0,
+        "maximum_displacement_body_lengths_per_frame": 1.0,
+        "motion_history_frames": 5,
+        "minimum_mouth_score": 0.3,
+        "minimum_fragment_observations": 2
+      },
+      "finite_candidate_rows": 435,
+      "retained_candidate_rows": 0,
+      "retained_coverage": 0.0,
+      "fragment_count": 0,
+      "fragment_length_median": 0.0,
+      "fragment_length_p95": 0.0,
+      "reciprocal_accepted_bridges": 0,
+      "nonreciprocal_bridge_proposals": 0,
+      "false_merge_proxy": 0,
+      "false_break_proxy": 0,
+      "unresolved_fraction": 1.0
+    },
+    "side1_cam": {
+      "schema_version": 1,
+      "anchor": "strict_finite_mouth",
+      "candidate_slots_are_biological_identities": false,
+      "body_length_px": 91.11906436144642,
+      "body_length_source": "training_control_frozen",
+      "config": {
+        "separation_body_lengths": 0.35,
+        "assignment_ambiguity_margin_body_lengths": 0.05,
+        "maximum_missing_gap_frames": 0,
+        "uncertainty_growth_body_lengths_per_missing_frame": 0.1,
+        "base_prediction_gate_body_lengths": 1.0,
+        "maximum_displacement_body_lengths_per_frame": 1.0,
+        "motion_history_frames": 5,
+        "minimum_mouth_score": 0.3,
+        "minimum_fragment_observations": 2
+      },
+      "finite_candidate_rows": 373,
+      "retained_candidate_rows": 238,
+      "retained_coverage": 0.6380697050938338,
+      "fragment_count": 8,
+      "fragment_length_median": 13.0,
+      "fragment_length_p95": 106.89999999999993,
+      "reciprocal_accepted_bridges": 230,
+      "nonreciprocal_bridge_proposals": 0,
+      "false_merge_proxy": 0,
+      "false_break_proxy": 0,
+      "unresolved_fraction": 0.36193029490616624
+    },
+    "side2_cam": {
+      "schema_version": 1,
+      "anchor": "strict_finite_mouth",
+      "candidate_slots_are_biological_identities": false,
+      "body_length_px": 86.47002765799765,
+      "body_length_source": "training_control_frozen",
+      "config": {
+        "separation_body_lengths": 0.35,
+        "assignment_ambiguity_margin_body_lengths": 0.05,
+        "maximum_missing_gap_frames": 0,
+        "uncertainty_growth_body_lengths_per_missing_frame": 0.1,
+        "base_prediction_gate_body_lengths": 1.0,
+        "maximum_displacement_body_lengths_per_frame": 1.0,
+        "motion_history_frames": 5,
+        "minimum_mouth_score": 0.3,
+        "minimum_fragment_observations": 2
+      },
+      "finite_candidate_rows": 467,
+      "retained_candidate_rows": 50,
+      "retained_coverage": 0.10706638115631692,
+      "fragment_count": 9,
+      "fragment_length_median": 4.0,
+      "fragment_length_p95": 13.0,
+      "reciprocal_accepted_bridges": 41,
+      "nonreciprocal_bridge_proposals": 0,
+      "false_merge_proxy": 0,
+      "false_break_proxy": 0,
+      "unresolved_fraction": 0.892933618843683
+    }
+  },
+  "path_summary": {
+    "schema_version": 1,
+    "status": "insufficient_three_path_solution",
+    "eligible_groups": 0,
+    "group_config": {
+      "minimum_support_frames": 3,
+      "minimum_median_mouth_confidence": 0.3,
+      "maximum_median_ray_residual_mm2": 5.0,
+      "support_tau_frames": 20.0,
+      "support_bonus_weight": 2.0,
+      "residual_weight": 0.5,
+      "residual_mad_weight": 0.25,
+      "confidence_weight": 0.5,
+      "missing_view_penalty": 0.75,
+      "reject_retained_count_mismatch": true
+    },
+    "path_config": {
+      "number_of_paths": 3,
+      "beam_width": 256,
+      "maximum_link_gap_frames": 100,
+      "max_jump_mm": 8.0,
+      "max_jump_hard_cap_mm": 80.0,
+      "velocity_link_weight": 1.0,
+      "maximum_velocity_angle_degrees": 120.0,
+      "all_views_break_penalty": 0.5,
+      "segment_restart_penalty": 1.0,
+      "eligible_group_drop_cost": 0.5
+    }
+  },
+  "calibration": {
+    "requested_backend": "refractive",
+    "resolved_backend": "refractive",
+    "score_unit": "mm^2",
+    "provenance": {
+      "backend": "refractive",
+      "model_folder": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186",
+      "model_files": {
+        "cam0": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam0_bundle_refractive.json",
+        "cam1": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam1_bundle_refractive.json",
+        "cam2": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\calibration_results\\fixed_refractive_192x192x186\\cam2_bundle_refractive.json"
+      },
+      "camera_order": [
+        "cam0",
+        "cam1",
+        "cam2"
+      ],
+      "two_view_method": "direct_refracted_ray_intersection",
+      "score_unit": "mm^2",
+      "default_score_profile": "production_fast",
+      "score_profiles": {
+        "production_fast": {
+          "unit": "mm^2",
+          "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+        },
+        "legacy_combined": {
+          "unit": "mm^2",
+          "definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray"
+        }
+      },
+      "ray_system_guard": {
+        "minimum_rank": 3,
+        "maximum_condition_number": 10000000000.0,
+        "failure_xyz": "NaN",
+        "failure_score": "infinity"
+      },
+      "requested_backend": "refractive",
+      "resolved_backend": "refractive"
+    },
+    "file_sha256": {
+      "calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+      "cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+      "cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+      "cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+    }
+  },
+  "outputs": {
+    "admissible_hypotheses": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\a4_admissible_hypotheses.parquet",
+      "sha256": "257d7ca2aa03a88fd541f648e299e17b937979fa014aa2958ea8c690f4cad098"
+    },
+    "group_observations": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\a4_group_observations.parquet",
+      "sha256": "8cb261079cf46828697fc63182c584698cfdef370dec01ff9799fc73072fb506"
+    },
+    "groups": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\a4_groups.csv",
+      "sha256": "2c67e228bae41618d1087f48b1ef4c0ffde15ffb5aff0e86cd26a52fae922e36"
+    },
+    "paths": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\a4_paths.csv",
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+    },
+    "links": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\a4_links.csv",
+      "sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+    },
+    "dispositions": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\a4_group_dispositions.csv",
+      "sha256": "d090297d43167bf482609bd3f6613f7b7e6507a3560142c8c54a20c6e441faf3"
+    },
+    "selected": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\quarantine_adapter_contract_smoke_eea6877\\a4_selected_observations.parquet",
+      "sha256": "27f5e0c19c42ee7ecfbdfaf9e683bb5fc2aea4e42078206202720a77b544c90e"
+    },
+    "direct": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\a4_direct.csv",
+      "sha256": "cfed8376aea6705bcaa5fc35beeb6c4047a860dda5ce409e4d9b7c2bca292c50"
+    },
+    "filled": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\a4_filled.csv",
+      "sha256": "cfed8376aea6705bcaa5fc35beeb6c4047a860dda5ce409e4d9b7c2bca292c50"
+    },
+    "top_cam_tracklets": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\top_cam.tracklets.parquet",
+      "sha256": "9ca4b556ededbc4f4c2b4eb7975b2baa18603da94d42ed7c186b7e198196ea55"
+    },
+    "top_cam_dispositions": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\top_cam.dispositions.parquet",
+      "sha256": "7bcfd5a73a49bf8fb9f2d2fe741d2265bfa63396d85265e1275864593c38ba21"
+    },
+    "top_cam_bridges": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\top_cam.bridges.parquet",
+      "sha256": "7d209351fde0d377dfce8db7f9f3ccfc39747b8fc811dd2d3c809e5e003e3673"
+    },
+    "top_cam_summary": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\top_cam.summary.json",
+      "sha256": "aa00c74947da1fdee60256f706a6a91a60cd071ed3dd4cb2deeef67dfebb11c2"
+    },
+    "side1_cam_tracklets": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\side1_cam.tracklets.parquet",
+      "sha256": "8763c21874b7ed3fe0abdf0ab69c6a616505497878be347654ff21e3155ad49c"
+    },
+    "side1_cam_dispositions": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\side1_cam.dispositions.parquet",
+      "sha256": "8786e4ed3d4d180ae96062490c81c7c9732ccbb5d1d67ed4ef64ba93bd90ecf0"
+    },
+    "side1_cam_bridges": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\side1_cam.bridges.parquet",
+      "sha256": "7284538786be13e8ef9b1124f2597ec1838ba73f9a9520000fc8f28f7bcaddc4"
+    },
+    "side1_cam_summary": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\side1_cam.summary.json",
+      "sha256": "8c67e46a51206933c06d25c3dfa84ad882ffceafe8231487c26def5ed8f9b253"
+    },
+    "side2_cam_tracklets": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\side2_cam.tracklets.parquet",
+      "sha256": "355e6946c87a0c34fbb19f9aafb586df13f34aae49b9ee2cb122600dd14328c7"
+    },
+    "side2_cam_dispositions": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\side2_cam.dispositions.parquet",
+      "sha256": "1ba577cd25dd0ac9f1b20075b172ecc67f770a1d01f7f4fac4cb23bd643e2ed7"
+    },
+    "side2_cam_bridges": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\side2_cam.bridges.parquet",
+      "sha256": "1abe64f135c1b7ef6f7fdd193dfbeb4dca6e8ae88acc4acd0a5db20c8f6caf88"
+    },
+    "side2_cam_summary": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\per_view_tracklets\\side2_cam.summary.json",
+      "sha256": "1b58f22e1fdcbcb1265bfd127354da052c39c97bdad638626fc92554e308871d"
+    },
+    "admissible_f136451_136601_data": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\hypothesis_blocks\\admissible_f136451_136601.parquet",
+      "sha256": "257d7ca2aa03a88fd541f648e299e17b937979fa014aa2958ea8c690f4cad098"
+    },
+    "admissible_f136451_136601_status": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\low_top_pair_separation_8_9_b\\A4\\hypothesis_blocks\\admissible_f136451_136601.status.json",
+      "sha256": "32fbc0ce1c6506a99b84a8dd0c350168e2680252aa615d73362d93ae8cf8fbfb"
+    }
+  },
+  "code_sha256": {
+    "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+    "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+    "scripts\\reconstruction_3d\\conservative_cross_view_paths.py": "4bed90ac17656c7792baf62105ea2acb8253b034846123c215e378d8d3757c8a",
+    "scripts\\reconstruction_3d\\conservative_mouth_tracklets.py": "a454ae0b6e59cfd51bdea4b60de29438fc8c407c861e05befd80d3e1d9da2631",
+    "scripts\\reconstruction_3d\\mouth_tracklet_ablation.py": "1e75e10654b5d6c233ec3ea5ff2f8c969dac3dd41027031cd332d3c88096d4e0",
+    "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+  },
+  "git": {
+    "head": "632a94d3c087a1f57b04c2e0f321b0e8fb2a26be",
+    "branch": "main",
+    "status_short": "M pyproject.toml\n M scripts/hpc/sleap_chunk.slurm\n M scripts/hpc/submit_batch.sh\n M scripts/hpc/submit_experiment.sh\n M scripts/reconstruction_3d/candidate_cache.py\n M scripts/reconstruction_3d/fill_missing_3d.py\n M scripts/reconstruction_3d/reconstruct_from_slp.py\n M scripts/reconstruction_3d/windowed_tracklet_core.py\n M scripts/sleap/compare_rounds_topdown.py\n M scripts/sleap/run_topdown_optimization_training.py\n M scripts/sleap/train_strict_anchor.py\n M scripts/tracking/main.py\n M scripts/tracking/slp_merge.py\n M scripts/tracking/track_simple_nn.py\n M scripts/visualization/render_qc_4panel_fast.py\n M tests/test_candidate_cache.py\n M tests/test_eval_topdown_vs_bottomup.py\n M tests/test_fp_filters_and_fill.py\n M tests/test_render_qc_4panel_fast_geometry.py\n M tests/test_strict_anchor_training.py\n M tests/test_topdown_optimization_training.py\n M tests/test_track_simple_nn_motion.py\n M uv.lock\n?? .codex_test_tmp/\n?? .test_tmp_round9b/\n?? report/20260724/sleap_topdown_optimization/PHASE1_NEW_SESSION_PROMPT.md\n?? report/20260728/\n?? report/20260729/\n?? report/20260730/\n?? report/20260731/\n?? scripts/reconstruction_3d/conservative_cross_view_paths.py\n?? scripts/reconstruction_3d/conservative_mouth_tracklets.py\n?? scripts/reconstruction_3d/deferred_identity_tracking.py\n?? scripts/reconstruction_3d/mouth_ablation.py\n?? scripts/reconstruction_3d/mouth_tracklet_ablation.py\n?? scripts/sleap/design_round9b_split.py\n?? scripts/sleap/prepare_side_cumulative_training.py\n?? tests/test_conservative_cross_view_paths.py\n?? tests/test_conservative_mouth_tracklets.py\n?? tests/test_deferred_identity_tracking.py\n?? tests/test_design_round9b_split.py\n?? tests/test_mouth_ablation.py\n?? tests/test_mouth_tracklet_ablation.py\n?? tests/test_prepare_side_cumulative_training.py\n?? tests/test_slp_merge_round_tags.py"
+  }
+}

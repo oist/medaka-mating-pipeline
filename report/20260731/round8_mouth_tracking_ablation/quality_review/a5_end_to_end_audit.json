@@ -1,0 +1,17 @@
+{
+  "audit": "synthetic end-to-end A5 runner contract",
+  "mouth_tracklet_ablation_sha256": "1e75e10654b5d6c233ec3ea5ff2f8c969dac3dd41027031cd332d3c88096d4e0",
+  "conditions": {
+    "hint_rows_are_complete": true,
+    "direct_has_three_rows_per_frame": true,
+    "all_direct_coordinates_finite": true,
+    "all_hints_honored": true,
+    "summary_hashes_outputs": true,
+    "calibration_contract_preserved": true
+  },
+  "hint_rows": 9,
+  "summary_hint_rows": 9,
+  "summary_hints_honored": 9,
+  "configuration_hash": "1fb9db0d18243159a15566757c3ae9997028909e7dfb5f3bfb06064fe232320a",
+  "result": "PASS"
+}

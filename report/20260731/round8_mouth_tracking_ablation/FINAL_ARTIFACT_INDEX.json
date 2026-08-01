@@ -1,0 +1,302 @@
+{
+  "schema_version": "round8_mouth_ablation_final_artifact_index_v1",
+  "generated_at": "2026-07-31T08:02:15.0815307+09:00",
+  "status": "scientific_execution_complete_independently_audited_and_hash_bound",
+  "experiment": "20251225_K_1_2_FCMC",
+  "round_tag": "round8_260729_snn031_m6",
+  "scope": {
+    "anchor": "mouth_only",
+    "production_reference": "A0_unchanged",
+    "full_length_experimental_methods": ["A1", "A2", "A3"],
+    "full_length_excluded_methods": ["A4", "A5"],
+    "full_length_interval_inclusive": [0, 348599],
+    "critical_descriptive_interval_inclusive": [34000, 35100],
+    "critical_assignment_interval_inclusive": [34547, 34555],
+    "critical_evidence_role": "descriptive_nonconfirmatory"
+  },
+  "final_conclusion": {
+    "execution_quality": "PASS",
+    "production_replacement_of_A0": "NOT_ESTABLISHED",
+    "production_action": "retain_A0",
+    "experimental_candidate": "retain_A1_as_primary_mouth_only_candidate_by_parsimony",
+    "required_follow_up": "investigate_A1_A2_114297_frame_assignment_divergence",
+    "not_for_production": ["A3", "A4", "A5"]
+  },
+  "provenance": {
+    "input_provenance": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/input_provenance.json",
+      "sha256": "8fb773a733123547c82b0f4b966832128a80249aa1d07d3baad664181af5b90c"
+    },
+    "cohort_protocol": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/cohort_protocol.json",
+      "sha256": "8f81068ca50154ffb77eb8c32015ddbe2788e6dc395d7216c3b58e9d5956fb86"
+    },
+    "protocol_deviations": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/protocol_deviations.json",
+      "sha256": "9e1381ee42525a8d68e54b02357df98804496fa47de3df4292c7381a58bdd3aa"
+    },
+    "frozen_thresholds": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/frozen_thresholds.json",
+      "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d",
+      "frozen_at": "2026-07-31T04:18:09.058553+09:00"
+    },
+    "frozen_thresholds_independent_audit": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/frozen_thresholds_independent_audit.json",
+      "sha256": "5476c5ecfcf3ab5720dd84a7ba80fc9ada9dc332305b23a7b24c4fbedecd0693"
+    },
+    "confirmed_female_annotation_ledger": {
+      "path": "annotations/fish_sex_gt/20251225_K_1_2_FCMC/female_sex_gt.csv",
+      "sha256": "ab0a173ac737a63311aec834c5832fc19475d4f7d1892b8193f8465bba67519f"
+    },
+    "exact_commands": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/exact_commands.md",
+      "sha256": "60158548d7e3554aa726fa8642596f1a3e87ca0b904867e42f74c390fc989691"
+    }
+  },
+  "canonical_inputs": {
+    "candidate_cache_top_cam_sha256": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+    "candidate_cache_side1_cam_sha256": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+    "candidate_cache_side2_cam_sha256": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699",
+    "calibration_manifest": {
+      "path": "calibration_results/fixed_refractive_192x192x186/calibration_manifest.json",
+      "sha256": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105"
+    },
+    "calibration_cam0": {
+      "path": "calibration_results/fixed_refractive_192x192x186/cam0_bundle_refractive.json",
+      "sha256": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c"
+    },
+    "calibration_cam1": {
+      "path": "calibration_results/fixed_refractive_192x192x186/cam1_bundle_refractive.json",
+      "sha256": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0"
+    },
+    "calibration_cam2": {
+      "path": "calibration_results/fixed_refractive_192x192x186/cam2_bundle_refractive.json",
+      "sha256": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+    }
+  },
+  "training_and_cutoff_evidence": {
+    "geometry_audit": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_geometry_independent_audit.json",
+      "sha256": "4022f22334f23233904572ed411de19e5a57cd119c4358e4334c572a4b6aa902"
+    },
+    "clean_motion_audit": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_clean_motion_audit.json",
+      "sha256": "58d16557e7d4d50cf75ceaa12d398d7043c5c52a2c0c2aeeaf8da41061f3e5c3"
+    },
+    "motion_sweep": {
+      "selection": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_motion_sweep_selection.json",
+        "sha256": "4e83c1e84c1775595315dec43579b135eb4d5998aaaa9b780e87ece6921a4038"
+      },
+      "audit": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_motion_sweep_audit.json",
+        "sha256": "92c99a84beef714f0433c5844616f00a2ecc83679ddcdcf68d94f824cadcfa4d"
+      },
+      "summary": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_motion_sweep_summary.csv",
+        "sha256": "c9304c1a8f01f17a74fe709bd04855da0b79af6b7fc7c065256d45fc6a16d139"
+      },
+      "assignments": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_motion_sweep_assignments.csv",
+        "sha256": "11d0abf33cc47f04506f2d7af43c9db9422d7ef1e65e4be17205e47d76471be6"
+      }
+    },
+    "A3_sweep": {
+      "audit": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_a3_sweep_audit.json",
+        "sha256": "432358a6595dec4b430a14d2d1d70dacbb880367489d4f515259884c2054b059"
+      },
+      "summary": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_a3_sweep_summary.csv",
+        "sha256": "a224ea00e4e4b6539e51f871d696b417354563c804f6b83fc62df188c5d96f29"
+      },
+      "assignments": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_a3_sweep_assignments.csv",
+        "sha256": "dacde64b8cebf264fce9c5a8ca2ebbf15dba7c3a9028f0f7be0f23200c8e2701"
+      }
+    },
+    "tracklet_cutoff_sweep": {
+      "audit": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_tracklet_cutoff_sweep_audit.json",
+        "sha256": "fe2f497f849e1c4f08433786ee9d0d9d20916f5b335e3b55370f61924b4daa7d"
+      },
+      "summary": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_tracklet_cutoff_sweep_summary.csv",
+        "sha256": "8fcfac48d4044c5f45203295307cfed6214d8a1f400d1e33d5bb546cec8bf420"
+      },
+      "assignments": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_tracklet_cutoff_female_assignments.csv",
+        "sha256": "afcb6cf8286ea8e6051dba8be1223eb18a3c7668e516ca629af0f5293454c850"
+      }
+    },
+    "A4_method_sweep": {
+      "audit": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_a4_method_sweep_audit.json",
+        "sha256": "81ba93ef249188824ad1263ee550e51b0890e19f85231e82a37be80ce71ef697"
+      },
+      "summary": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_a4_method_sweep_summary.csv",
+        "sha256": "1db15679100072c51a6314d0001a0f1264ed68999c456efcaa714b0d0f8c79f4"
+      },
+      "assignments": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_a4_method_female_assignments.csv",
+        "sha256": "0babb8243de36ac73949f0fc1e659530d74ae6f87c51ec21bbdc5d3c43186e34"
+      }
+    },
+    "A5_hint_sweep": {
+      "audit": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_a5_hint_audit.json",
+        "sha256": "871570d10ed4333a7aa8192966a31a674cd240f613bf2144db023373c73855b1"
+      },
+      "assignments": {
+        "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/training_a5_female_assignments.csv",
+        "sha256": "832174bc187ac85b0cab5f7a0da05ac520f38d6a4b5b0dade2c3ad86cabc1955"
+      }
+    }
+  },
+  "postfreeze_stage_chain": {
+    "validation": {
+      "prepared": {"path": "report/20260731/round8_mouth_tracking_ablation/validation_postfreeze/STAGE_PREPARED.json", "sha256": "3fb4e79994df34c5d0d140a1ed5f24d5358970114230950d7cd9addb74eabae6"},
+      "prelaunch_auth": {"path": "report/20260731/round8_mouth_tracking_ablation/validation_postfreeze/prelaunch_auth.json", "sha256": "abdfe584b902c3e904712231f5b4ba1b701c89b5d7c7cac8af0ed7870eb2c514"},
+      "launch": {"path": "report/20260731/round8_mouth_tracking_ablation/validation_postfreeze/DETACHED_LAUNCH.json", "sha256": "561fc3f71702cafaf182504c43ea9595bdbf6c0e53ba66ba8a9c24950f5b84c8"},
+      "completed": {"path": "report/20260731/round8_mouth_tracking_ablation/validation_postfreeze/STAGE_COMPLETED.json", "sha256": "7b11328f9304c9ad2a472d93125c0e108ea3e810e4a06e616b9da09128f32fa8"},
+      "finalized": {"path": "report/20260731/round8_mouth_tracking_ablation/validation_postfreeze/STAGE_FINALIZED.json", "sha256": "297249d8cc9cdff2e0a5c850884f795e238b6911b42605e440d70397bc6fb706"}
+    },
+    "heldout": {
+      "prepared": {"path": "report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/STAGE_PREPARED.json", "sha256": "72557e96b34c2582c58419bbaa1e71ae6379b89f7e8e3624a42fbc1e5c216037"},
+      "prelaunch_auth": {"path": "report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/prelaunch_auth.json", "sha256": "871420dd5b55ed4d3b5b69beb91dc12035644e1c30c919199e590d0737c1f61b"},
+      "launch": {"path": "report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/DETACHED_LAUNCH.json", "sha256": "6ecdfbfa110b58204921334bc15e4b6f81332f115d9f84bbdfcc3e278302b216"},
+      "exit": {"path": "report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/DETACHED_LAUNCH_EXIT.json", "sha256": "c1a20e0ceb6dc31a96a360dc59e9e05cbd6300da8c35ca8a2fdc2e48fe36648f"},
+      "completed": {"path": "report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/STAGE_COMPLETED.json", "sha256": "615b03f161db28982ee1d6b5648e79e1d4bef146b281cc911b13d4654d7da143"},
+      "finalized": {"path": "report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/STAGE_FINALIZED.json", "sha256": "3b58e073c9cf6c97348e1f0c8cdbb9ca5c15d689ee222b450df1c91dc3303152"}
+    },
+    "critical_descriptive": {
+      "prepared": {"path": "report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/STAGE_PREPARED.json", "sha256": "8900912581348c4df936767c639b429100d17c3d5736d528c108679824862d6b"},
+      "prelaunch_auth": {"path": "report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/prelaunch_auth.json", "sha256": "0cfe3a3f000d964838d6c1cd0ba075a2cc6ac5c5c086644dd02441aa4100cd4c"},
+      "launch": {"path": "report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/DETACHED_LAUNCH.json", "sha256": "d3681a9b196c5f626751fd8ceb1a0f5ad3aaef069221413a765405d48af218af"},
+      "exit": {"path": "report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/DETACHED_LAUNCH_EXIT.json", "sha256": "5c18804e28c264ef560456981fad2c377ca27f21d4133882f6cf843ec532f895"},
+      "completed": {"path": "report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/STAGE_COMPLETED.json", "sha256": "e493fdcc449034c4f9dd22e3f124283fe8d3cd06d9bd50b0c46002e440367706"},
+      "finalized": {"path": "report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/STAGE_FINALIZED.json", "sha256": "fe432101a7580f4e540d3c4537ae8b1c774a2b5231d8cc0900a790e250d3149c"}
+    },
+    "full_length": {
+      "prepared": {"path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/STAGE_PREPARED.json", "sha256": "d9c14fcb973f0fa29877443802eeba643fd5b288245988414b13c53d9f1f4aa1"},
+      "prelaunch_auth": {"path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/prelaunch_auth.json", "sha256": "bd1ef6119ff770121ad65c1ce87d772190c3d637c479940045ee84a5f81f8b7b"},
+      "launch": {"path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/DETACHED_LAUNCH.json", "sha256": "814c51696d1fff1c4b142d16b06c1aaf4feeb5bd66ce0f0df88cd5df193434e6"},
+      "exit": {"path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/DETACHED_LAUNCH_EXIT.json", "sha256": "aa2109f2dbd08b6a51b3f16f7fdcd85f5c75145c6f38b852eaa779a22615f9aa"},
+      "completed": {"path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/STAGE_COMPLETED.json", "sha256": "7e9e826cc48965d2b0ada1569b63d7a77b3b2972a8e20649eff15bc2de00dca0"},
+      "finalized": {"path": "report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/STAGE_FINALIZED.json", "sha256": "a9a8ae25cca6ef0c94dc7996cf39680017b9bb58e20ab60473bced96284e07b0"}
+    }
+  },
+  "quality_outputs": {
+    "heldout_quality_seal": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/HELDOUT_QUALITY_REVIEW_COMPLETED.json",
+      "sha256": "022fbca3f3d0c13d7388a83c42b3b2bad60ded00de2fe89fad428943e7f213cc"
+    },
+    "critical_quality_seal": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/CRITICAL_QUALITY_REVIEW_COMPLETED.json",
+      "sha256": "55a479e1b97a1054b7f195530d1505202d4d87935a1dd2f36b06f51e665fe83e"
+    },
+    "full_length_quality_seal": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/FULL_LENGTH_QUALITY_REVIEW_COMPLETED.json",
+      "sha256": "7e9896716a693ce81287320af1aacd6ab686f909ad4f5cc8de43af54dc03cc92",
+      "recursive_binding_audit": "PASS_24_OF_24"
+    },
+    "bounded_metrics": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_independent_metrics.json",
+      "sha256": "d9a4d449697c96c0d1a579a841b4fa128f805f519294acae4b4342815cf36519"
+    },
+    "bounded_female_assignments": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_independent_female_assignments.csv",
+      "sha256": "46434e15e7e038a0c290b4d526a491c06f7cdd95c6c935c87293473625e478a9"
+    },
+    "critical_event_audit": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_critical_event_audit.json",
+      "sha256": "c6417f733213b9d307ca75b34eef326ecf86b4bdf92ea9b5076dbb453f6f79dc"
+    },
+    "critical_event_assignments": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_critical_event_assignments_34547_34555.csv",
+      "sha256": "e69e7442bfa9c074a4d8bebcbd46fb1849ff72fa4472214b9242c505d8fbb343"
+    },
+    "full_length_metrics": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_independent_metrics.json",
+      "sha256": "0230a938d70d05465677fec1fdad46e6abf1eb13483e093a17980de800684870"
+    },
+    "full_length_female_assignments": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_independent_female_assignments.csv",
+      "sha256": "2420ff3db22ffb26a788008c6eee5586e10d3e53a10282ee3f77fff3f363ed67"
+    },
+    "full_length_method_summary": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_independent_method_summary.csv",
+      "sha256": "4a8dbcc53744634e133b4625108dc40c653d0c1fe8d770b4e2b621185e0226e6"
+    },
+    "full_length_critical_event_rows": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_critical_event_rows_34547_34555.csv",
+      "sha256": "4f70a95dc708c8effc7a4b0b0389488113c65be1cd8f646a4f26481b93bca7e6"
+    },
+    "annotation_partition_summary_json": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_annotation_partition_summary.json",
+      "sha256": "c13861f672de73db9f7098c500c813c158069e86ba23567ea966d34e5f897d61"
+    },
+    "annotation_partition_summary_csv": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_annotation_partition_summary.csv",
+      "sha256": "cb3a3f05ff0e25dec585d4bca347bcf6348340d7dd61a90a0b9378fd52431234"
+    }
+  },
+  "incidents_and_repairs": {
+    "validation_interrupted_shell_wrapper": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/validation_postfreeze/INTERRUPTED_LAUNCH_20260731_043346.json",
+      "sha256": "9047506507769e875f52af369351ef424ed3957514e536900c57ec89ae454558"
+    },
+    "failed_heldout_attempt_manifest": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quarantine_failed_heldout_attempt_runner1f737_20260731_0457/FAILED_ATTEMPT_MANIFEST.json",
+      "sha256": "d4ccda6fcd1995c359f97b3a1e99c8153a85c362cc35259a805130ce691ba644"
+    },
+    "heldout_empty_A4_schema_repair_protocol": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/HELDOUT_EMPTY_A4_SCHEMA_REPAIR_PROTOCOL.json",
+      "sha256": "d42a5095829f60b8ede4fa1b8f4dd6cfa490592f468641f2439a4a20d0e6f42a"
+    },
+    "heldout_adapter_smoke_completion": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quarantine_adapter_contract_smoke_eea6877/SMOKE_COMPLETED.json",
+      "sha256": "8d4e645d28c111b5914e99237a2b22b96f559590006175a1d29318a89902f9ea"
+    },
+    "full_length_scorer_execution_incident": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/full_length_scorer_execution_incident.json",
+      "sha256": "6ecf08b348f02bbc21ad87879160123809f8fd7e57259a893815f397fc71f66a"
+    }
+  },
+  "portable_report": {
+    "artifact": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/artifact.json",
+      "sha256": "32a907a60452147015e466442d2a41d5ebe11da1ee7079bad487c55b49dc07e8"
+    },
+    "html": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/report.html",
+      "sha256": "48290fe0f0985d82554dc66e55eb17f745c91e3e0fa2503d1687cd12bf6d68d7"
+    },
+    "delivery_receipt": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/report_delivery_receipt.json",
+      "sha256": "a1b958298204eabc12f22bb9d37132e94c0f26eb3c0b8c04a7f558bedba0f0b1"
+    },
+    "source_queries": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/report_source_queries.sql",
+      "sha256": "19b428d60ed208d92d743b7e5d2eb49466f29c2dd617c9a1d4daa05e3a93393d"
+    },
+    "delivery_validation": "PASS",
+    "visual_verification": "structural_only_no_compatible_Chromium_available"
+  },
+  "human_review": {
+    "comparison_report": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/COMPARISON_REPORT.md",
+      "sha256": "78ac2100c23457fb4aa878cd08f54b53ef26d5e00fb372d4b7ca94ddcdf80fe8"
+    },
+    "quality_review": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/QUALITY_REVIEW.md",
+      "sha256": "5bd61f1c26edf42e11eea6b3b9d443401baa481cc0b25fb5b27b8a84bd0ec67f"
+    },
+    "independent_audit": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/INDEPENDENT_AUDIT.md",
+      "sha256": "a9e014b30674b19a11d85621887bdfe19561fb4de346a6703bf946e55da97bce"
+    }
+  },
+  "self_hash_policy": "The index does not contain its own hash. Hash FINAL_ARTIFACT_INDEX.json after creation and report it alongside this file."
+}

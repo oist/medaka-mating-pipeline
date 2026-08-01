@@ -271,6 +271,27 @@ report/20260717/windowed_tracklet_stitching/pytest_tmp/
 report/20260717/windowed_tracklet_stitching/quality_*/
 report/20260717/windowed_tracklet_stitching/smoke_*/
 report/20260717/windowed_tracklet_stitching/worker_bench/
+# The 2026-07-31 mouth-tracking report keeps only compact notes, provenance,
+# stage seals, and independent-audit summaries. Raw run bodies are reproducible
+# from exact_commands.md and belong in ignored scratch/output storage.
+report/20260731/round8_mouth_tracking_ablation/candidate_cache*/
+report/20260731/round8_mouth_tracking_ablation/pytest_*/
+report/20260731/round8_mouth_tracking_ablation/smoke_*/
+report/20260731/round8_mouth_tracking_ablation/quarantine_pre_freeze_*/
+report/20260731/round8_mouth_tracking_ablation/quarantine_invalid_*/
+report/20260731/round8_mouth_tracking_ablation/training_geometry/
+report/20260731/round8_mouth_tracking_ablation/training_relink*/
+report/20260731/round8_mouth_tracking_ablation/training_a4_cutoff_sweep/*/
+report/20260731/round8_mouth_tracking_ablation/training_a5/*/
+report/20260731/round8_mouth_tracking_ablation/validation_postfreeze/*/
+report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/*/
+report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/*/
+report/20260731/round8_mouth_tracking_ablation/full_length_postfreeze/*/
+report/20260731/round8_mouth_tracking_ablation/quarantine_failed_heldout_attempt_runner1f737_20260731_0457/*/
+report/20260731/round8_mouth_tracking_ablation/quarantine_adapter_contract_smoke_eea6877/*/
+report/20260731/round8_mouth_tracking_ablation/quality_review/*/
+report/20260731/round8_mouth_tracking_ablation/**/*.log
+report/20260731/round8_mouth_tracking_ablation/**/*.partial
 # Regenerable compact contact-review caches (candidate CSV/JSON stays inspectable).
 annotations/contact_episode_gt/**/ifd_cache/
 # JS tooling deps that leak into report dirs

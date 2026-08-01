@@ -1,0 +1,19 @@
+{
+  "schema_version": "round8_detached_stage_launcher_v3",
+  "status": "launched",
+  "stage": "critical",
+  "launched_at": "2026-07-31T05:37:17.2898942+09:00",
+  "pid": 36212,
+  "working_directory": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline",
+  "command": [
+    ".venv\\Scripts\\python.exe",
+    "report\\20260731\\round8_mouth_tracking_ablation\\run_bounded_postfreeze_stage_v5.py",
+    "critical",
+    "--execute-prepared"
+  ],
+  "runner_sha256": "2eb4012e428bf8951609a8c345d55fc75c74cd934b955ef5400bb2c56d72c38d",
+  "prepared_manifest_sha256": "8900912581348c4df936767c639b429100d17c3d5736d528c108679824862d6b",
+  "prelaunch_auth_sha256": "0cfe3a3f000d964838d6c1cd0ba075a2cc6ac5c5c086644dd02441aa4100cd4c",
+  "heldout_finalized_sha256": "3b58e073c9cf6c97348e1f0c8cdbb9ca5c15d689ee222b450df1c91dc3303152",
+  "heldout_quality_seal_sha256": "022fbca3f3d0c13d7388a83c42b3b2bad60ded00de2fe89fad428943e7f213cc"
+}

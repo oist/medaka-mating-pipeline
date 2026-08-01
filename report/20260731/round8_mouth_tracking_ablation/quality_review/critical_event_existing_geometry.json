@@ -1,0 +1,1209 @@
+{
+  "pre_link_source": {
+    "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_best_pre_link.json",
+    "size_bytes": 348811915
+  },
+  "pre_link_frames": {
+    "34547": {
+      "groups": {
+        "a": [
+          183.51826826716197,
+          71.16128697927078,
+          168.1492157096961
+        ],
+        "b": [
+          13.403691410039206,
+          182.95366153834786,
+          11.067042598119395
+        ],
+        "c": [
+          20.097191444493724,
+          185.83900620247428,
+          10.892423810227031
+        ]
+      },
+      "errors": {
+        "a": 0.5503868106100501,
+        "b": 0.41153443079225493,
+        "c": 2.6681978202250196
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        0,
+        -1,
+        1
+      ],
+      "perm_cam2": [
+        0,
+        1,
+        -1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        1,
+        2
+      ],
+      "synthetic_views": [
+        -1,
+        1,
+        2
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    },
+    "34548": {
+      "groups": {
+        "a": [
+          183.15759201073493,
+          71.56193284776363,
+          167.97277574808143
+        ],
+        "b": [
+          16.055114617507936,
+          183.7768152815469,
+          11.704867904428573
+        ],
+        "c": [
+          8.949584409234603,
+          186.18823040865686,
+          10.811007078419548
+        ]
+      },
+      "errors": {
+        "a": 0.5427083453530831,
+        "b": 6.364958911945541,
+        "c": 10.198746054250966
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        0,
+        1,
+        -1
+      ],
+      "perm_cam2": [
+        0,
+        -1,
+        1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        2,
+        1
+      ],
+      "synthetic_views": [
+        -1,
+        2,
+        1
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    },
+    "34549": {
+      "groups": {
+        "a": [
+          182.72343696697217,
+          71.96376774517032,
+          167.7158492415018
+        ],
+        "b": [
+          16.122201822365394,
+          183.65757356705058,
+          11.729435803158902
+        ],
+        "c": [
+          8.914343771708433,
+          186.19198125019543,
+          10.818249231668602
+        ]
+      },
+      "errors": {
+        "a": 0.3623811342275582,
+        "b": 6.6026892263887085,
+        "c": 10.323624141410647
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        0,
+        1,
+        -1
+      ],
+      "perm_cam2": [
+        0,
+        -1,
+        1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        2,
+        1
+      ],
+      "synthetic_views": [
+        -1,
+        2,
+        1
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    },
+    "34550": {
+      "groups": {
+        "a": [
+          182.50581348699671,
+          72.30681331818802,
+          167.6317067063159
+        ],
+        "b": [
+          16.10941338709855,
+          183.62244365111624,
+          11.75956125818305
+        ],
+        "c": [
+          8.489267503715023,
+          186.329496903662,
+          10.641156338984738
+        ]
+      },
+      "errors": {
+        "a": 0.4666805681527426,
+        "b": 6.585779240571501,
+        "c": 12.119907364573823
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        0,
+        1,
+        -1
+      ],
+      "perm_cam2": [
+        0,
+        -1,
+        1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        2,
+        1
+      ],
+      "synthetic_views": [
+        -1,
+        2,
+        1
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    },
+    "34551": {
+      "groups": {
+        "a": [
+          182.1542676707302,
+          72.72428808190044,
+          167.38126198378413
+        ],
+        "b": [
+          15.953724268831234,
+          183.58015716389278,
+          11.750100098156327
+        ],
+        "c": [
+          8.492480048205085,
+          186.29462199423656,
+          11.021138011536078
+        ]
+      },
+      "errors": {
+        "a": 0.6252033431444787,
+        "b": 5.813388138524223,
+        "c": 12.075964810678775
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        1,
+        0,
+        -1
+      ],
+      "perm_cam2": [
+        0,
+        -1,
+        1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        2,
+        1
+      ],
+      "synthetic_views": [
+        -1,
+        2,
+        1
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    },
+    "34552": {
+      "groups": {
+        "a": [
+          181.76127479794778,
+          73.13605244472873,
+          167.2268385582745
+        ],
+        "b": [
+          15.930090418404161,
+          183.55874022178114,
+          11.752295067199505
+        ],
+        "c": [
+          8.425453800829763,
+          186.2974477184365,
+          11.014713316757499
+        ]
+      },
+      "errors": {
+        "a": 0.5677854919241627,
+        "b": 5.7248979166312015,
+        "c": 12.091819602605357
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        0,
+        1,
+        -1
+      ],
+      "perm_cam2": [
+        0,
+        -1,
+        1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        2,
+        1
+      ],
+      "synthetic_views": [
+        -1,
+        2,
+        1
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    },
+    "34553": {
+      "groups": {
+        "a": [
+          181.50561164002684,
+          73.38097298754309,
+          167.0561889457537
+        ],
+        "b": [
+          13.326854132106357,
+          182.80503984913324,
+          11.564488681470726
+        ],
+        "c": [
+          19.348254450459333,
+          186.73638184625068,
+          10.998236950987158
+        ]
+      },
+      "errors": {
+        "a": 0.5206070318447789,
+        "b": 0.24986968185632474,
+        "c": 2.102969558829318
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        1,
+        -1,
+        0
+      ],
+      "perm_cam2": [
+        0,
+        1,
+        -1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        1,
+        2
+      ],
+      "synthetic_views": [
+        -1,
+        1,
+        2
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    },
+    "34554": {
+      "groups": {
+        "a": [
+          181.42329252736454,
+          73.51493330790888,
+          166.49911895362183
+        ],
+        "b": [
+          13.33005111632726,
+          182.70301064597507,
+          11.563211623649462
+        ],
+        "c": [
+          19.222565635702463,
+          186.75899550822604,
+          10.999327278206104
+        ]
+      },
+      "errors": {
+        "a": 0.4173751587561904,
+        "b": 0.18694706644298387,
+        "c": 2.286009449687329
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        0,
+        -1,
+        1
+      ],
+      "perm_cam2": [
+        0,
+        1,
+        -1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        1,
+        2
+      ],
+      "synthetic_views": [
+        -1,
+        1,
+        2
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    },
+    "34555": {
+      "groups": {
+        "a": [
+          181.23751898545981,
+          73.49930038705432,
+          166.13014448715256
+        ],
+        "b": [
+          15.772182005527611,
+          183.12409902963444,
+          11.98459958960475
+        ],
+        "c": [
+          8.037206486229621,
+          186.19935788343648,
+          11.498914918464754
+        ]
+      },
+      "errors": {
+        "a": 0.6213491154826606,
+        "b": 5.66997567186389,
+        "c": 12.77336196845604
+      },
+      "perm_cam0": [
+        0,
+        2,
+        1
+      ],
+      "perm_cam1": [
+        0,
+        1,
+        -1
+      ],
+      "perm_cam2": [
+        0,
+        -1,
+        1
+      ],
+      "recovered": [
+        false,
+        true,
+        true
+      ],
+      "missing_views": [
+        -1,
+        2,
+        1
+      ],
+      "synthetic_views": [
+        -1,
+        2,
+        1
+      ],
+      "source_id_hints": {},
+      "selection_diagnostics": {
+        "alternatives_considered": 234,
+        "identity_conflicts": 0,
+        "motion_gate_rejections": 0,
+        "candidate_count": 28,
+        "selection_kind": "global_tracklet_constrained",
+        "triangulation_backend": "refractive",
+        "scoring_backend": "refractive",
+        "scoring_profile": "production_fast",
+        "score_unit": "mm^2",
+        "max_hypothesis_score": null,
+        "partial_view_penalty": 1000000.0,
+        "partial_view_penalty_unit": "mm^2"
+      },
+      "dropped_high_residual": [],
+      "score_unit": "mm^2",
+      "triangulation_backend": "refractive",
+      "scoring_backend": "refractive",
+      "scoring_profile": "production_fast"
+    }
+  },
+  "gate_audit_34547_to_34548": {
+    "row_previous_labels": [
+      "b",
+      "c"
+    ],
+    "column_current_labels": [
+      "b",
+      "c"
+    ],
+    "euclidean_distance_mm": [
+      [
+        2.848587058774009,
+        5.510631464608808
+      ],
+      [
+        4.6098895730607,
+        11.153372980536458
+      ]
+    ],
+    "feasible_at_8mm": [
+      [
+        true,
+        true
+      ],
+      [
+        true,
+        false
+      ]
+    ],
+    "straight_cost_mm": 14.001960039310468,
+    "crossed_cost_mm": 10.120521037669509,
+    "straight_feasible": false,
+    "crossed_feasible": true,
+    "top_detection_slots_before": {
+      "b": 2,
+      "c": 1
+    },
+    "top_detection_slots_after": {
+      "b": 2,
+      "c": 1
+    },
+    "interpretation": "The same top detection slots define the straight continuation. Its c-to-c 3D step exceeds 8 mm; both crossed steps are below 8 mm."
+  },
+  "linked_source": {
+    "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_best.json",
+    "size_bytes": 338770313
+  },
+  "linked_frames": {
+    "34547": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_3",
+        "ID_1"
+      ],
+      "cam1_to_id": [
+        "ID_2",
+        "ID_3",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          13.403691410039206,
+          182.95366153834786,
+          11.067042598119395
+        ],
+        "ID_2": [
+          183.51826826716197,
+          71.16128697927078,
+          168.1492157096961
+        ],
+        "ID_3": [
+          20.097191444493724,
+          185.83900620247428,
+          10.892423810227031
+        ]
+      }
+    },
+    "34548": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_1",
+        "ID_3"
+      ],
+      "cam1_to_id": [
+        "ID_2",
+        "ID_3",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          8.949584409234603,
+          186.18823040865686,
+          10.811007078419548
+        ],
+        "ID_2": [
+          183.15759201073493,
+          71.56193284776363,
+          167.97277574808143
+        ],
+        "ID_3": [
+          16.055114617507936,
+          183.7768152815469,
+          11.704867904428573
+        ]
+      }
+    },
+    "34549": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_1",
+        "ID_3"
+      ],
+      "cam1_to_id": [
+        "ID_2",
+        "ID_3",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          8.914343771708433,
+          186.19198125019543,
+          10.818249231668602
+        ],
+        "ID_2": [
+          182.72343696697217,
+          71.96376774517032,
+          167.7158492415018
+        ],
+        "ID_3": [
+          16.122201822365394,
+          183.65757356705058,
+          11.729435803158902
+        ]
+      }
+    },
+    "34550": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_1",
+        "ID_3"
+      ],
+      "cam1_to_id": [
+        "ID_2",
+        "ID_3",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          8.489267503715023,
+          186.329496903662,
+          10.641156338984738
+        ],
+        "ID_2": [
+          182.50581348699671,
+          72.30681331818802,
+          167.6317067063159
+        ],
+        "ID_3": [
+          16.10941338709855,
+          183.62244365111624,
+          11.75956125818305
+        ]
+      }
+    },
+    "34551": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_1",
+        "ID_3"
+      ],
+      "cam1_to_id": [
+        "ID_3",
+        "ID_2",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          8.492480048205085,
+          186.29462199423656,
+          11.021138011536078
+        ],
+        "ID_2": [
+          182.1542676707302,
+          72.72428808190044,
+          167.38126198378413
+        ],
+        "ID_3": [
+          15.953724268831234,
+          183.58015716389278,
+          11.750100098156327
+        ]
+      }
+    },
+    "34552": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_1",
+        "ID_3"
+      ],
+      "cam1_to_id": [
+        "ID_2",
+        "ID_3",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          8.425453800829763,
+          186.2974477184365,
+          11.014713316757499
+        ],
+        "ID_2": [
+          181.76127479794778,
+          73.13605244472873,
+          167.2268385582745
+        ],
+        "ID_3": [
+          15.930090418404161,
+          183.55874022178114,
+          11.752295067199505
+        ]
+      }
+    },
+    "34553": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_3",
+        "ID_1"
+      ],
+      "cam1_to_id": [
+        "ID_3",
+        "ID_2",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          13.326854132106357,
+          182.80503984913324,
+          11.564488681470726
+        ],
+        "ID_2": [
+          181.50561164002684,
+          73.38097298754309,
+          167.0561889457537
+        ],
+        "ID_3": [
+          19.348254450459333,
+          186.73638184625068,
+          10.998236950987158
+        ]
+      }
+    },
+    "34554": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_3",
+        "ID_1"
+      ],
+      "cam1_to_id": [
+        "ID_2",
+        "ID_3",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          13.33005111632726,
+          182.70301064597507,
+          11.563211623649462
+        ],
+        "ID_2": [
+          181.42329252736454,
+          73.51493330790888,
+          166.49911895362183
+        ],
+        "ID_3": [
+          19.222565635702463,
+          186.75899550822604,
+          10.999327278206104
+        ]
+      }
+    },
+    "34555": {
+      "cam0_to_id": [
+        "ID_2",
+        "ID_1",
+        "ID_3"
+      ],
+      "cam1_to_id": [
+        "ID_2",
+        "ID_3",
+        null
+      ],
+      "cam2_to_id": [
+        "ID_2",
+        "ID_1",
+        null
+      ],
+      "recovered": [
+        true,
+        false,
+        true
+      ],
+      "missing_views": [
+        1,
+        -1,
+        2
+      ],
+      "synthetic_views": [
+        1,
+        -1,
+        2
+      ],
+      "id_anchor": [
+        false,
+        false,
+        false
+      ],
+      "groups": {
+        "ID_1": [
+          8.037206486229621,
+          186.19935788343648,
+          11.498914918464754
+        ],
+        "ID_2": [
+          181.23751898545981,
+          73.49930038705432,
+          166.13014448715256
+        ],
+        "ID_3": [
+          15.772182005527611,
+          183.12409902963444,
+          11.98459958960475
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "status": "training_a5_completed_and_authenticated",
+  "scope": "authorized training events and length-matched training controls only",
+  "forbidden_cohorts_opened": [],
+  "frozen_dependencies": {
+    "A2": {
+      "configuration": "A2_v025_h5",
+      "velocity_weight": 0.25,
+      "history_frames": 5
+    },
+    "A3": {
+      "configuration": "A3_a005",
+      "acceleration_weight": 0.05
+    },
+    "A4": {
+      "configuration": "s035_m005_g0",
+      "separation_body_lengths": 0.35,
+      "assignment_ambiguity_margin_body_lengths": 0.05,
+      "maximum_missing_gap_frames": 0
+    },
+    "A5_hint_thresholds": {
+      "minimum_mouth_confidence": 0.5,
+      "minimum_group_support_frames": 3,
+      "maximum_group_median_ray_residual_mm2": 1.0,
+      "maximum_group_mad_ray_residual_mm2": 0.25,
+      "minimum_group_median_mouth_confidence": 0.5,
+      "maximum_group_assignment_cost": 0.0,
+      "minimum_mapping_votes": 3,
+      "minimum_mapping_purity": 0.9,
+      "minimum_vote_margin": 2,
+      "xyz_tolerance_mm": 1e-09
+    }
+  },
+  "windows": [
+    {
+      "window": "reviewed_event_1",
+      "frame_start": 72371,
+      "frame_end": 73027,
+      "frames": 657,
+      "rows": 1971,
+      "a4_selected_input_rows": 102,
+      "hint_rows": 80,
+      "hint_frames": 80,
+      "hint_row_coverage": 0.04058853373921867,
+      "mapped_segments": 3,
+      "vote_rejected_segments": 0,
+      "overlap_conflict_segments": 0,
+      "nonbijective_hint_rows_rejected": 0,
+      "forced_reset_frames": 1,
+      "hints_honored": 80,
+      "hints_not_honored": 0,
+      "hint_honor_rate": 1.0,
+      "all_three_direct_frames": 656,
+      "all_three_direct_fraction": 0.9984779299847792,
+      "finite_direct_rows": 1970,
+      "unresolved_rows": 1,
+      "unresolved_row_fraction": 0.0005073566717402334,
+      "jump_gt8_count": 0,
+      "jump_gt20_count": 0,
+      "residual_n": 1970,
+      "wall_seconds_hints": 0.12318300001788884,
+      "peak_rss_bytes_hints": 164335616,
+      "wall_seconds_a5": 1.8441029000096023,
+      "peak_rss_bytes_a5": 185675776,
+      "female_full_eligible_accuracy": null,
+      "female_metric_status": "pending_independent_quality_scorer"
+    },
+    {
+      "window": "reviewed_event_3",
+      "frame_start": 174316,
+      "frame_end": 180515,
+      "frames": 6200,
+      "rows": 18600,
+      "a4_selected_input_rows": 1908,
+      "hint_rows": 1818,
+      "hint_frames": 1818,
+      "hint_row_coverage": 0.09774193548387097,
+      "mapped_segments": 14,
+      "vote_rejected_segments": 0,
+      "overlap_conflict_segments": 0,
+      "nonbijective_hint_rows_rejected": 0,
+      "forced_reset_frames": 13,
+      "hints_honored": 843,
+      "hints_not_honored": 975,
+      "hint_honor_rate": 0.4636963696369637,
+      "all_three_direct_frames": 5576,
+      "all_three_direct_fraction": 0.8993548387096775,
+      "finite_direct_rows": 16734,
+      "unresolved_rows": 1866,
+      "unresolved_row_fraction": 0.1003225806451613,
+      "jump_gt8_count": 0,
+      "jump_gt20_count": 0,
+      "residual_n": 16734,
+      "wall_seconds_hints": 0.19162539998069406,
+      "peak_rss_bytes_hints": 191086592,
+      "wall_seconds_a5": 16.017794399987906,
+      "peak_rss_bytes_a5": 242950144,
+      "female_full_eligible_accuracy": null,
+      "female_metric_status": "pending_independent_quality_scorer"
+    },
+    {
+      "window": "control_for_event_1",
+      "frame_start": 32264,
+      "frame_end": 32920,
+      "frames": 657,
+      "rows": 1971,
+      "a4_selected_input_rows": 22,
+      "hint_rows": 18,
+      "hint_frames": 18,
+      "hint_row_coverage": 0.0091324200913242,
+      "mapped_segments": 3,
+      "vote_rejected_segments": 0,
+      "overlap_conflict_segments": 0,
+      "nonbijective_hint_rows_rejected": 0,
+      "forced_reset_frames": 0,
+      "hints_honored": 18,
+      "hints_not_honored": 0,
+      "hint_honor_rate": 1.0,
+      "all_three_direct_frames": 641,
+      "all_three_direct_fraction": 0.9756468797564688,
+      "finite_direct_rows": 1955,
+      "unresolved_rows": 16,
+      "unresolved_row_fraction": 0.008117706747843734,
+      "jump_gt8_count": 0,
+      "jump_gt20_count": 0,
+      "residual_n": 1955,
+      "wall_seconds_hints": 0.11482130002696067,
+      "peak_rss_bytes_hints": 164204544,
+      "wall_seconds_a5": 1.697555600083433,
+      "peak_rss_bytes_a5": 185364480,
+      "female_full_eligible_accuracy": null,
+      "female_metric_status": "pending_independent_quality_scorer"
+    },
+    {
+      "window": "control_for_event_3",
+      "frame_start": 21840,
+      "frame_end": 28039,
+      "frames": 6200,
+      "rows": 18600,
+      "a4_selected_input_rows": 1606,
+      "hint_rows": 1347,
+      "hint_frames": 1305,
+      "hint_row_coverage": 0.07241935483870968,
+      "mapped_segments": 21,
+      "vote_rejected_segments": 0,
+      "overlap_conflict_segments": 0,
+      "nonbijective_hint_rows_rejected": 0,
+      "forced_reset_frames": 15,
+      "hints_honored": 410,
+      "hints_not_honored": 937,
+      "hint_honor_rate": 0.30438010393466963,
+      "all_three_direct_frames": 5985,
+      "all_three_direct_fraction": 0.9653225806451613,
+      "finite_direct_rows": 17983,
+      "unresolved_rows": 617,
+      "unresolved_row_fraction": 0.03317204301075269,
+      "jump_gt8_count": 0,
+      "jump_gt20_count": 0,
+      "residual_n": 17983,
+      "wall_seconds_hints": 0.2020437999162823,
+      "peak_rss_bytes_hints": 190922752,
+      "wall_seconds_a5": 15.370573699939996,
+      "peak_rss_bytes_a5": 246689792,
+      "female_full_eligible_accuracy": null,
+      "female_metric_status": "pending_independent_quality_scorer"
+    }
+  ],
+  "aggregate": {
+    "frames": 13714,
+    "rows": 41142,
+    "a4_selected_input_rows": 3638,
+    "hint_rows": 3263,
+    "hint_frames": 3221,
+    "hint_row_coverage": 0.07931068008361285,
+    "mapped_segments": 41,
+    "vote_rejected_segments": 0,
+    "overlap_conflict_segments": 0,
+    "nonbijective_hint_rows_rejected": 0,
+    "hints_honored": 1351,
+    "hints_not_honored": 1912,
+    "hint_honor_rate": 0.4140361630401471,
+    "all_three_direct_frames": 12858,
+    "all_three_direct_fraction": 0.93758203295902,
+    "finite_direct_rows": 38642,
+    "unresolved_rows": 2500,
+    "unresolved_row_fraction": 0.060765154829614504,
+    "ray_residual_mm2": {
+      "n": 38642,
+      "median": 0.2159821769763546,
+      "p95": 1.2106962231267269,
+      "p99": 3.5464902898699004,
+      "max": 354.070130372133
+    },
+    "adjacent_jump_mm": {
+      "n": 38510,
+      "median": 0.3627125173941328,
+      "p95": 1.068624260070277,
+      "p99": 2.045947270952673,
+      "max": 7.873815674168297
+    },
+    "jump_gt8_count": 0,
+    "jump_gt20_count": 0,
+    "female_full_eligible_accuracy": null,
+    "female_metric_status": "pending_independent_quality_scorer"
+  },
+  "summary_manifest": [
+    {
+      "window": "reviewed_event_1",
+      "hint_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\reviewed_event_1\\a5_hints_summary.json",
+        "sha256": "4bdf8b9475b4b45ed716f7101c76a55688478e2c36f2e9a5e49421c54b974251"
+      },
+      "a5_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\reviewed_event_1\\a5_summary.json",
+        "sha256": "648029638cba353ed0f230840878fcd564c48ce5d50c20bcdadcf3056787620f"
+      }
+    },
+    {
+      "window": "reviewed_event_3",
+      "hint_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\reviewed_event_3\\a5_hints_summary.json",
+        "sha256": "6fc47b6e309e0aaebd13c776d4ee27115425d023265fd5059ec6054c8377286c"
+      },
+      "a5_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\reviewed_event_3\\a5_summary.json",
+        "sha256": "297cb685b891a1a12aac4c6a4c00a6ef73f3c85d3df7203b8d9e6a61bef94b45"
+      }
+    },
+    {
+      "window": "control_for_event_1",
+      "hint_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\control_for_event_1\\a5_hints_summary.json",
+        "sha256": "9fadc8a0245d4f6c90ee28af2b405199651b23e0fc2373463251fb03c56cf185"
+      },
+      "a5_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\control_for_event_1\\a5_summary.json",
+        "sha256": "0b6380c8b2586025af0d6672e1d018606a79036bf3b5e5e8c1a34c9013599ce8"
+      }
+    },
+    {
+      "window": "control_for_event_3",
+      "hint_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\control_for_event_3\\a5_hints_summary.json",
+        "sha256": "e75547ada42f842f87317b40214eaba1436b1f78a408172fe25fa7adcef1895a"
+      },
+      "a5_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\control_for_event_3\\a5_summary.json",
+        "sha256": "aafe07da316dc620f22b67250ce423b0a6ce8a07945c4c1d9907366085ddf322"
+      }
+    }
+  ],
+  "code_sha256": {
+    "mouth_tracklet_ablation": "1e75e10654b5d6c233ec3ea5ff2f8c969dac3dd41027031cd332d3c88096d4e0",
+    "mouth_ablation": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+    "deferred_identity_tracking": "c08ac9071b7ab218d338a2e1a2859811a2c322bf1d93f5740e1202c88a663add",
+    "finalizer": "ea2af3137b6dd3ca8efead2e87b037c92b704d7f81bf212a85b062f8a374c397",
+    "launcher": "bd033ee7772b089d80110266add78ac5dd5c7612f075a39e8af0692f29f6e28e"
+  }
+}

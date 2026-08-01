@@ -1,0 +1,28 @@
+{
+  "schema_version": "round8_detached_full_length_launcher_exit_v1",
+  "status": "completed",
+  "launched_at": "2026-07-31T05:53:13.3672922+09:00",
+  "finished_at": "2026-07-31T07:21:50.1588271+09:00",
+  "pid": 22412,
+  "exit_code": 0,
+  "exit_code_evidence": "child no longer exists; stderr is empty; stdout is valid JSON binding the authenticated STAGE_COMPLETED path and SHA-256; detached launch transport returned success",
+  "command": [
+    ".venv\\Scripts\\python.exe",
+    "report\\20260731\\round8_mouth_tracking_ablation\\run_full_length_postfreeze_v1.py",
+    "--execute-prepared"
+  ],
+  "stdout": {
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\detached_launcher.stdout.log",
+    "bytes": 195,
+    "sha256": "9d9f937e6047c92c2938ba4d0347d9dc2c2fd39fee74dab629c0392cab751469"
+  },
+  "stderr": {
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\detached_launcher.stderr.log",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "completion": {
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\full_length_postfreeze\\STAGE_COMPLETED.json",
+    "sha256": "7e9e826cc48965d2b0ada1569b63d7a77b3b2972a8e20649eff15bc2de00dca0"
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "a0_reference": {
+    "anchor_policy": "visible-node centroid",
+    "artifacts": {
+      "best_json": {
+        "bytes": 338770313,
+        "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_best.json",
+        "sha256": "ae4b727bb6679a825e3a9dac143a85fa04c41cfe620c4be875e3b0187a28f2b2"
+      },
+      "best_pre_link_json": {
+        "bytes": 348811915,
+        "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_best_pre_link.json",
+        "sha256": "93f322114e10b2fae897f28375237c719a86964b232e3fd686ccd2561fba9068"
+      },
+      "geometry_csv": {
+        "bytes": 77243436,
+        "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d.csv",
+        "sha256": "6f42483363dd3be4c1aa7ec758521a4f1fde72877be18b5e4dafc8eee14ffb03"
+      },
+      "identified_csv": {
+        "bytes": 117902758,
+        "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d_identified.csv",
+        "sha256": "b2100d24cec8a660cff5888ceee1ade26c9990d900f1e67508e566aaab2870b6"
+      },
+      "identified_projection_provenance": {
+        "bytes": 1940,
+        "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d_identified_projection_provenance.json",
+        "sha256": "757f9808237867028b3c4f88a75687bfcdb0ce01de15019fe23279820136ee01"
+      },
+      "reconstruction_provenance": {
+        "bytes": 7038,
+        "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_reconstruction_provenance.json",
+        "sha256": "e9a895b034beb7d422bd0d9202935f7a17d3637f8e2b17cca1643e86f4d3c1ff"
+      },
+      "stage3_status": {
+        "bytes": 7122,
+        "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\stage3_reconstruct_from_slp.status.json",
+        "sha256": "36aa6fe085bca7ec6bce0b3e25ca2f6dd531818f3bbac5d5883523d830b8b56d"
+      }
+    },
+    "authentication_basis": "exact hashes frozen before validation and already independently audited; no A0 file is copied, modified, or rerun",
+    "new_run": false,
+    "path_resolution": "reconstruction_output_dir from configs/paths.local.toml, then 20251225_K_1_2_FCMC/round8_260729_snn031_m6",
+    "role": "unchanged_visible_node_centroid_reference",
+    "temporal_linker": "position-only cross-frame Hungarian"
+  },
+  "bindings": {
+    "calibration_sha256": {
+      "calibration_results/fixed_refractive_192x192x186/calibration_manifest.json": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+      "calibration_results/fixed_refractive_192x192x186/cam0_bundle_refractive.json": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+      "calibration_results/fixed_refractive_192x192x186/cam1_bundle_refractive.json": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+      "calibration_results/fixed_refractive_192x192x186/cam2_bundle_refractive.json": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+    },
+    "candidate_cache": {
+      "side1_cam": {
+        "path": "report\\20260731\\round8_mouth_tracking_ablation\\candidate_cache_strict_mouth_unfiltered_nodescores\\side1_cam.candidates.h5",
+        "sha256": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be"
+      },
+      "side2_cam": {
+        "path": "report\\20260731\\round8_mouth_tracking_ablation\\candidate_cache_strict_mouth_unfiltered_nodescores\\side2_cam.candidates.h5",
+        "sha256": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+      },
+      "top_cam": {
+        "path": "report\\20260731\\round8_mouth_tracking_ablation\\candidate_cache_strict_mouth_unfiltered_nodescores\\top_cam.candidates.h5",
+        "sha256": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74"
+      }
+    },
+    "candidate_cache_manifest": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\candidate_cache_strict_mouth_unfiltered_nodescores\\candidate_cache_manifest.json",
+      "sha256": "e3c6f15b10ae0756bb6f335756dc331ac044558a795253727b9db2e875605045"
+    },
+    "confirmed_female_annotation_ledger": {
+      "path": "annotations\\fish_sex_gt\\20251225_K_1_2_FCMC\\female_sex_gt.csv",
+      "sha256": "ab0a173ac737a63311aec834c5832fc19475d4f7d1892b8193f8465bba67519f"
+    },
+    "failed_heldout_attempt_finalized": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\quarantine_failed_heldout_attempt_runner1f737_20260731_0457\\FAILED_ATTEMPT_FINALIZED.json",
+      "sha256": "75a506ce112b8df00b49024f039ddb6ef554637620840bf5f9a78c73204a85d5"
+    },
+    "freeze": {
+      "frozen_at": "2026-07-31T04:18:09.058553+09:00",
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\frozen_thresholds.json",
+      "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    },
+    "frozen_scales": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\frozen_body_length_scales.json",
+      "sha256": "63bf6de26bb85e76da97976ffa0158c8d4e27d7ea9e3208b627fe8ade2eb9209"
+    },
+    "implementation_sha256": {
+      "scripts\\reconstruction_3d\\calibration.py": "39e642104691f4dc337135ccf8af80b21f7e64e6b6283f910ca705a661459d19",
+      "scripts\\reconstruction_3d\\candidate_cache.py": "deb4e6b03abb8af1218eb36fe0c8aebe4d1c3f96002f6595e5e3be51bdc0322c",
+      "scripts\\reconstruction_3d\\conservative_cross_view_paths.py": "4bed90ac17656c7792baf62105ea2acb8253b034846123c215e378d8d3757c8a",
+      "scripts\\reconstruction_3d\\conservative_mouth_tracklets.py": "a454ae0b6e59cfd51bdea4b60de29438fc8c407c861e05befd80d3e1d9da2631",
+      "scripts\\reconstruction_3d\\cross_frame_tracking.py": "db29b8251717ea32b13b54a2c2b1c077111a276a247b88ed73ba17aa41f53496",
+      "scripts\\reconstruction_3d\\deferred_identity_tracking.py": "c08ac9071b7ab218d338a2e1a2859811a2c322bf1d93f5740e1202c88a663add",
+      "scripts\\reconstruction_3d\\fill_missing_3d.py": "7a2f7fe1e0e9ab94c9541fd62e2737bc033eb902658bbac59c91f7ea5d174818",
+      "scripts\\reconstruction_3d\\mouth_ablation.py": "d856585da1515a06067909f0b7aeead1eab2af81973a2cf097e17de33a7192e0",
+      "scripts\\reconstruction_3d\\mouth_tracklet_ablation.py": "1e75e10654b5d6c233ec3ea5ff2f8c969dac3dd41027031cd332d3c88096d4e0",
+      "scripts\\reconstruction_3d\\windowed_tracklet_core.py": "4e762136bc2131a57024c96e7558ad6361f5585a32bc5feaaf128c51aefdcd26"
+    },
+    "postfreeze_empty_schema_adapter": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\adapt_a4_empty_selection_for_a5.py",
+      "sha256": "eea6877f16204f63a9fea4820e92a6696f8b24bdddfcc4fab57e2b25a5ffa95b"
+    },
+    "postfreeze_repair_protocol": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\HELDOUT_EMPTY_A4_SCHEMA_REPAIR_PROTOCOL.json",
+      "sha256": "d42a5095829f60b8ede4fa1b8f4dd6cfa490592f468641f2439a4a20d0e6f42a"
+    },
+    "runner": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\run_full_length_postfreeze_v1.py",
+      "sha256": "32a8452da10f0b53ec555cef1212aa4dabbda13ba7e146f7d508deca5c0fb87d"
+    }
+  },
+  "checked_at": "2026-07-31T07:21:48.071374+09:00",
+  "critical_quality": {
+    "independent_quality_verdict": "PASS",
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\CRITICAL_QUALITY_REVIEW_COMPLETED.json",
+    "sha256": "55a479e1b97a1054b7f195530d1505202d4d87935a1dd2f36b06f51e665fe83e",
+    "status": "critical_descriptive_independently_authenticated_scored_and_passed",
+    "verified_required_bindings": {
+      "critical_completed_sha256": "e493fdcc449034c4f9dd22e3f124283fe8d3cd06d9bd50b0c46002e440367706",
+      "critical_finalized_sha256": "fe432101a7580f4e540d3c4537ae8b1c774a2b5231d8cc0900a790e250d3149c",
+      "freeze_sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    }
+  },
+  "full_length_scope": {
+    "expected_source_frames": 348600,
+    "experiment": "20251225_K_1_2_FCMC",
+    "forbidden_full_length_methods": [
+      "A4",
+      "A5"
+    ],
+    "fresh_resume_design": {
+      "A1": "fresh relink followed by exact scientific-output hash repeat",
+      "A2": "fresh relink followed by exact scientific-output hash repeat",
+      "A3": "fresh relink followed by exact scientific-output hash repeat",
+      "geometry": "fresh block run followed by exact resume; all block scientific fields and selected-geometry SHA-256 must match"
+    },
+    "inclusive_frame_interval": [
+      0,
+      348599
+    ],
+    "new_full_length_methods": [
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "resource_capture": "0.1 s process-tree RSS sampling, wall time, exit code, stdout/stderr byte count and SHA-256 for every child",
+    "round_tag": "round8_260729_snn031_m6",
+    "selection_or_tuning_permitted": false,
+    "settings_change_permitted": false,
+    "shared_geometry_methods": [
+      "A1",
+      "A2",
+      "A3"
+    ],
+    "unchanged_reference_only": [
+      "A0"
+    ]
+  },
+  "predecessor_finalized": {
+    "critical": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\STAGE_FINALIZED.json",
+      "sha256": "fe432101a7580f4e540d3c4537ae8b1c774a2b5231d8cc0900a790e250d3149c"
+    },
+    "heldout": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\heldout_postfreeze\\STAGE_FINALIZED.json",
+      "sha256": "3b58e073c9cf6c97348e1f0c8cdbb9ca5c15d689ee222b450df1c91dc3303152"
+    },
+    "validation": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\validation_postfreeze\\STAGE_FINALIZED.json",
+      "sha256": "297249d8cc9cdff2e0a5c850884f795e238b6911b42605e440d70397bc6fb706"
+    }
+  }
+}

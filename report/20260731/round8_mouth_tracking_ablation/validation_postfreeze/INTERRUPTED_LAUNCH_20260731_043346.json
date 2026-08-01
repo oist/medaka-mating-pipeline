@@ -1,0 +1,24 @@
+{
+  "schema_version": "round8_postfreeze_launch_incident_v1",
+  "status": "launcher_interrupted_before_first_scientific_artifact",
+  "stage": "validation",
+  "occurred_at": "2026-07-31T04:33:46+09:00",
+  "prepared_manifest_sha256": "3fb4e79994df34c5d0d140a1ed5f24d5358970114230950d7cd9addb74eabae6",
+  "runner_sha256": "54ec5698f84c6c65aa2e0aff226dd208445ab1db51c35a60bed8e396f3abab16",
+  "cause": "The orchestration shell was given a 1000 ms command timeout and terminated with exit code 124 while the first geometry command had only opened empty stdout/stderr logs.",
+  "containment": [
+    "No geometry block, geometry summary, selected-geometry parquet, relink output, A4 output, A5 output, or process record existed after interruption.",
+    "No Python process with the interruption timestamp remained after the shell returned.",
+    "The same authenticated prepared manifest and unchanged runner will be resumed through a detached hidden launcher."
+  ],
+  "files_observed": {
+    "reviewed_event_2/geometry/geometry.stdout.log": {
+      "bytes": 0
+    },
+    "reviewed_event_2/geometry/geometry.stderr.log": {
+      "bytes": 0
+    }
+  },
+  "selection_or_tuning_impact": "none",
+  "scientific_output_count": 0
+}

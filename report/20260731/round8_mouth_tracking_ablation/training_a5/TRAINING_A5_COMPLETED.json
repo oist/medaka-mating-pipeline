@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "status": "completed_and_authenticated",
+  "windows": 4,
+  "hint_summaries": 4,
+  "a5_summaries": 4,
+  "all_inputs_outputs_authenticated": true,
+  "training_a5_summary_csv": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\training_a5_summary.csv",
+    "sha256": "5079a483fbea075f7112e105dfb173dc4f022c01217acaae38e53b4a361a7370"
+  },
+  "training_a5_audit_json": {
+    "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\training_a5_audit.json",
+    "sha256": "3806c9711a6793b2e35e9832d2afbc1726a98f7827154fa36d069ce843a428bc"
+  },
+  "summary_manifest": [
+    {
+      "window": "reviewed_event_1",
+      "hint_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\reviewed_event_1\\a5_hints_summary.json",
+        "sha256": "4bdf8b9475b4b45ed716f7101c76a55688478e2c36f2e9a5e49421c54b974251"
+      },
+      "a5_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\reviewed_event_1\\a5_summary.json",
+        "sha256": "648029638cba353ed0f230840878fcd564c48ce5d50c20bcdadcf3056787620f"
+      }
+    },
+    {
+      "window": "reviewed_event_3",
+      "hint_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\reviewed_event_3\\a5_hints_summary.json",
+        "sha256": "6fc47b6e309e0aaebd13c776d4ee27115425d023265fd5059ec6054c8377286c"
+      },
+      "a5_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\reviewed_event_3\\a5_summary.json",
+        "sha256": "297cb685b891a1a12aac4c6a4c00a6ef73f3c85d3df7203b8d9e6a61bef94b45"
+      }
+    },
+    {
+      "window": "control_for_event_1",
+      "hint_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\control_for_event_1\\a5_hints_summary.json",
+        "sha256": "9fadc8a0245d4f6c90ee28af2b405199651b23e0fc2373463251fb03c56cf185"
+      },
+      "a5_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\control_for_event_1\\a5_summary.json",
+        "sha256": "0b6380c8b2586025af0d6672e1d018606a79036bf3b5e5e8c1a34c9013599ce8"
+      }
+    },
+    {
+      "window": "control_for_event_3",
+      "hint_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\control_for_event_3\\a5_hints_summary.json",
+        "sha256": "e75547ada42f842f87317b40214eaba1436b1f78a408172fe25fa7adcef1895a"
+      },
+      "a5_summary": {
+        "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260731\\round8_mouth_tracking_ablation\\training_a5\\control_for_event_3\\a5_summary.json",
+        "sha256": "aafe07da316dc620f22b67250ce423b0a6ce8a07945c4c1d9907366085ddf322"
+      }
+    }
+  ]
+}

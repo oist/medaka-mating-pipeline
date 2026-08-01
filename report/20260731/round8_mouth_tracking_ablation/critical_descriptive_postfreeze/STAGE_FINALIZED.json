@@ -1,0 +1,878 @@
+{
+  "bindings": {
+    "completed_marker": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\STAGE_COMPLETED.json",
+      "sha256": "e493fdcc449034c4f9dd22e3f124283fe8d3cd06d9bd50b0c46002e440367706"
+    },
+    "freeze": {
+      "frozen_at": "2026-07-31T04:18:09.058553+09:00",
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\frozen_thresholds.json",
+      "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    },
+    "postcompletion_auth": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\postcompletion_auth.json",
+      "sha256": "0f3acb9b6b4c1b1a37a7aee26955b64ec06eea4f9aceeca949cbdc69524dbf6b"
+    },
+    "prelaunch_auth": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\prelaunch_auth.json",
+      "sha256": "0cfe3a3f000d964838d6c1cd0ba075a2cc6ac5c5c086644dd02441aa4100cd4c"
+    },
+    "prepared_manifest": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\STAGE_PREPARED.json",
+      "sha256": "8900912581348c4df936767c639b429100d17c3d5736d528c108679824862d6b"
+    },
+    "runner": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\run_bounded_postfreeze_stage_v5.py",
+      "sha256": "2eb4012e428bf8951609a8c345d55fc75c74cd934b955ef5400bb2c56d72c38d"
+    }
+  },
+  "completed_marker_inventory_validation": {
+    "checked_artifact_count": 96,
+    "interpretation": "Every marker-inventoried artifact is unchanged. The detached launcher logs were intentionally excluded while open and are authenticated here after the launcher closed.",
+    "mismatches": [],
+    "outer_launcher_logs_excluded_until_finalization": {
+      "stderr": {
+        "bytes": 0,
+        "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\detached_launcher.stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 204,
+        "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\detached_launcher.stdout.log",
+        "sha256": "0ea071ade721a2d325881f3ffef36ae919696e5f9bf09b63821979b9d4ea1572"
+      }
+    },
+    "recorded_artifact_count": 96,
+    "result": "PASS",
+    "unchanged_artifact_count": 96,
+    "unchanged_artifacts": {
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\DETACHED_LAUNCH.json": {
+        "bytes": 948,
+        "sha256": "d3681a9b196c5f626751fd8ceb1a0f5ad3aaef069221413a765405d48af218af"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\STAGE_PREPARED.json": {
+        "bytes": 15419,
+        "sha256": "8900912581348c4df936767c639b429100d17c3d5736d528c108679824862d6b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1.stdout.log": {
+        "bytes": 6317,
+        "sha256": "a0ab457fb981a0ae278410fbbb4da8d98ef545e16af2f0cca703358072c5594f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1_direct.csv": {
+        "bytes": 465525,
+        "sha256": "64ac38db21afdd9e327cab752732cb0d975fd4eed6314371d83eb70d4d3bd7c4"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1_filled.csv": {
+        "bytes": 326081,
+        "sha256": "de56af73f226e1b9f297ba52ae8a04926c215bcbefb70066dd88e2d897fee14e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1_summary.json": {
+        "bytes": 6315,
+        "sha256": "c134be8204f909f60c36e286e5053b886fe0e1b602b91bcc2ab950f1a6121aa0"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2.stdout.log": {
+        "bytes": 6362,
+        "sha256": "7d8f575cc308002269b47f6d81cb1f8218553a32d187319dadd83b4dc3e9bf28"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2_direct.csv": {
+        "bytes": 449065,
+        "sha256": "8f86ffae145c1a8c77ff81a725773d873d8a4c685516a68ea92e943c31692996"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2_filled.csv": {
+        "bytes": 309621,
+        "sha256": "b2bd47c4b3a18100a6d06af861b4dc47e225d77e9b068183b835820a3b84e9ae"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2_summary.json": {
+        "bytes": 6360,
+        "sha256": "fb69ee8d02222192ab1ee260ff8d84c3fc77c302656ef7f9d463361a42a4bc52"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3.stdout.log": {
+        "bytes": 7932,
+        "sha256": "819a46481d5838feb8e8c4f97a868c7c4f80a704cb7e3e2adf42620be99a5012"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_assignment_audit.csv": {
+        "bytes": 60122,
+        "sha256": "4346505357ac4819247d3007d19b50050be0722c40aa6205a53fde269e72f28d"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_direct.csv": {
+        "bytes": 452828,
+        "sha256": "f0e9d94a8501e565de8ea2567706092283f899b3ab3262aa7bbb63f8e6db1f92"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_filled.csv": {
+        "bytes": 313384,
+        "sha256": "c8cd4e97607363b6f857754582f52d5164b0df7db0298a7fa28aaef08299740a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_summary.json": {
+        "bytes": 7930,
+        "sha256": "b1b77124135e5c1f7eac24df277efd1d1e13fc65ba61253a165b5aa7b498a504"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_unresolved_intervals.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4.resume.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4.resume.stdout.log": {
+        "bytes": 29049,
+        "sha256": "54d621498e4db1e54415614eb7bda01cb04d92964b9a64fe527c33baa38069e0"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4.stdout.log": {
+        "bytes": 29049,
+        "sha256": "59fa133a63bfea84854867e89aeb729da0ff1024fc94b3177522c509902bec7b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_admissible_hypotheses.parquet": {
+        "bytes": 2382079,
+        "sha256": "b2d6cdde4787bb8a3e01da746cbf622b5df47c0b2c9a92838b618924bbd28b3a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_direct.csv": {
+        "bytes": 211964,
+        "sha256": "0c9a1ef39c1fba7dbfb4ced18fcb68e28bff20c755d97729523c131a76cf5fde"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_filled.csv": {
+        "bytes": 212093,
+        "sha256": "810a2292b283a8a1fc205d0717846a945d138a906ae2eee431a321349bf13e21"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_group_dispositions.csv": {
+        "bytes": 89874,
+        "sha256": "2c41b7cab3c90243aa94509f1e6b4700959158b4eb5f74c6f2a27a2af2aadd31"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_group_observations.parquet": {
+        "bytes": 2748432,
+        "sha256": "de30b0666ddb9e299b1eb02e2786a54ecbabe45bbf415b5f48c862086f1cd365"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_groups.csv": {
+        "bytes": 385861,
+        "sha256": "32b9193cc03ed881bacde3c1562afc2695204be27b246fb4abc75310bc8f8ed8"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_links.csv": {
+        "bytes": 670,
+        "sha256": "84018a3adcadaebfea2d16dc27aa718f5a7703253a0af757733c63b4cac88088"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_paths.csv": {
+        "bytes": 207,
+        "sha256": "80c96cfa2d2997493986b9117734b320f093f40e781ce1322d0aceb61fc1c364"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_schema_adapter.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_schema_adapter.stdout.log": {
+        "bytes": 8681,
+        "sha256": "68a0862574c76da539f88c5893551fc3d8639a40b04649d6ab0c2a112a5973d6"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_selected_for_a5.parquet": {
+        "bytes": 23786,
+        "sha256": "2b84794a88ee7c03bde72f2199e4eeca069b287b0ec71db912a7cf09892b350b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_selected_for_a5_summary.json": {
+        "bytes": 8433,
+        "sha256": "dd5d10ed4d46a64e00cf76458e05b12d4a43250d04f5e1cec5142dcf71714f29"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_selected_observations.parquet": {
+        "bytes": 23786,
+        "sha256": "2b84794a88ee7c03bde72f2199e4eeca069b287b0ec71db912a7cf09892b350b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_summary.json": {
+        "bytes": 29047,
+        "sha256": "120fb583570ded7af5c5ba3b50e2aee84ae21097ded26941b1e6fc9e64db81a3"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034000_034249.parquet": {
+        "bytes": 550734,
+        "sha256": "c5f1b7443a7e38075a00469d0211c507fd37da490a0a15a7ad5bdc47fc33c503"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034000_034249.status.json": {
+        "bytes": 317,
+        "sha256": "362182f67ddd06c5d988dcf41d30f9ab428537f58904ec62e3d8993c24184979"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034250_034499.parquet": {
+        "bytes": 551471,
+        "sha256": "b07e549d16324c8c3cf459c2e4aa320c234758ba35b02fd35d076bc60ae87c60"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034250_034499.status.json": {
+        "bytes": 317,
+        "sha256": "52888d4567809be438f4373d23a6c698cf50bf0288953080df508cd2afea49e3"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034500_034749.parquet": {
+        "bytes": 487122,
+        "sha256": "119e1196c156fff1802f3a6ae98395a7dff1f321587d1d5002643e2ce8cc4ad9"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034500_034749.status.json": {
+        "bytes": 317,
+        "sha256": "050d2273af8a76a7827d0a65e6068d7d9a4afce39ba9672a9693f98213297ba1"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034750_034999.parquet": {
+        "bytes": 540494,
+        "sha256": "f9b1474dd702d4617b088c131776ce3e5bfc403a9676fd328b9ccc4f4c433cb8"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034750_034999.status.json": {
+        "bytes": 317,
+        "sha256": "f76696e155d990c3fe752895fb8a689568ed9194a3cc536a84db817538e21905"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f035000_035100.parquet": {
+        "bytes": 230505,
+        "sha256": "35f333aa48902325c19602465da536c1f788e11b0b339604a6cfe8a412f9ced3"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f035000_035100.status.json": {
+        "bytes": 316,
+        "sha256": "9bd62af2c3290172b42f90b590f6c8ffbfc6765d84e745bff116414793125c7f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side1_cam.bridges.parquet": {
+        "bytes": 88362,
+        "sha256": "f956db89212998b7bdd0c28bb85fc54ce7b86c1ff919710e17d69984a86b4081"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side1_cam.dispositions.parquet": {
+        "bytes": 12956,
+        "sha256": "3886a282d368f9bb8cc80b548e3f3b620f6e4acc83710a83c0344b110c328b48"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side1_cam.summary.json": {
+        "bytes": 1035,
+        "sha256": "d1446d3f843528015dd64c5b8ea7faec4927b0fb03f14034608d71eec8c154f1"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side1_cam.tracklets.parquet": {
+        "bytes": 72102,
+        "sha256": "9f62aa137c327ae7abdd4458898fc5125527bb8b46513a38a25d3ea43a1a3891"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side2_cam.bridges.parquet": {
+        "bytes": 88611,
+        "sha256": "2e9d4d3a28def9729e49af2214e2dae72b06158f684bf61172e301fb39de1f65"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side2_cam.dispositions.parquet": {
+        "bytes": 13358,
+        "sha256": "98164adef3d8ef1e756ae12984e9736e701ee30aca02a4b0df66301383798d70"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side2_cam.summary.json": {
+        "bytes": 1035,
+        "sha256": "12f60d56a054fc3242b415a1c481f4af229559d9cf802909c979dbe3aa372f52"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side2_cam.tracklets.parquet": {
+        "bytes": 76093,
+        "sha256": "72e5212e1126971fc29d808c1f8c8ca81154e0d00338d6ad60d53fb11840d0c7"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\top_cam.bridges.parquet": {
+        "bytes": 99284,
+        "sha256": "c30fd0905735ddeaf8498c59bc026e5119a0677e9b13904a571531dd35f589a7"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\top_cam.dispositions.parquet": {
+        "bytes": 13049,
+        "sha256": "0e352af3687342553308f792d9af845099a7c0648c0903249b001110a3245f97"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\top_cam.summary.json": {
+        "bytes": 1037,
+        "sha256": "3c0ed3def533e4a095b84c8c738e98847768eb77bac61a9dc8265e9f0f0c158e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\top_cam.tracklets.parquet": {
+        "bytes": 83970,
+        "sha256": "6652a34e295c1d5dcc1ec7da5989da892ce5dcc51b3cc936d8e427ef532aa66d"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5.stdout.log": {
+        "bytes": 13562,
+        "sha256": "12a350881984032ccc3195fb0f6372113d7130ebd011d69bd70542812bb9a949"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_assignment_audit.csv": {
+        "bytes": 60122,
+        "sha256": "4346505357ac4819247d3007d19b50050be0722c40aa6205a53fde269e72f28d"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_direct.csv": {
+        "bytes": 452828,
+        "sha256": "f0e9d94a8501e565de8ea2567706092283f899b3ab3262aa7bbb63f8e6db1f92"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_filled.csv": {
+        "bytes": 313384,
+        "sha256": "c8cd4e97607363b6f857754582f52d5164b0df7db0298a7fa28aaef08299740a"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_forced_reset_frames.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_hint_application_audit.csv": {
+        "bytes": 2006,
+        "sha256": "f5407958f431f2b0e8c3f24b74592817c20469d67ab1253dbe54c4c1666c6936"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_hints.csv": {
+        "bytes": 4336,
+        "sha256": "aadbd4fa281832132136df0e0bce43c7ec6c4880280fc7dcd4b9a36f2647a759"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_hints_summary.json": {
+        "bytes": 6204,
+        "sha256": "1aa2b73f686c74861e9b85175c310c74df9170d5c711a24c1b5a41dc99d1c507"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_summary.json": {
+        "bytes": 13560,
+        "sha256": "c5ad43e6c752631795ab3eb18ea1fa9f9ed2ab548b3879444bba819b8f0e124c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_unresolved_intervals.json": {
+        "bytes": 2,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\hints.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\hints.stdout.log": {
+        "bytes": 6206,
+        "sha256": "e86113f534492edcd983ac6b08209fb371f872ea0ee0c9c201ad20b054bb7f49"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry.resume.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry.resume.stdout.log": {
+        "bytes": 14083,
+        "sha256": "9ce38597a9469b05ed847012b4d10fedc5441af1edf6476c44fc16f1350b5c0d"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry.stderr.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry.stdout.log": {
+        "bytes": 14082,
+        "sha256": "37c1f60bf956893394a09e644efcc79fb751ad82e4bd14fef1cb57544ed58416"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f034000_034499.parquet": {
+        "bytes": 104310,
+        "sha256": "2adb12d0ea0707b448bc2706a56b8e8fcc7e7f65a9ec15151e0919928a47cbc7"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f034000_034499.status.json": {
+        "bytes": 353,
+        "sha256": "dd8574d61d72b71568fd15bb046f0754d0ec308e6969d41c5efd68545602a954"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f034500_034999.parquet": {
+        "bytes": 104418,
+        "sha256": "91ef4624047e0342ee89a7c10db2472eb91cd2ff50fbdd8a5a039da757c65255"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f034500_034999.status.json": {
+        "bytes": 353,
+        "sha256": "fbe45f35d6e23cc62abfa16e2841a24ced31556f1adda7ac1900f3b373b3acdb"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f035000_035100.parquet": {
+        "bytes": 27924,
+        "sha256": "095abd39d284ac125e8bf0e099f2c37567dd7ba39fe337057833d872cd5ef78c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f035000_035100.status.json": {
+        "bytes": 352,
+        "sha256": "7ac99c76d6596423d73da8b1b9d2eb4a025fdc5ccc8461346dcfaaac50276824"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_summary.json": {
+        "bytes": 14081,
+        "sha256": "ab88afb970d88139ea12c564e1ac445ace14a876d26fff69fb19cda673db4d8e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\strict_mouth_selected_geometry.parquet": {
+        "bytes": 222404,
+        "sha256": "dea31976c02ff41bac28ff1083eb6bc6280111be0e74205a0bcf4540edd08e41"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\postcompletion_auth.json": {
+        "bytes": 4780,
+        "sha256": "0f3acb9b6b4c1b1a37a7aee26955b64ec06eea4f9aceeca949cbdc69524dbf6b"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\prelaunch_auth.json": {
+        "bytes": 6411,
+        "sha256": "0cfe3a3f000d964838d6c1cd0ba075a2cc6ac5c5c086644dd02441aa4100cd4c"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A1.json": {
+        "bytes": 1879,
+        "sha256": "1ba978dff9bf2abd943b0db4f91091a19834a07deea6ff0a4274949377e96739"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A2.json": {
+        "bytes": 1923,
+        "sha256": "4c412b59797febab8a11a63bc8f324aa662ccde4ed964fadd1e0ff832a381a2f"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A3.json": {
+        "bytes": 2192,
+        "sha256": "ce856a6978773c70847d3346a45bf9e0287ab5c30efe824757219443c694a1de"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A4.json": {
+        "bytes": 2104,
+        "sha256": "6841e36fe16658300e7a7cffdd5418c46aab6a0a1e2b375394de406bba83b4bf"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A4_resume.json": {
+        "bytes": 2125,
+        "sha256": "88d81ca0c62fd08906915f226eaa4da140e7c632da8c0c079bc08b710a2f11aa"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A4_schema_adapter.json": {
+        "bytes": 1717,
+        "sha256": "4dd69b5bcc9789a7c6f46ec2a6ed268c0f13af0ff6fdb7699ad67ca917004931"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A5.json": {
+        "bytes": 2872,
+        "sha256": "17b99c26ccbc17ed8f02cfa4ec0fe1447a25cc1cfb892be72a5a4ed0e37f474e"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A5_hints.json": {
+        "bytes": 2112,
+        "sha256": "6dc1bb1be48f25a6100f86e487af298bfbb0a2ed313edf9a520dd2b7a0fd84bd"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.geometry.json": {
+        "bytes": 1712,
+        "sha256": "a6882563d6ceacc853768af1a8cb9e7cf0dbf7055fd73c2beb75da07c8192621"
+      },
+      "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.geometry_resume.json": {
+        "bytes": 1733,
+        "sha256": "fb637dd7b941934606f787690fb6aceca767e8f82f6ff4f978626f176de58cfb"
+      }
+    }
+  },
+  "current_stage_inventory": {
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\DETACHED_LAUNCH.json": {
+      "bytes": 948,
+      "sha256": "d3681a9b196c5f626751fd8ceb1a0f5ad3aaef069221413a765405d48af218af"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\DETACHED_LAUNCH_EXIT.json": {
+      "bytes": 931,
+      "sha256": "5c18804e28c264ef560456981fad2c377ca27f21d4133882f6cf843ec532f895"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\STAGE_COMPLETED.json": {
+      "bytes": 54265,
+      "sha256": "e493fdcc449034c4f9dd22e3f124283fe8d3cd06d9bd50b0c46002e440367706"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\STAGE_PREPARED.json": {
+      "bytes": 15419,
+      "sha256": "8900912581348c4df936767c639b429100d17c3d5736d528c108679824862d6b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1.stdout.log": {
+      "bytes": 6317,
+      "sha256": "a0ab457fb981a0ae278410fbbb4da8d98ef545e16af2f0cca703358072c5594f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1_direct.csv": {
+      "bytes": 465525,
+      "sha256": "64ac38db21afdd9e327cab752732cb0d975fd4eed6314371d83eb70d4d3bd7c4"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1_filled.csv": {
+      "bytes": 326081,
+      "sha256": "de56af73f226e1b9f297ba52ae8a04926c215bcbefb70066dd88e2d897fee14e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A1\\a1_summary.json": {
+      "bytes": 6315,
+      "sha256": "c134be8204f909f60c36e286e5053b886fe0e1b602b91bcc2ab950f1a6121aa0"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2.stdout.log": {
+      "bytes": 6362,
+      "sha256": "7d8f575cc308002269b47f6d81cb1f8218553a32d187319dadd83b4dc3e9bf28"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2_direct.csv": {
+      "bytes": 449065,
+      "sha256": "8f86ffae145c1a8c77ff81a725773d873d8a4c685516a68ea92e943c31692996"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2_filled.csv": {
+      "bytes": 309621,
+      "sha256": "b2bd47c4b3a18100a6d06af861b4dc47e225d77e9b068183b835820a3b84e9ae"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A2\\a2_summary.json": {
+      "bytes": 6360,
+      "sha256": "fb69ee8d02222192ab1ee260ff8d84c3fc77c302656ef7f9d463361a42a4bc52"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3.stdout.log": {
+      "bytes": 7932,
+      "sha256": "819a46481d5838feb8e8c4f97a868c7c4f80a704cb7e3e2adf42620be99a5012"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_assignment_audit.csv": {
+      "bytes": 60122,
+      "sha256": "4346505357ac4819247d3007d19b50050be0722c40aa6205a53fde269e72f28d"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_direct.csv": {
+      "bytes": 452828,
+      "sha256": "f0e9d94a8501e565de8ea2567706092283f899b3ab3262aa7bbb63f8e6db1f92"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_filled.csv": {
+      "bytes": 313384,
+      "sha256": "c8cd4e97607363b6f857754582f52d5164b0df7db0298a7fa28aaef08299740a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_summary.json": {
+      "bytes": 7930,
+      "sha256": "b1b77124135e5c1f7eac24df277efd1d1e13fc65ba61253a165b5aa7b498a504"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A3\\a3_unresolved_intervals.json": {
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4.resume.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4.resume.stdout.log": {
+      "bytes": 29049,
+      "sha256": "54d621498e4db1e54415614eb7bda01cb04d92964b9a64fe527c33baa38069e0"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4.stdout.log": {
+      "bytes": 29049,
+      "sha256": "59fa133a63bfea84854867e89aeb729da0ff1024fc94b3177522c509902bec7b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_admissible_hypotheses.parquet": {
+      "bytes": 2382079,
+      "sha256": "b2d6cdde4787bb8a3e01da746cbf622b5df47c0b2c9a92838b618924bbd28b3a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_direct.csv": {
+      "bytes": 211964,
+      "sha256": "0c9a1ef39c1fba7dbfb4ced18fcb68e28bff20c755d97729523c131a76cf5fde"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_filled.csv": {
+      "bytes": 212093,
+      "sha256": "810a2292b283a8a1fc205d0717846a945d138a906ae2eee431a321349bf13e21"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_group_dispositions.csv": {
+      "bytes": 89874,
+      "sha256": "2c41b7cab3c90243aa94509f1e6b4700959158b4eb5f74c6f2a27a2af2aadd31"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_group_observations.parquet": {
+      "bytes": 2748432,
+      "sha256": "de30b0666ddb9e299b1eb02e2786a54ecbabe45bbf415b5f48c862086f1cd365"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_groups.csv": {
+      "bytes": 385861,
+      "sha256": "32b9193cc03ed881bacde3c1562afc2695204be27b246fb4abc75310bc8f8ed8"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_links.csv": {
+      "bytes": 670,
+      "sha256": "84018a3adcadaebfea2d16dc27aa718f5a7703253a0af757733c63b4cac88088"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_paths.csv": {
+      "bytes": 207,
+      "sha256": "80c96cfa2d2997493986b9117734b320f093f40e781ce1322d0aceb61fc1c364"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_schema_adapter.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_schema_adapter.stdout.log": {
+      "bytes": 8681,
+      "sha256": "68a0862574c76da539f88c5893551fc3d8639a40b04649d6ab0c2a112a5973d6"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_selected_for_a5.parquet": {
+      "bytes": 23786,
+      "sha256": "2b84794a88ee7c03bde72f2199e4eeca069b287b0ec71db912a7cf09892b350b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_selected_for_a5_summary.json": {
+      "bytes": 8433,
+      "sha256": "dd5d10ed4d46a64e00cf76458e05b12d4a43250d04f5e1cec5142dcf71714f29"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_selected_observations.parquet": {
+      "bytes": 23786,
+      "sha256": "2b84794a88ee7c03bde72f2199e4eeca069b287b0ec71db912a7cf09892b350b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\a4_summary.json": {
+      "bytes": 29047,
+      "sha256": "120fb583570ded7af5c5ba3b50e2aee84ae21097ded26941b1e6fc9e64db81a3"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034000_034249.parquet": {
+      "bytes": 550734,
+      "sha256": "c5f1b7443a7e38075a00469d0211c507fd37da490a0a15a7ad5bdc47fc33c503"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034000_034249.status.json": {
+      "bytes": 317,
+      "sha256": "362182f67ddd06c5d988dcf41d30f9ab428537f58904ec62e3d8993c24184979"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034250_034499.parquet": {
+      "bytes": 551471,
+      "sha256": "b07e549d16324c8c3cf459c2e4aa320c234758ba35b02fd35d076bc60ae87c60"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034250_034499.status.json": {
+      "bytes": 317,
+      "sha256": "52888d4567809be438f4373d23a6c698cf50bf0288953080df508cd2afea49e3"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034500_034749.parquet": {
+      "bytes": 487122,
+      "sha256": "119e1196c156fff1802f3a6ae98395a7dff1f321587d1d5002643e2ce8cc4ad9"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034500_034749.status.json": {
+      "bytes": 317,
+      "sha256": "050d2273af8a76a7827d0a65e6068d7d9a4afce39ba9672a9693f98213297ba1"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034750_034999.parquet": {
+      "bytes": 540494,
+      "sha256": "f9b1474dd702d4617b088c131776ce3e5bfc403a9676fd328b9ccc4f4c433cb8"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f034750_034999.status.json": {
+      "bytes": 317,
+      "sha256": "f76696e155d990c3fe752895fb8a689568ed9194a3cc536a84db817538e21905"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f035000_035100.parquet": {
+      "bytes": 230505,
+      "sha256": "35f333aa48902325c19602465da536c1f788e11b0b339604a6cfe8a412f9ced3"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\hypothesis_blocks\\admissible_f035000_035100.status.json": {
+      "bytes": 316,
+      "sha256": "9bd62af2c3290172b42f90b590f6c8ffbfc6765d84e745bff116414793125c7f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side1_cam.bridges.parquet": {
+      "bytes": 88362,
+      "sha256": "f956db89212998b7bdd0c28bb85fc54ce7b86c1ff919710e17d69984a86b4081"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side1_cam.dispositions.parquet": {
+      "bytes": 12956,
+      "sha256": "3886a282d368f9bb8cc80b548e3f3b620f6e4acc83710a83c0344b110c328b48"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side1_cam.summary.json": {
+      "bytes": 1035,
+      "sha256": "d1446d3f843528015dd64c5b8ea7faec4927b0fb03f14034608d71eec8c154f1"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side1_cam.tracklets.parquet": {
+      "bytes": 72102,
+      "sha256": "9f62aa137c327ae7abdd4458898fc5125527bb8b46513a38a25d3ea43a1a3891"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side2_cam.bridges.parquet": {
+      "bytes": 88611,
+      "sha256": "2e9d4d3a28def9729e49af2214e2dae72b06158f684bf61172e301fb39de1f65"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side2_cam.dispositions.parquet": {
+      "bytes": 13358,
+      "sha256": "98164adef3d8ef1e756ae12984e9736e701ee30aca02a4b0df66301383798d70"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side2_cam.summary.json": {
+      "bytes": 1035,
+      "sha256": "12f60d56a054fc3242b415a1c481f4af229559d9cf802909c979dbe3aa372f52"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\side2_cam.tracklets.parquet": {
+      "bytes": 76093,
+      "sha256": "72e5212e1126971fc29d808c1f8c8ca81154e0d00338d6ad60d53fb11840d0c7"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\top_cam.bridges.parquet": {
+      "bytes": 99284,
+      "sha256": "c30fd0905735ddeaf8498c59bc026e5119a0677e9b13904a571531dd35f589a7"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\top_cam.dispositions.parquet": {
+      "bytes": 13049,
+      "sha256": "0e352af3687342553308f792d9af845099a7c0648c0903249b001110a3245f97"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\top_cam.summary.json": {
+      "bytes": 1037,
+      "sha256": "3c0ed3def533e4a095b84c8c738e98847768eb77bac61a9dc8265e9f0f0c158e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A4\\per_view_tracklets\\top_cam.tracklets.parquet": {
+      "bytes": 83970,
+      "sha256": "6652a34e295c1d5dcc1ec7da5989da892ce5dcc51b3cc936d8e427ef532aa66d"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5.stdout.log": {
+      "bytes": 13562,
+      "sha256": "12a350881984032ccc3195fb0f6372113d7130ebd011d69bd70542812bb9a949"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_assignment_audit.csv": {
+      "bytes": 60122,
+      "sha256": "4346505357ac4819247d3007d19b50050be0722c40aa6205a53fde269e72f28d"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_direct.csv": {
+      "bytes": 452828,
+      "sha256": "f0e9d94a8501e565de8ea2567706092283f899b3ab3262aa7bbb63f8e6db1f92"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_filled.csv": {
+      "bytes": 313384,
+      "sha256": "c8cd4e97607363b6f857754582f52d5164b0df7db0298a7fa28aaef08299740a"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_forced_reset_frames.json": {
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_hint_application_audit.csv": {
+      "bytes": 2006,
+      "sha256": "f5407958f431f2b0e8c3f24b74592817c20469d67ab1253dbe54c4c1666c6936"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_hints.csv": {
+      "bytes": 4336,
+      "sha256": "aadbd4fa281832132136df0e0bce43c7ec6c4880280fc7dcd4b9a36f2647a759"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_hints_summary.json": {
+      "bytes": 6204,
+      "sha256": "1aa2b73f686c74861e9b85175c310c74df9170d5c711a24c1b5a41dc99d1c507"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_summary.json": {
+      "bytes": 13560,
+      "sha256": "c5ad43e6c752631795ab3eb18ea1fa9f9ed2ab548b3879444bba819b8f0e124c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\a5_unresolved_intervals.json": {
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\hints.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\A5\\hints.stdout.log": {
+      "bytes": 6206,
+      "sha256": "e86113f534492edcd983ac6b08209fb371f872ea0ee0c9c201ad20b054bb7f49"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry.resume.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry.resume.stdout.log": {
+      "bytes": 14083,
+      "sha256": "9ce38597a9469b05ed847012b4d10fedc5441af1edf6476c44fc16f1350b5c0d"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry.stdout.log": {
+      "bytes": 14082,
+      "sha256": "37c1f60bf956893394a09e644efcc79fb751ad82e4bd14fef1cb57544ed58416"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f034000_034499.parquet": {
+      "bytes": 104310,
+      "sha256": "2adb12d0ea0707b448bc2706a56b8e8fcc7e7f65a9ec15151e0919928a47cbc7"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f034000_034499.status.json": {
+      "bytes": 353,
+      "sha256": "dd8574d61d72b71568fd15bb046f0754d0ec308e6969d41c5efd68545602a954"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f034500_034999.parquet": {
+      "bytes": 104418,
+      "sha256": "91ef4624047e0342ee89a7c10db2472eb91cd2ff50fbdd8a5a039da757c65255"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f034500_034999.status.json": {
+      "bytes": 353,
+      "sha256": "fbe45f35d6e23cc62abfa16e2841a24ced31556f1adda7ac1900f3b373b3acdb"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f035000_035100.parquet": {
+      "bytes": 27924,
+      "sha256": "095abd39d284ac125e8bf0e099f2c37567dd7ba39fe337057833d872cd5ef78c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_blocks\\geometry_f035000_035100.status.json": {
+      "bytes": 352,
+      "sha256": "7ac99c76d6596423d73da8b1b9d2eb4a025fdc5ccc8461346dcfaaac50276824"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\geometry_summary.json": {
+      "bytes": 14081,
+      "sha256": "ab88afb970d88139ea12c564e1ac445ace14a876d26fff69fb19cda673db4d8e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\critical_descriptive_34000_35100\\geometry\\strict_mouth_selected_geometry.parquet": {
+      "bytes": 222404,
+      "sha256": "dea31976c02ff41bac28ff1083eb6bc6280111be0e74205a0bcf4540edd08e41"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\detached_launcher.stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\detached_launcher.stdout.log": {
+      "bytes": 204,
+      "sha256": "0ea071ade721a2d325881f3ffef36ae919696e5f9bf09b63821979b9d4ea1572"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\postcompletion_auth.json": {
+      "bytes": 4780,
+      "sha256": "0f3acb9b6b4c1b1a37a7aee26955b64ec06eea4f9aceeca949cbdc69524dbf6b"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\prelaunch_auth.json": {
+      "bytes": 6411,
+      "sha256": "0cfe3a3f000d964838d6c1cd0ba075a2cc6ac5c5c086644dd02441aa4100cd4c"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A1.json": {
+      "bytes": 1879,
+      "sha256": "1ba978dff9bf2abd943b0db4f91091a19834a07deea6ff0a4274949377e96739"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A2.json": {
+      "bytes": 1923,
+      "sha256": "4c412b59797febab8a11a63bc8f324aa662ccde4ed964fadd1e0ff832a381a2f"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A3.json": {
+      "bytes": 2192,
+      "sha256": "ce856a6978773c70847d3346a45bf9e0287ab5c30efe824757219443c694a1de"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A4.json": {
+      "bytes": 2104,
+      "sha256": "6841e36fe16658300e7a7cffdd5418c46aab6a0a1e2b375394de406bba83b4bf"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A4_resume.json": {
+      "bytes": 2125,
+      "sha256": "88d81ca0c62fd08906915f226eaa4da140e7c632da8c0c079bc08b710a2f11aa"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A4_schema_adapter.json": {
+      "bytes": 1717,
+      "sha256": "4dd69b5bcc9789a7c6f46ec2a6ed268c0f13af0ff6fdb7699ad67ca917004931"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A5.json": {
+      "bytes": 2872,
+      "sha256": "17b99c26ccbc17ed8f02cfa4ec0fe1447a25cc1cfb892be72a5a4ed0e37f474e"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.A5_hints.json": {
+      "bytes": 2112,
+      "sha256": "6dc1bb1be48f25a6100f86e487af298bfbb0a2ed313edf9a520dd2b7a0fd84bd"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.geometry.json": {
+      "bytes": 1712,
+      "sha256": "a6882563d6ceacc853768af1a8cb9e7cf0dbf7055fd73c2beb75da07c8192621"
+    },
+    "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\process_records\\critical_descriptive_34000_35100.geometry_resume.json": {
+      "bytes": 1733,
+      "sha256": "fb637dd7b941934606f787690fb6aceca767e8f82f6ff4f978626f176de58cfb"
+    }
+  },
+  "current_stage_inventory_count": 100,
+  "finalized_at": "2026-07-31T05:38:39.875301+09:00",
+  "finalizer": {
+    "path": "report\\20260731\\round8_mouth_tracking_ablation\\finalize_bounded_postfreeze_stage_v2.py",
+    "sha256": "c9ea5d44a57470bda06583a3f5311a9c84708cb8040b0d0233b8156c5c7a7f27"
+  },
+  "heldout_or_later_stage_opened": false,
+  "inventory_scope": "all current files under the stage root, including STAGE_COMPLETED.json and closed outer-launch logs, excluding only STAGE_FINALIZED.json",
+  "outer_launcher": {
+    "command": [
+      ".venv\\Scripts\\python.exe",
+      "report\\20260731\\round8_mouth_tracking_ablation\\run_bounded_postfreeze_stage_v5.py",
+      "critical",
+      "--execute-prepared"
+    ],
+    "exit_code": 0,
+    "exit_code_evidence": "launcher process closed, stderr is empty, and final stdout is valid JSON binding the completed marker path and SHA-256",
+    "launch_record": {
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\DETACHED_LAUNCH.json",
+      "sha256": "d3681a9b196c5f626751fd8ceb1a0f5ad3aaef069221413a765405d48af218af"
+    },
+    "launched_at": "2026-07-31T05:37:17.2898942+09:00",
+    "pid": 36212,
+    "stderr": {
+      "bytes": 0,
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\detached_launcher.stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 204,
+      "path": "report\\20260731\\round8_mouth_tracking_ablation\\critical_descriptive_postfreeze\\detached_launcher.stdout.log",
+      "sha256": "0ea071ade721a2d325881f3ffef36ae919696e5f9bf09b63821979b9d4ea1572"
+    },
+    "working_directory": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline"
+  },
+  "role": "permanently_unblinded_descriptive_nonconfirmatory",
+  "schema_version": "round8_bounded_postfreeze_finalized_v1",
+  "scientific_results_changed_during_finalization": false,
+  "selection_or_tuning_performed": false,
+  "stage": "critical",
+  "status": "finalized_and_fully_authenticated"
+}

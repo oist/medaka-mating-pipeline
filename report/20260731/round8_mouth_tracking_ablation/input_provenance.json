@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "experiment": "20251225_K_1_2_FCMC",
+  "round_tag": "round8_260729_snn031_m6",
+  "paths_resolution": {
+    "configuration": "configs/paths.local.toml",
+    "network_access_note": "The configured Z: roots resolve to the OIST bucket share; executor commands used the equivalent UNC root because mapped drives are unavailable in the sandbox process.",
+    "sleap_subdirectory": "sleap_output/20251225_K_1_2_FCMC/round8_260729_snn031_m6",
+    "a0_subdirectory": "reconstruction_3d/20251225_K_1_2_FCMC/round8_260729_snn031_m6"
+  },
+  "source_slps": {
+    "top_cam": {
+      "bytes": 124339365,
+      "sha256": "22727b64c3ef91267e86b4125b2ac3bcd326b84bd61d699718020b5deaf7f36f"
+    },
+    "side1_cam": {
+      "bytes": 125380235,
+      "sha256": "357f2930fe2d6ae28154288a4bf1f1004bdd32c164367c058bd1454f440783a2"
+    },
+    "side2_cam": {
+      "bytes": 125558086,
+      "sha256": "10bbb2135da9a8559b2644216bcd2b32851c58644fe309846c874aa24115faa6"
+    }
+  },
+  "rejected_diagnostic_candidate_caches": {
+    "decision": "not eligible for A1-A5 conclusions",
+    "reason": "filter_fp=true invokes legacy pose span/overlap filtering that inspects tail coordinates",
+    "policy": "float64, six slots, strict finite mouth after tail-derived legacy FP filtering",
+    "top_cam_sha256": "21d29d3416fd58d650bcf6cb1b1dec9850baa7d819e8c2c05f8e6a975053e820",
+    "side1_cam_sha256": "f8173889ef27ace225cc4ba278dd75172a5404e506341ea78287808469291c80",
+    "side2_cam_sha256": "3ff91743de01f4ac43f56e50dbe7d05da775255f72f63c29ac0c5838321ec585",
+    "manifest": "candidate_cache/candidate_cache_manifest.json"
+  },
+  "superseded_strict_mouth_candidate_caches": {
+    "status": "superseded_before_method_runs",
+    "reason": "Coordinates are valid, but structured sleap_io node scores were not extracted, leaving mouth_score empty and making A4/A5 mouth-confidence controls invalid.",
+    "policy": "float64, six slots, strict finite mouth, filter_fp=false, no tail-derived admission filter, no tail fallback",
+    "manifest": "candidate_cache_strict_mouth_unfiltered/candidate_cache_manifest.json",
+    "views": {
+      "top_cam": {
+        "cache_sha256": "693d333523d2f7cc5592193974ce876fe480f6fe8fc5dbc52e7ac6b26655098c",
+        "source_slp_sha256": "22727b64c3ef91267e86b4125b2ac3bcd326b84bd61d699718020b5deaf7f36f"
+      },
+      "side1_cam": {
+        "cache_sha256": "815f35bb6a8947e9b02f5341542cd55b316efc100d6205bf169c9e8dc8d73ae3",
+        "source_slp_sha256": "357f2930fe2d6ae28154288a4bf1f1004bdd32c164367c058bd1454f440783a2"
+      },
+      "side2_cam": {
+        "cache_sha256": "5e5323b4117f626199b6f51776142f609a7cf40c69ee2862123ceeff92ef8b27",
+        "source_slp_sha256": "10bbb2135da9a8559b2644216bcd2b32851c58644fe309846c874aa24115faa6"
+      }
+    }
+  },
+  "canonical_strict_mouth_candidate_caches": {
+    "status": "completed_and_independently_audited",
+    "policy": "float64, six slots, strict finite mouth, filter_fp=false, structured mouth-node confidence extracted, no tail-derived admission filter, no tail fallback",
+    "manifest": "candidate_cache_strict_mouth_unfiltered_nodescores/candidate_cache_manifest.json",
+    "resource_summary": "candidate_cache_strict_mouth_unfiltered_nodescores/build_cache_resource_summary.json",
+    "build_wall_seconds": 182.6801866,
+    "max_sampled_working_set_bytes": 1129820160,
+    "max_reported_peak_working_set_bytes": 1147641856,
+    "audit_result": "PASS: direct source-SLP decode comparison had zero mismatches at tolerance in all views (maximum coordinate error 1.14e-13 px; maximum mouth-score error 2.22e-16). Non-score arrays were bit-exact against the superseded strict-mouth cache.",
+    "views": {
+      "top_cam": {
+        "cache_sha256": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+        "source_slp_sha256": "22727b64c3ef91267e86b4125b2ac3bcd326b84bd61d699718020b5deaf7f36f",
+        "finite_mouth_scores": 1024875,
+        "finite_mouth_coordinates": 1024875
+      },
+      "side1_cam": {
+        "cache_sha256": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+        "source_slp_sha256": "357f2930fe2d6ae28154288a4bf1f1004bdd32c164367c058bd1454f440783a2",
+        "finite_mouth_scores": 1029722,
+        "finite_mouth_coordinates": 1029722
+      },
+      "side2_cam": {
+        "cache_sha256": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699",
+        "source_slp_sha256": "10bbb2135da9a8559b2644216bcd2b32851c58644fe309846c874aa24115faa6",
+        "finite_mouth_scores": 1033042,
+        "finite_mouth_coordinates": 1033042
+      }
+    }
+  },
+  "a0_unchanged_reference": {
+    "anchor_policy": "visible-node centroid",
+    "temporal_linker": "position-only cross-frame Hungarian",
+    "geometry_csv_sha256": "6f42483363dd3be4c1aa7ec758521a4f1fde72877be18b5e4dafc8eee14ffb03",
+    "identified_csv_sha256": "b2100d24cec8a660cff5888ceee1ade26c9990d900f1e67508e566aaab2870b6",
+    "best_json_sha256": "ae4b727bb6679a825e3a9dac143a85fa04c41cfe620c4be875e3b0187a28f2b2",
+    "best_pre_link_json_sha256": "93f322114e10b2fae897f28375237c719a86964b232e3fd686ccd2561fba9068",
+    "reconstruction_provenance_sha256": "e9a895b034beb7d422bd0d9202935f7a17d3637f8e2b17cca1643e86f4d3c1ff",
+    "identified_projection_provenance_sha256": "757f9808237867028b3c4f88a75687bfcdb0ce01de15019fe23279820136ee01",
+    "stage3_status_sha256": "36aa6fe085bca7ec6bce0b3e25ca2f6dd531818f3bbac5d5883523d830b8b56d",
+    "stage3_status": "completed",
+    "motion_settings": {
+      "velocity_prediction_weight": 0.0,
+      "tangent_weight": 0.0,
+      "acceleration_weight": 0.0,
+      "uncertainty_growth_per_frame": 0.25,
+      "max_motion_gap_frames": null,
+      "history_frames": 2
+    }
+  },
+  "calibration": {
+    "model_directory": "calibration_results/fixed_refractive_192x192x186",
+    "requested_backend": "auto",
+    "resolved_backend": "refractive",
+    "score_unit": "mm^2",
+    "score_definition": "mean_squared_perpendicular_distance_from_solved_xyz_to_each_finite_observed_water_ray",
+    "manifest_path": "calibration_results/fixed_refractive_192x192x186/calibration_manifest.json",
+    "calibration_manifest_sha256": "9bb7dda927c01c018c411d3b56da58f3e44379f4d4ce1491c5ab67d33e5bf105",
+    "cam0_bundle_path": "calibration_results/fixed_refractive_192x192x186/cam0_bundle_refractive.json",
+    "cam0_bundle_sha256": "f6756885f0b4b2c86033f1818f3681a85084ff56f40dd478ccdc66720063106c",
+    "cam1_bundle_path": "calibration_results/fixed_refractive_192x192x186/cam1_bundle_refractive.json",
+    "cam1_bundle_sha256": "393cbe50dc8d434d97e2a6ec41005abdb92e08d1691370f42a4de978c31af7f0",
+    "cam2_bundle_path": "calibration_results/fixed_refractive_192x192x186/cam2_bundle_refractive.json",
+    "cam2_bundle_sha256": "87af873ff80710f51c622c9305b20a5219b3aaede3837cdd92c7964ae0cd06f8"
+  },
+  "controlled_reconstruction": {
+    "num_candidates": 6,
+    "num_individuals": 3,
+    "xyz_bounds": [-20, 220],
+    "shift_to_positive": false,
+    "max_jump_mm": 8,
+    "max_jump_hard_cap_mm": 80,
+    "max_gap_frames": 100
+  },
+  "strict_mouth_policy": {
+    "anchor_node": "mouth",
+    "require_anchor_node": true,
+    "use_visible_node_centroid": false,
+    "tail_fallback": false,
+    "segmentation_or_appearance_features": false
+  }
+}

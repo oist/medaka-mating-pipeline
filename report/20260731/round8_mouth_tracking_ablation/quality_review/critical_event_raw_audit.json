@@ -1,0 +1,81 @@
+{
+  "source_files": {
+    "top_cam": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\top_cam.frames_0-87149.slp",
+      "size_bytes": 30408975,
+      "sha256": "6f9fd3f41c7b121e945217af442b6be9b151c9b0098358485db8f7582802f940",
+      "sleap_io": "0.9.2"
+    },
+    "side1_cam": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\side1_cam.frames_0-87149.slp",
+      "size_bytes": 30715512,
+      "sha256": "ff17dd4d9cbf55b65cb99a1144cef6184774ecc0dfefe3ddf7b54aabbe870c7d",
+      "sleap_io": "0.9.2"
+    },
+    "side2_cam": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\side2_cam.frames_0-87149.slp",
+      "size_bytes": 30814810,
+      "sha256": "04d51e33576873e56e2582ead0d99a2563490ecc496472297b5e473cb96c6b52",
+      "sleap_io": "0.9.2"
+    }
+  },
+  "event_frames": [
+    34540,
+    34565
+  ],
+  "reported_values": {
+    "top_mouth_displacement_px": 0.236,
+    "top_visible_node_centroid_displacement_px": 56.209
+  },
+  "independent_values": {
+    "top_target_before_instance": 1,
+    "top_target_after_instance": 1,
+    "top_mouth_before_xy": [
+      952.2501831054688,
+      1016.4949951171875
+    ],
+    "top_mouth_after_xy": [
+      952.4544677734375,
+      1016.61328125
+    ],
+    "top_centroid_before_xy": [
+      898.3199462890625,
+      1001.4847717285156
+    ],
+    "top_centroid_after_xy": [
+      952.4544677734375,
+      1016.61328125
+    ],
+    "top_mouth_displacement_px": 0.23605896463137938,
+    "top_visible_node_centroid_displacement_px": 56.20870232165036,
+    "side_view_close_pair_pose_count": {
+      "side1_cam": {
+        "34547": 1,
+        "34548": 1
+      },
+      "side2_cam": {
+        "34547": 1,
+        "34548": 1
+      }
+    },
+    "total_instance_count": {
+      "top_cam": {
+        "34547": 3,
+        "34548": 3
+      },
+      "side1_cam": {
+        "34547": 2,
+        "34548": 2
+      },
+      "side2_cam": {
+        "34547": 2,
+        "34548": 2
+      }
+    }
+  },
+  "method": {
+    "top_correspondence": "unique frame-34548 finite-mouth instance with missing tail, matched backward by nearest raw mouth coordinate",
+    "centroid": "mean of all finite nodes in the same raw SLEAP instance",
+    "side_close_pair_region": "mouth_y > 700 px; third fish is spatially distant"
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "status": "critical_descriptive_independently_authenticated_scored_and_passed",
+  "completed_at": "2026-07-31T05:48:22.2005300+09:00",
+  "stage": "critical_descriptive",
+  "role": "permanently_unblinded_descriptive_nonconfirmatory",
+  "confirmatory": false,
+  "independent_quality_verdict": "PASS",
+  "frozen_settings_changed": false,
+  "selection_or_tuning_performed": false,
+  "may_change_frozen_settings": false,
+  "may_change_finalists": false,
+  "full_length_launched_during_review": false,
+  "inclusive_smoke_window": [
+    34000,
+    35100
+  ],
+  "inclusive_detail_window": [
+    34540,
+    34565
+  ],
+  "inclusive_assignment_interval": [
+    34547,
+    34555
+  ],
+  "bindings": {
+    "freeze": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/frozen_thresholds.json",
+      "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    },
+    "critical_finalized_marker": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/STAGE_FINALIZED.json",
+      "sha256": "fe432101a7580f4e540d3c4537ae8b1c774a2b5231d8cc0900a790e250d3149c"
+    },
+    "critical_completion_marker": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/critical_descriptive_postfreeze/STAGE_COMPLETED.json",
+      "sha256": "e493fdcc449034c4f9dd22e3f124283fe8d3cd06d9bd50b0c46002e440367706"
+    },
+    "heldout_quality_gate": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/HELDOUT_QUALITY_REVIEW_COMPLETED.json",
+      "sha256": "022fbca3f3d0c13d7388a83c42b3b2bad60ded00de2fe89fad428943e7f213cc"
+    },
+    "independent_scorer": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/audit_and_score_postfreeze.py",
+      "sha256": "5d7e4e8f87f40228ddd185f07476951a2009e468258719aed92b7d059345ca72"
+    },
+    "independent_metrics": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_independent_metrics.json",
+      "sha256": "d9a4d449697c96c0d1a579a841b4fa128f805f519294acae4b4342815cf36519"
+    },
+    "independent_female_assignments": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_independent_female_assignments.csv",
+      "sha256": "46434e15e7e038a0c290b4d526a491c06f7cdd95c6c935c87293473625e478a9"
+    },
+    "critical_exact_assignment_rows": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_critical_event_assignments_34547_34555.csv",
+      "sha256": "e69e7442bfa9c074a4d8bebcbd46fb1849ff72fa4472214b9242c505d8fbb343"
+    },
+    "critical_event_audit": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_critical_event_audit.json",
+      "sha256": "c6417f733213b9d307ca75b34eef326ecf86b4bdf92ea9b5076dbb453f6f79dc"
+    },
+    "raw_trigger_audit": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/critical_event_raw_audit.json",
+      "sha256": "dabbb35b11034ba7abb1de9fb78a5189dafdfa41e14d354072989f8d9dce7973"
+    },
+    "a0_geometry_audit": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/critical_event_existing_geometry.json",
+      "sha256": "59320ae82c7c2d6a0d29f1fc84c0d44e62f866a507538cdb37e9a405547a737f"
+    }
+  },
+  "authentication": {
+    "finalized_current_inventory_files": 100,
+    "completion_inventory_files_unchanged": 96,
+    "process_records_authenticated": 10,
+    "resume_equivalence_checks_passed": 2,
+    "launcher_exit_code": 0,
+    "launcher_stderr_bytes": 0
+  },
+  "critical_metrics": {
+    "A0": {
+      "female_fixed_identity_correct": "1/2",
+      "observed_female_identity_changes": 1,
+      "all_three_direct_fraction": 1.0,
+      "unavailable_row_fraction": 0.0,
+      "jump_ge_7_5mm_count": 11,
+      "jump_gt_8mm_count": 0,
+      "known_internal_geometry_exchange_at_34547_to_34548": true
+    },
+    "A1_A2_A3": {
+      "normalized_scientific_outputs_identical": true,
+      "female_fixed_identity_correct": "2/2",
+      "observed_female_identity_changes": 0,
+      "all_three_direct_fraction": 0.9900090826521344,
+      "unavailable_row_fraction": 0.003330305782621859,
+      "jump_ge_7_5mm_count": 0,
+      "jump_gt_8mm_count": 0,
+      "direct_jump_max_mm": 6.929657894540441,
+      "direct_ray_residual_p95_mm2": 2.896507037899131,
+      "direct_ray_residual_p99_mm2": 16.504610554991178
+    },
+    "A4": {
+      "female_fixed_identity_mapped": "0/2",
+      "all_three_direct_fraction": 0.0,
+      "unavailable_row_fraction": 0.9721465334544354,
+      "exact_event_unassigned_rows": "27/27"
+    },
+    "A5": {
+      "scientific_rows_identical_to_A1_A2_A3_in_smoke": true,
+      "female_fixed_identity_correct": "2/2",
+      "observed_female_identity_changes": 0,
+      "all_three_direct_fraction": 0.9900090826521344,
+      "unavailable_row_fraction": 0.003330305782621859,
+      "a5_hint_rows_in_exact_assignment_interval": 0
+    },
+    "exact_event_A1_A2_A3_A5": {
+      "rows_per_method": 27,
+      "all_rows_direct_and_finite": true,
+      "stable_source_indices": {
+        "ID_1": 0,
+        "ID_2": 1,
+        "ID_3": 2
+      },
+      "source_index_switches": 0,
+      "normalized_scientific_outputs_identical": true,
+      "deferred_assignment_margin_min": 15.02449257632033,
+      "deferred_assignment_margin_max": 17.714434235581315,
+      "ambiguous_frames": 0,
+      "constraint_conflict_frames": 0
+    }
+  },
+  "conclusions": {
+    "full_length_gate": "PASS: frozen A1-A3 full-length execution may proceed",
+    "a1_a2_a3": "No descriptive critical separation. Motion and deferral add no observed scientific-output benefit over strict-mouth position-only A1.",
+    "a0_comparison": "The centroid linker has a mechanically demonstrated geometry-ID exchange at 34547->34548. The strict-mouth methods preserve source-slot continuity and avoid the local jump, but the two close fish are male and no biological male-to-male ground truth is available.",
+    "a4": "Explicit high abstention, including all 27 exact-event rows, confirms A4 is not a standalone production reconstruction.",
+    "a5": "A5 has no hint rows in the exact event and remains rejected by held-out female accuracy, changes, and coverage.",
+    "provisional_recommendation": "Among frozen A1-A3, A1 remains the parsimonious tied production candidate pending full-length QC.",
+    "ground_truth_limit": "No female annotation occurs in frames 34547-34555. Descriptive continuity is not biological identity proof."
+  }
+}

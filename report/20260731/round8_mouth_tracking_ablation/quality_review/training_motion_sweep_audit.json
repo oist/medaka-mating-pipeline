@@ -1,0 +1,1586 @@
+{
+  "schema_version": 1,
+  "data_scope": "Training windows only. Validation, held-out, and critical-event method outputs were not read.",
+  "annotations_path": "annotations\\fish_sex_gt\\20251225_K_1_2_FCMC\\female_sex_gt.csv",
+  "annotations_sha256": "ab0a173ac737a63311aec834c5832fc19475d4f7d1892b8193f8465bba67519f",
+  "training_annotation_rows": 15,
+  "calibration_backend": "refractive",
+  "calibration_score_unit": "mm^2",
+  "method_results": {
+    "A1": {
+      "configuration": {
+        "method": "A1",
+        "velocity_weight": 0.0,
+        "history_frames": 2
+      },
+      "cross_window_settings_equal": true,
+      "normalized_settings_sha256": [
+        "0ca734bab767bd5e4fa1ce93366440fb808d9d18f5c5797da4703b30922763d8"
+      ],
+      "training_windows": {
+        "reviewed_event_1": {
+          "interval": [
+            72371,
+            73027
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A1\\a1_summary.json",
+          "summary_sha256": "a9c16456669ea9c4d4afa96d8ae46dcbffc8f7b076f4c21b8d57cd394622ca0e",
+          "configuration_hash": "a41bad8c2069313393820feeea49d3380fc6ce8eb45a67ad672c076d5458ced0",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A1\\a1_direct.csv",
+          "direct_sha256": "e211c532f2c2f3677ad4f6a868efdffda23eb7b2e00da9b45beaa070381147f6",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 656,
+            "all_three_direct_fraction": 0.9984779299847792,
+            "unavailable_rows": 1,
+            "unavailable_row_fraction": 0.0005073566717402334,
+            "jump_mm": {
+              "count": 1966,
+              "median": 0.5744208889698547,
+              "p95": 1.6160087908985503,
+              "p99": 2.9608298443222276,
+              "max": 5.641596073997136
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1970,
+              "median": 0.10463738078890394,
+              "p95": 0.7066757628231071,
+              "p99": 1.4829217583651497,
+              "max": 23.349782217437475
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 2,
+            "mapped_annotations": 2,
+            "mapping_status_counts": {
+              "agree": 2
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 2
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 2,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_1": {
+          "interval": [
+            32264,
+            32920
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A1\\a1_summary.json",
+          "summary_sha256": "167bab4dd7a993cb6e54698eb7ad9a6a1b4afaf8d48410293323bccd72ff3fe5",
+          "configuration_hash": "20909d97793611aa42911a17ffec1afcde2d3b2bc8a22d2a83101efc51fc84a9",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A1\\a1_direct.csv",
+          "direct_sha256": "6657dc33980e0c6eee68c53bc9e177c80938a148b10a246fc62506854b217511",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 641,
+            "all_three_direct_fraction": 0.9756468797564688,
+            "unavailable_rows": 16,
+            "unavailable_row_fraction": 0.008117706747843734,
+            "jump_mm": {
+              "count": 1945,
+              "median": 0.23072158750270635,
+              "p95": 1.2081100078037008,
+              "p99": 3.327696168169798,
+              "max": 7.375041725630694
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1955,
+              "median": 0.6640888119394442,
+              "p95": 1.729409967250575,
+              "p99": 154.2749368080249,
+              "max": 354.070130372133
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 1,
+            "mapped_annotations": 1,
+            "mapping_status_counts": {
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_1#identity_segment=0": 1
+            },
+            "best_fixed_identity": "ID_1#identity_segment=0",
+            "best_fixed_correct": 1,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "reviewed_event_3": {
+          "interval": [
+            174316,
+            180515
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A1\\a1_summary.json",
+          "summary_sha256": "efe2c16ce6afc9ee55d2a807b6fe554e02d9f6ca3f450b84f3ee3721142c604d",
+          "configuration_hash": "c9d911c924dca9c28679d37f4dba9e26d4023e0664db2428fa2afbadd70511df",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A1\\a1_direct.csv",
+          "direct_sha256": "99398a8758f482927f49f0f2c4810b05f38dc3b5697a26d57503dc50edc484c8",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6197,
+            "all_three_direct_fraction": 0.9995161290322581,
+            "unavailable_rows": 3,
+            "unavailable_row_fraction": 0.00016129032258064516,
+            "jump_mm": {
+              "count": 18591,
+              "median": 0.3606649895427839,
+              "p95": 1.0445019864350114,
+              "p99": 1.5672889647038977,
+              "max": 7.873815674168297
+            },
+            "jump_ge_7_5mm_count": 3,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18597,
+              "median": 0.1746227358565035,
+              "p95": 0.8059893918125549,
+              "p99": 1.7673544342126855,
+              "max": 90.922269711161
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 6
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_3": {
+          "interval": [
+            21840,
+            28039
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A1\\a1_summary.json",
+          "summary_sha256": "bf99f43221791ce2c9b284f8c9d85f7005b4863fb7af09651ee52a28b0ef94fa",
+          "configuration_hash": "5be9e4fb2aadf445072287e18fedaedba84186ebb7163cb04e58f8ece59a5ea6",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A1\\a1_direct.csv",
+          "direct_sha256": "787701df8079b81078f6b2955977f8165e5a6f5caae23fb5fb67bb479b2e56eb",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6184,
+            "all_three_direct_fraction": 0.9974193548387097,
+            "unavailable_rows": 18,
+            "unavailable_row_fraction": 0.000967741935483871,
+            "jump_mm": {
+              "count": 18562,
+              "median": 0.3388454500616696,
+              "p95": 0.9957916175760965,
+              "p99": 2.365939488755722,
+              "max": 7.8541904704954
+            },
+            "jump_ge_7_5mm_count": 4,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18582,
+              "median": 0.2467590621160653,
+              "p95": 1.3553867948516687,
+              "p99": 4.759772580599352,
+              "max": 144.91968142324512
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 5,
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_2#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_2#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        }
+      },
+      "aggregate": {
+        "female_eligible_annotations": 15,
+        "female_mapped_annotations": 15,
+        "female_best_fixed_correct_sum_by_window": 15,
+        "female_full_eligible_accuracy": 1.0,
+        "female_selective_mapped_accuracy": 1.0,
+        "female_observed_identity_changes_sum_by_window": 0,
+        "all_three_direct_frames": 13678,
+        "all_three_direct_fraction": 0.9973749453113606,
+        "unavailable_rows": 38,
+        "unavailable_row_fraction": 0.0009236303534101405,
+        "jump_mm": {
+          "count": 41064,
+          "median": 0.35405122891499663,
+          "p95": 1.0594678882048731,
+          "p99": 1.9912263451526417,
+          "max": 7.873815674168297
+        },
+        "jump_ge_7_5mm_count": 7,
+        "jump_gt_8mm_count": 0,
+        "residual_mm2": {
+          "count": 41104,
+          "median": 0.20556151975475645,
+          "p95": 1.1787567876354312,
+          "p99": 3.2490120187287905,
+          "max": 354.070130372133
+        }
+      }
+    },
+    "A2_v025_h5": {
+      "configuration": {
+        "method": "A2",
+        "velocity_weight": 0.25,
+        "history_frames": 5
+      },
+      "cross_window_settings_equal": true,
+      "normalized_settings_sha256": [
+        "32198f3ddf6076cd4703db8f427bbbacde62c107860b12c77a77d3b87bbc03a5"
+      ],
+      "training_windows": {
+        "reviewed_event_1": {
+          "interval": [
+            72371,
+            73027
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v025_h5\\a2_summary.json",
+          "summary_sha256": "01bc51866d4d9c5769cd67ee653e772f6091c743f8237587f8815f3cd03dd0e9",
+          "configuration_hash": "2d9353f805d7cb7da31fe45b62b13b3b6deef357f332f63d162617f6a0755504",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v025_h5\\a2_direct.csv",
+          "direct_sha256": "81731d72a097ee745a2f062a9d787f2c6312bcbc57a26d1d9b595f9c0203e834",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 656,
+            "all_three_direct_fraction": 0.9984779299847792,
+            "unavailable_rows": 1,
+            "unavailable_row_fraction": 0.0005073566717402334,
+            "jump_mm": {
+              "count": 1966,
+              "median": 0.5744208889698547,
+              "p95": 1.6160087908985503,
+              "p99": 2.9608298443222276,
+              "max": 5.641596073997136
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1970,
+              "median": 0.10463738078890394,
+              "p95": 0.7066757628231071,
+              "p99": 1.4829217583651497,
+              "max": 23.349782217437475
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 2,
+            "mapped_annotations": 2,
+            "mapping_status_counts": {
+              "agree": 2
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 2
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 2,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_1": {
+          "interval": [
+            32264,
+            32920
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v025_h5\\a2_summary.json",
+          "summary_sha256": "e8003072ef44f4b4c428ae2b3a233046771bdc49b35836aee24ca42b02cbdef3",
+          "configuration_hash": "0cd988c64a2ca4bea7d335d9a2c9167de09d34afbf50063f59f577df4475fa19",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v025_h5\\a2_direct.csv",
+          "direct_sha256": "5fe7eeb9ee5db57eb17900a0df91360b620e4e1e3967f6e5757e721bac5b3f47",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 641,
+            "all_three_direct_fraction": 0.9756468797564688,
+            "unavailable_rows": 16,
+            "unavailable_row_fraction": 0.008117706747843734,
+            "jump_mm": {
+              "count": 1945,
+              "median": 0.23072158750270635,
+              "p95": 1.2081100078037008,
+              "p99": 3.327696168169798,
+              "max": 7.375041725630694
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1955,
+              "median": 0.6640888119394442,
+              "p95": 1.729409967250575,
+              "p99": 154.2749368080249,
+              "max": 354.070130372133
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 1,
+            "mapped_annotations": 1,
+            "mapping_status_counts": {
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_1#identity_segment=0": 1
+            },
+            "best_fixed_identity": "ID_1#identity_segment=0",
+            "best_fixed_correct": 1,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "reviewed_event_3": {
+          "interval": [
+            174316,
+            180515
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v025_h5\\a2_summary.json",
+          "summary_sha256": "fd1b18afaa25d39a107b16b480cf5d7a4cfa690fbeb79c95ed8c59f0dd387f23",
+          "configuration_hash": "018f243106aabc3b3aa66e9fb7c845f3a53a31a59967bb68082b6395d316c493",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v025_h5\\a2_direct.csv",
+          "direct_sha256": "4f00b1441899509534578abb63e3158da4ee14170b61cc7e6c26d4b9173691fd",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6197,
+            "all_three_direct_fraction": 0.9995161290322581,
+            "unavailable_rows": 3,
+            "unavailable_row_fraction": 0.00016129032258064516,
+            "jump_mm": {
+              "count": 18591,
+              "median": 0.3606649895427839,
+              "p95": 1.0445019864350114,
+              "p99": 1.5672889647038977,
+              "max": 7.873815674168297
+            },
+            "jump_ge_7_5mm_count": 3,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18597,
+              "median": 0.1746227358565035,
+              "p95": 0.8059893918125549,
+              "p99": 1.7673544342126855,
+              "max": 90.922269711161
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 6
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_3": {
+          "interval": [
+            21840,
+            28039
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v025_h5\\a2_summary.json",
+          "summary_sha256": "a5c98c118b634045897970b5cea15426664f03567e7f9a58f6644a69e0af4175",
+          "configuration_hash": "3f382c1885ecf567117c679aaeae77c2ffab13282239a3e31360142452c082b1",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v025_h5\\a2_direct.csv",
+          "direct_sha256": "80e38f872b6eabd3ce6b292c821d131921849d933ed89481d24ef1ae0c0dde13",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6184,
+            "all_three_direct_fraction": 0.9974193548387097,
+            "unavailable_rows": 18,
+            "unavailable_row_fraction": 0.000967741935483871,
+            "jump_mm": {
+              "count": 18562,
+              "median": 0.3388454500616696,
+              "p95": 0.9957916175760965,
+              "p99": 2.365939488755722,
+              "max": 7.8541904704954
+            },
+            "jump_ge_7_5mm_count": 4,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18582,
+              "median": 0.2467590621160653,
+              "p95": 1.3553867948516687,
+              "p99": 4.759772580599352,
+              "max": 144.91968142324512
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 5,
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_2#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_2#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        }
+      },
+      "aggregate": {
+        "female_eligible_annotations": 15,
+        "female_mapped_annotations": 15,
+        "female_best_fixed_correct_sum_by_window": 15,
+        "female_full_eligible_accuracy": 1.0,
+        "female_selective_mapped_accuracy": 1.0,
+        "female_observed_identity_changes_sum_by_window": 0,
+        "all_three_direct_frames": 13678,
+        "all_three_direct_fraction": 0.9973749453113606,
+        "unavailable_rows": 38,
+        "unavailable_row_fraction": 0.0009236303534101405,
+        "jump_mm": {
+          "count": 41064,
+          "median": 0.35405122891499663,
+          "p95": 1.0594678882048731,
+          "p99": 1.9912263451526417,
+          "max": 7.873815674168297
+        },
+        "jump_ge_7_5mm_count": 7,
+        "jump_gt_8mm_count": 0,
+        "residual_mm2": {
+          "count": 41104,
+          "median": 0.20556151975475645,
+          "p95": 1.1787567876354312,
+          "p99": 3.2490120187287905,
+          "max": 354.070130372133
+        }
+      }
+    },
+    "A2_v050_h5": {
+      "configuration": {
+        "method": "A2",
+        "velocity_weight": 0.5,
+        "history_frames": 5
+      },
+      "cross_window_settings_equal": true,
+      "normalized_settings_sha256": [
+        "126a3acf357baac15ba3a7394b1c8fa1decb06484e63a657a7f2796fbf2974a7"
+      ],
+      "training_windows": {
+        "reviewed_event_1": {
+          "interval": [
+            72371,
+            73027
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v050_h5\\a2_summary.json",
+          "summary_sha256": "709aef0134dcabe1dfd9e90b02d79384b4ea6ae2f14a2d116cf7d01c72b5b2b4",
+          "configuration_hash": "836ac764e0d1e4470aa51da7938b5746b3b0439a082017bf4a9efdc984e9ab36",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v050_h5\\a2_direct.csv",
+          "direct_sha256": "81731d72a097ee745a2f062a9d787f2c6312bcbc57a26d1d9b595f9c0203e834",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 656,
+            "all_three_direct_fraction": 0.9984779299847792,
+            "unavailable_rows": 1,
+            "unavailable_row_fraction": 0.0005073566717402334,
+            "jump_mm": {
+              "count": 1966,
+              "median": 0.5744208889698547,
+              "p95": 1.6160087908985503,
+              "p99": 2.9608298443222276,
+              "max": 5.641596073997136
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1970,
+              "median": 0.10463738078890394,
+              "p95": 0.7066757628231071,
+              "p99": 1.4829217583651497,
+              "max": 23.349782217437475
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 2,
+            "mapped_annotations": 2,
+            "mapping_status_counts": {
+              "agree": 2
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 2
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 2,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_1": {
+          "interval": [
+            32264,
+            32920
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v050_h5\\a2_summary.json",
+          "summary_sha256": "b437dc19c4c7efc153b6212a17200768c672857cb106a21484a1cebb61059d74",
+          "configuration_hash": "c7ec2f5a7c7a6a62c019e1f4fd5ae22aa524d7804f9165fbdfb583f01896a3fd",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v050_h5\\a2_direct.csv",
+          "direct_sha256": "5fe7eeb9ee5db57eb17900a0df91360b620e4e1e3967f6e5757e721bac5b3f47",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 641,
+            "all_three_direct_fraction": 0.9756468797564688,
+            "unavailable_rows": 16,
+            "unavailable_row_fraction": 0.008117706747843734,
+            "jump_mm": {
+              "count": 1945,
+              "median": 0.23072158750270635,
+              "p95": 1.2081100078037008,
+              "p99": 3.327696168169798,
+              "max": 7.375041725630694
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1955,
+              "median": 0.6640888119394442,
+              "p95": 1.729409967250575,
+              "p99": 154.2749368080249,
+              "max": 354.070130372133
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 1,
+            "mapped_annotations": 1,
+            "mapping_status_counts": {
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_1#identity_segment=0": 1
+            },
+            "best_fixed_identity": "ID_1#identity_segment=0",
+            "best_fixed_correct": 1,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "reviewed_event_3": {
+          "interval": [
+            174316,
+            180515
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v050_h5\\a2_summary.json",
+          "summary_sha256": "e8d511cfe7eb15f1757b2077517d79254d7de5f0043d40b8a4fc85dd07a4b046",
+          "configuration_hash": "86159fbf8224d2e40c136f8c2793b152c8fff81b70f922dfb8f990bb3bbbcdd9",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v050_h5\\a2_direct.csv",
+          "direct_sha256": "4f00b1441899509534578abb63e3158da4ee14170b61cc7e6c26d4b9173691fd",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6197,
+            "all_three_direct_fraction": 0.9995161290322581,
+            "unavailable_rows": 3,
+            "unavailable_row_fraction": 0.00016129032258064516,
+            "jump_mm": {
+              "count": 18591,
+              "median": 0.3606649895427839,
+              "p95": 1.0445019864350114,
+              "p99": 1.5672889647038977,
+              "max": 7.873815674168297
+            },
+            "jump_ge_7_5mm_count": 3,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18597,
+              "median": 0.1746227358565035,
+              "p95": 0.8059893918125549,
+              "p99": 1.7673544342126855,
+              "max": 90.922269711161
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 6
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_3": {
+          "interval": [
+            21840,
+            28039
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v050_h5\\a2_summary.json",
+          "summary_sha256": "9623ffca18e3a443794e749222913fcc1c2ebf4b77c6c9577f6f37eca4d9331a",
+          "configuration_hash": "5616369ce4a46676ef0bce5a14fc02674776d631e518a8808a8291f8e57b38af",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v050_h5\\a2_direct.csv",
+          "direct_sha256": "80e38f872b6eabd3ce6b292c821d131921849d933ed89481d24ef1ae0c0dde13",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6184,
+            "all_three_direct_fraction": 0.9974193548387097,
+            "unavailable_rows": 18,
+            "unavailable_row_fraction": 0.000967741935483871,
+            "jump_mm": {
+              "count": 18562,
+              "median": 0.3388454500616696,
+              "p95": 0.9957916175760965,
+              "p99": 2.365939488755722,
+              "max": 7.8541904704954
+            },
+            "jump_ge_7_5mm_count": 4,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18582,
+              "median": 0.2467590621160653,
+              "p95": 1.3553867948516687,
+              "p99": 4.759772580599352,
+              "max": 144.91968142324512
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 5,
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_2#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_2#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        }
+      },
+      "aggregate": {
+        "female_eligible_annotations": 15,
+        "female_mapped_annotations": 15,
+        "female_best_fixed_correct_sum_by_window": 15,
+        "female_full_eligible_accuracy": 1.0,
+        "female_selective_mapped_accuracy": 1.0,
+        "female_observed_identity_changes_sum_by_window": 0,
+        "all_three_direct_frames": 13678,
+        "all_three_direct_fraction": 0.9973749453113606,
+        "unavailable_rows": 38,
+        "unavailable_row_fraction": 0.0009236303534101405,
+        "jump_mm": {
+          "count": 41064,
+          "median": 0.35405122891499663,
+          "p95": 1.0594678882048731,
+          "p99": 1.9912263451526417,
+          "max": 7.873815674168297
+        },
+        "jump_ge_7_5mm_count": 7,
+        "jump_gt_8mm_count": 0,
+        "residual_mm2": {
+          "count": 41104,
+          "median": 0.20556151975475645,
+          "p95": 1.1787567876354312,
+          "p99": 3.2490120187287905,
+          "max": 354.070130372133
+        }
+      }
+    },
+    "A2_v100_h5": {
+      "configuration": {
+        "method": "A2",
+        "velocity_weight": 1.0,
+        "history_frames": 5
+      },
+      "cross_window_settings_equal": true,
+      "normalized_settings_sha256": [
+        "6e7d9d951749e5733009768369969f7086a0ae89a2c7639f2ea4ff1b3c9c7d1e"
+      ],
+      "training_windows": {
+        "reviewed_event_1": {
+          "interval": [
+            72371,
+            73027
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v100_h5\\a2_summary.json",
+          "summary_sha256": "e87eb56761cd7ddb90097570d9fb4b668e3fe0b9e5abaa238116c7567cb9825a",
+          "configuration_hash": "31e2e6040d9e250158847851027023e7af46b210b656e22e8740e37b98a05783",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v100_h5\\a2_direct.csv",
+          "direct_sha256": "81731d72a097ee745a2f062a9d787f2c6312bcbc57a26d1d9b595f9c0203e834",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 656,
+            "all_three_direct_fraction": 0.9984779299847792,
+            "unavailable_rows": 1,
+            "unavailable_row_fraction": 0.0005073566717402334,
+            "jump_mm": {
+              "count": 1966,
+              "median": 0.5744208889698547,
+              "p95": 1.6160087908985503,
+              "p99": 2.9608298443222276,
+              "max": 5.641596073997136
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1970,
+              "median": 0.10463738078890394,
+              "p95": 0.7066757628231071,
+              "p99": 1.4829217583651497,
+              "max": 23.349782217437475
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 2,
+            "mapped_annotations": 2,
+            "mapping_status_counts": {
+              "agree": 2
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 2
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 2,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_1": {
+          "interval": [
+            32264,
+            32920
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v100_h5\\a2_summary.json",
+          "summary_sha256": "cf1bc36680a60b170382de2331bc16c9355a7ba23c66015fbb4015d3f6615d59",
+          "configuration_hash": "5323f3bc9f9bc9df21286cbbaa1bc4ab11632d69b0405a894aefe678d8718a15",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v100_h5\\a2_direct.csv",
+          "direct_sha256": "5fe7eeb9ee5db57eb17900a0df91360b620e4e1e3967f6e5757e721bac5b3f47",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 641,
+            "all_three_direct_fraction": 0.9756468797564688,
+            "unavailable_rows": 16,
+            "unavailable_row_fraction": 0.008117706747843734,
+            "jump_mm": {
+              "count": 1945,
+              "median": 0.23072158750270635,
+              "p95": 1.2081100078037008,
+              "p99": 3.327696168169798,
+              "max": 7.375041725630694
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1955,
+              "median": 0.6640888119394442,
+              "p95": 1.729409967250575,
+              "p99": 154.2749368080249,
+              "max": 354.070130372133
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 1,
+            "mapped_annotations": 1,
+            "mapping_status_counts": {
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_1#identity_segment=0": 1
+            },
+            "best_fixed_identity": "ID_1#identity_segment=0",
+            "best_fixed_correct": 1,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "reviewed_event_3": {
+          "interval": [
+            174316,
+            180515
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v100_h5\\a2_summary.json",
+          "summary_sha256": "ab5e3f1e7e6d1fb077388acbf515b92fac6d975b78a7d26944184bcc11e16dfd",
+          "configuration_hash": "959c0614714ee9d8a8adeba51cd2210d9e4f2984f7182ee26dec53ffca23d04d",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v100_h5\\a2_direct.csv",
+          "direct_sha256": "4f00b1441899509534578abb63e3158da4ee14170b61cc7e6c26d4b9173691fd",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6197,
+            "all_three_direct_fraction": 0.9995161290322581,
+            "unavailable_rows": 3,
+            "unavailable_row_fraction": 0.00016129032258064516,
+            "jump_mm": {
+              "count": 18591,
+              "median": 0.3606649895427839,
+              "p95": 1.0445019864350114,
+              "p99": 1.5672889647038977,
+              "max": 7.873815674168297
+            },
+            "jump_ge_7_5mm_count": 3,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18597,
+              "median": 0.1746227358565035,
+              "p95": 0.8059893918125549,
+              "p99": 1.7673544342126855,
+              "max": 90.922269711161
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 6
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_3": {
+          "interval": [
+            21840,
+            28039
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v100_h5\\a2_summary.json",
+          "summary_sha256": "50a3d80385bdaac354a97f5b9dca5a9d8c87e1657d4190e67b50204faa139245",
+          "configuration_hash": "e29cec2828db60e22acd570a10ffa673f5a66787ac3cbb11a3e12388b58659e7",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v100_h5\\a2_direct.csv",
+          "direct_sha256": "80e38f872b6eabd3ce6b292c821d131921849d933ed89481d24ef1ae0c0dde13",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6184,
+            "all_three_direct_fraction": 0.9974193548387097,
+            "unavailable_rows": 18,
+            "unavailable_row_fraction": 0.000967741935483871,
+            "jump_mm": {
+              "count": 18562,
+              "median": 0.3388454500616696,
+              "p95": 0.9957916175760965,
+              "p99": 2.365939488755722,
+              "max": 7.8541904704954
+            },
+            "jump_ge_7_5mm_count": 4,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18582,
+              "median": 0.2467590621160653,
+              "p95": 1.3553867948516687,
+              "p99": 4.759772580599352,
+              "max": 144.91968142324512
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 5,
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_2#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_2#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        }
+      },
+      "aggregate": {
+        "female_eligible_annotations": 15,
+        "female_mapped_annotations": 15,
+        "female_best_fixed_correct_sum_by_window": 15,
+        "female_full_eligible_accuracy": 1.0,
+        "female_selective_mapped_accuracy": 1.0,
+        "female_observed_identity_changes_sum_by_window": 0,
+        "all_three_direct_frames": 13678,
+        "all_three_direct_fraction": 0.9973749453113606,
+        "unavailable_rows": 38,
+        "unavailable_row_fraction": 0.0009236303534101405,
+        "jump_mm": {
+          "count": 41064,
+          "median": 0.35405122891499663,
+          "p95": 1.0594678882048731,
+          "p99": 1.9912263451526417,
+          "max": 7.873815674168297
+        },
+        "jump_ge_7_5mm_count": 7,
+        "jump_gt_8mm_count": 0,
+        "residual_mm2": {
+          "count": 41104,
+          "median": 0.20556151975475645,
+          "p95": 1.1787567876354312,
+          "p99": 3.2490120187287905,
+          "max": 354.070130372133
+        }
+      }
+    },
+    "A2_v050_h9": {
+      "configuration": {
+        "method": "A2",
+        "velocity_weight": 0.5,
+        "history_frames": 9
+      },
+      "cross_window_settings_equal": true,
+      "normalized_settings_sha256": [
+        "61ea2f47df8c26e4bcfeda4f95c950694a107e11cb1c47a89bc94f80eebe7d3d"
+      ],
+      "training_windows": {
+        "reviewed_event_1": {
+          "interval": [
+            72371,
+            73027
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v050_h9\\a2_summary.json",
+          "summary_sha256": "87df82771fbf41f0f7cff0435aa1dc6420556b5c9b08f7007080efac5cddff6a",
+          "configuration_hash": "7b74f9a00a5589fbf1844dffa63328de106eedf12a8951d8906df1f3d995b8d5",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v050_h9\\a2_direct.csv",
+          "direct_sha256": "81731d72a097ee745a2f062a9d787f2c6312bcbc57a26d1d9b595f9c0203e834",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 656,
+            "all_three_direct_fraction": 0.9984779299847792,
+            "unavailable_rows": 1,
+            "unavailable_row_fraction": 0.0005073566717402334,
+            "jump_mm": {
+              "count": 1966,
+              "median": 0.5744208889698547,
+              "p95": 1.6160087908985503,
+              "p99": 2.9608298443222276,
+              "max": 5.641596073997136
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1970,
+              "median": 0.10463738078890394,
+              "p95": 0.7066757628231071,
+              "p99": 1.4829217583651497,
+              "max": 23.349782217437475
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 2,
+            "mapped_annotations": 2,
+            "mapping_status_counts": {
+              "agree": 2
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 2
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 2,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_1": {
+          "interval": [
+            32264,
+            32920
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v050_h9\\a2_summary.json",
+          "summary_sha256": "439221935cfdf026439a3417fac72ce7817152179dcd354be104d2f6e46a5084",
+          "configuration_hash": "bcd9ce836a5ead114c8a969ffd6a8734614520f98520ee29fba40225759ff35f",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v050_h9\\a2_direct.csv",
+          "direct_sha256": "5fe7eeb9ee5db57eb17900a0df91360b620e4e1e3967f6e5757e721bac5b3f47",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 641,
+            "all_three_direct_fraction": 0.9756468797564688,
+            "unavailable_rows": 16,
+            "unavailable_row_fraction": 0.008117706747843734,
+            "jump_mm": {
+              "count": 1945,
+              "median": 0.23072158750270635,
+              "p95": 1.2081100078037008,
+              "p99": 3.327696168169798,
+              "max": 7.375041725630694
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1955,
+              "median": 0.6640888119394442,
+              "p95": 1.729409967250575,
+              "p99": 154.2749368080249,
+              "max": 354.070130372133
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 1,
+            "mapped_annotations": 1,
+            "mapping_status_counts": {
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_1#identity_segment=0": 1
+            },
+            "best_fixed_identity": "ID_1#identity_segment=0",
+            "best_fixed_correct": 1,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "reviewed_event_3": {
+          "interval": [
+            174316,
+            180515
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v050_h9\\a2_summary.json",
+          "summary_sha256": "848ade0c1e6319608e2a60cb375fcbfefd3b68801e23d9a1ec0dcec495a3f352",
+          "configuration_hash": "74befce3df01e3d7619e4ce9c8bb80bf9c6acc66ca07c0a98b6665538738cbae",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v050_h9\\a2_direct.csv",
+          "direct_sha256": "4f00b1441899509534578abb63e3158da4ee14170b61cc7e6c26d4b9173691fd",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6197,
+            "all_three_direct_fraction": 0.9995161290322581,
+            "unavailable_rows": 3,
+            "unavailable_row_fraction": 0.00016129032258064516,
+            "jump_mm": {
+              "count": 18591,
+              "median": 0.3606649895427839,
+              "p95": 1.0445019864350114,
+              "p99": 1.5672889647038977,
+              "max": 7.873815674168297
+            },
+            "jump_ge_7_5mm_count": 3,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18597,
+              "median": 0.1746227358565035,
+              "p95": 0.8059893918125549,
+              "p99": 1.7673544342126855,
+              "max": 90.922269711161
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 6
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_3": {
+          "interval": [
+            21840,
+            28039
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v050_h9\\a2_summary.json",
+          "summary_sha256": "1e41dd15317d15a099427c6fcfcd7910f4a447aeacd7c38ae1eb584e4f24c87e",
+          "configuration_hash": "f7f923813a5edb23f75cb1adcd386b49a3197bfd75647c53e0bdc799f2314171",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v050_h9\\a2_direct.csv",
+          "direct_sha256": "80e38f872b6eabd3ce6b292c821d131921849d933ed89481d24ef1ae0c0dde13",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6184,
+            "all_three_direct_fraction": 0.9974193548387097,
+            "unavailable_rows": 18,
+            "unavailable_row_fraction": 0.000967741935483871,
+            "jump_mm": {
+              "count": 18562,
+              "median": 0.3388454500616696,
+              "p95": 0.9957916175760965,
+              "p99": 2.365939488755722,
+              "max": 7.8541904704954
+            },
+            "jump_ge_7_5mm_count": 4,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18582,
+              "median": 0.2467590621160653,
+              "p95": 1.3553867948516687,
+              "p99": 4.759772580599352,
+              "max": 144.91968142324512
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 5,
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_2#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_2#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        }
+      },
+      "aggregate": {
+        "female_eligible_annotations": 15,
+        "female_mapped_annotations": 15,
+        "female_best_fixed_correct_sum_by_window": 15,
+        "female_full_eligible_accuracy": 1.0,
+        "female_selective_mapped_accuracy": 1.0,
+        "female_observed_identity_changes_sum_by_window": 0,
+        "all_three_direct_frames": 13678,
+        "all_three_direct_fraction": 0.9973749453113606,
+        "unavailable_rows": 38,
+        "unavailable_row_fraction": 0.0009236303534101405,
+        "jump_mm": {
+          "count": 41064,
+          "median": 0.35405122891499663,
+          "p95": 1.0594678882048731,
+          "p99": 1.9912263451526417,
+          "max": 7.873815674168297
+        },
+        "jump_ge_7_5mm_count": 7,
+        "jump_gt_8mm_count": 0,
+        "residual_mm2": {
+          "count": 41104,
+          "median": 0.20556151975475645,
+          "p95": 1.1787567876354312,
+          "p99": 3.2490120187287905,
+          "max": 354.070130372133
+        }
+      }
+    },
+    "A2_v100_h9": {
+      "configuration": {
+        "method": "A2",
+        "velocity_weight": 1.0,
+        "history_frames": 9
+      },
+      "cross_window_settings_equal": true,
+      "normalized_settings_sha256": [
+        "7399a65b5499478dedd8ebed30b6ae93ad2e9ee46e2c21cb2713a42b66ddf4e2"
+      ],
+      "training_windows": {
+        "reviewed_event_1": {
+          "interval": [
+            72371,
+            73027
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v100_h9\\a2_summary.json",
+          "summary_sha256": "995a1a98072a0ccc93d92e951f73521e0b791d47d9bf91e75b5eee7ab67250dc",
+          "configuration_hash": "9406456f4ab51c04a1fd32784e5cd479a4bbc53096757bf4eef37f2e90506516",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_1\\A2_v100_h9\\a2_direct.csv",
+          "direct_sha256": "81731d72a097ee745a2f062a9d787f2c6312bcbc57a26d1d9b595f9c0203e834",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 656,
+            "all_three_direct_fraction": 0.9984779299847792,
+            "unavailable_rows": 1,
+            "unavailable_row_fraction": 0.0005073566717402334,
+            "jump_mm": {
+              "count": 1966,
+              "median": 0.5744208889698547,
+              "p95": 1.6160087908985503,
+              "p99": 2.9608298443222276,
+              "max": 5.641596073997136
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1970,
+              "median": 0.10463738078890394,
+              "p95": 0.7066757628231071,
+              "p99": 1.4829217583651497,
+              "max": 23.349782217437475
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 2,
+            "mapped_annotations": 2,
+            "mapping_status_counts": {
+              "agree": 2
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 2
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 2,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_1": {
+          "interval": [
+            32264,
+            32920
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v100_h9\\a2_summary.json",
+          "summary_sha256": "8b34d30d2645a459b80a98d520a21ad376f8dc05390fbef27271083b81b43785",
+          "configuration_hash": "9ea0cdf6d2eef18f311ec3dab2d2c065649d1808a6b03ce6aa98ec8f7307858d",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_1\\A2_v100_h9\\a2_direct.csv",
+          "direct_sha256": "5fe7eeb9ee5db57eb17900a0df91360b620e4e1e3967f6e5757e721bac5b3f47",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 1971,
+            "expected_rows": 1971,
+            "all_three_direct_frames": 641,
+            "all_three_direct_fraction": 0.9756468797564688,
+            "unavailable_rows": 16,
+            "unavailable_row_fraction": 0.008117706747843734,
+            "jump_mm": {
+              "count": 1945,
+              "median": 0.23072158750270635,
+              "p95": 1.2081100078037008,
+              "p99": 3.327696168169798,
+              "max": 7.375041725630694
+            },
+            "jump_ge_7_5mm_count": 0,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 1955,
+              "median": 0.6640888119394442,
+              "p95": 1.729409967250575,
+              "p99": 154.2749368080249,
+              "max": 354.070130372133
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 1,
+            "mapped_annotations": 1,
+            "mapping_status_counts": {
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_1#identity_segment=0": 1
+            },
+            "best_fixed_identity": "ID_1#identity_segment=0",
+            "best_fixed_correct": 1,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "reviewed_event_3": {
+          "interval": [
+            174316,
+            180515
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v100_h9\\a2_summary.json",
+          "summary_sha256": "2c9094301bfd3f37a7695b348bd0de0e1aec49e3142391df8b8e191dbcc106b2",
+          "configuration_hash": "98292895417407eb551a3684d092ed9bb3416f92f8d483b64ea144a8ab2b96e6",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\reviewed_event_3\\A2_v100_h9\\a2_direct.csv",
+          "direct_sha256": "4f00b1441899509534578abb63e3158da4ee14170b61cc7e6c26d4b9173691fd",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6197,
+            "all_three_direct_fraction": 0.9995161290322581,
+            "unavailable_rows": 3,
+            "unavailable_row_fraction": 0.00016129032258064516,
+            "jump_mm": {
+              "count": 18591,
+              "median": 0.3606649895427839,
+              "p95": 1.0445019864350114,
+              "p99": 1.5672889647038977,
+              "max": 7.873815674168297
+            },
+            "jump_ge_7_5mm_count": 3,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18597,
+              "median": 0.1746227358565035,
+              "p95": 0.8059893918125549,
+              "p99": 1.7673544342126855,
+              "max": 90.922269711161
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 6
+            },
+            "identity_counts": {
+              "ID_3#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_3#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        },
+        "control_for_event_3": {
+          "interval": [
+            21840,
+            28039
+          ],
+          "summary_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v100_h9\\a2_summary.json",
+          "summary_sha256": "f430a826873d2e9978109d2a039014a69f1bcf879c82afe8fbb275495e701a90",
+          "configuration_hash": "2bea57cdb97f48c6c04d6d653b2acba9c89f37995337ff5f3289c068bbcd0fc8",
+          "direct_path": "report\\20260731\\round8_mouth_tracking_ablation\\training_relink\\control_for_event_3\\A2_v100_h9\\a2_direct.csv",
+          "direct_sha256": "80e38f872b6eabd3ce6b292c821d131921849d933ed89481d24ef1ae0c0dde13",
+          "all_summary_output_hashes_verified": true,
+          "track_qc": {
+            "rows": 18600,
+            "expected_rows": 18600,
+            "all_three_direct_frames": 6184,
+            "all_three_direct_fraction": 0.9974193548387097,
+            "unavailable_rows": 18,
+            "unavailable_row_fraction": 0.000967741935483871,
+            "jump_mm": {
+              "count": 18562,
+              "median": 0.3388454500616696,
+              "p95": 0.9957916175760965,
+              "p99": 2.365939488755722,
+              "max": 7.8541904704954
+            },
+            "jump_ge_7_5mm_count": 4,
+            "jump_gt_8mm_count": 0,
+            "residual_mm2": {
+              "count": 18582,
+              "median": 0.2467590621160653,
+              "p95": 1.3553867948516687,
+              "p99": 4.759772580599352,
+              "max": 144.91968142324512
+            }
+          },
+          "female_gt": {
+            "eligible_annotations": 6,
+            "mapped_annotations": 6,
+            "mapping_status_counts": {
+              "agree": 5,
+              "one_view": 1
+            },
+            "identity_counts": {
+              "ID_2#identity_segment=0": 6
+            },
+            "best_fixed_identity": "ID_2#identity_segment=0",
+            "best_fixed_correct": 6,
+            "full_eligible_accuracy": 1.0,
+            "selective_mapped_accuracy": 1.0,
+            "observed_identity_changes": 0
+          }
+        }
+      },
+      "aggregate": {
+        "female_eligible_annotations": 15,
+        "female_mapped_annotations": 15,
+        "female_best_fixed_correct_sum_by_window": 15,
+        "female_full_eligible_accuracy": 1.0,
+        "female_selective_mapped_accuracy": 1.0,
+        "female_observed_identity_changes_sum_by_window": 0,
+        "all_three_direct_frames": 13678,
+        "all_three_direct_fraction": 0.9973749453113606,
+        "unavailable_rows": 38,
+        "unavailable_row_fraction": 0.0009236303534101405,
+        "jump_mm": {
+          "count": 41064,
+          "median": 0.35405122891499663,
+          "p95": 1.0594678882048731,
+          "p99": 1.9912263451526417,
+          "max": 7.873815674168297
+        },
+        "jump_ge_7_5mm_count": 7,
+        "jump_gt_8mm_count": 0,
+        "residual_mm2": {
+          "count": 41104,
+          "median": 0.20556151975475645,
+          "p95": 1.1787567876354312,
+          "p99": 3.2490120187287905,
+          "max": 354.070130372133
+        }
+      }
+    }
+  },
+  "selection": {
+    "schema_version": 1,
+    "status": "training_only_motion_configuration_selected",
+    "selected_a2_config": "A2_v025_h5",
+    "selected_configuration": {
+      "method": "A2",
+      "velocity_weight": 0.25,
+      "history_frames": 5
+    },
+    "ranking": [
+      {
+        "config": "A2_v025_h5",
+        "female_full_eligible_accuracy": 1.0,
+        "female_observed_identity_changes": 0,
+        "jump_ge_7_5mm_count": 7,
+        "unavailable_rows": 38,
+        "velocity_weight": 0.25,
+        "history_frames": 5,
+        "canonical_configuration": "{\"history_frames\":5,\"method\":\"A2\",\"velocity_weight\":0.25}",
+        "rank": 1
+      },
+      {
+        "config": "A2_v050_h5",
+        "female_full_eligible_accuracy": 1.0,
+        "female_observed_identity_changes": 0,
+        "jump_ge_7_5mm_count": 7,
+        "unavailable_rows": 38,
+        "velocity_weight": 0.5,
+        "history_frames": 5,
+        "canonical_configuration": "{\"history_frames\":5,\"method\":\"A2\",\"velocity_weight\":0.5}",
+        "rank": 2
+      },
+      {
+        "config": "A2_v050_h9",
+        "female_full_eligible_accuracy": 1.0,
+        "female_observed_identity_changes": 0,
+        "jump_ge_7_5mm_count": 7,
+        "unavailable_rows": 38,
+        "velocity_weight": 0.5,
+        "history_frames": 9,
+        "canonical_configuration": "{\"history_frames\":9,\"method\":\"A2\",\"velocity_weight\":0.5}",
+        "rank": 3
+      },
+      {
+        "config": "A2_v100_h5",
+        "female_full_eligible_accuracy": 1.0,
+        "female_observed_identity_changes": 0,
+        "jump_ge_7_5mm_count": 7,
+        "unavailable_rows": 38,
+        "velocity_weight": 1.0,
+        "history_frames": 5,
+        "canonical_configuration": "{\"history_frames\":5,\"method\":\"A2\",\"velocity_weight\":1.0}",
+        "rank": 4
+      },
+      {
+        "config": "A2_v100_h9",
+        "female_full_eligible_accuracy": 1.0,
+        "female_observed_identity_changes": 0,
+        "jump_ge_7_5mm_count": 7,
+        "unavailable_rows": 38,
+        "velocity_weight": 1.0,
+        "history_frames": 9,
+        "canonical_configuration": "{\"history_frames\":9,\"method\":\"A2\",\"velocity_weight\":1.0}",
+        "rank": 5
+      }
+    ],
+    "tie_break_order": [
+      "maximize full-eligible female accuracy, summed after independent fixed-label mapping within each window",
+      "minimize observed female identity changes",
+      "minimize direct adjacent jumps >=7.5 mm (false-merge/swap proxy)",
+      "minimize unavailable direct rows (false-break proxy)",
+      "lower velocity weight",
+      "shorter motion history",
+      "lexicographic canonical configuration JSON"
+    ],
+    "female_training_denominator": 15,
+    "a2_direct_hashes_by_training_window": {
+      "reviewed_event_1": [
+        "81731d72a097ee745a2f062a9d787f2c6312bcbc57a26d1d9b595f9c0203e834"
+      ],
+      "control_for_event_1": [
+        "5fe7eeb9ee5db57eb17900a0df91360b620e4e1e3967f6e5757e721bac5b3f47"
+      ],
+      "reviewed_event_3": [
+        "4f00b1441899509534578abb63e3158da4ee14170b61cc7e6c26d4b9173691fd"
+      ],
+      "control_for_event_3": [
+        "80e38f872b6eabd3ce6b292c821d131921849d933ed89481d24ef1ae0c0dde13"
+      ]
+    },
+    "all_a2_direct_outputs_byte_identical_within_each_window": true,
+    "female_denominator_assessment": {
+      "sufficient_to_estimate_generalization": false,
+      "reason": "Only 15 confirmed female annotations occur across the four training windows (per-window counts reviewed_event_1=2, control_for_event_1=1, reviewed_event_3=6, control_for_event_3=6). This can detect gross within-window changes but is too small to distinguish close configurations reliably.",
+      "distinct_primary_accuracy_change_signatures": 1
+    },
+    "ground_truth_limitation": "Female-only ground truth cannot detect a male-to-male identity swap.",
+    "data_scope": "Training windows only. Validation, held-out, and critical-event method outputs were not read."
+  }
+}

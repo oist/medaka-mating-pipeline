@@ -1,0 +1,105 @@
+{
+  "status": "completed_verified",
+  "created_at": "2026-07-30T19:25:10+09:00",
+  "round_tag": "round8_260729_snn031_m6",
+  "layout": {
+    "grid": "2x2",
+    "northwest": "top_cam SLEAP pose + final ID",
+    "northeast": "side1_cam SLEAP pose + final ID",
+    "southwest": "side2_cam SLEAP pose + final ID",
+    "southeast": "refractive 3D mouth trajectory + tail-to-mouth body arrow"
+  },
+  "render_policy": {
+    "identity_column": "final_fish_id",
+    "identity_anchor": "resolved identified 3D centroid reprojected to each view, then matched to the nearest visible-node SLEAP instance within 60 px",
+    "two_dimensional_arrow": "direct matched SLEAP tail-to-mouth keypoints",
+    "three_dimensional_arrow": "direct three-view refractive triangulation of matched tail and mouth keypoints",
+    "three_dimensional_trail": "direct triangulated mouth keypoint only; never tail or centroid",
+    "trail_seconds_source_time": 5.0,
+    "trail_warmup_source_frames_at_chunk_boundary": 829,
+    "arrow_colored_thickness_pixels": 1,
+    "source_fps": 166.0,
+    "source_frame_step": 5,
+    "playback_fps": 33.2,
+    "playback_speed": "real time",
+    "panel_pixels": 720,
+    "output_pixels": "1440x1440",
+    "xyz_limits_mm": [
+      -20.0,
+      220.0
+    ],
+    "calibration_backend": "fixed-interface refractive",
+    "encoder": "h264_nvenc",
+    "nvenc_cq": 22,
+    "pixel_format": "yuv420p",
+    "workers_per_experiment": 2,
+    "concatenation": "ffmpeg stream copy"
+  },
+  "implementation": {
+    "renderer": "scripts/visualization/render_qc_4panel_fast.py",
+    "renderer_sha256": "5b42c2ce90e6d31de4886168536311d30715bd582d7b382061dace52f0018409",
+    "test_file": "tests/test_render_qc_4panel_fast_geometry.py",
+    "test_file_sha256": "4a9377dee750858e02283be1acb70eb9bf37d02cb2d84c820f99790ba4ff4b6b",
+    "focused_tests": "11 passed",
+    "change": "The 3D trail now uses triangulated mouth positions and the body arrow uses direct triangulated tail-to-mouth endpoints. The resolved centroid remains only the identity anchor and fallback marker."
+  },
+  "outputs": [
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "display_ids_in_color_order": [
+        "6",
+        "14",
+        "13"
+      ],
+      "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_1_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_4panel_ids_mouthtrail5s.mp4",
+      "bytes": 1460340609,
+      "sha256": "429adea5fc35c2060f4d94be6b7c374ca23ed552fec2675d67401ddf2bb0c117"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "display_ids_in_color_order": [
+        "11",
+        "9",
+        "8"
+      ],
+      "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_4panel_ids_mouthtrail5s.mp4",
+      "bytes": 1444468407,
+      "sha256": "b2bb7d538a68b1a69921f0efbb8550da324304a3ca798b7bf134379468aac968"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "display_ids_in_color_order": [
+        "11",
+        "7",
+        "10"
+      ],
+      "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_3_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_4panel_ids_mouthtrail5s.mp4",
+      "bytes": 1438419586,
+      "sha256": "9ab8b45601817a9ff716a05872119211cb3035bea8bd3e6d35067a6af9318b3d"
+    }
+  ],
+  "media_validation": {
+    "codec_name": "h264",
+    "width": 1440,
+    "height": 1440,
+    "pixel_format": "yuv420p",
+    "frame_rate": "166/5",
+    "duration_seconds": 2100.0,
+    "frames": 69720,
+    "expected_source_frames_rendered": "0, 5, 10, ..., 348595",
+    "all_outputs_match": true
+  },
+  "visual_validation": {
+    "sample_clips": ".codex_test_tmp\\round8_4panel_mouthtrail_smoke",
+    "full_video_contact_sheets": ".codex_test_tmp\\round8_4panel_full_qc",
+    "frames_checked_per_experiment": [
+      0,
+      174295,
+      174300,
+      348595
+    ],
+    "chunk_seam": "PASS: source labels advance 174295 to 174300 and the mouth trails remain continuous due to warmup",
+    "layout_and_style": "PASS: all three camera panels show matched SLEAP tail-to-mouth arrows with final IDs; 3D panel shows thin direct tail-to-mouth arrows and fading mouth-only trails"
+  },
+  "identity_caveat": "Displayed identities are the Round8 final_fish_id structural binding. Rendering does not add Detectron2, segmentation, appearance features, or new biological identity evidence."
+}

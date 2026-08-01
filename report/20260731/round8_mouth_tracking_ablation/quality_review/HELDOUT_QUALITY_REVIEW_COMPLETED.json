@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "status": "heldout_independently_authenticated_scored_and_passed",
+  "completed_at": "2026-07-31T05:29:53.9461946+09:00",
+  "stage": "heldout",
+  "role": "sole_postfreeze_generalization_evidence",
+  "independent_quality_verdict": "PASS",
+  "frozen_settings_changed": false,
+  "selection_or_tuning_performed": false,
+  "critical_opened_during_review": false,
+  "full_length_launched_during_review": false,
+  "bindings": {
+    "freeze": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/frozen_thresholds.json",
+      "sha256": "09579754f781e80e20b1365ded00a4bbb8e96e273260861e6c3a791d263cdc1d"
+    },
+    "heldout_finalized_marker": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/STAGE_FINALIZED.json",
+      "sha256": "3b58e073c9cf6c97348e1f0c8cdbb9ca5c15d689ee222b450df1c91dc3303152"
+    },
+    "heldout_completion_marker": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/heldout_postfreeze/STAGE_COMPLETED.json",
+      "sha256": "615b03f161db28982ee1d6b5648e79e1d4bef146b281cc911b13d4654d7da143"
+    },
+    "independent_scorer": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/audit_and_score_postfreeze.py",
+      "sha256": "91727ce77f2752bd75cb2ed1d183888a3e085ec4ee58396e803771ebf5742643"
+    },
+    "independent_metrics": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_independent_metrics.json",
+      "sha256": "0aed2e14e9bd1ff226814c10e1a62cc9dae1698a06cbb33eb343e10d2ed3bb38"
+    },
+    "independent_female_assignments": {
+      "path": "report/20260731/round8_mouth_tracking_ablation/quality_review/postfreeze_independent_female_assignments.csv",
+      "sha256": "f6e8190bca2a112194eab3f035134122962500e18da6f31385f6e4143461b4a3"
+    }
+  },
+  "authentication": {
+    "finalized_current_inventory_files": 516,
+    "completion_inventory_files_unchanged": 512,
+    "resume_equivalence_checks_passed": 10,
+    "fresh_replacement_reproducibility_checks_passed": 26,
+    "schema_adapter_checks_passed": 9,
+    "failed_attempt_quarantine_files_independently_authenticated": 404,
+    "launcher_exit_code": 0,
+    "launcher_stderr_bytes": 0
+  },
+  "heldout_metrics": {
+    "A0": {
+      "female_fixed_identity_correct": "9/9",
+      "observed_female_identity_changes": 0,
+      "all_three_direct_fraction": 1.0,
+      "unavailable_row_fraction": 0.0,
+      "jump_ge_7_5mm_count": 11,
+      "jump_gt_8mm_count": 0
+    },
+    "A1_A2_A3": {
+      "normalized_scientific_outputs_identical_in_all_five_windows": true,
+      "female_fixed_identity_correct": "9/9",
+      "observed_female_identity_changes": 0,
+      "all_three_direct_fraction": 0.9995826812728221,
+      "unavailable_row_fraction": 0.00013910624239262738,
+      "jump_ge_7_5mm_count": 1,
+      "jump_gt_8mm_count": 0,
+      "direct_jump_p95_mm": 1.077454207578352,
+      "direct_jump_p99_mm": 1.689923895139432,
+      "direct_jump_max_mm": 7.914070072316851,
+      "direct_ray_residual_p95_mm2": 0.9614319943811978,
+      "direct_ray_residual_p99_mm2": 1.8571387038313842
+    },
+    "A4": {
+      "female_fixed_identity_mapped": "0/9",
+      "all_three_direct_fraction": 0.01575378195096505,
+      "unavailable_row_fraction": 0.8897583029038428,
+      "scientific_abstention_windows": [
+        "low_top_pair_separation_8_9_b",
+        "low_top_pair_separation_8_11"
+      ]
+    },
+    "A5": {
+      "female_fixed_identity_correct_full": "3/9",
+      "female_fixed_identity_correct_selective": "3/8",
+      "observed_female_identity_changes": 5,
+      "all_three_direct_fraction": 0.9394887845592071,
+      "unavailable_row_fraction": 0.06023300295600765,
+      "jump_ge_7_5mm_count": 0,
+      "jump_gt_8mm_count": 0
+    }
+  },
+  "conclusions": {
+    "critical_gate": "PASS: critical descriptive evaluation may open",
+    "a1_a2_a3": "No heldout separation. Motion and deferral add no observed benefit over strict-mouth position-only A1 on registered evidence.",
+    "a0_comparison": "A0 and A1-A3 all map 9/9 female labels with no observed change; fewer strict-mouth jumps/residuals do not alone prove biological identity improvement over A0.",
+    "a4": "High abstention and zero female mapping confirm A4 is not a standalone production reconstruction.",
+    "a5": "Heldout female accuracy, identity changes, and coverage confirm A5 is not a production or full-length finalist.",
+    "provisional_recommendation": "Among A1-A3, A1 is the parsimonious tied production candidate. Final recommendation remains conditional on descriptive critical-event review and full-length QC.",
+    "ground_truth_limit": "Female-only labels cannot observe a male-to-male identity exchange."
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "audited_at": "2026-07-31T02:42:37.7322659+09:00",
+  "scope": "Independent structural, focused-regression, and synthetic-scale audit. No experiment held-out frames were opened.",
+  "implementation": {
+    "path": "scripts/reconstruction_3d/conservative_cross_view_paths.py",
+    "sha256": "9ad89c56b0388c98bdf3a37e27c7a3bda2e63812395d85ddf69708b574e3406d",
+    "test_path": "tests/test_conservative_cross_view_paths.py",
+    "test_sha256": "b001b5e864131ad30a7bd509be97022872019a51be0c85d9a2895168f2982c9e"
+  },
+  "focused_tests": {
+    "result": "PASS",
+    "passed": 32,
+    "failed": 0,
+    "included": [
+      "tests/test_conservative_cross_view_paths.py",
+      "tests/test_conservative_mouth_tracklets.py",
+      "tests/test_deferred_identity_tracking.py",
+      "tests/test_mouth_ablation.py",
+      "tests/test_candidate_cache.py"
+    ],
+    "environment_note": "PYTEST_DISABLE_PLUGIN_AUTOLOAD=1; reviewer-local basetemp. The sole warning was inability to write the repository .pytest_cache and did not affect test results."
+  },
+  "structural_findings": {
+    "retained_tracklet_count_mismatch": "PASS: based on retained tracklet IDs rather than raw finite-mouth detections; applies to two- and three-view groups.",
+    "group_evidence": "PASS: robust median plus MAD residual, mouth confidence, missing-view penalty, and bounded saturating support bonus; no duration-summed residual.",
+    "optional_unassignment": "PASS: every dropped eligible group has a nonzero explicit drop cost; eligible coverage is reported.",
+    "brief_all_view_break": "PASS: explicit end-to-start link with symmetric forward/backward velocity error, velocity-angle guard, hard 3D gate, and all-view-break penalty.",
+    "long_gap": "PASS: gaps over the configured maximum create path_segment restarts with continuity_claimed=false.",
+    "segment_propagation": "PASS: path_segment is propagated to selected_observations and must be retained by every downstream A4/A5 export and accuracy mapping.",
+    "velocity_complexity": "PASS: deterministic lags 1,2,4,8,16,32,64 replace the prior O(n^2) pairwise estimator; work and temporary slopes are O(n).",
+    "beam_memory": "PASS structurally: compact last-group state, history backpointers, and future-use resource-owner pruning replace full path tuple copying."
+  },
+  "synthetic_scale": {
+    "data": "Generated geometry only; no experiment frames.",
+    "configuration": {
+      "beam_width": 256,
+      "paths": 3,
+      "recurring_resources": 60,
+      "eligible_group_drop_cost": 0.5,
+      "all_views_break_penalty": 0.1
+    },
+    "runs": [
+      {
+        "groups": 300,
+        "wall_seconds": 13.087647400097921,
+        "rss_start_bytes": 155820032,
+        "rss_peak_bytes": 177049600,
+        "rss_delta_bytes": 21229568,
+        "selected_groups": 300,
+        "status": "completed"
+      },
+      {
+        "groups": 1200,
+        "wall_seconds": 62.8711323000025,
+        "rss_start_bytes": 175534080,
+        "rss_peak_bytes": 198328320,
+        "rss_delta_bytes": 22794240,
+        "selected_groups": 1200,
+        "status": "completed"
+      }
+    ],
+    "interpretation": "Memory growth was bounded in this repeated-resource case. Runtime remains materially dependent on the real eligible-group count, so full-recording feasibility is not established by this synthetic audit."
+  },
+  "remaining_acceptance_conditions": [
+    "Audit the integrated A4/A5 runner and every downstream use of path_segment.",
+    "Record real training and full-recording group counts, wall time, and external process-tree peak RSS.",
+    "Verify resume/checkpoint behavior and deterministic scientific output hashes.",
+    "Do not open held-out cohorts until the timestamped frozen configuration exists."
+  ]
+}

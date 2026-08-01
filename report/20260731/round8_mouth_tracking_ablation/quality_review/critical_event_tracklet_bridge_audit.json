@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-07-31T02:22:22.199216+09:00",
+  "command": [
+    "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\.venv\\Scripts\\python.exe",
+    "report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\audit_event_tracklet_bridges.py",
+    "--cache-root",
+    "report\\20260731\\round8_mouth_tracking_ablation\\candidate_cache_strict_mouth_unfiltered_nodescores",
+    "--cohort-protocol",
+    "report\\20260731\\round8_mouth_tracking_ablation\\cohort_protocol.json",
+    "--output-json",
+    "report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\critical_event_tracklet_bridge_audit.json",
+    "--output-csv",
+    "report\\20260731\\round8_mouth_tracking_ablation\\quality_review\\critical_event_tracklet_bridge_sweep.csv"
+  ],
+  "protocol_deviation": "pre-freeze critical-event safety analysis",
+  "analysis_role": "post_hoc_descriptive implementation audit only; never used for threshold selection and not an untouched confirmatory result",
+  "parameter_selection_impact": "none",
+  "critical_event_opened_before_final_threshold_freeze": true,
+  "held_out_opened_by_this_audit": false,
+  "cache_root": "report\\20260731\\round8_mouth_tracking_ablation\\candidate_cache_strict_mouth_unfiltered_nodescores",
+  "input_hashes": {
+    "cohort_protocol": "2c2dfa7f72d9d4be1fb42fa99edfb68dcb58e89c118e5410fa49df845ac6f5b7",
+    "audit_script": "a6cc1f74ecad0e297f18d23807021ac6b1bed994db9f0db2c7fb53392479e830",
+    "cache_h5": {
+      "top_cam": "6d2f86e8822525e83f18c921bb2b75d0e2821b929d2dcced994dea29b2737d74",
+      "side1_cam": "59d9a73895f0b0c507e5dd1c57a8503ae8ca932cdad7e2dd0a16685b7fb042be",
+      "side2_cam": "1f2d639606e77cc4c1b3188e8991cdf02c2895556d225996a957f91af7832699"
+    },
+    "detail_csv": "4dc4c3eb84164181d76f24fdbefe6156dd17d3e698c5bf615a1020ad701bddf8"
+  },
+  "configuration_universe": {
+    "separation_body_lengths": [
+      0.35,
+      0.5,
+      0.65
+    ],
+    "assignment_ambiguity_margin_body_lengths": [
+      0.05,
+      0.1
+    ],
+    "maximum_missing_gap_frames": [
+      0,
+      2,
+      5
+    ],
+    "uncertainty_growth_body_lengths_per_missing_frame": 0.1
+  },
+  "body_length_source": "training matched controls only",
+  "frozen_body_length_px": {
+    "top_cam": 109.58292697843919,
+    "side1_cam": 91.11906436144642,
+    "side2_cam": 86.47002765799765
+  },
+  "selected_observation": {
+    "top_cam": "raw source instance 1 (stable mouth / lost tail)",
+    "side1_cam": "only detected lower-region pose for the close pair",
+    "side2_cam": "only detected lower-region pose for the close pair"
+  },
+  "configurations": 54,
+  "same_retained_tracklet_counts": {
+    "top_cam": 0,
+    "side1_cam": 18,
+    "side2_cam": 17
+  },
+  "exact_reciprocal_bridge_counts": {
+    "top_cam": 0,
+    "side1_cam": 18,
+    "side2_cam": 17
+  },
+  "interpretation_constraint": "The accepted side-view edge is continuity of one fused close-pair detection, not a true biological-fish bridge. It must not be used alone as a high-confidence A5 identity constraint. Any reciprocal 2D edge is only a purity proxy and must still survive cross-view mutual exclusion and 3D motion constraints."
+}

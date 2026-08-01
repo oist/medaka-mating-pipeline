@@ -1,0 +1,739 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-30T05:12:59.591535+09:00",
+  "tag": "round8_260729_snn031_m6",
+  "window_radius_frames": 75,
+  "temporal_spacing_frames": 900,
+  "interpretation": "These are risk-ranked QC windows, not confirmed errors. Low 2D separation targets contacts/crossings; high 3D step targets motion outliers; geometry-only runs target intervals lacking direct top-camera identity evidence. Explicit residual extremes, normal start/mid/end controls, inference chunk boundaries, and the K2 ambiguous-extra reference are also included.",
+  "experiments": {
+    "20251225_K_1_1_FCMC": {
+      "inputs": {
+        "top_tracks_csv": {
+          "path": "Z:\\StephensU\\medaka\\sleap_output\\20251225_K_1_1_FCMC\\round8_260729_snn031_m6\\top_cam.tracks.csv",
+          "sha256": "055733368664710ce614050e6d935e502f05c300039719e9a7685dae7473e327"
+        },
+        "final_3d_csv": {
+          "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_1_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d.csv",
+          "sha256": "7d03a8146181a509b4e425edb3ebd0923ae9271da558deb03a6cb34524bc3c5b"
+        },
+        "identified_3d_csv": {
+          "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_1_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d_identified.csv",
+          "sha256": "f62fd0c7a9636f786b5c51e550e927ed15bfb85e06a659373974cb86548a1945"
+        }
+      },
+      "top_contact_summary": {
+        "frames_with_exactly_three_top_tracks": 325569,
+        "nearest_pair_distance_px": {
+          "min": 0.34962770744294225,
+          "p01": 17.3227097810895,
+          "median": 136.87521688033098
+        }
+      },
+      "displacement_summary": {
+        "adjacent_finite_step_count": 1044531,
+        "adjacent_step_mm": {
+          "median": 0.29501492961856074,
+          "p95": 1.2813274040839757,
+          "p99": 4.747369894852277,
+          "max": 7.998361509504655
+        }
+      },
+      "geometry_only_summary": {
+        "geometry_only_rows": 27282,
+        "frames_with_geometry_only": 23878,
+        "run_count": 1361,
+        "longest_run_frames": 2469
+      }
+    },
+    "20251225_K_1_2_FCMC": {
+      "inputs": {
+        "top_tracks_csv": {
+          "path": "Z:\\StephensU\\medaka\\sleap_output\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\top_cam.tracks.csv",
+          "sha256": "b83a941ed151989bfa241eb6fcbd59cbc30f3165c249df0536d5b531cc2cb8d8"
+        },
+        "final_3d_csv": {
+          "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d.csv",
+          "sha256": "6f42483363dd3be4c1aa7ec758521a4f1fde72877be18b5e4dafc8eee14ffb03"
+        },
+        "identified_3d_csv": {
+          "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_2_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d_identified.csv",
+          "sha256": "b2100d24cec8a660cff5888ceee1ade26c9990d900f1e67508e566aaab2870b6"
+        }
+      },
+      "top_contact_summary": {
+        "frames_with_exactly_three_top_tracks": 322694,
+        "nearest_pair_distance_px": {
+          "min": 0.13933163522112005,
+          "p01": 11.558148932185903,
+          "median": 120.60502857377335
+        }
+      },
+      "displacement_summary": {
+        "adjacent_finite_step_count": 1039055,
+        "adjacent_step_mm": {
+          "median": 0.29770471372549007,
+          "p95": 1.3571642711444112,
+          "p99": 4.859557970990442,
+          "max": 7.998792045177076
+        }
+      },
+      "geometry_only_summary": {
+        "geometry_only_rows": 31373,
+        "frames_with_geometry_only": 26437,
+        "run_count": 1311,
+        "longest_run_frames": 5443
+      }
+    },
+    "20251225_K_1_3_FCMC": {
+      "inputs": {
+        "top_tracks_csv": {
+          "path": "Z:\\StephensU\\medaka\\sleap_output\\20251225_K_1_3_FCMC\\round8_260729_snn031_m6\\top_cam.tracks.csv",
+          "sha256": "aec2e06568c1bb425784060f6f9414ba620cb29b3c408794360c7a949ac04538"
+        },
+        "final_3d_csv": {
+          "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_3_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d.csv",
+          "sha256": "97fa2a9950f94ccf8a9f89eb8989ef3d64b206554cf8252420ce249bc7f46c7c"
+        },
+        "identified_3d_csv": {
+          "path": "Z:\\StephensU\\medaka\\reconstruction_3d\\20251225_K_1_3_FCMC\\round8_260729_snn031_m6\\round8_260729_snn031_m6_3d_identified.csv",
+          "sha256": "c6c02a372b53b01228652e97cf60016725ef5102230dc57c52b20615bfb2383c"
+        }
+      },
+      "top_contact_summary": {
+        "frames_with_exactly_three_top_tracks": 321528,
+        "nearest_pair_distance_px": {
+          "min": 0.3127842642144322,
+          "p01": 14.992682983135722,
+          "median": 120.10419642994643
+        }
+      },
+      "displacement_summary": {
+        "adjacent_finite_step_count": 1044734,
+        "adjacent_step_mm": {
+          "median": 0.335827272436606,
+          "p95": 1.602954202896377,
+          "p99": 5.24110405326673,
+          "max": 7.999928115836046
+        }
+      },
+      "geometry_only_summary": {
+        "geometry_only_rows": 47384,
+        "frames_with_geometry_only": 43239,
+        "run_count": 2019,
+        "longest_run_frames": 2812
+      }
+    }
+  },
+  "windows": [
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "control_end",
+      "center_frame": 348549,
+      "start_frame": 348474,
+      "end_frame": 348599,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "control_midpoint",
+      "center_frame": 174300,
+      "start_frame": 174225,
+      "end_frame": 174375,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "control_start",
+      "center_frame": 50,
+      "start_frame": 0,
+      "end_frame": 125,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 283738,
+      "start_frame": 283663,
+      "end_frame": 283813,
+      "metric_name": "step_mm",
+      "metric_value": 7.998361509504655,
+      "source_fish_id": "ID_2"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 165276,
+      "start_frame": 165201,
+      "end_frame": 165351,
+      "metric_name": "step_mm",
+      "metric_value": 7.997665191945119,
+      "source_fish_id": "ID_2"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 160041,
+      "start_frame": 159966,
+      "end_frame": 160116,
+      "metric_name": "step_mm",
+      "metric_value": 7.9971489526931405,
+      "source_fish_id": "ID_2"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 198209,
+      "start_frame": 198134,
+      "end_frame": 198284,
+      "metric_name": "residual_mm2",
+      "metric_value": 9579.575,
+      "source_fish_id": "source_fish=c;three_view"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 592,
+      "start_frame": 517,
+      "end_frame": 667,
+      "metric_name": "residual_mm2",
+      "metric_value": 7279.14,
+      "source_fish_id": "source_fish=b;synthetic_cam1"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 300739,
+      "start_frame": 300664,
+      "end_frame": 300814,
+      "metric_name": "residual_mm2",
+      "metric_value": 6714.738,
+      "source_fish_id": "source_fish=c;three_view"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 261450,
+      "start_frame": 261375,
+      "end_frame": 261525,
+      "metric_name": "boundary_frame",
+      "metric_value": 261450.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 174300,
+      "start_frame": 174225,
+      "end_frame": 174375,
+      "metric_name": "boundary_frame",
+      "metric_value": 174300.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 87150,
+      "start_frame": 87075,
+      "end_frame": 87225,
+      "metric_name": "boundary_frame",
+      "metric_value": 87150.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 1234,
+      "start_frame": 1159,
+      "end_frame": 1309,
+      "metric_name": "run_length_frames",
+      "metric_value": 2469.0,
+      "source_fish_id": "run=0:2468;max_geometry_rows=3"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 257219,
+      "start_frame": 257144,
+      "end_frame": 257294,
+      "metric_name": "run_length_frames",
+      "metric_value": 728.0,
+      "source_fish_id": "run=256856:257583;max_geometry_rows=2"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 144103,
+      "start_frame": 144028,
+      "end_frame": 144178,
+      "metric_name": "run_length_frames",
+      "metric_value": 586.0,
+      "source_fish_id": "run=143811:144396;max_geometry_rows=2"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 298441,
+      "start_frame": 298366,
+      "end_frame": 298516,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 1.0625172697028502,
+      "source_fish_id": "13|15"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 118102,
+      "start_frame": 118027,
+      "end_frame": 118177,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.8742389798114171,
+      "source_fish_id": "5|8"
+    },
+    {
+      "experiment": "20251225_K_1_1_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 157622,
+      "start_frame": 157547,
+      "end_frame": 157697,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.34962770744294225,
+      "source_fish_id": "9|10"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "ambiguous_extra_candidate_reference",
+      "center_frame": 174305,
+      "start_frame": 174230,
+      "end_frame": 174380,
+      "metric_name": "source_prediction_visual_qc",
+      "metric_value": NaN,
+      "source_fish_id": "side-view ambiguous extra candidate"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "control_end",
+      "center_frame": 348549,
+      "start_frame": 348474,
+      "end_frame": 348599,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "control_midpoint",
+      "center_frame": 174300,
+      "start_frame": 174225,
+      "end_frame": 174375,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "control_start",
+      "center_frame": 50,
+      "start_frame": 0,
+      "end_frame": 125,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 278804,
+      "start_frame": 278729,
+      "end_frame": 278879,
+      "metric_name": "step_mm",
+      "metric_value": 7.998792045177076,
+      "source_fish_id": "ID_2"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 320231,
+      "start_frame": 320156,
+      "end_frame": 320306,
+      "metric_name": "step_mm",
+      "metric_value": 7.996278095583866,
+      "source_fish_id": "ID_3"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 44220,
+      "start_frame": 44145,
+      "end_frame": 44295,
+      "metric_name": "step_mm",
+      "metric_value": 7.994247263369152,
+      "source_fish_id": "ID_1"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 39839,
+      "start_frame": 39764,
+      "end_frame": 39914,
+      "metric_name": "residual_mm2",
+      "metric_value": 6646.176641765475,
+      "source_fish_id": "prelink_residual_extreme"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 167926,
+      "start_frame": 167851,
+      "end_frame": 168001,
+      "metric_name": "residual_mm2",
+      "metric_value": 6180.204909405345,
+      "source_fish_id": "prelink_residual_extreme"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 343773,
+      "start_frame": 343698,
+      "end_frame": 343848,
+      "metric_name": "residual_mm2",
+      "metric_value": 6103.997941199748,
+      "source_fish_id": "prelink_residual_extreme"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 261450,
+      "start_frame": 261375,
+      "end_frame": 261525,
+      "metric_name": "boundary_frame",
+      "metric_value": 261450.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 174300,
+      "start_frame": 174225,
+      "end_frame": 174375,
+      "metric_name": "boundary_frame",
+      "metric_value": 174300.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 87150,
+      "start_frame": 87075,
+      "end_frame": 87225,
+      "metric_name": "boundary_frame",
+      "metric_value": 87150.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 2721,
+      "start_frame": 2646,
+      "end_frame": 2796,
+      "metric_name": "run_length_frames",
+      "metric_value": 5443.0,
+      "source_fish_id": "run=0:5442;max_geometry_rows=3"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 38588,
+      "start_frame": 38513,
+      "end_frame": 38663,
+      "metric_name": "run_length_frames",
+      "metric_value": 1596.0,
+      "source_fish_id": "run=37791:39386;max_geometry_rows=2"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 116801,
+      "start_frame": 116726,
+      "end_frame": 116876,
+      "metric_name": "run_length_frames",
+      "metric_value": 560.0,
+      "source_fish_id": "run=116522:117081;max_geometry_rows=3"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 167183,
+      "start_frame": 167108,
+      "end_frame": 167258,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.16063921076775706,
+      "source_fish_id": "8|11"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 123199,
+      "start_frame": 123124,
+      "end_frame": 123274,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.14539377813292598,
+      "source_fish_id": "8|9"
+    },
+    {
+      "experiment": "20251225_K_1_2_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 136526,
+      "start_frame": 136451,
+      "end_frame": 136601,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.13933163522112005,
+      "source_fish_id": "8|9"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "control_end",
+      "center_frame": 348549,
+      "start_frame": 348474,
+      "end_frame": 348599,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "control_midpoint",
+      "center_frame": 174300,
+      "start_frame": 174225,
+      "end_frame": 174375,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "control_start",
+      "center_frame": 50,
+      "start_frame": 0,
+      "end_frame": 125,
+      "metric_name": "control",
+      "metric_value": NaN,
+      "source_fish_id": "normal_control"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 122705,
+      "start_frame": 122630,
+      "end_frame": 122780,
+      "metric_name": "step_mm",
+      "metric_value": 7.999928115836046,
+      "source_fish_id": "ID_1"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 52240,
+      "start_frame": 52165,
+      "end_frame": 52315,
+      "metric_name": "step_mm",
+      "metric_value": 7.999549351029219,
+      "source_fish_id": "ID_2"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 80606,
+      "start_frame": 80531,
+      "end_frame": 80681,
+      "metric_name": "step_mm",
+      "metric_value": 7.997959722869734,
+      "source_fish_id": "ID_3"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 94240,
+      "start_frame": 94165,
+      "end_frame": 94315,
+      "metric_name": "step_mm",
+      "metric_value": 7.99784352676997,
+      "source_fish_id": "ID_1"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "high_adjacent_3d_step",
+      "center_frame": 337536,
+      "start_frame": 337461,
+      "end_frame": 337611,
+      "metric_name": "step_mm",
+      "metric_value": 7.997260419492928,
+      "source_fish_id": "ID_1"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 1805,
+      "start_frame": 1730,
+      "end_frame": 1880,
+      "metric_name": "residual_mm2",
+      "metric_value": 9623.513835656326,
+      "source_fish_id": "prelink_residual_extreme"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 95640,
+      "start_frame": 95565,
+      "end_frame": 95715,
+      "metric_name": "residual_mm2",
+      "metric_value": 9055.731879281328,
+      "source_fish_id": "prelink_residual_extreme"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "high_prelink_residual",
+      "center_frame": 111197,
+      "start_frame": 111122,
+      "end_frame": 111272,
+      "metric_name": "residual_mm2",
+      "metric_value": 8300.955364363776,
+      "source_fish_id": "prelink_residual_extreme"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 261450,
+      "start_frame": 261375,
+      "end_frame": 261525,
+      "metric_name": "boundary_frame",
+      "metric_value": 261450.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 174300,
+      "start_frame": 174225,
+      "end_frame": 174375,
+      "metric_name": "boundary_frame",
+      "metric_value": 174300.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "inference_chunk_boundary",
+      "center_frame": 87150,
+      "start_frame": 87075,
+      "end_frame": 87225,
+      "metric_name": "boundary_frame",
+      "metric_value": 87150.0,
+      "source_fish_id": "four_chunk_array_boundary"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 1405,
+      "start_frame": 1330,
+      "end_frame": 1480,
+      "metric_name": "run_length_frames",
+      "metric_value": 2812.0,
+      "source_fish_id": "run=0:2811;max_geometry_rows=3"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 188421,
+      "start_frame": 188346,
+      "end_frame": 188496,
+      "metric_name": "run_length_frames",
+      "metric_value": 926.0,
+      "source_fish_id": "run=187959:188884;max_geometry_rows=1"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 70844,
+      "start_frame": 70769,
+      "end_frame": 70919,
+      "metric_name": "run_length_frames",
+      "metric_value": 861.0,
+      "source_fish_id": "run=70414:71274;max_geometry_rows=1"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 69861,
+      "start_frame": 69786,
+      "end_frame": 69936,
+      "metric_name": "run_length_frames",
+      "metric_value": 810.0,
+      "source_fish_id": "run=69457:70266;max_geometry_rows=1"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "long_geometry_only_run",
+      "center_frame": 274120,
+      "start_frame": 274045,
+      "end_frame": 274195,
+      "metric_name": "run_length_frames",
+      "metric_value": 741.0,
+      "source_fish_id": "run=273750:274490;max_geometry_rows=2"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 28673,
+      "start_frame": 28598,
+      "end_frame": 28748,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.9567348266882623,
+      "source_fish_id": "7|8"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 96446,
+      "start_frame": 96371,
+      "end_frame": 96521,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.8505018616434287,
+      "source_fish_id": "7|10"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 20839,
+      "start_frame": 20764,
+      "end_frame": 20914,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.6856534969135025,
+      "source_fish_id": "8|9"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 313988,
+      "start_frame": 313913,
+      "end_frame": 314063,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.6221731400728177,
+      "source_fish_id": "7|13"
+    },
+    {
+      "experiment": "20251225_K_1_3_FCMC",
+      "reason": "low_top_pair_separation",
+      "center_frame": 186639,
+      "start_frame": 186564,
+      "end_frame": 186714,
+      "metric_name": "nearest_pair_px",
+      "metric_value": 0.3127842642144322,
+      "source_fish_id": "7|11"
+    }
+  ]
+}
