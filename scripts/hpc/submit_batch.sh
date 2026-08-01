@@ -42,6 +42,7 @@ done
 
 MEDAKA_BUCKET_ROOT="${MEDAKA_BUCKET_ROOT:-/bucket/StephensU/medaka/medaka_202512}"
 MEDAKA_BUCKET_OUT="${MEDAKA_BUCKET_OUT:-/bucket/StephensU/medaka/sleap_output}"
+ROUND_TAG="${ROUND_TAG:-}"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 SUBMIT="${SCRIPT_DIR}/submit_experiment.sh"
@@ -56,6 +57,9 @@ for name in "${CANDIDATES[@]}"; do
     [[ "$name" =~ $REGEX ]] || continue
     if [ "$SKIP_EXISTING" -eq 1 ]; then
         out="${MEDAKA_BUCKET_OUT}/${name}"
+        if [ -n "$ROUND_TAG" ]; then
+            out="${out}/${ROUND_TAG}"
+        fi
         if [ -s "${out}/top_cam.slp" ] && [ -s "${out}/side1_cam.slp" ] && [ -s "${out}/side2_cam.slp" ]; then
             echo "skip (already done): $name"
             continue

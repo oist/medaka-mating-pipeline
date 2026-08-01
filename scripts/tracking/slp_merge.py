@@ -13,7 +13,10 @@ the chunk layout and merge status, and writes it back. Hand-authored fields
 (e.g. `animal`) are preserved.
 
 Merged .slp files stay next to the chunks:
-    <sleap_output_dir>/<experiment>/<view>.slp
+    <sleap_output_dir>/<experiment>/<sleap_subdir>/<view>.slp
+
+`sleap_subdir` is optional for backward compatibility. It is intended for
+round tags such as `round8_260729_snn031_m6`.
 
 If the merged .slp is already present and newer than every chunk, the merge
 itself is skipped; the manifest is still refreshed.
@@ -51,6 +54,7 @@ class ViewMerge:
     frame_ranges: list[tuple[int, int]] = field(default_factory=list)
     merged_path: str | None = None
     total_frames: int | None = None
+    labeled_frames: int | None = None
     merged: bool = False
     skipped_reason: str | None = None
 
@@ -71,6 +75,55 @@ def _merged_is_fresh(merged_path: Path, chunks: list[Path]) -> bool:
         return False
     merged_mtime = merged_path.stat().st_mtime
     return all(chunk.stat().st_mtime <= merged_mtime for chunk in chunks)
+
+
+def validate_chunk_ranges(
+    chunk_paths: list[Path],
+    view: str,
+    expected_total_frames: int | None = None,
+) -> list[tuple[int, int]]:
+    """Validate and return contiguous, non-overlapping inclusive frame ranges."""
+    if not chunk_paths:
+        raise ValueError(f"[{view}] no chunk files provided")
+
+    ranges: list[tuple[int, int]] = []
+    for path in chunk_paths:
+        match = CHUNK_RE.match(path.name)
+        if not match or match["view"] != view:
+            raise ValueError(f"[{view}] invalid chunk filename: {path.name}")
+        start, end = int(match["start"]), int(match["end"])
+        if end < start:
+            raise ValueError(f"[{view}] invalid chunk range {start}-{end}")
+        ranges.append((start, end))
+
+    if ranges[0][0] != 0:
+        raise ValueError(f"[{view}] chunk coverage starts at {ranges[0][0]}, expected 0")
+    for previous, current in zip(ranges, ranges[1:]):
+        expected_start = previous[1] + 1
+        if current[0] != expected_start:
+            relation = "overlap" if current[0] <= previous[1] else "gap"
+            raise ValueError(
+                f"[{view}] chunk {relation}: {previous[0]}-{previous[1]} then "
+                f"{current[0]}-{current[1]} (expected next start {expected_start})"
+            )
+
+    if expected_total_frames is not None:
+        expected_end = expected_total_frames - 1
+        if ranges[-1][1] != expected_end:
+            raise ValueError(
+                f"[{view}] chunk coverage ends at {ranges[-1][1]}, "
+                f"expected {expected_end}"
+            )
+    return ranges
+
+
+def count_labeled_frames(path: Path) -> int:
+    """Load one SLP and return its labeled-frame count."""
+    try:
+        import sleap_io as sio
+    except ImportError as exc:
+        raise RuntimeError("sleap-io is required to inspect merged SLP files") from exc
+    return len(sio.load_slp(str(path)).labeled_frames)
 
 
 def merge_view_chunks(
@@ -131,6 +184,7 @@ def merge_experiment(
     experiment_name: str,
     sleap_output_dir: str | Path,
     raw_data_dir: str | Path,
+    sleap_subdir: str | None = None,
     force: bool = False,
     views: tuple[str, ...] = VIEWS,
 ) -> dict:
@@ -159,6 +213,10 @@ def merge_experiment(
     """
     sleap_output_dir = Path(sleap_output_dir)
     chunks_dir = sleap_output_dir / experiment_name
+    if sleap_subdir:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", sleap_subdir):
+            raise ValueError("sleap_subdir must be one path component")
+        chunks_dir = chunks_dir / sleap_subdir
     if not chunks_dir.is_dir():
         raise FileNotFoundError(f"Experiment chunks dir not found: {chunks_dir}")
 
@@ -186,11 +244,18 @@ def merge_experiment(
             continue
 
         status.chunks = [p.name for p in chunks]
-        status.frame_ranges = []
-        for p in chunks:
-            m = CHUNK_RE.match(p.name)
-            if m:
-                status.frame_ranges.append((int(m["start"]), int(m["end"])))
+        view_record = view_records.get(view) or {}
+        expected_total_frames = view_record.get("total_frames")
+        status.frame_ranges = validate_chunk_ranges(
+            chunks,
+            view,
+            expected_total_frames=expected_total_frames,
+        )
+        status.total_frames = (
+            expected_total_frames
+            if expected_total_frames is not None
+            else status.frame_ranges[-1][1] + 1
+        )
 
         merged_path = chunks_dir / f"{view}.slp"
         status.merged_path = str(merged_path)
@@ -198,8 +263,7 @@ def merge_experiment(
         if not force and _merged_is_fresh(merged_path, chunks):
             status.merged = True
             status.skipped_reason = "merged file already fresh"
-            if status.frame_ranges:
-                status.total_frames = status.frame_ranges[-1][1] + 1
+            status.labeled_frames = count_labeled_frames(merged_path)
             merge_status[view] = status
             print(f"[{view}] skip — {merged_path.name} is newer than all chunks")
             continue
@@ -210,12 +274,13 @@ def merge_experiment(
             chunks, merged_path, canonical_video_path=canonical_video_path
         )
         status.merged = True
-        status.total_frames = n_frames
+        status.labeled_frames = n_frames
         merge_status[view] = status
         print(f"[{view}] wrote {n_frames} labeled frames")
 
     sleap_section = {
         "chunks_dir": str(chunks_dir),
+        "sleap_subdir": sleap_subdir,
         "views": {name: asdict(status) for name, status in merge_status.items()},
     }
 
@@ -251,6 +316,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--medaka-data-dir",
         default=None,
         help="Override medaka_data_dir from paths.local.toml (for reading metadata.csv).",
+    )
+    parser.add_argument(
+        "--sleap-subdir",
+        "--round-tag",
+        dest="sleap_subdir",
+        default=None,
+        help=(
+            "Optional round-tag subdirectory below "
+            "sleap_output_dir/<experiment>/, e.g. round8_260729_snn031_m6."
+        ),
     )
     parser.add_argument(
         "--force",
@@ -290,6 +365,7 @@ def main(argv: list[str] | None = None) -> None:
         experiment_name=args.experiment,
         sleap_output_dir=sleap_output_dir,
         raw_data_dir=medaka_data_dir,
+        sleap_subdir=args.sleap_subdir,
         force=args.force,
     )
 

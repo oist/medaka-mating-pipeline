@@ -54,6 +54,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="With --merge-chunks, re-merge even if the merged file is fresh.",
     )
     parser.add_argument(
+        "--sleap-subdir",
+        "--round-tag",
+        dest="sleap_subdir",
+        default=None,
+        help=(
+            "With --merge-chunks, use this round-tag subdirectory below "
+            "sleap_output_dir/<experiment>/."
+        ),
+    )
+    parser.add_argument(
         "--medaka-data-dir",
         default=None,
         help=(
@@ -133,6 +143,7 @@ def main() -> None:
             experiment_name=args.input,
             sleap_output_dir=sleap_output_dir,
             raw_data_dir=medaka_data_dir,
+            sleap_subdir=args.sleap_subdir,
             force=args.force_merge,
         )
         return
