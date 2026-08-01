@@ -356,10 +356,9 @@ def track(
     node_names = [n.name for n in labels.skeletons[0].nodes]
     if motion_aware and anchor_node is None and "mouth" in node_names:
         anchor_node = "mouth"
-    # `node_name` is the legacy single-keypoint label written into tracks.csv.
-    # When tracking on a specific anchor (e.g. "mouth"), record that; otherwise
-    # fall back to the first skeleton node for backward compatibility.
-    node_name = anchor_node if (anchor_node in node_names) else node_names[0]
+    # Record the coordinate source truthfully in tracks.csv. The production
+    # default is the visible-node centroid, not the first skeleton node.
+    node_name = anchor_node if (anchor_node in node_names) else "centroid"
 
     frames = sorted(labels.labeled_frames, key=lambda f: f.frame_idx)
     frames = [f for f in frames if f.frame_idx >= start_frame]
@@ -540,6 +539,11 @@ def track(
         "max_gap": max_gap,
         "motion_aware": bool(cfg.enabled),
         "anchor_node": anchor_node,
+        "position_source": (
+            f"anchor_node:{anchor_node}"
+            if anchor_node in node_names
+            else "visible_node_centroid"
+        ),
     }
     return rows, stats
 

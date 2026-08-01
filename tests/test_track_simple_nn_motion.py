@@ -136,3 +136,29 @@ def test_motion_aware_csv_keeps_bind_columns_and_adds_diagnostics(tmp_path):
     df = pd.read_csv(out)
     assert {"frame", "track_id", "x", "y", "score", "node"}.issubset(df.columns)
     assert {"match_cost", "zigzag_flag"}.issubset(df.columns)
+
+
+def test_default_tracker_records_visible_node_centroid_source(monkeypatch, tmp_path):
+    labels = _FakeLabels(
+        [
+            _FakeFrame(
+                0,
+                [_FakeInstance([(10.0, 20.0), (30.0, 40.0)])],
+            )
+        ]
+    )
+    _install_fake_sleap(monkeypatch, labels)
+
+    rows, stats = track(
+        tmp_path / "fake.slp",
+        max_distance=100.0,
+        max_tracks=3,
+        max_gap=500,
+        anchor_node=None,
+    )
+
+    assert rows[0]["x"] == 20.0
+    assert rows[0]["y"] == 30.0
+    assert rows[0]["node"] == "centroid"
+    assert stats["anchor_node"] is None
+    assert stats["position_source"] == "visible_node_centroid"

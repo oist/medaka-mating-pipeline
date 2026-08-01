@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import numpy as np
 
 from scripts.reconstruction_3d.candidate_cache import (
+    build_parser,
     build_view_cache,
     cache_matches_source,
     load_candidate_window,
@@ -20,6 +21,18 @@ class _Instance:
 
     def numpy(self):
         return self._points.copy()
+
+
+class _StructuredScoreInstance:
+    def __init__(self):
+        self.score = 0.95
+        self.points = np.array(
+            [(10.0, 20.0, 0.61), (30.0, 40.0, 0.72)],
+            dtype=[("x", "f8"), ("y", "f8"), ("score", "f8")],
+        )
+
+    def numpy(self):
+        return np.column_stack([self.points["x"], self.points["y"]])
 
 
 def test_candidate_cache_strict_mouth_and_slot_order(tmp_path, monkeypatch):
@@ -60,3 +73,63 @@ def test_candidate_cache_invalidates_when_source_changes(tmp_path, monkeypatch):
     assert cache_matches_source(cache, source)
     source.write_bytes(b"changed")
     assert not cache_matches_source(cache, source)
+
+
+def test_candidate_cache_cli_can_disable_tail_derived_fp_filter():
+    defaults = build_parser().parse_args(
+        [
+            "example",
+            "--round-tag",
+            "round8",
+            "--output-dir",
+            "cache",
+        ]
+    )
+    mouth_only = build_parser().parse_args(
+        [
+            "example",
+            "--round-tag",
+            "round8",
+            "--output-dir",
+            "cache",
+            "--no-filter-fp",
+        ]
+    )
+
+    assert defaults.filter_fp is True
+    assert mouth_only.filter_fp is False
+
+
+def test_candidate_cache_reads_structured_sleap_node_scores(tmp_path, monkeypatch):
+    source = tmp_path / "top_cam.slp"
+    source.write_bytes(b"fake")
+    labels = SimpleNamespace(
+        labeled_frames=[
+            SimpleNamespace(
+                frame_idx=0, instances=[_StructuredScoreInstance()]
+            )
+        ],
+        skeletons=[
+            SimpleNamespace(
+                nodes=[
+                    SimpleNamespace(name="mouth"),
+                    SimpleNamespace(name="tail"),
+                ]
+            )
+        ],
+    )
+    monkeypatch.setitem(
+        sys.modules, "sleap_io", SimpleNamespace(load_slp=lambda _path: labels)
+    )
+    cache = tmp_path / "top_cam.candidates.h5"
+    build_view_cache(
+        source,
+        cache,
+        view="top_cam",
+        num_candidates=1,
+        filter_fp=False,
+    )
+    window = load_candidate_window(cache, 0, 0)
+
+    np.testing.assert_allclose(window.mouth_score[0, 0], 0.61)
+    np.testing.assert_allclose(window.tail_score[0, 0], 0.72)

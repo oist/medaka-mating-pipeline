@@ -81,6 +81,22 @@ def _node_scores(instance: object, node_count: int) -> np.ndarray:
         array = np.asarray(values, dtype=float).reshape(-1)
         if len(array) >= node_count:
             return array[:node_count]
+    points = getattr(instance, "points", None)
+    if points is not None:
+        point_array = np.asarray(points)
+        names = point_array.dtype.names or ()
+        if "score" in names:
+            array = np.asarray(point_array["score"], dtype=float).reshape(-1)
+            if len(array) >= node_count:
+                return array[:node_count]
+    numpy_method = getattr(instance, "numpy", None)
+    if callable(numpy_method):
+        try:
+            scored = np.asarray(numpy_method(scores=True), dtype=float)
+        except (TypeError, ValueError):
+            scored = np.empty((0, 0), dtype=float)
+        if scored.ndim == 2 and scored.shape[0] >= node_count and scored.shape[1] >= 3:
+            return scored[:node_count, -1]
     return np.full(node_count, np.nan, dtype=float)
 
 
@@ -429,6 +445,16 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--num-candidates", type=int, default=6)
     parser.add_argument("--frame-count", type=int, default=None)
+    parser.add_argument(
+        "--filter-fp",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Apply the legacy pose-span/overlap false-positive filter. Disable "
+            "with --no-filter-fp for a mouth-coordinate-only candidate contract "
+            "because the legacy filter also inspects finite tail coordinates."
+        ),
+    )
     parser.add_argument("--overwrite", action="store_true")
     return parser
 
@@ -447,6 +473,7 @@ def main(argv: Iterable[str] | None = None) -> None:
             view=view,
             num_candidates=args.num_candidates,
             frame_count=args.frame_count,
+            filter_fp=args.filter_fp,
             overwrite=args.overwrite,
         )
         cache_paths[view] = cache_path

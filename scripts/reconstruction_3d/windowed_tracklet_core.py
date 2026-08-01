@@ -959,7 +959,20 @@ def enumerate_refractive_hypotheses(
                     block_start:block_end, selected[present]
                 ]
         finite_views = np.all(np.isfinite(pixels), axis=3)
-        finite = np.sum(finite_views, axis=2) >= 2
+        required_views = np.asarray(
+            [bool(view_mask & (1 << view)) for view in range(3)],
+            dtype=bool,
+        )
+        if int(required_views.sum()) < 2:
+            raise ValueError("hypothesis masks must declare at least two views")
+        # A hypothesis is valid only when every view declared by its mask has
+        # a finite selected mouth. In particular, a full-mask tuple cannot be
+        # evaluated as an accidental two-view recovery while still claiming
+        # view_count=3 and consuming nonexistent side-view resources.
+        finite = np.all(
+            finite_views | ~required_views[None, None, :],
+            axis=2,
+        )
         flat_finite = finite.ravel()
         if not np.any(flat_finite):
             return
@@ -999,7 +1012,8 @@ def enumerate_refractive_hypotheses(
             ids = np.full(len(indices), -1, dtype=np.int64)
             observed = slot_values >= 0
             ids[observed] = tracklet_ids[view][
-                local_frames[observed], slot_values[observed]
+                block_start + local_frames[observed],
+                slot_values[observed],
             ]
             # An observed but ambiguous/untracked candidate is a unique
             # one-frame tracklet, never the missing-view sentinel.

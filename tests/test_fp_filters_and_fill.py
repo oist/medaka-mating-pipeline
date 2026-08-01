@@ -4,7 +4,10 @@ import numpy as np
 import pandas as pd
 
 from scripts.reconstruction_3d.load_2d_slp import _drop_fp_instances, _body_span, _pair_overlap
-from scripts.reconstruction_3d.fill_missing_3d import ensure_all_frames_and_fill_spline
+from scripts.reconstruction_3d.fill_missing_3d import (
+    best_by_frame_to_dfs,
+    ensure_all_frames_and_fill_spline,
+)
 
 
 class FakeInst:
@@ -123,3 +126,51 @@ def test_fill_uncapped_legacy_bridges_everything():
     dfs = {"ID_1": _df([0, 500], [[0, 0, 0], [100, 100, 100]])}
     out = ensure_all_frames_and_fill_spline(dfs, list(range(0, 501)), max_gap_frames=None)["ID_1"]
     assert np.isfinite(out[out.frame == 250].iloc[0].X)     # None = no cap (back-compat)
+
+
+def test_fill_can_preserve_observed_and_interpolated_negative_coordinates():
+    dfs = {
+        "ID_1": _df(
+            [0, 2],
+            [[-2.0, -4.0, -6.0], [-4.0, -8.0, -10.0]],
+        )
+    }
+    out = ensure_all_frames_and_fill_spline(
+        dfs,
+        [0, 1, 2],
+        max_gap_frames=100,
+        ensure_non_negative=False,
+    )["ID_1"]
+
+    np.testing.assert_allclose(
+        out[["X", "Y", "Z"]].to_numpy(),
+        [
+            [-2.0, -4.0, -6.0],
+            [-3.0, -6.0, -8.0],
+            [-4.0, -8.0, -10.0],
+        ],
+    )
+    assert out["is_interpolated"].tolist() == [False, True, False]
+
+
+def test_shift_to_positive_then_fill_remains_nonnegative():
+    best = {
+        0: {"groups": {"ID_1": [-4.0, -8.0, -10.0]}},
+        2: {"groups": {"ID_1": [-2.0, -4.0, -6.0]}},
+    }
+    shifted = best_by_frame_to_dfs(
+        best,
+        shift_to_positive=True,
+        ensure_non_negative=False,
+        num_individuals=1,
+    )
+    out = ensure_all_frames_and_fill_spline(
+        shifted,
+        [0, 1, 2],
+        max_gap_frames=100,
+        ensure_non_negative=True,
+    )["ID_1"]
+
+    assert np.isfinite(out[["X", "Y", "Z"]].to_numpy()).all()
+    assert (out[["X", "Y", "Z"]].to_numpy() >= 0).all()
+    assert out["is_interpolated"].tolist() == [False, True, False]

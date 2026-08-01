@@ -73,6 +73,8 @@ def ensure_all_frames_and_fill_spline(
     dfs_3d: Dict[str, pd.DataFrame],
     all_frames: List[int],
     max_gap_frames: int | None = None,
+    *,
+    ensure_non_negative: bool = True,
 ) -> Dict[str, pd.DataFrame]:
     """
     Expand each trajectory to `all_frames` and linearly interpolate internal
@@ -82,6 +84,11 @@ def ensure_all_frames_and_fill_spline(
     between consecutive *observed* points — those frames stay `NaN` (a transient
     detection then a long silence must not be bridged to the next, unrelated
     detection — the cause of the entry-phantom artifact). `None` = no cap (legacy).
+
+    `ensure_non_negative`: clip finite coordinates to zero or above after
+    interpolation. Keep this enabled for legacy shifted-coordinate workflows;
+    disable it when the caller requests preservation of calibrated negative
+    coordinates.
 
     Every output frame carries an `is_interpolated` flag (True only where a value was
     filled, i.e. finite-after-fill and not an originally-observed frame), so downstream
@@ -145,9 +152,13 @@ def ensure_all_frames_and_fill_spline(
             "X": interp_x, "Y": interp_y, "Z": interp_z,
             "is_interpolated": is_interp,
         })
-        # Clip finite values to zero or above while preserving NaNs.
-        for col in ["X", "Y", "Z"]:
-            out_df[col] = out_df[col].where(~np.isfinite(out_df[col]), out_df[col].clip(lower=0))
+        if ensure_non_negative:
+            # Clip finite values to zero or above while preserving NaNs.
+            for col in ["X", "Y", "Z"]:
+                out_df[col] = out_df[col].where(
+                    ~np.isfinite(out_df[col]),
+                    out_df[col].clip(lower=0),
+                )
         result[lb] = out_df.sort_values("frame").reset_index(drop=True)
     return result
 
