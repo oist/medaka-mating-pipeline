@@ -1,0 +1,235 @@
+{
+  "schema_version": "round9b-side-split-v1",
+  "generated_at_utc": "2026-07-28T10:25:50.768760+00:00",
+  "policy": {
+    "guard_frames": 166,
+    "validation_source_frames": 30,
+    "validation_source_frames_per_experiment": 10,
+    "category_targets": {
+      "clean_diverse_control": 6,
+      "close_contact_or_crossing": 6,
+      "count_partial_or_low_confidence": 2,
+      "long_body_crop_margin_proxy": 4,
+      "round7_round8_tail_disagreement": 6,
+      "temporal_or_shared_tail": 6
+    },
+    "experiment_category_quotas": {
+      "20251225_K_1_1_FCMC": {
+        "clean_diverse_control": 1,
+        "close_contact_or_crossing": 2,
+        "count_partial_or_low_confidence": 1,
+        "long_body_crop_margin_proxy": 1,
+        "round7_round8_tail_disagreement": 3,
+        "temporal_or_shared_tail": 2
+      },
+      "20251225_K_1_2_FCMC": {
+        "clean_diverse_control": 4,
+        "close_contact_or_crossing": 2,
+        "count_partial_or_low_confidence": 0,
+        "long_body_crop_margin_proxy": 1,
+        "round7_round8_tail_disagreement": 1,
+        "temporal_or_shared_tail": 2
+      },
+      "20251225_K_1_3_FCMC": {
+        "clean_diverse_control": 1,
+        "close_contact_or_crossing": 2,
+        "count_partial_or_low_confidence": 1,
+        "long_body_crop_margin_proxy": 2,
+        "round7_round8_tail_disagreement": 2,
+        "temporal_or_shared_tail": 2
+      }
+    },
+    "selection_order": "selection_category_score descending, frame ascending",
+    "inherited_policy": "Round8 side train is cumulative over useful Round7 labels",
+    "new_labels_win_exact_collisions": true
+  },
+  "inputs": {
+    "selection_manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260727\\sleap_side_ci_active_learning\\selection_210.csv",
+      "sha256": "717f4f5b8b318148d2b2b28f114eacc604f89b598e01b255c2568844e9eb33ac",
+      "size_bytes": 76316
+    },
+    "inherited_train_labels": {
+      "path": "\\\\bucket.oist.jp\\bucket\\StephensU\\medaka\\sleap_models\\retrain_20260722_round8\\side\\train_labels.pkg.slp",
+      "sha256": "0155e9e17f43a66c87f05fd8f8b34a0fa57093c7aeb46ec62a112a1b002b2631",
+      "size_bytes": 3297858073
+    },
+    "reviewed_labels": {
+      "path": "C:\\Users\\machi\\Downloads\\annotator_bundle_uv (2) (1)\\annotator_bundle_uv\\side_ci_review210\\output\\side_ci_review_210_labeled_complete_full.pkg.slp",
+      "sha256": "2b2393be618175adfb7bf755a1149a86db996b57ffa9d580f5bbc43340badf4c",
+      "size_bytes": 505183279
+    },
+    "locked_manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260726\\sleap_hitl_benchmark_v2\\shared_benchmark_40_hitl_v2_manifest.csv",
+      "sha256": "f26a238f81e763ba8a0925083b04021de39575e107cfc1f346514bc5803e175a",
+      "size_bytes": 12257
+    },
+    "future_locked_manifest": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260724\\sleap_topdown_optimization\\future_locked_test_annotation_queue_v1.csv",
+      "sha256": "bcd52c49878747e58bf64a667c37ae1cb4c75465e1257010d1f54b70049b0e95",
+      "size_bytes": 539537
+    }
+  },
+  "inherited_training": {
+    "input": {
+      "labeled_frames": 2764,
+      "source_frames": 1382,
+      "instances": 8293,
+      "instance_distribution": {
+        "2": 1,
+        "3": 2761,
+        "4": 2
+      },
+      "raw_missing_nodes": 986,
+      "hidden_finite_nodes": 0,
+      "visible_finite_nodes": 15600
+    },
+    "malformed_source_groups_removed": [
+      {
+        "experiment": "20251225_K_1_2_FCMC",
+        "frame": 135885
+      },
+      {
+        "experiment": "20251225_K_1_2_FCMC",
+        "frame": 281988
+      },
+      {
+        "experiment": "20251225_K_1_3_FCMC",
+        "frame": 92579
+      }
+    ],
+    "malformed_removed": {
+      "labeled_frames": 6,
+      "source_frames": 3,
+      "instances": 19,
+      "instance_distribution": {
+        "2": 1,
+        "3": 3,
+        "4": 2
+      },
+      "raw_finite_mouths": 19,
+      "raw_finite_tails": 13,
+      "visible_finite_mouths": 19,
+      "visible_finite_tails": 13,
+      "hidden_finite_mouths": 0,
+      "hidden_finite_tails": 0
+    },
+    "sanitized": {
+      "labeled_frames": 2758,
+      "source_frames": 1379,
+      "instances": 8274,
+      "instance_distribution": {
+        "3": 2758
+      },
+      "raw_finite_mouths": 7745,
+      "raw_finite_tails": 7823,
+      "visible_finite_mouths": 7745,
+      "visible_finite_tails": 7823,
+      "hidden_finite_mouths": 0,
+      "hidden_finite_tails": 0
+    }
+  },
+  "reviewed_labels": {
+    "input": {
+      "labeled_frames": 420,
+      "source_frames": 210,
+      "instances": 1260,
+      "instance_distribution": {
+        "3": 420
+      },
+      "raw_missing_nodes": 0,
+      "hidden_finite_nodes": 44,
+      "visible_finite_nodes": 2476
+    },
+    "round9b_train": {
+      "labeled_frames": 360,
+      "instances": 1080,
+      "visible_finite_mouths": 1067,
+      "hidden_finite_mouths": 13,
+      "raw_missing_mouths": 0,
+      "visible_finite_tails": 1055,
+      "hidden_finite_tails": 25,
+      "raw_missing_tails": 0,
+      "frames_all_mouths_visible": 347,
+      "frames_any_mouth_visible": 360
+    },
+    "round9b_validation": {
+      "labeled_frames": 60,
+      "instances": 180,
+      "visible_finite_mouths": 176,
+      "hidden_finite_mouths": 4,
+      "raw_missing_mouths": 0,
+      "visible_finite_tails": 178,
+      "hidden_finite_tails": 2,
+      "raw_missing_tails": 0,
+      "frames_all_mouths_visible": 56,
+      "frames_any_mouth_visible": 60
+    }
+  },
+  "split_counts": {
+    "train_source_frames": 180,
+    "train_side_labeled_frames": 360,
+    "validation_source_frames": 30,
+    "validation_side_labeled_frames": 60,
+    "validation_by_experiment": {
+      "20251225_K_1_1_FCMC": 10,
+      "20251225_K_1_2_FCMC": 10,
+      "20251225_K_1_3_FCMC": 10
+    },
+    "validation_by_category": {
+      "clean_diverse_control": 6,
+      "close_contact_or_crossing": 6,
+      "count_partial_or_low_confidence": 2,
+      "long_body_crop_margin_proxy": 4,
+      "round7_round8_tail_disagreement": 6,
+      "temporal_or_shared_tail": 6
+    },
+    "original_validation_historically_exposed": 8,
+    "round9b_validation_historically_exposed": 0,
+    "all_210_historically_exposed": 47
+  },
+  "cumulative_training_counts": {
+    "labeled_frames": 3118,
+    "instances": 9354,
+    "visible_finite_mouths": 8812,
+    "hidden_finite_mouths": 13,
+    "raw_missing_mouths": 529,
+    "visible_finite_tails": 8878,
+    "hidden_finite_tails": 25,
+    "raw_missing_tails": 451,
+    "frames_all_mouths_visible": 2628,
+    "frames_any_mouth_visible": 3118
+  },
+  "collisions": {
+    "exact_labeled_frame_collisions_new_won": 0,
+    "keys": []
+  },
+  "verification": {
+    "validation_vs_inherited_train_guard_violations": [],
+    "validation_vs_new_train_guard_violations": [],
+    "locked_hitl_rows": 40,
+    "locked_hitl_guard_violations": [],
+    "future_locked_eligible_rows": 111,
+    "future_locked_guard_violations": [],
+    "locked_artifacts_modified": false,
+    "shared_storage_artifacts_written": false,
+    "training_launched": false
+  },
+  "outputs": {
+    "selection_210": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260728\\sleap_side_round9b\\round9b_selection_210.csv",
+      "sha256": "cb99f32d45a3ced6d388e987951281195551db522e33b9691be21479b05f9727",
+      "size_bytes": 98664
+    },
+    "validation_30": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260728\\sleap_side_round9b\\round9b_validation_30.csv",
+      "sha256": "1fe080f2aa5321e853c0ba111aa6d935281c5ed103c3496a7197c9d4b34b6174",
+      "size_bytes": 15705
+    },
+    "train_180": {
+      "path": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260728\\sleap_side_round9b\\round9b_train_180.csv",
+      "sha256": "7b05c6320b163e956dc956b72e239e6cc7b17d18ed0cfb73c3f128121e065668",
+      "size_bytes": 83801
+    }
+  }
+}

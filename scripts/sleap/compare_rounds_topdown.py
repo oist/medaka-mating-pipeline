@@ -173,6 +173,75 @@ def manifest_bool(value: object) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y"}
 
 
+def offset_oracle_mouth_anchors(
+    labels,
+    *,
+    mouth_idx: int,
+    dx: float,
+    dy: float,
+):
+    """Clone labels with GT mouth crop anchors shifted by a fixed offset.
+
+    The returned labels are used only as centered-instance inference inputs.
+    Metrics must still be computed against the original, unshifted labels.
+    """
+    import sleap_io as sio
+
+    offset = np.asarray([dx, dy], dtype=float)
+    if not np.isfinite(offset).all():
+        raise ValueError(f"oracle anchor offset must be finite, got {offset}")
+
+    labeled_frames = []
+    for labeled_frame in labels.labeled_frames:
+        instances = []
+        for instance_index, instance in enumerate(
+            labeled_frame.user_instances
+        ):
+            points = np.asarray(instance.numpy(), dtype=float)
+            if (
+                points.ndim != 2
+                or mouth_idx < 0
+                or mouth_idx >= len(points)
+                or not np.isfinite(points[mouth_idx]).all()
+            ):
+                raise ValueError(
+                    "oracle offset stress requires every mouth anchor to be "
+                    "finite; failed at frame "
+                    f"{int(labeled_frame.frame_idx)}, instance {instance_index}"
+                )
+            shifted = np.full((len(points), 3), np.nan, dtype=float)
+            shifted[:, :2] = points
+            shifted[:, 2] = np.isfinite(points).all(axis=1).astype(float)
+            shifted[mouth_idx, :2] += offset
+            instances.append(
+                sio.Instance.from_numpy(
+                    points_data=shifted,
+                    skeleton=instance.skeleton,
+                    track=getattr(instance, "track", None),
+                )
+            )
+        labeled_frames.append(
+            sio.LabeledFrame(
+                video=labeled_frame.video,
+                frame_idx=int(labeled_frame.frame_idx),
+                instances=instances,
+                is_negative=bool(
+                    getattr(labeled_frame, "is_negative", False)
+                ),
+            )
+        )
+
+    provenance = dict(getattr(labels, "provenance", {}) or {})
+    provenance["oracle_anchor_offset_px"] = [float(dx), float(dy)]
+    return sio.Labels(
+        labeled_frames=labeled_frames,
+        videos=list(labels.videos),
+        skeletons=list(labels.skeletons),
+        tracks=list(getattr(labels, "tracks", [])),
+        provenance=provenance,
+    )
+
+
 def experiment_tags(gt_path: Path, labels) -> dict[int, str]:
     """Map each labeled-frame POSITION -> experiment (k_1_1 / k_1_2 / k_1_3)."""
     leaf = _leaf_map(gt_path)
@@ -236,6 +305,19 @@ def main(argv: list[str] | None = None) -> int:
             "centered-instance model on GT mouth-centered crops."
         ),
     )
+    ap.add_argument(
+        "--oracle-anchor-offset-px",
+        type=float,
+        nargs=2,
+        default=(0.0, 0.0),
+        metavar=("DX", "DY"),
+        help=(
+            "Shift every GT mouth crop anchor by fixed image-pixel offsets "
+            "before oracle centered-instance inference. Metrics remain against "
+            "the unshifted GT. Requires --evaluation-mode "
+            "oracle_centered_instance."
+        ),
+    )
     ap.add_argument("--out-json", type=Path, default=None)
     ap.add_argument(
         "--manifest",
@@ -293,6 +375,19 @@ def main(argv: list[str] | None = None) -> int:
         ap.error(
             "--reuse-predictions and --reuse-existing-predictions are "
             "mutually exclusive"
+        )
+    oracle_anchor_offset = tuple(
+        float(value) for value in args.oracle_anchor_offset_px
+    )
+    if not np.isfinite(oracle_anchor_offset).all():
+        ap.error("--oracle-anchor-offset-px values must be finite")
+    if (
+        oracle_anchor_offset != (0.0, 0.0)
+        and args.evaluation_mode != "oracle_centered_instance"
+    ):
+        ap.error(
+            "--oracle-anchor-offset-px requires --evaluation-mode "
+            "oracle_centered_instance"
         )
 
     import sleap_io as sio
@@ -495,14 +590,29 @@ def main(argv: list[str] | None = None) -> int:
           f"by experiment: {dict(exp_hist)}")
 
     gt_subset_all = E.build_subset_labels(labels, eval_positions)
+    inference_subset = gt_subset_all
+    if oracle_anchor_offset != (0.0, 0.0):
+        inference_subset = offset_oracle_mouth_anchors(
+            gt_subset_all,
+            mouth_idx=mouth_idx,
+            dx=oracle_anchor_offset[0],
+            dy=oracle_anchor_offset[1],
+        )
     frame_keys = [
         row.get("frame_key") or f"label-position:{pos}"
         for row, pos in zip(manifest_rows, eval_positions)
     ]
     difficulty = [E.normalize_difficulty(row) for row in manifest_rows]
     difficulty_names = sorted(set(difficulty))
+    digest_material = "\n".join(frame_keys)
+    if oracle_anchor_offset != (0.0, 0.0):
+        digest_material += (
+            "\noracle_anchor_offset_px:"
+            f"{oracle_anchor_offset[0]:.17g},"
+            f"{oracle_anchor_offset[1]:.17g}"
+        )
     selection_digest = hashlib.sha1(
-        "\n".join(frame_keys).encode("utf-8")
+        digest_material.encode("utf-8")
     ).hexdigest()[:10]
     if args.cohort and len(args.cohort) == 1:
         cache_scope = args.cohort[0]
@@ -549,7 +659,7 @@ def main(argv: list[str] | None = None) -> int:
             pred = E.run_strategy(
                 strategy=f"{args.evaluation_mode}::{rnd}",
                 model_paths=model_paths,
-                subset_labels=E.build_subset_labels(labels, eval_positions),
+                subset_labels=inference_subset,
                 max_instances=args.max_instances,
                 batch_size=args.batch_size,
                 device=args.device,
@@ -631,6 +741,7 @@ def main(argv: list[str] | None = None) -> int:
 
     out = {"view": view, "difficult_only": args.difficult_only,
            "evaluation_mode": args.evaluation_mode,
+           "oracle_anchor_offset_px": list(oracle_anchor_offset),
            "limit": args.limit, "n_eval_frames": len(eval_positions),
            "manifest": str(args.manifest) if args.manifest else None,
            "gt_slp_sources": gt_sources,

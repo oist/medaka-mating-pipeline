@@ -30,8 +30,8 @@ dependencies = [
     # Use the native PyTorch training/inference backend directly. The legacy
     # `sleap[nn]` meta-package currently pins sleap-nn < 0.3 and conflicts
     # with the version used by this repository.
-    "sleap-io>=0.8.0,<0.9.0",
-    "sleap-nn==0.3.0",
+    "sleap-io",
+    "sleap-nn==0.3.1",
     "torch>=2.6.0",
     "torchvision>=0.21.0",
     "torchaudio>=2.6.0",
@@ -46,8 +46,8 @@ dev = [
   "visidata>=3.0",
 ]
 sleap = [
-  "sleap-io>=0.8.0,<0.9.0",
-  "sleap-nn==0.3.0",
+  "sleap-io",
+  "sleap-nn",
 ]
 rerun = [
   "rerun-sdk>=0.22",
@@ -80,7 +80,7 @@ dev = [
   "visidata>=3.0",
 ]
 sleap = [
-  "sleap-io>=0.8.0,<0.9.0",
+  "sleap-io",
 ]
 rerun = [
   "rerun-sdk>=0.22",

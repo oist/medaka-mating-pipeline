@@ -1,0 +1,804 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "SLEAP side-model 0.3.1 validation review",
+    "description": "Technical decision report for Round8, retained Round9b, and a fresh SLEAP-NN 0.3.1 centered-instance training.",
+    "generatedAt": "2026-07-29T17:05:00+09:00",
+    "sources": [
+      {
+        "id": "src_final_summary",
+        "label": "Final distilled validation evidence",
+        "path": "report/20260729/sleap_side_round9b_snn031/report_snapshot.sql"
+      },
+      {
+        "id": "src_stage3_new_predict",
+        "label": "Fresh model new-predict full-topdown evaluation",
+        "path": "report/20260729/sleap_side_round9b_snn031/report_snapshot.sql"
+      },
+      {
+        "id": "src_stage3_legacy_track",
+        "label": "Fresh model production legacy-track max-6 evaluation",
+        "path": "report/20260729/sleap_side_round9b_snn031/report_snapshot.sql"
+      },
+      {
+        "id": "src_parity",
+        "label": "Frozen legacy-track cross-version coordinate parity",
+        "path": "report/20260729/sleap_side_round9b_snn031/report_snapshot.sql"
+      },
+      {
+        "id": "src_bootstrap_new",
+        "label": "Paired synchronized-frame bootstrap, new-predict path",
+        "path": "report/20260729/sleap_side_round9b_snn031/report_snapshot.sql"
+      },
+      {
+        "id": "src_bootstrap_track",
+        "label": "Paired synchronized-frame bootstrap, production max-6 path",
+        "path": "report/20260729/sleap_side_round9b_snn031/report_snapshot.sql"
+      },
+      {
+        "id": "src_release",
+        "label": "Official SLEAP-NN 0.3.1 release notes",
+        "href": "https://github.com/talmolab/sleap-nn/releases/tag/v0.3.1",
+        "query": {
+          "description": "Official release notes for SLEAP-NN 0.3.1, published July 28, 2026."
+        }
+      }
+    ],
+    "charts": [
+      {
+        "id": "production_per_gt_oks",
+        "title": "Production-path per-GT OKS by model",
+        "subtitle": "Legacy track, max-instances 6; unmatched GT scored as zero across 40 synchronized moments",
+        "type": "horizontalBar",
+        "dataset": "production_overall",
+        "sourceId": "src_final_summary",
+        "encodings": {
+          "x": {
+            "field": "candidate",
+            "type": "nominal",
+            "label": "Model"
+          },
+          "y": {
+            "field": "per_gt_oks_missing_zero",
+            "type": "quantitative",
+            "label": "Per-GT OKS, misses zero"
+          },
+          "tooltip": [
+            {
+              "field": "f1",
+              "type": "quantitative",
+              "label": "F1"
+            },
+            {
+              "field": "matched_only_oks",
+              "type": "quantitative",
+              "label": "Matched-only OKS"
+            },
+            {
+              "field": "matched",
+              "type": "quantitative",
+              "label": "Matched GT"
+            },
+            {
+              "field": "missed",
+              "type": "quantitative",
+              "label": "Missed GT"
+            }
+          ]
+        },
+        "xAxisTitle": "Model",
+        "yAxisTitle": "Per-GT OKS (unmatched GT = 0)",
+        "valueFormat": "number",
+        "layout": "full",
+        "maxRows": 3,
+        "surface": {
+          "palette": "blue",
+          "showControls": false
+        }
+      },
+      {
+        "id": "production_per_experiment_oks",
+        "title": "Production-path matched-only OKS by experiment",
+        "subtitle": "Legacy track, max-instances 6; 28 K_1_1 images, 26 K_1_2 images, and 26 K_1_3 images",
+        "type": "bar",
+        "dataset": "production_per_experiment",
+        "sourceId": "src_stage3_legacy_track",
+        "encodings": {
+          "x": {
+            "field": "experiment",
+            "type": "ordinal",
+            "label": "Experiment"
+          },
+          "y": {
+            "field": "matched_only_oks",
+            "type": "quantitative",
+            "label": "Matched-only OKS"
+          },
+          "color": {
+            "field": "candidate",
+            "type": "nominal",
+            "label": "Model"
+          },
+          "tooltip": [
+            {
+              "field": "image_count",
+              "type": "quantitative",
+              "label": "Images"
+            }
+          ]
+        },
+        "xAxisTitle": "Experiment",
+        "yAxisTitle": "Matched-only OKS",
+        "valueFormat": "number",
+        "layout": "full",
+        "maxRows": 9,
+        "surface": {
+          "grouping": "grouped",
+          "palette": "categorical",
+          "showControls": false
+        }
+      },
+      {
+        "id": "oracle_offset_robustness",
+        "title": "Centered-instance OKS under fixed crop-anchor offsets",
+        "subtitle": "74 fully mouth-anchorable images; diagonal offsets are stress tests, not the observed centroid-error distribution",
+        "type": "bar",
+        "dataset": "oracle_offset_stress",
+        "sourceId": "src_final_summary",
+        "encodings": {
+          "x": {
+            "field": "offset",
+            "type": "ordinal",
+            "label": "Anchor offset (px)"
+          },
+          "y": {
+            "field": "matched_only_oks",
+            "type": "quantitative",
+            "label": "Matched-only OKS"
+          },
+          "color": {
+            "field": "candidate",
+            "type": "nominal",
+            "label": "Model"
+          },
+          "tooltip": [
+            {
+              "field": "mouth_p95_px",
+              "type": "quantitative",
+              "label": "Mouth p95 (px)"
+            },
+            {
+              "field": "tail_p95_px",
+              "type": "quantitative",
+              "label": "Tail p95 (px)"
+            }
+          ]
+        },
+        "xAxisTitle": "Fixed diagonal anchor offset (px)",
+        "yAxisTitle": "Matched-only OKS",
+        "valueFormat": "number",
+        "layout": "full",
+        "maxRows": 9,
+        "surface": {
+          "grouping": "grouped",
+          "palette": "categorical",
+          "showControls": false
+        }
+      }
+    ],
+    "tables": [
+      {
+        "id": "production_detail",
+        "title": "Production legacy-track benchmark detail",
+        "subtitle": "80 side-view images, 240 GT fish, batch 12, max-instances 6",
+        "dataset": "production_overall",
+        "defaultSort": {
+          "field": "per_gt_oks_missing_zero",
+          "direction": "desc"
+        },
+        "density": "spacious",
+        "sourceId": "src_stage3_legacy_track",
+        "layout": "full",
+        "columns": [
+          {
+            "field": "candidate",
+            "label": "Model",
+            "type": "text"
+          },
+          {
+            "field": "f1",
+            "label": "F1",
+            "format": "number"
+          },
+          {
+            "field": "matched_only_oks",
+            "label": "Matched OKS",
+            "format": "number"
+          },
+          {
+            "field": "per_gt_oks_missing_zero",
+            "label": "Per-GT OKS",
+            "format": "number"
+          },
+          {
+            "field": "matched",
+            "label": "Matched",
+            "format": "number"
+          },
+          {
+            "field": "missed",
+            "label": "Missed",
+            "format": "number"
+          },
+          {
+            "field": "extra",
+            "label": "Extra",
+            "format": "number"
+          },
+          {
+            "field": "swap_rate",
+            "label": "Swap rate",
+            "format": "percent"
+          },
+          {
+            "field": "mouth_p95_px",
+            "label": "Mouth p95 px",
+            "format": "number"
+          },
+          {
+            "field": "tail_p95_px",
+            "label": "Tail p95 px",
+            "format": "number"
+          }
+        ]
+      },
+      {
+        "id": "bootstrap_detail",
+        "title": "Paired synchronized-frame uncertainty",
+        "subtitle": "Per-GT OKS with misses zero; 200,000 paired cluster resamples over 40 moments",
+        "dataset": "bootstrap_production",
+        "defaultSort": {
+          "field": "mean",
+          "direction": "desc"
+        },
+        "density": "spacious",
+        "sourceId": "src_bootstrap_track",
+        "layout": "full",
+        "columns": [
+          {
+            "field": "candidate",
+            "label": "Model",
+            "type": "text"
+          },
+          {
+            "field": "mean",
+            "label": "Per-GT OKS",
+            "format": "number"
+          },
+          {
+            "field": "delta_vs_round8",
+            "label": "Delta vs Round8",
+            "format": "number",
+            "movement": true
+          },
+          {
+            "field": "ci_low",
+            "label": "95% CI low",
+            "format": "number"
+          },
+          {
+            "field": "ci_high",
+            "label": "95% CI high",
+            "format": "number"
+          }
+        ]
+      },
+      {
+        "id": "parity_detail",
+        "title": "Frozen inference parity across SLEAP-NN versions",
+        "subtitle": "Semantic legacy-track record comparison: 0.3.0 versus 0.3.1",
+        "dataset": "parity",
+        "defaultSort": {
+          "field": "max_instances",
+          "direction": "asc"
+        },
+        "density": "spacious",
+        "sourceId": "src_parity",
+        "layout": "full",
+        "columns": [
+          {
+            "field": "max_instances",
+            "label": "Max instances",
+            "format": "number"
+          },
+          {
+            "field": "model",
+            "label": "Model",
+            "type": "text"
+          },
+          {
+            "field": "records",
+            "label": "Records",
+            "format": "number"
+          },
+          {
+            "field": "max_coordinate_delta_px",
+            "label": "Max delta px",
+            "format": "number"
+          },
+          {
+            "field": "coordinates_equal",
+            "label": "Coordinates exact",
+            "type": "text"
+          },
+          {
+            "field": "noncoordinate_exact",
+            "label": "Other fields exact",
+            "type": "text"
+          }
+        ]
+      },
+      {
+        "id": "checkpoint_selection",
+        "title": "Fresh training checkpoint selection",
+        "subtitle": "Top three retained checkpoints ranked by combined-validation mOKS",
+        "dataset": "training_checkpoints",
+        "defaultSort": {
+          "field": "moks",
+          "direction": "desc"
+        },
+        "density": "spacious",
+        "sourceId": "src_final_summary",
+        "layout": "full",
+        "columns": [
+          {
+            "field": "epoch",
+            "label": "Epoch",
+            "format": "number"
+          },
+          {
+            "field": "global_step",
+            "label": "Global step",
+            "format": "number"
+          },
+          {
+            "field": "moks",
+            "label": "Validation mOKS",
+            "format": "number"
+          },
+          {
+            "field": "selected",
+            "label": "Selected",
+            "type": "text"
+          },
+          {
+            "field": "sha256_short",
+            "label": "Checkpoint SHA",
+            "type": "text"
+          }
+        ]
+      }
+    ],
+    "blocks": [
+      {
+        "id": "title",
+        "type": "markdown",
+        "body": "# SLEAP side-model 0.3.1 validation review",
+        "layout": "full"
+      },
+      {
+        "id": "technical_summary",
+        "type": "markdown",
+        "body": "## Technical summary\n\n**Keep the Round8 centroid and Round8 centered-instance weights in production, but run them with SLEAP-NN 0.3.1.** Frozen legacy-track inference is exactly unchanged from 0.3.0 to 0.3.1, so the upgrade is safe but does not improve existing weights by itself.\n\n- Round9b epoch 32 gains one matched fish out of 240, but production matched-only OKS falls from 0.676 to 0.595 and one swap appears.\n- The fresh 0.3.1 training gains no detections over Round8 and falls to 0.565 matched-only OKS. Its validation-mOKS winner is epoch 0, showing that further OHKM-on fine-tuning did not improve pose quality.\n- Crop-position jitter is useful: jitter-trained models remain much more accurate under fixed diagonal +/-8 px anchor offsets. That robustness did not compensate for their nominal localization regression under actual centroid predictions.\n- The next controlled experiment should keep crop 448, side rotation +/-90 degrees, strict-mouth filtering, and an explicit jitter factor, but ablate OHKM off and use a conservative update strategy that evaluates the initialization before training.",
+        "layout": "full"
+      },
+      {
+        "id": "production_result",
+        "type": "markdown",
+        "body": "## Round8 remains the production winner\n\n**The detection trade is too small to justify the pose regression.** At max-instances 6, Round9b epoch 32 improves F1 by 0.0042 through one additional K_1_2 match, while per-GT OKS falls by 0.0746. Fresh training matches Round8 detection exactly but lowers per-GT OKS by 0.1057. Because the intervals below resample synchronized moments and count misses as zero, this conclusion is not an artifact of matched-only OKS or treating paired camera images as independent.",
+        "sourceId": "src_final_summary",
+        "layout": "full"
+      },
+      {
+        "id": "production_chart",
+        "type": "chart",
+        "chartId": "production_per_gt_oks",
+        "layout": "full"
+      },
+      {
+        "id": "production_table",
+        "type": "table",
+        "tableId": "production_detail",
+        "layout": "full"
+      },
+      {
+        "id": "uncertainty_result",
+        "type": "markdown",
+        "body": "## The Round8 advantage survives paired uncertainty analysis\n\n**Both alternatives are lower than Round8 across the synchronized benchmark.** On the production path, Round9b's per-GT OKS difference is -0.0746 (95% paired cluster-bootstrap interval -0.1065 to -0.0420); fresh is -0.1057 (-0.1371 to -0.0741). These are descriptive intervals for this fixed 40-moment benchmark, not causal population intervals.",
+        "sourceId": "src_bootstrap_track",
+        "layout": "full"
+      },
+      {
+        "id": "bootstrap_table",
+        "type": "table",
+        "tableId": "bootstrap_detail",
+        "layout": "full"
+      },
+      {
+        "id": "experiment_result",
+        "type": "markdown",
+        "body": "## The pose regression is not confined to K_1_2\n\n**Round8 leads in all three experiments.** The largest fresh deficit is K_1_2 (0.620 versus 0.482 matched-only OKS), but K_1_1 and K_1_3 also regress. This supports a general centered-instance localization problem rather than overfitting to only one recording.",
+        "sourceId": "src_stage3_legacy_track",
+        "layout": "full"
+      },
+      {
+        "id": "experiment_chart",
+        "type": "chart",
+        "chartId": "production_per_experiment_oks",
+        "layout": "full"
+      },
+      {
+        "id": "parity_result",
+        "type": "markdown",
+        "body": "## SLEAP-NN 0.3.1 is inference-neutral for frozen weights\n\n**All four frozen-model comparisons are semantically exact.** Round8 and Round9b epoch 32 were tested at max-instances 3 and 6 under 0.3.0 and 0.3.1. Corresponding coordinates are NaN-aware equal with maximum delta 0 px, and every non-coordinate record field is exact. Binary SLP hashes may differ because serialization metadata is not the semantic comparison.",
+        "sourceId": "src_parity",
+        "layout": "full"
+      },
+      {
+        "id": "parity_table",
+        "type": "table",
+        "tableId": "parity_detail",
+        "layout": "full"
+      },
+      {
+        "id": "training_result",
+        "type": "markdown",
+        "body": "## Fresh training selected the earliest checkpoint\n\n**The mOKS-selected winner is epoch 0, not the lowest-loss checkpoint.** Training ran through epoch 86 and stopped after 40 validation-loss checks without improvement from epoch 46. Epoch 0 mOKS was 0.5938; epochs 29 and 78 were lower at 0.5868 and 0.5848. The best validation loss occurred at epoch 46, demonstrating that lower confidence-map loss did not translate into better instance pose quality. The selected epoch-0 checkpoint SHA-256 begins `3ac43c60c8e`.",
+        "sourceId": "src_final_summary",
+        "layout": "full"
+      },
+      {
+        "id": "checkpoint_table",
+        "type": "table",
+        "tableId": "checkpoint_selection",
+        "layout": "full"
+      },
+      {
+        "id": "jitter_result",
+        "type": "markdown",
+        "body": "## Crop-position jitter improves robustness but costs nominal accuracy\n\n**The augmentation works for the failure mode it targets.** With a correct mouth crop, Round8 oracle centered-instance OKS is 0.751 versus 0.591 for Round9b and 0.583 for fresh. Under fixed diagonal +/-8 px offsets, Round8 falls to about 0.269, whereas Round9b remains at 0.555-0.636 and fresh at 0.516-0.556. Actual end-to-end predictions still favor Round8, so jitter should remain an ablation factor rather than an unconditional production setting.",
+        "sourceId": "src_final_summary",
+        "layout": "full"
+      },
+      {
+        "id": "jitter_chart",
+        "type": "chart",
+        "chartId": "oracle_offset_robustness",
+        "layout": "full"
+      },
+      {
+        "id": "scope_definitions",
+        "type": "markdown",
+        "body": "## Scope and metric definitions\n\nThe benchmark contains **80 side-view images from 40 synchronized moments and 240 GT fish**: 28 K_1_1 images, 26 K_1_2 images, and 26 K_1_3 images. Frames were selected by stable-hash uniform sampling, were not exposed to training, and are not Round8 fine-tune members.\n\n- **Detection/F1:** instance matching within the evaluator's 150 px gate; extras affect precision and misses affect recall.\n- **Matched-only OKS:** SLEAP OKS averaged only over matched instances; it must be read alongside F1/recall.\n- **Per-GT OKS:** the same instance OKS with missed GT assigned zero, averaged within each synchronized moment before the 40-moment mean.\n- **Mouth/tail p95:** 95th-percentile node error among matched instances, in image pixels.\n- **Oracle crop stress:** centered-instance inference from GT mouth anchors after a fixed offset; this isolates crop robustness and is not the observed centroid-error distribution.",
+        "sourceId": "src_final_summary",
+        "layout": "full"
+      },
+      {
+        "id": "methodology",
+        "type": "markdown",
+        "body": "## Three-stage validation design\n\n1. **Retained checkpoint comparison:** Round8 and Round9b epochs 32, 55, and 57 were evaluated with one frozen Round8 centroid on the locked benchmark. Round8 had the best pose quality; epoch 32 was the strongest retained Round9b compromise.\n2. **Frozen production-path parity:** isolated SLEAP-NN 0.3.0 and 0.3.1 environments ran the same Round8 and Round9b weights through legacy `track` at max-instances 3 and 6. Semantic predictions were compared record by record.\n3. **Fresh controlled training:** SLEAP-NN 0.3.1 trained one centered-instance condition with crop 448, rotation +/-90 degrees, scale 0.7-1.3, exact post-affine +/-8 px jitter, mouth anchor, strict-mouth filtering, OHKM on, batch 16, plateau LR halving, patience 40, and per-epoch mOKS top-three checkpointing. The selected checkpoint was evaluated through both new-predict max-3 and production legacy-track max-6 paths.\n\nA separate oracle centered-instance stress test then applied fixed `(-8,-8)`, `(0,0)`, and `(+8,+8)` anchor offsets on the 74 images where every GT mouth anchor was finite.",
+        "layout": "full"
+      },
+      {
+        "id": "limitations",
+        "type": "markdown",
+        "body": "## Limitations and robustness checks\n\n- **Model-assisted coordinates:** annotations are human-reviewed and contain no predicted-instance objects, but the coordinate suggestions originated from Round8. Subpixel agreement can therefore favor Round8. A small blind from-scratch audit is needed before claiming the full localization effect as unbiased.\n- **Test selection:** Round9b epoch 32 was retained after comparing epochs 32, 55, and 57 on this benchmark; its reported performance is optimistic relative to a never-inspected test set.\n- **Sample size:** the independent unit is 40 synchronized moments. Paired cluster-bootstrap intervals quantify benchmark stability but not generalization to all experiments.\n- **Metric protocols differ:** callback mOKS, built-in post-fit mOKS, external matched-only OKS, and per-GT missing-zero OKS have different matching and denominator rules.\n- **Post-fit train metrics are absent:** SLEAP's automatic train-set inference stopped at a sparse packaged-frame index. Validation metrics, checkpoint selection, and both locked-benchmark evaluations completed and are unaffected.\n- **No training-version A/B:** frozen inference parity isolates runtime behavior, but the fresh condition was not trained identically under 0.3.0. No accuracy gain can be attributed causally to the version upgrade.",
+        "layout": "full"
+      },
+      {
+        "id": "recommendations",
+        "type": "markdown",
+        "body": "## Recommended next steps\n\n1. **Production now:** keep Round8 centroid + Round8 centered-instance weights and use SLEAP-NN 0.3.1 legacy `track`, batch 12, max-instances 6.\n2. **Do not promote:** keep Round9b epoch 32 experimental only; reject the fresh OHKM-on continuation for production.\n3. **Next centered-instance ablation:** retain crop 448, rotation +/-90 degrees, mouth anchor, strict-mouth filtering, and a declared jitter factor; compare OHKM off versus on with a lower LR or frozen-backbone/head-only update.\n4. **Selection safeguard:** evaluate and preserve the initialization before epoch 0, then select checkpoints by pose quality rather than validation loss.\n5. **Labeling:** add genuinely independent mouth-anchor examples, emphasizing occlusion and K_1_2-like cases. Include a small blind from-scratch coordinate audit separate from Round8 suggestions.\n6. **Centroid scope:** do not retrain or replace the centroid based on this evidence; the model differences arise in centered-instance localization while the centroid was frozen.",
+        "layout": "full"
+      },
+      {
+        "id": "further_questions",
+        "type": "markdown",
+        "body": "## Further questions\n\n- Does OHKM off recover Round8-level nominal OKS while retaining some +/-8 px crop robustness?\n- What is the empirical distribution of centroid-to-GT mouth offset in production videos, and how much probability mass lies beyond 4 or 8 px?\n- Does a blind, from-scratch 15-20-frame audit preserve the Round8 advantage after removing suggestion-coordinate bias?\n- Would a frozen backbone with only the pose head updated prevent the immediate epoch-0 regression seen here?",
+        "layout": "full"
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-07-29T17:05:00+09:00",
+    "status": "ready",
+    "datasets": {
+      "production_overall": [
+        {
+          "candidate": "Round8",
+          "f1": 0.9621848739495797,
+          "matched_only_oks": 0.676037386327388,
+          "per_gt_oks_missing_zero": 0.6450523394540493,
+          "matched": 229,
+          "missed": 11,
+          "extra": 7,
+          "merge_rate": 0.0375,
+          "swap_rate": 0.0,
+          "mouth_p95_px": 5.229703412823346,
+          "tail_p95_px": 6.71281258179768,
+          "runtime": "sleap-nn 0.3.1",
+          "path": "legacy track max6"
+        },
+        {
+          "candidate": "Round9b epoch 32",
+          "f1": 0.9663865546218487,
+          "matched_only_oks": 0.5952107438212129,
+          "per_gt_oks_missing_zero": 0.5704102961619956,
+          "matched": 230,
+          "missed": 10,
+          "extra": 6,
+          "merge_rate": 0.041666666666666664,
+          "swap_rate": 0.0045871559633027525,
+          "mouth_p95_px": 4.894811667111426,
+          "tail_p95_px": 6.000016808894983,
+          "runtime": "sleap-nn 0.3.1",
+          "path": "legacy track max6"
+        },
+        {
+          "candidate": "Fresh mOKS epoch 0",
+          "f1": 0.9621848739495797,
+          "matched_only_oks": 0.5652972691163427,
+          "per_gt_oks_missing_zero": 0.5393878109485103,
+          "matched": 229,
+          "missed": 11,
+          "extra": 7,
+          "merge_rate": 0.0375,
+          "swap_rate": 0.0,
+          "mouth_p95_px": 5.114390732631103,
+          "tail_p95_px": 7.581858982017795,
+          "runtime": "sleap-nn 0.3.1",
+          "path": "legacy track max6"
+        }
+      ],
+      "production_per_experiment": [
+        {
+          "experiment": "K_1_1",
+          "candidate": "Round8",
+          "matched_only_oks": 0.6844847500968708,
+          "image_count": 28,
+          "path": "legacy track max6"
+        },
+        {
+          "experiment": "K_1_1",
+          "candidate": "Round9b epoch 32",
+          "matched_only_oks": 0.635652940181479,
+          "image_count": 28,
+          "path": "legacy track max6"
+        },
+        {
+          "experiment": "K_1_1",
+          "candidate": "Fresh mOKS epoch 0",
+          "matched_only_oks": 0.6219150672414441,
+          "image_count": 28,
+          "path": "legacy track max6"
+        },
+        {
+          "experiment": "K_1_2",
+          "candidate": "Round8",
+          "matched_only_oks": 0.6204814588932218,
+          "image_count": 26,
+          "path": "legacy track max6"
+        },
+        {
+          "experiment": "K_1_2",
+          "candidate": "Round9b epoch 32",
+          "matched_only_oks": 0.5518587428361363,
+          "image_count": 26,
+          "path": "legacy track max6"
+        },
+        {
+          "experiment": "K_1_2",
+          "candidate": "Fresh mOKS epoch 0",
+          "matched_only_oks": 0.4824059750254251,
+          "image_count": 26,
+          "path": "legacy track max6"
+        },
+        {
+          "experiment": "K_1_3",
+          "candidate": "Round8",
+          "matched_only_oks": 0.720988669492268,
+          "image_count": 26,
+          "path": "legacy track max6"
+        },
+        {
+          "experiment": "K_1_3",
+          "candidate": "Round9b epoch 32",
+          "matched_only_oks": 0.5943071460574006,
+          "image_count": 26,
+          "path": "legacy track max6"
+        },
+        {
+          "experiment": "K_1_3",
+          "candidate": "Fresh mOKS epoch 0",
+          "matched_only_oks": 0.5848309067230594,
+          "image_count": 26,
+          "path": "legacy track max6"
+        }
+      ],
+      "bootstrap_production": [
+        {
+          "candidate": "Round8",
+          "mean": 0.6450523394540493,
+          "delta_vs_round8": null,
+          "ci_low": null,
+          "ci_high": null,
+          "resamples": 200000,
+          "clusters": 40
+        },
+        {
+          "candidate": "Round9b epoch 32",
+          "mean": 0.5704102961619956,
+          "delta_vs_round8": -0.07464204329205369,
+          "ci_low": -0.10647432690285805,
+          "ci_high": -0.04200544730604152,
+          "resamples": 200000,
+          "clusters": 40
+        },
+        {
+          "candidate": "Fresh mOKS epoch 0",
+          "mean": 0.5393878109485103,
+          "delta_vs_round8": -0.10566452850553909,
+          "ci_low": -0.13711863342190175,
+          "ci_high": -0.07414426741001837,
+          "resamples": 200000,
+          "clusters": 40
+        }
+      ],
+      "parity": [
+        {
+          "max_instances": 3,
+          "model": "Round8",
+          "records": 242,
+          "max_coordinate_delta_px": 0.0,
+          "coordinates_equal": "yes",
+          "noncoordinate_exact": "yes"
+        },
+        {
+          "max_instances": 3,
+          "model": "Round9b epoch 32",
+          "records": 241,
+          "max_coordinate_delta_px": 0.0,
+          "coordinates_equal": "yes",
+          "noncoordinate_exact": "yes"
+        },
+        {
+          "max_instances": 6,
+          "model": "Round8",
+          "records": 247,
+          "max_coordinate_delta_px": 0.0,
+          "coordinates_equal": "yes",
+          "noncoordinate_exact": "yes"
+        },
+        {
+          "max_instances": 6,
+          "model": "Round9b epoch 32",
+          "records": 246,
+          "max_coordinate_delta_px": 0.0,
+          "coordinates_equal": "yes",
+          "noncoordinate_exact": "yes"
+        }
+      ],
+      "training_checkpoints": [
+        {
+          "epoch": 0,
+          "global_step": 551,
+          "moks": 0.593778133392334,
+          "selected": "yes",
+          "sha256_short": "3ac43c60c8e",
+          "best_val_loss_epoch": 46,
+          "best_val_loss": 0.0002466944570187479,
+          "runtime": "sleap-nn 0.3.1"
+        },
+        {
+          "epoch": 29,
+          "global_step": 16530,
+          "moks": 0.5867544412612915,
+          "selected": "no",
+          "sha256_short": "80a94b9a394e",
+          "best_val_loss_epoch": 46,
+          "best_val_loss": 0.0002466944570187479,
+          "runtime": "sleap-nn 0.3.1"
+        },
+        {
+          "epoch": 78,
+          "global_step": 43529,
+          "moks": 0.5847840309143066,
+          "selected": "no",
+          "sha256_short": "feac8dbf666e",
+          "best_val_loss_epoch": 46,
+          "best_val_loss": 0.0002466944570187479,
+          "runtime": "sleap-nn 0.3.1"
+        }
+      ],
+      "oracle_offset_stress": [
+        {
+          "offset": "-8,-8",
+          "candidate": "Round8",
+          "matched_only_oks": 0.2689984306764344,
+          "mouth_p95_px": 10.840212556100415,
+          "tail_p95_px": 18.252090743778012,
+          "images": 74
+        },
+        {
+          "offset": "-8,-8",
+          "candidate": "Round9b epoch 32",
+          "matched_only_oks": 0.5554386138815581,
+          "mouth_p95_px": 6.444092160887925,
+          "tail_p95_px": 9.175434688712789,
+          "images": 74
+        },
+        {
+          "offset": "-8,-8",
+          "candidate": "Fresh mOKS epoch 0",
+          "matched_only_oks": 0.5156988046672184,
+          "mouth_p95_px": 8.363585394602545,
+          "tail_p95_px": 8.73738765825806,
+          "images": 74
+        },
+        {
+          "offset": "0,0",
+          "candidate": "Round8",
+          "matched_only_oks": 0.7514592670098673,
+          "mouth_p95_px": 0.6495942541614613,
+          "tail_p95_px": 7.269395226007977,
+          "images": 74
+        },
+        {
+          "offset": "0,0",
+          "candidate": "Round9b epoch 32",
+          "matched_only_oks": 0.5908135730307763,
+          "mouth_p95_px": 4.652051411076439,
+          "tail_p95_px": 5.835659666323884,
+          "images": 74
+        },
+        {
+          "offset": "0,0",
+          "candidate": "Fresh mOKS epoch 0",
+          "matched_only_oks": 0.582757067558491,
+          "mouth_p95_px": 4.483867682490735,
+          "tail_p95_px": 10.533959811547717,
+          "images": 74
+        },
+        {
+          "offset": "8,8",
+          "candidate": "Round8",
+          "matched_only_oks": 0.2691003672248694,
+          "mouth_p95_px": 12.064315562975658,
+          "tail_p95_px": 7.274547116582075,
+          "images": 74
+        },
+        {
+          "offset": "8,8",
+          "candidate": "Round9b epoch 32",
+          "matched_only_oks": 0.6362865655259868,
+          "mouth_p95_px": 4.715361488642023,
+          "tail_p95_px": 6.184560770016118,
+          "images": 74
+        },
+        {
+          "offset": "8,8",
+          "candidate": "Fresh mOKS epoch 0",
+          "matched_only_oks": 0.5560302483097094,
+          "mouth_p95_px": 6.504070618062104,
+          "tail_p95_px": 12.851461278964027,
+          "images": 74
+        }
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": []
+}

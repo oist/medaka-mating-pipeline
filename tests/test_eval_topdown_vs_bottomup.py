@@ -544,3 +544,46 @@ def test_explicit_candidate_model_specs_require_best_checkpoint(tmp_path):
 
     with pytest.raises(ValueError, match="no best.ckpt"):
         parse_model_specs([f"incomplete={model}"], "centroid_only")
+
+
+def test_oracle_anchor_offset_clones_without_mutating_ground_truth():
+    import sleap_io as sio
+
+    from scripts.sleap.compare_rounds_topdown import (
+        offset_oracle_mouth_anchors,
+    )
+
+    skeleton = sio.Skeleton(
+        nodes=["mouth", "tail"],
+        edges=[("mouth", "tail")],
+    )
+    video = sio.Video("synthetic.mp4", open_backend=False)
+    instance = sio.Instance.from_numpy(
+        np.array([[10.0, 20.0, 1.0], [30.0, 40.0, 1.0]]),
+        skeleton=skeleton,
+    )
+    labels = sio.Labels(
+        labeled_frames=[
+            sio.LabeledFrame(
+                video=video,
+                frame_idx=7,
+                instances=[instance],
+            )
+        ],
+        videos=[video],
+        skeletons=[skeleton],
+    )
+
+    shifted = offset_oracle_mouth_anchors(
+        labels,
+        mouth_idx=0,
+        dx=8.0,
+        dy=-4.0,
+    )
+
+    original_points = labels.labeled_frames[0].user_instances[0].numpy()
+    shifted_points = shifted.labeled_frames[0].user_instances[0].numpy()
+    assert np.allclose(original_points, [[10.0, 20.0], [30.0, 40.0]])
+    assert np.allclose(shifted_points, [[18.0, 16.0], [30.0, 40.0]])
+    assert shifted.labeled_frames[0] is not labels.labeled_frames[0]
+    assert shifted.provenance["oracle_anchor_offset_px"] == [8.0, -4.0]

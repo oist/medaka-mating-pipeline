@@ -1,0 +1,29 @@
+{
+  "schema_version": "paired_cluster_bootstrap_v1",
+  "seed": 20260729,
+  "resamples": 200000,
+  "cluster_unit": "selection_frame_key (40 synchronized moments; six side-view GT fish per cluster)",
+  "metric": "per-GT OKS with unmatched GT assigned 0",
+  "source": "stage3_fresh_full_topdown.json",
+  "per_gt_oks_missing_zero": {
+    "round8": {
+      "mean": 0.6563090421974047
+    },
+    "round9b_e32": {
+      "mean": 0.5711213558005502,
+      "delta_vs_round8": -0.08518768639685466,
+      "paired_cluster_bootstrap_95ci": [
+        -0.1219753582115979,
+        -0.04886442674571966
+      ]
+    },
+    "fresh_moks_e0": {
+      "mean": 0.5398727959537186,
+      "delta_vs_round8": -0.11643624624368613,
+      "paired_cluster_bootstrap_95ci": [
+        -0.15331384945196913,
+        -0.08079620695678642
+      ]
+    }
+  }
+}

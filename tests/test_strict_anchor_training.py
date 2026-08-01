@@ -1,11 +1,18 @@
 from __future__ import annotations
 
+import warnings
+from types import SimpleNamespace
+
 import numpy as np
 import pytest
+import sleap_io as sio
 import torch
 
 from scripts.sleap.train_strict_anchor import (
     apply_post_affine_crop_jitter,
+    build_validation_recovery_checkpoint_callback,
+    build_grouped_epoch_eval_ground_truth,
+    build_grouped_epoch_eval_predictions,
     filter_instances_with_finite_anchor,
     instance_has_finite_anchor,
     instances_have_finite_anchor,
@@ -13,6 +20,8 @@ from scripts.sleap.train_strict_anchor import (
     strict_generate_centroids,
 )
 from sleap_nn.data.augmentation import apply_geometric_augmentation
+from sleap_nn.evaluation import Evaluator
+from sleap_nn.training.callbacks import EpochEndEvaluationCallback
 
 
 class FakeInstance:
@@ -130,3 +139,132 @@ def test_post_affine_crop_jitter_respects_requested_pixel_bound() -> None:
     observed = np.asarray(observed)
     assert np.abs(observed).max() <= 8.0 + 1.0e-3
     assert np.abs(observed).max() > 6.0
+
+
+def test_centered_instance_epoch_eval_groups_all_fish_per_frame() -> None:
+    skeleton = sio.Skeleton(["mouth", "tail"])
+    video = sio.Video.from_filename("synthetic_side.mp4")
+    callback = SimpleNamespace(skeleton=skeleton, videos=[video])
+    predictions = []
+    ground_truth = []
+    for fish_idx in range(3):
+        points = np.array(
+            [
+                [10.0 + fish_idx * 20.0, 12.0],
+                [18.0 + fish_idx * 20.0, 14.0],
+            ]
+        )
+        predictions.append(
+            {
+                "video_idx": 0,
+                "frame_idx": 42,
+                "pred_peaks": points.reshape(1, 2, 2),
+                "pred_scores": np.full((1, 2), 0.9 - fish_idx * 0.1),
+            }
+        )
+        ground_truth.append(
+            {
+                "video_idx": 0,
+                "frame_idx": 42,
+                "gt_instances": points.reshape(1, 2, 2),
+                "num_instances": 1,
+            }
+        )
+
+    pred_labels = build_grouped_epoch_eval_predictions(
+        callback, predictions, sio, np
+    )
+    gt_labels = build_grouped_epoch_eval_ground_truth(
+        callback, ground_truth, sio, np
+    )
+
+    pred_frames = pred_labels.find(video, frame_idx=42)
+    gt_frames = gt_labels.find(video, frame_idx=42)
+    assert len(pred_frames) == 1
+    assert len(gt_frames) == 1
+    assert len(pred_frames[0].predicted_instances) == 3
+    assert len(gt_frames[0].user_instances) == 3
+
+
+def test_centered_instance_epoch_eval_keeps_complete_miss_frames() -> None:
+    skeleton = sio.Skeleton(["mouth", "tail"])
+    video = sio.Video.from_filename("synthetic_misses.mp4")
+    callback = EpochEndEvaluationCallback(
+        skeleton=skeleton,
+        videos=[video],
+        eval_frequency=1,
+    )
+    predictions = [
+        {
+            "video_idx": 0,
+            "frame_idx": 10,
+            "pred_peaks": None,
+            "pred_scores": None,
+        },
+        {
+            "video_idx": 0,
+            "frame_idx": 11,
+            "pred_peaks": np.full((1, 2, 2), np.nan),
+            "pred_scores": np.full((1, 2), np.nan),
+        },
+    ]
+    ground_truth = [
+        {
+            "video_idx": 0,
+            "frame_idx": frame_idx,
+            "gt_instances": np.array(
+                [[[10.0, 10.0], [20.0, 20.0]]]
+            ),
+            "num_instances": 1,
+        }
+        for frame_idx in (10, 11)
+    ]
+
+    pred_labels = build_grouped_epoch_eval_predictions(
+        callback, predictions, sio, np
+    )
+    gt_labels = build_grouped_epoch_eval_ground_truth(
+        callback, ground_truth, sio, np
+    )
+
+    assert [lf.frame_idx for lf in pred_labels.labeled_frames] == [10, 11]
+    assert all(len(lf.instances) == 0 for lf in pred_labels.labeled_frames)
+    assert all(
+        len(pred_labels.find(video, frame_idx=frame_idx)) == 1
+        for frame_idx in (10, 11)
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        evaluator = Evaluator(
+            ground_truth_instances=gt_labels,
+            predicted_instances=pred_labels,
+            user_labels_only=False,
+        )
+        metrics = evaluator.evaluate()
+    assert len(evaluator.frame_pairs) == 2
+    assert len(evaluator.false_negatives) == 2
+    assert np.isnan(metrics["mOKS"]["mOKS"])
+
+    trainer = SimpleNamespace(callback_metrics={}, loggers=[])
+    callback._log_metrics(trainer, metrics, epoch=0)
+    assert trainer.callback_metrics["eval/val/mOKS"].item() == 0.0
+
+
+def test_validation_recovery_checkpoint_is_rolling_full_state(
+    tmp_path,
+) -> None:
+    callback = build_validation_recovery_checkpoint_callback(tmp_path / "run")
+
+    assert callback.monitor == "step"
+    assert callback.mode == "max"
+    assert callback.save_top_k == 1
+    assert callback.save_last is False
+    assert callback.save_weights_only is False
+    assert callback.filename == "recovery-e{epoch:05d}-s{step:09d}"
+    assert callback._every_n_epochs == 1
+    assert callback._every_n_train_steps == 0
+    assert callback._save_on_train_epoch_end is False
+    assert callback.format_checkpoint_name(
+        {"epoch": 5, "step": 550}
+    ).endswith("recovery-e00005-s000000550.ckpt")

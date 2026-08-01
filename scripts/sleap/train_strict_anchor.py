@@ -25,6 +25,11 @@ same patch is installed in Windows DataLoader workers:
     its pixel bound is not amplified or rotated by those transforms; ``native``
     (default) preserves the upstream composed-affine behavior.
 
+``MEDAKA_RECOVERY_CHECKPOINT_EVERY_VAL``
+    ``1`` adds a separate full-state recovery checkpoint callback which retains
+    the newest completed validation epoch. Its ``recovery-*.ckpt`` files are
+    independent of the monitored ``best*.ckpt`` top-k.
+
 Whenever either strict policy is active, the remaining-node fallback is also
 disabled. A missing anchor that somehow reaches target generation stays NaN.
 The strict centroid definition is mirrored in centroid evaluation.
@@ -35,6 +40,7 @@ The module accepts and forwards the normal ``sleap-nn`` CLI arguments.
 import inspect
 import os
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -46,6 +52,7 @@ CENTERED_INSTANCE_POLICY_ENV = "MEDAKA_CENTERED_INSTANCE_ANCHOR_POLICY"
 CENTERED_INSTANCE_JITTER_ORDER_ENV = (
     "MEDAKA_CENTERED_INSTANCE_JITTER_ORDER"
 )
+RECOVERY_CHECKPOINT_ENV = "MEDAKA_RECOVERY_CHECKPOINT_EVERY_VAL"
 CENTROID_POLICIES = {"frame", "instance", "disabled"}
 CENTERED_INSTANCE_POLICIES = {"strict", "disabled"}
 CENTERED_INSTANCE_JITTER_ORDERS = {"native", "post_affine"}
@@ -113,6 +120,119 @@ def filter_instances_with_finite_anchor(
     ]
 
 
+def build_grouped_epoch_eval_predictions(
+    callback: Any,
+    predictions: list[dict[str, Any]],
+    sio: Any,
+    np_module: Any,
+) -> Any:
+    """Build one prediction frame per source frame for centered-instance eval.
+
+    Centered-instance validation yields one record per instance crop. SLEAP-IO
+    does not merge duplicate ``LabeledFrame`` records with the same video/frame
+    key, so emitting one frame per crop silently keeps only one fish during
+    epoch-end evaluation. Aggregate every crop prediction into a single frame.
+    """
+    grouped: dict[tuple[int, int], list[Any]] = {}
+    for pred in predictions:
+        key = (int(pred["video_idx"]), int(pred["frame_idx"]))
+        # Register every source frame before inspecting its crop predictions.
+        # An empty predicted frame is required for evaluation to count a
+        # complete miss and publish the worst-value checkpoint metric.
+        instances = grouped.setdefault(key, [])
+        pred_peaks = pred["pred_peaks"]
+        pred_scores = pred.get("pred_scores")
+        if pred_peaks is None:
+            continue
+        pred_peaks = np_module.asarray(pred_peaks)
+        if pred_peaks.size == 0 or np_module.isnan(pred_peaks).all():
+            continue
+        if pred_peaks.ndim == 2:
+            pred_peaks = pred_peaks.reshape(1, -1, 2)
+            if pred_scores is not None:
+                pred_scores = np_module.asarray(pred_scores).reshape(1, -1)
+        elif pred_scores is not None:
+            pred_scores = np_module.asarray(pred_scores)
+
+        for inst_idx, inst_points in enumerate(pred_peaks):
+            if np_module.isnan(inst_points).all():
+                continue
+            inst_scores = (
+                pred_scores[inst_idx] if pred_scores is not None else None
+            )
+            instances.append(
+                sio.PredictedInstance.from_numpy(
+                    points_data=inst_points,
+                    skeleton=callback.skeleton,
+                    point_scores=(
+                        inst_scores
+                        if inst_scores is not None
+                        else np_module.ones(len(inst_points))
+                    ),
+                    score=(
+                        float(np_module.nanmean(inst_scores))
+                        if inst_scores is not None
+                        else 1.0
+                    ),
+                )
+            )
+
+    labeled_frames = [
+        sio.LabeledFrame(
+            video=callback.videos[video_idx],
+            frame_idx=frame_idx,
+            instances=instances,
+        )
+        for (video_idx, frame_idx), instances in grouped.items()
+    ]
+    return sio.Labels(
+        videos=callback.videos,
+        skeletons=[callback.skeleton],
+        labeled_frames=labeled_frames,
+    )
+
+
+def build_grouped_epoch_eval_ground_truth(
+    callback: Any,
+    ground_truth: list[dict[str, Any]],
+    sio: Any,
+    np_module: Any,
+) -> Any:
+    """Build one ground-truth frame per source frame for instance-crop eval."""
+    grouped: dict[tuple[int, int], list[Any]] = {}
+    for gt in ground_truth:
+        gt_instances = np_module.asarray(gt["gt_instances"])
+        if gt_instances.ndim == 2:
+            gt_instances = gt_instances.reshape(1, -1, 2)
+
+        key = (int(gt["video_idx"]), int(gt["frame_idx"]))
+        instances = grouped.setdefault(key, [])
+        for inst_data in gt_instances[: int(gt["num_instances"])]:
+            if np_module.isnan(inst_data).all():
+                continue
+            instances.append(
+                sio.Instance.from_numpy(
+                    points_data=inst_data,
+                    skeleton=callback.skeleton,
+                )
+            )
+
+    labeled_frames = [
+        sio.LabeledFrame(
+            video=callback.videos[video_idx],
+            frame_idx=frame_idx,
+            instances=instances,
+        )
+        for (video_idx, frame_idx), instances in grouped.items()
+        if instances
+    ]
+    return sio.Labels(
+        videos=callback.videos,
+        skeletons=[callback.skeleton],
+        labeled_frames=labeled_frames,
+    )
+
+
 def _policy_from_env(name: str, default: str, allowed: set[str]) -> str:
     value = os.environ.get(name, default).strip().lower()
     if value not in allowed:
@@ -120,6 +240,30 @@ def _policy_from_env(name: str, default: str, allowed: set[str]) -> str:
             f"{name} must be one of {sorted(allowed)}, got {value!r}"
         )
     return value
+
+
+def build_validation_recovery_checkpoint_callback(run_dir: Path):
+    """Return a rolling full-state checkpoint independent of monitored top-k.
+
+    The filename contains epoch and step so Lightning writes the replacement
+    before deleting the previous recovery checkpoint. If a write is
+    interrupted, resume selection can reject the incomplete new file and fall
+    back to the prior completed recovery checkpoint.
+    """
+    from lightning.pytorch.callbacks import ModelCheckpoint
+
+    return ModelCheckpoint(
+        dirpath=run_dir.as_posix(),
+        filename="recovery-e{epoch:05d}-s{step:09d}",
+        monitor="step",
+        mode="max",
+        save_top_k=1,
+        save_last=False,
+        every_n_epochs=1,
+        save_on_train_epoch_end=False,
+        auto_insert_metric_name=False,
+        enable_version_counter=True,
+    )
 
 
 def apply_post_affine_crop_jitter(
@@ -217,6 +361,8 @@ def install_strict_anchor_policy() -> None:
     import sleap_nn.data.custom_datasets as custom_datasets
     import sleap_nn.data.instance_centroids as instance_centroids
     import sleap_nn.evaluation as evaluation
+    import sleap_nn.training.callbacks as training_callbacks
+    import sleap_nn.training.model_trainer as model_trainer
 
     if getattr(custom_datasets, "_medaka_strict_anchor_policy", False):
         return
@@ -334,6 +480,85 @@ def install_strict_anchor_policy() -> None:
         evaluation.compute_gt_centroids = strict_compute_gt_centroids
 
     if centered_instance_policy == "strict":
+        # Upstream appends "-1" to an existing run directory whenever
+        # best.ckpt exists, including a genuine Lightning resume. Keep the
+        # restored ModelCheckpoint paths live and resume in place only when
+        # resume_ckpt_path itself is inside the requested run directory.
+        trainer_class = model_trainer.ModelTrainer
+        if not getattr(trainer_class, "_medaka_resume_in_place", False):
+            original_setup_ckpt_path = trainer_class._setup_ckpt_path
+
+            def resume_safe_setup_ckpt_path(self) -> None:
+                requested_run_name = self.config.trainer_config.run_name
+                checkpoint_dir = self.config.trainer_config.ckpt_dir
+                resume_path = self.config.trainer_config.resume_ckpt_path
+                original_setup_ckpt_path(self)
+                if not resume_path or not requested_run_name:
+                    return
+                requested_dir = (
+                    Path(checkpoint_dir or ".") / str(requested_run_name)
+                ).resolve()
+                if Path(str(resume_path)).resolve().parent != requested_dir:
+                    return
+                if self.config.trainer_config.run_name != requested_run_name:
+                    self.config.trainer_config.run_name = requested_run_name
+                    print(
+                        "[medaka strict-anchor] genuine resume: preserving "
+                        f"run_name={requested_run_name} and live top-k files",
+                        flush=True,
+                    )
+
+            trainer_class._setup_ckpt_path = resume_safe_setup_ckpt_path
+            trainer_class._medaka_resume_in_place = True
+
+        if os.environ.get(RECOVERY_CHECKPOINT_ENV, "0") == "1":
+            if not getattr(
+                trainer_class, "_medaka_validation_recovery", False
+            ):
+                original_setup_callbacks = (
+                    trainer_class._setup_loggers_callbacks
+                )
+
+                def setup_callbacks_with_validation_recovery(
+                    self, *args, **kwargs
+                ):
+                    loggers, callbacks = original_setup_callbacks(
+                        self, *args, **kwargs
+                    )
+                    run_dir = (
+                        Path(self.config.trainer_config.ckpt_dir)
+                        / self.config.trainer_config.run_name
+                    )
+                    callbacks.append(
+                        build_validation_recovery_checkpoint_callback(run_dir)
+                    )
+                    print(
+                        "[medaka strict-anchor] recovery checkpoint enabled: "
+                        "one full-state recovery-*.ckpt per completed "
+                        "validation epoch",
+                        flush=True,
+                    )
+                    return loggers, callbacks
+
+                trainer_class._setup_loggers_callbacks = (
+                    setup_callbacks_with_validation_recovery
+                )
+                trainer_class._medaka_validation_recovery = True
+
+        # Epoch evaluation receives one record per centered-instance crop.
+        # Group those records by source frame so all fish contribute to mOKS.
+        epoch_eval_callback = training_callbacks.EpochEndEvaluationCallback
+        if not getattr(
+            epoch_eval_callback, "_medaka_groups_centered_instances", False
+        ):
+            epoch_eval_callback._build_pred_labels = (
+                build_grouped_epoch_eval_predictions
+            )
+            epoch_eval_callback._build_gt_labels = (
+                build_grouped_epoch_eval_ground_truth
+            )
+            epoch_eval_callback._medaka_groups_centered_instances = True
+
         if centered_instance_jitter_order == "post_affine":
             original_geometric_augmentation = (
                 custom_datasets.apply_geometric_augmentation

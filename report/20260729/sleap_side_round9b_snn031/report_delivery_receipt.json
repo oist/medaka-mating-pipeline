@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "title": "SLEAP side-model 0.3.1 validation review",
+  "html": "C:\\Users\\machi\\Documents\\GitHub\\medaka-mating-pipeline\\report\\20260729\\sleap_side_round9b_snn031\\report.html",
+  "html_bytes": 473445,
+  "stages": {
+    "validation": "passed",
+    "package": "passed",
+    "verification": "structural_only"
+  },
+  "counts": {
+    "blocks": 20,
+    "charts": 3,
+    "html": 0,
+    "metrics": 0,
+    "tables": 4
+  },
+  "verification_note": "The standard portable-artifact structural verifier passed. Full browser QA was unavailable because the Codex Node runtime does not expose a standalone browser process; all chart values are also preserved in visible tables and JSON/SQL source snapshots."
+}

@@ -1,0 +1,30 @@
+{
+  "m3": {
+    "round8": {
+      "records": 242,
+      "noncoordinate_fields_exact": true,
+      "max_prediction_coordinate_delta_px": 0.0,
+      "coordinates_equal_nanaware": true
+    },
+    "r9b_e32": {
+      "records": 241,
+      "noncoordinate_fields_exact": true,
+      "max_prediction_coordinate_delta_px": 0.0,
+      "coordinates_equal_nanaware": true
+    }
+  },
+  "m6": {
+    "round8": {
+      "records": 247,
+      "noncoordinate_fields_exact": true,
+      "max_prediction_coordinate_delta_px": 0.0,
+      "coordinates_equal_nanaware": true
+    },
+    "r9b_e32": {
+      "records": 246,
+      "noncoordinate_fields_exact": true,
+      "max_prediction_coordinate_delta_px": 0.0,
+      "coordinates_equal_nanaware": true
+    }
+  }
+}
