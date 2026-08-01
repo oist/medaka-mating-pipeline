@@ -13,9 +13,11 @@ ID_1=G1 --identity ID_2=G2 --identity ID_3=G3``:
     to the nearest SLEAP keypoint -> draw that fish's pose coloured by id_final. (Using the
     reprojected resolved track, NOT best.json instance indices which swap sort-order at
     crossings, is what keeps the 2D colour glued to the right fish and consistent with 3D.)
-  * 3D panel: each fish's position + a 5 s motion tail + a **body-axis arrow** = the triangulated
-    tail->mouth direction (mouth/tail 3D recovered from the matched per-view keypoints), i.e. where
-    the fish is FACING, not where it is moving.
+  * 3D panel: each fish's triangulated **mouth** position + a 5 s mouth-keypoint
+    trail + a thin tail->mouth body arrow (mouth/tail 3D recovered from the
+    matched per-view keypoints), i.e. where the fish is facing rather than
+    where its centroid is moving. The resolved 3D centroid remains the identity
+    anchor and is used only as a fallback when a mouth cannot be triangulated.
   * Confidence: ``id_conf=high`` draws SOLID. Geometry-only CSVs use
     ``is_interpolated`` instead, so gap-filled positions are faded while measured
     positions remain solid.
@@ -150,33 +152,94 @@ class Projector3D:
         return img
 
 
-def draw_3d_panel(proj, base, pos, conf, body, f, tail_n, arrow_mm=16.0):
-    """pos[id]=(N,3); conf[id]=(N,) bool; body[id]=(N,3) unit tail->mouth dir (NaN if unknown).
-    Tail polyline + current marker + a body-axis arrow (facing direction)."""
+def _trail_source_indices(frame: int, trail_frames: int, stride: int) -> np.ndarray:
+    """Return source-frame indices for a trail that always includes ``frame``."""
+    start = max(0, int(frame) - max(0, int(trail_frames)) + 1)
+    step = max(1, int(stride))
+    return np.arange(int(frame), start - 1, -step, dtype=np.int64)[::-1]
+
+
+def _resolve_trail_stride(frame_step: int, trail_sample_step: int | None) -> int:
+    """Resolve independent trail sampling without changing rendered frames."""
+    if trail_sample_step is None or int(trail_sample_step) <= 0:
+        return max(1, int(frame_step))
+    return max(1, int(trail_sample_step))
+
+
+def draw_3d_panel(
+    proj,
+    base,
+    pos,
+    conf,
+    mouth_xyz,
+    tail_xyz,
+    f,
+    trail_n,
+    *,
+    trail_stride=1,
+    arrow_t=3,
+):
+    """Draw mouth trails and thin triangulated tail->mouth body arrows.
+
+    ``pos`` is the resolved centroid track used to anchor identity and as a
+    fallback marker. ``mouth_xyz`` and ``tail_xyz`` are direct three-view node
+    triangulations. Trails use only ``mouth_xyz``; they never use the tail or
+    centroid.
+    """
     import cv2
     img = base.copy()
     for name in ID_NAMES:
-        traj = pos[name]
-        seg = traj[max(0, f - tail_n):f + 1]
+        centroid_track = pos[name]
+        mouth_track = mouth_xyz[name]
+        tail_track = tail_xyz[name]
+        trail_indices = _trail_source_indices(f, trail_n, trail_stride)
+        seg = mouth_track[trail_indices]
         finite = np.isfinite(seg[:, 0])
-        if finite.sum() == 0 or not finite[-1]:
+        mouth_now = mouth_track[f]
+        centroid_now = centroid_track[f]
+        current = (
+            mouth_now
+            if np.isfinite(mouth_now).all()
+            else centroid_now
+        )
+        if not np.isfinite(current).all():
             continue
         col = ID_BGR[name]
         pix = proj.project(seg)
         for k in range(1, len(pix)):
             if finite[k] and finite[k - 1]:
                 a = 0.20 + 0.80 * (k / max(len(pix) - 1, 1))
-                cv2.line(img, (int(pix[k - 1, 0]), int(pix[k - 1, 1])),
-                         (int(pix[k, 0]), int(pix[k, 1])), _fade(col, a), 2, cv2.LINE_AA)
-        cur = pix[-1]
+                cv2.line(
+                    img,
+                    (int(pix[k - 1, 0]), int(pix[k - 1, 1])),
+                    (int(pix[k, 0]), int(pix[k, 1])),
+                    _fade(col, a),
+                    1,
+                    cv2.LINE_AA,
+                )
+        cur = proj.project(current)
         cp = (int(cur[0]), int(cur[1]))
-        high = bool(conf[name][f])
-        bd = body[name][f]
-        if np.isfinite(bd).all():
-            tip = proj.project(traj[f] + bd * arrow_mm)
-            tp = (int(tip[0]), int(tip[1]))
-            cv2.arrowedLine(img, cp, tp, (0, 0, 0), 5, cv2.LINE_AA, 0, 0.4)
-            cv2.arrowedLine(img, cp, tp, col if high else _fade(col, 0.55), 3, cv2.LINE_AA, 0, 0.4)
+        high = bool(conf[name][f]) and np.isfinite(mouth_now).all()
+        tail_now = tail_track[f]
+        if np.isfinite(mouth_now).all() and np.isfinite(tail_now).all():
+            start = proj.project(tail_now)
+            end = proj.project(mouth_now)
+            sp = (int(start[0]), int(start[1]))
+            ep = (int(end[0]), int(end[1]))
+            thickness = max(1, int(arrow_t))
+            cv2.arrowedLine(
+                img, sp, ep, (0, 0, 0), thickness + 1, cv2.LINE_AA, 0, 0.35
+            )
+            cv2.arrowedLine(
+                img,
+                sp,
+                ep,
+                col if high else _fade(col, 0.55),
+                thickness,
+                cv2.LINE_AA,
+                0,
+                0.35,
+            )
         if high:
             cv2.circle(img, cp, 7, (0, 0, 0), -1, cv2.LINE_AA)
             cv2.circle(img, cp, 5, col, -1, cv2.LINE_AA)
@@ -283,7 +346,7 @@ def draw_2d_view(
             cv2.circle(img, head, 4, col, -1, cv2.LINE_AA)
         elif len(kp) >= 2 and np.isfinite(kp[1]).all():
             tail = tuple(np.round(kp[1] * scale).astype(int))
-            cv2.arrowedLine(img, tail, head, (0, 0, 0), arrow_t + 2, cv2.LINE_AA, 0, 0.35)
+            cv2.arrowedLine(img, tail, head, (0, 0, 0), arrow_t + 1, cv2.LINE_AA, 0, 0.35)
             cv2.arrowedLine(img, tail, head, col, arrow_t, cv2.LINE_AA, 0, 0.35)
         else:
             cv2.circle(img, head, 9, (0, 0, 0), -1, cv2.LINE_AA)
@@ -398,7 +461,7 @@ def reproject_track(pos, cal, start, end):
 
 def precompute_overlay(reproj, slp, cal, start, end, n, gate):
     """Match each resolved fish to its nearest per-view SLEAP instance, store the matched
-    mouth+tail keypoints (vis2d), and triangulate the tail->mouth 3D body axis (body)."""
+    mouth+tail keypoints (vis2d), and triangulate both 3D node positions."""
     vis2d = {name: {v: np.full((n, 2, 2), np.nan) for v in VIEWS} for name in ID_NAMES}
     for v in VIEWS:
         sv = slp[v]
@@ -416,7 +479,8 @@ def precompute_overlay(reproj, slp, cal, start, end, n, gate):
             for name, instance_index in assigned.items():
                 vis2d[name][v][f] = arr[instance_index]   # (mouth, tail) source px
 
-    body = {name: np.full((n, 3), np.nan) for name in ID_NAMES}
+    mouth_xyz = {name: np.full((n, 3), np.nan) for name in ID_NAMES}
+    tail_xyz = {name: np.full((n, 3), np.nan) for name in ID_NAMES}
     for name in ID_NAMES:
         M = np.stack([vis2d[name][v][:, 0, :] for v in VIEWS], axis=1)   # (n,3,2) mouth
         T = np.stack([vis2d[name][v][:, 1, :] for v in VIEWS], axis=1)   # (n,3,2) tail
@@ -430,10 +494,9 @@ def precompute_overlay(reproj, slp, cal, start, end, n, gate):
         # model internals or silently switch geometry here.
         m3d = np.asarray(cal.triangulate(M[idx]), dtype=float)
         t3d = np.asarray(cal.triangulate(T[idx]), dtype=float)
-        d = m3d - t3d
-        nrm = np.linalg.norm(d, axis=1, keepdims=True)
-        body[name][idx] = np.where(nrm > 1e-6, d / nrm, np.nan)
-    return vis2d, body
+        mouth_xyz[name][idx] = m3d
+        tail_xyz[name][idx] = t3d
+    return vis2d, mouth_xyz, tail_xyz
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -449,13 +512,22 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out", type=Path, required=True)
     ap.add_argument("--calib", default=DEFAULT_CALIB)
     ap.add_argument("--panel", type=int, default=600)
-    ap.add_argument("--fps", type=int, default=60)
+    ap.add_argument("--fps", type=float, default=60.0)
     ap.add_argument("--frame-step", type=int, default=1,
                     help="render every Nth source frame (10 = ~stride-10 watchable QC; 1 = no-skip)")
     ap.add_argument("--start-frame", type=int, default=0)
     ap.add_argument("--end-frame", type=int, default=None)
     ap.add_argument("--tail-seconds", type=float, default=5.0)
     ap.add_argument("--source-fps", type=float, default=166.0)
+    ap.add_argument(
+        "--trail-sample-step",
+        type=int,
+        default=None,
+        help=(
+            "sample the mouth-trail geometry every N source frames without "
+            "skipping rendered video frames (default: --frame-step)"
+        ),
+    )
     ap.add_argument("--node-names", nargs="+", default=["mouth", "tail"])
     ap.add_argument("--gate-px", type=float, default=80.0)
     ap.add_argument("--xyz-lim", nargs=2, type=float, default=(0.0, 200.0))
@@ -471,7 +543,12 @@ def main(argv: list[str] | None = None) -> int:
                     help="color raw SLEAP instances by within-frame index: 1st gray, 2nd red, 3rd+ magenta")
     ap.add_argument("--no-track-overlay", action="store_true",
                     help="skip the colored resolved-track arrows in the 2D views (raw SLEAP only)")
-    ap.add_argument("--arrow-thickness", type=int, default=3, help="2D colored mouth->tail arrow line thickness")
+    ap.add_argument(
+        "--arrow-thickness",
+        type=int,
+        default=3,
+        help="Colored tail->mouth arrow line thickness in 2D and 3D.",
+    )
     args = ap.parse_args(argv)
 
     try:
@@ -490,8 +567,15 @@ def main(argv: list[str] | None = None) -> int:
     panel, scale = args.panel, args.panel / SRC_W
     gate = args.gate_px
     tail_n = int(round(args.tail_seconds * args.source_fps))
+    trail_stride = _resolve_trail_stride(args.frame_step, args.trail_sample_step)
+    overlay_start = max(0, start - tail_n + 1)
     print(f"{args.experiment}  frames {start}..{end}  panel {panel}  fps {args.fps}  codec {args.codec}", flush=True)
     print(f"identity column {args.id_column}: {identity_map}", flush=True)
+    print(
+        f"render step {args.frame_step}; mouth trail {args.tail_seconds:g}s "
+        f"sampled every {trail_stride} source frame(s)",
+        flush=True,
+    )
 
     print("loading track + reprojecting ...", flush=True)
     pos, conf = load_track(
@@ -507,18 +591,24 @@ def main(argv: list[str] | None = None) -> int:
         f"models={cal.provenance.get('model_files')}",
         flush=True,
     )
-    reproj = reproject_track(pos, cal, start, end)
+    reproj = reproject_track(pos, cal, overlay_start, end)
     slp = {}
     for v in VIEWS:
-        print(f"loading indexed {v}.slp frames {start}..{end} ...", flush=True)
+        print(
+            f"loading indexed {v}.slp frames {overlay_start}..{end} "
+            f"(includes mouth-trail warmup) ...",
+            flush=True,
+        )
         slp[v], _ = load_indexed_slp_node_xy(
             args.slp_dir / f"{v}.slp",
             node_names=tuple(args.node_names),
-            start_frame=start,
+            start_frame=overlay_start,
             end_frame=end,
         )
-    print("matching keypoints + triangulating body axis ...", flush=True)
-    vis2d, body = precompute_overlay(reproj, slp, cal, start, end, n_total, gate)
+    print("matching keypoints + triangulating mouth/tail nodes ...", flush=True)
+    vis2d, mouth_xyz, tail_xyz = precompute_overlay(
+        reproj, slp, cal, overlay_start, end, n_total, gate
+    )
 
     proj = Projector3D(panel, args.xyz_lim[0], args.xyz_lim[1], args.elev, args.azim)
     base3d = proj.base_canvas()
@@ -565,7 +655,18 @@ def main(argv: list[str] | None = None) -> int:
                         center_only=args.draw_raw_sleap,
                     )
                 label_panel_top(frames[v], v, font_scale=0.8)
-            p3d = draw_3d_panel(proj, base3d, pos, conf, body, f, tail_n)
+            p3d = draw_3d_panel(
+                proj,
+                base3d,
+                pos,
+                conf,
+                mouth_xyz,
+                tail_xyz,
+                f,
+                tail_n,
+                trail_stride=trail_stride,
+                arrow_t=args.arrow_thickness,
+            )
             label_panel_top(p3d, f"3D  frame {f}", font_scale=0.8)
             canvas[:panel, :panel] = frames["top_cam"]
             canvas[:panel, panel:] = frames["side1_cam"]
@@ -617,6 +718,11 @@ def _orchestrate(args) -> int:
                "--panel", str(args.panel), "--fps", str(args.fps), "--frame-step", str(step),
                "--start-frame", str(cs), "--end-frame", str(ce),
                "--tail-seconds", str(args.tail_seconds), "--source-fps", str(args.source_fps),
+               *(
+                   ["--trail-sample-step", str(args.trail_sample_step)]
+                   if args.trail_sample_step is not None
+                   else []
+               ),
                "--gate-px", str(args.gate_px), "--xyz-lim", str(args.xyz_lim[0]), str(args.xyz_lim[1]),
                "--elev", str(args.elev), "--azim", str(args.azim), "--ffmpeg", args.ffmpeg,
                "--nvenc-cq", str(args.nvenc_cq), "--codec", args.codec, "--workers", "1",

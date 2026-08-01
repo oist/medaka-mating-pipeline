@@ -91,7 +91,7 @@ def test_geometry_matches_instance_centroid_but_returns_mouth_instance():
     assert assigned == {"G1": 0, "G2": 1}
 
 
-def test_body_axis_triangulation_uses_public_calibration_backend():
+def test_mouth_and_tail_triangulation_use_public_calibration_backend():
     class PublicCalibrationOnly:
         def __init__(self):
             self.calls = []
@@ -114,17 +114,64 @@ def test_body_axis_triangulation_uses_public_calibration_backend():
         slp = {view: {0: instance.copy()} for view in renderer.VIEWS}
         calibration = PublicCalibrationOnly()
 
-        visible, body = renderer.precompute_overlay(
+        visible, mouth_xyz, tail_xyz = renderer.precompute_overlay(
             reproj, slp, calibration, 0, 0, 1, gate=10.0
         )
 
         assert len(calibration.calls) == 2
         assert calibration.calls[0].shape == (1, 3, 2)
         np.testing.assert_allclose(visible["G1"]["top_cam"][0], instance[0])
-        np.testing.assert_allclose(
-            body["G1"][0],
-            np.array([-1.0, -1.0, -1.0]) / np.sqrt(3.0),
+        np.testing.assert_allclose(mouth_xyz["G1"][0], [0.0, 0.0, 0.0])
+        np.testing.assert_allclose(tail_xyz["G1"][0], [2.0, 2.0, 2.0])
+    finally:
+        renderer.configure_identities(dict(renderer.DEFAULT_IDENTITIES))
+
+
+def test_mouth_trail_indices_use_source_time_and_include_current_frame():
+    np.testing.assert_array_equal(
+        renderer._trail_source_indices(frame=1000, trail_frames=830, stride=5),
+        np.arange(1000, 170, -5)[::-1],
+    )
+    indices = renderer._trail_source_indices(
+        frame=1000, trail_frames=830, stride=5
+    )
+    assert indices[-1] == 1000
+    assert indices[0] == 175
+    assert len(indices) == 166
+
+
+def test_trail_sample_stride_is_independent_of_rendered_frame_step():
+    assert renderer._resolve_trail_stride(frame_step=1, trail_sample_step=5) == 5
+    assert renderer._resolve_trail_stride(frame_step=1, trail_sample_step=None) == 1
+    assert renderer._resolve_trail_stride(frame_step=5, trail_sample_step=None) == 5
+
+
+def test_3d_panel_draws_direct_mouth_trail_and_tail_to_mouth_arrow():
+    mapping = {"ID_1": "G1"}
+    try:
+        renderer.configure_identities(mapping)
+        projector = renderer.Projector3D(160, -20.0, 220.0, 22.0, -60.0)
+        base = projector.base_canvas()
+        centroid = {"G1": np.array([[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]])}
+        confident = {"G1": np.array([True, True])}
+        mouth = {"G1": np.array([[10.0, 10.0, 10.0], [11.0, 11.0, 11.0]])}
+        tail = {"G1": np.array([[8.0, 8.0, 8.0], [9.0, 9.0, 9.0]])}
+
+        image = renderer.draw_3d_panel(
+            projector,
+            base,
+            centroid,
+            confident,
+            mouth,
+            tail,
+            1,
+            2,
+            trail_stride=1,
+            arrow_t=1,
         )
+
+        assert image.shape == base.shape
+        assert np.any(image != base)
     finally:
         renderer.configure_identities(dict(renderer.DEFAULT_IDENTITIES))
 
