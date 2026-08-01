@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 TRACKS = {
-    'NEW': 'C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d_individual_id_interp_debounced.csv',
+    'NEW': 'Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d_individual_id_interp_debounced.csv',
     'OLD': 'runs/dual_line/lineB_fulltimeline/step2/round5_260611_3d_individual_id_interp_debounced.csv',
 }
 

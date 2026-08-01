@@ -1,5 +1,5 @@
 import numpy as np, pandas as pd, sys
-NEW=r"C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv"
+NEW=r"Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv"
 OLD=r"Z:/StephensU/medaka/reconstruction_3d/round5_260611/20251225_K_1_2_FCMC/round5_260611_3d_identified.csv"
 OUT=r"report/20260630/k12_appearance/backbone_divergence.csv"
 def log(*a): print(*a); sys.stdout.flush()

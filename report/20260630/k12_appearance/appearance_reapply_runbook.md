@@ -1,7 +1,7 @@
 # A4 — Re-apply the validated appearance pipeline onto the NEW backbone
 
 **Experiment:** `20251225_K_1_2_FCMC` (348,600 frames @166 fps, 1F+2M same size)
-**NEW backbone:** `C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv`
+**NEW backbone:** `Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv`
 (schema `frame,fish_id(ID_1/2/3),X,Y,Z,is_interpolated,source`; full coverage 344–348k frames/slot, geometrically correct, swap-prone at crossings).
 
 **Goal:** produce a NEW-backbone `*_individual_id.csv` (per-frame `individual_id ∈ {F,M1,M2}` + confidence) by running the clean K_1_2 female/male appearance classifiers per frame, reusing the existing Detectron2 masks (no GPU detector re-run).
@@ -20,10 +20,10 @@
 
 | Asset | Path | Status |
 |---|---|---|
-| NEW backbone | `C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv` | ✅ 85 MB, 348,600 frames, ID_1/2/3 → slots 0/1/2 |
-| Female model | `C:/udmt_validation/segid/K_1_2/model_female_clean/model.pt` | ✅ 45 MB |
-| Male model | `C:/udmt_validation/segid/K_1_2/model_male_clean/model.pt` | ✅ 45 MB |
-| Top male model (optional fuse) | `C:/udmt_validation/segid/K_1_2/model_top_male/model.pt` | ✅ 45 MB |
+| NEW backbone | `Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv` | ✅ 85 MB, 348,600 frames, ID_1/2/3 → slots 0/1/2 |
+| Female model | `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_female_clean/model.pt` | ✅ 45 MB |
+| Male model | `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_male_clean/model.pt` | ✅ 45 MB |
+| Top male model (optional fuse) | `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_top_male/model.pt` | ✅ 45 MB |
 | Detectron2 masks (saion fan-out) | `Z:/StephensU/medaka/detectron2_output/20251225_K_1_2_FCMC/{side1_cam,side2_cam,top_cam}.masks_<S>-<E>.h5` | ✅ 8 chunks/view, full 0–348599 |
 | Calibration | `calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models` | ✅ |
 | Videos | `\\bucket.oist.jp\...\medaka_202512\20251225_K_1_2_FCMC\<view>\cam*.mp4` | ✅ (bucket SMB; stage locally for speed) |
@@ -47,7 +47,7 @@ Run the female-anchor orchestrator and **stop after stage 0** (it calls `Calibra
 .venv\Scripts\python.exe -m sam2_id_experiment.scripts.40_female_anchor_pipeline 20251225_K_1_2_FCMC `
   --paths-config configs/paths.local.toml `
   --round-tag round5_260611 `
-  --identified-3d-csv C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv `
+  --identified-3d-csv Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv `
   --work-dir runs/female_anchor/20251225_K_1_2_FCMC/round5_recovered `
   --calibration-model-dir calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models `
   --views side1_cam side2_cam top_cam `
@@ -71,15 +71,15 @@ GPU, main `.venv`. Masks already exist on Z: → **no Detectron2 run**.
 ```powershell
 .venv\Scripts\python.exe -m sam2_id_experiment.scripts.45_per_frame_resolve 20251225_K_1_2_FCMC `
   --paths-config configs/paths.local.toml `
-  --identified-3d-csv C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv `
+  --identified-3d-csv Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv `
   --masks-dir Z:/StephensU/medaka/detectron2_output/20251225_K_1_2_FCMC `
   --slot-points-dir runs/female_anchor/20251225_K_1_2_FCMC/round5_recovered/slot_points `
   --views side1_cam side2_cam `
-  --female-model C:/udmt_validation/segid/K_1_2/model_female_clean/model.pt `
-  --male-model   C:/udmt_validation/segid/K_1_2/model_male_clean/model.pt `
-  --top-model    C:/udmt_validation/segid/K_1_2/model_top_male/model.pt --top-view top_cam `
+  --female-model Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_female_clean/model.pt `
+  --male-model   Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_male_clean/model.pt `
+  --top-model    Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_top_male/model.pt --top-view top_cam `
   --stride 10 `
-  --out-csv C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d_individual_id.csv
+  --out-csv Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d_individual_id.csv
 ```
 
 If you staged videos locally (A.1), append e.g.

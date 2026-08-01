@@ -3,7 +3,7 @@
 ## Outcome: ship the NEW-backbone appearance track
 
 **Final deliverable:**
-`C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d_individual_id_interp_debounced.csv`
+`Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d_individual_id_interp_debounced.csv`
 (348,600 frames; `id_final ∈ {F,M1,M2}`; F 100.0% / M1 97.6% / M2 98.2% high-conf;
 irreducible ambiguous 0.04%; spawn PASS; built on the 06-30 `recon_nofill` backbone with the
 committed 2D-FP / entry-phantom fixes.)

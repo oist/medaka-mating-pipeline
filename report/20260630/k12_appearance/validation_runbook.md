@@ -26,7 +26,7 @@ A candidate track CSV must be in ONE of two conventions; the validators differ b
 Reference candidate paths used throughout (substitute your candidate):
 ```
 # geometry-slot backbone (geometrically correct, BORIS-valid, swaps at dense contact):
-CAND_SLOT = C:\udmt_validation\recon_nofill\20251225_K_1_2_FCMC\round5_260611_recovered_3d.csv
+CAND_SLOT = Z:\StephensU\medaka\runs\udmt_validation\recon_nofill\20251225_K_1_2_FCMC\round5_260611_recovered_3d.csv
 # sexed dual-line interp track (analyze_mate_choice native form):
 CAND_SEXED = runs\dual_line\lineB_fulltimeline\step2\round5_260611_3d_individual_id_interp.csv
 ```
@@ -56,7 +56,7 @@ FFMPEG = C:\ffmpeg\ffmpeg-8.0.1-full_build-shared\bin\ffmpeg.exe
 ```powershell
 .venv\Scripts\python.exe scripts\analysis\compare_boris_trajectory.py `
   --boris  "G:\.shortcut-targets-by-id\14OI1k7IaNOdC5yaC9GnYyCi2u-gfGLEs\OIST 1215-0122\boris_events\20251225_K_1_2_FCMC.csv" `
-  --tracks "C:\udmt_validation\recon_nofill\20251225_K_1_2_FCMC\round5_260611_recovered_3d.csv" `
+  --tracks "Z:\StephensU\medaka\runs\udmt_validation\recon_nofill\20251225_K_1_2_FCMC\round5_260611_recovered_3d.csv" `
   --female-slot ID_2 --male-slots ID_1 ID_3 `
   --label 20251225_K_1_2_FCMC `
   --out-dir report\20260630\k12_appearance\boris_compare
@@ -90,7 +90,7 @@ A worklist is pre-built so the montage hits the riskiest moments instead of
 auto-ranking by proximity. It pools, in suspicion order (lowest `rank` first):
 1. handoff frames **8042, 8809, 8852** (mouth>centroid / any-unambiguous-anchor / one-view-gap cases from the K_1_2 handoff);
 2. the BORIS **spawn** frame **135883** (must look correct here);
-3. all 73 detector swaps from `C:\udmt_validation\qc\_swaps.txt`, **longest span first** (8521, 8826, 12643, 41085, 45601, 58599 … included).
+3. all 73 detector swaps from `Z:\StephensU\medaka\runs\udmt_validation\qc\_swaps.txt`, **longest span first** (8521, 8826, 12643, 41085, 45601, 58599 … included).
 
 Worklist file (built this session, columns `rank,start,end,center,span_frames,pair,source`):
 ```
@@ -102,7 +102,7 @@ report\20260630\k12_appearance\k12_validation_worklist.csv
 ### 2a. Top-20 worklist montage (handoff + spawn + longest swaps)
 ```powershell
 .venv\Scripts\python.exe -m scripts.analysis.render_crossing_montage `
-  --csv-3d "C:\udmt_validation\recon_nofill\20251225_K_1_2_FCMC\round5_260611_recovered_3d.csv" `
+  --csv-3d "Z:\StephensU\medaka\runs\udmt_validation\recon_nofill\20251225_K_1_2_FCMC\round5_260611_recovered_3d.csv" `
   --slp-dir "Z:\StephensU\medaka\sleap_output\round5_260611\20251225_K_1_2_FCMC" `
   --model-folder "calibration_results\cali_20251217_manual\merged_rule_reassigned_beads_only\models" `
   --video-top   "Z:\StephensU\medaka\medaka_202512\20251225_K_1_2_FCMC\top_cam\cam0_top.mp4" `
@@ -121,7 +121,7 @@ unreadable, add `--views side1,side2`.)
 ### 2b. Spawn-only close look (must hold female colour through the wrap)
 ```powershell
 .venv\Scripts\python.exe -m scripts.analysis.render_crossing_montage `
-  --csv-3d "C:\udmt_validation\recon_nofill\20251225_K_1_2_FCMC\round5_260611_recovered_3d.csv" `
+  --csv-3d "Z:\StephensU\medaka\runs\udmt_validation\recon_nofill\20251225_K_1_2_FCMC\round5_260611_recovered_3d.csv" `
   --slp-dir "Z:\StephensU\medaka\sleap_output\round5_260611\20251225_K_1_2_FCMC" `
   --model-folder "calibration_results\cali_20251217_manual\merged_rule_reassigned_beads_only\models" `
   --video-top   "Z:\StephensU\medaka\medaka_202512\20251225_K_1_2_FCMC\top_cam\cam0_top.mp4" `

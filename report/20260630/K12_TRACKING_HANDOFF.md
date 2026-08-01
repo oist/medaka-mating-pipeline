@@ -19,7 +19,7 @@ attack the remaining aspects in parallel, because they're largely independent.
 and this whole file. Then plan the agent team before touching code.
 
 ### What is trustworthy (the BACKBONE)
-- `C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv`
+- `Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv`
   — 3 continuous 3D slots (`fish_id` = ID_1/ID_2/ID_3), **full coverage** (~344–348k frames each),
   **0 speed spikes**, smooth. This is the reconstruction + 3D Hungarian linker output.
 - It is **geometrically correct** (positions good) and **BORIS-validated at the spawn**
@@ -85,9 +85,9 @@ tracking diverges under mutual ambiguity** — it only works seeded-clean over s
   cam0=top(XY), cam1=side1(XZ), cam2=side2(YZ). Top view less trustworthy (water ~1 cm low) → prefer
   side-driven triangulation (`complete_triplet`). Key fns: `compute_XYZ_from_imageCoord_triplet`,
   `complete_triplet`, `compute_imCoords_from_XYZ` (batched reproject, one call/frame).
-- Staged `.slp` (2-node mouth+tail, round4_260520 skeleton): `C:/udmt_validation/qc/_stage/20251225_K_1_2_FCMC/{top_cam,side1_cam,side2_cam}.slp`
-- Cached mouths (fast load, no slp reload): `C:/udmt_validation/qc/k12_mouths.npy` (cols: view,frame,x,y)
-- Corrector event log + parsed swaps: `C:/udmt_validation/qc/_corrector.log`, `_swaps.txt`
+- Staged `.slp` (2-node mouth+tail, round4_260520 skeleton): `Z:/StephensU/medaka/runs/udmt_validation/qc/_stage/20251225_K_1_2_FCMC/{top_cam,side1_cam,side2_cam}.slp`
+- Cached mouths (fast load, no slp reload): `Z:/StephensU/medaka/runs/udmt_validation/qc/k12_mouths.npy` (cols: view,frame,x,y)
+- Corrector event log + parsed swaps: `Z:/StephensU/medaka/runs/udmt_validation/qc/_corrector.log`, `_swaps.txt`
 - Use the project venv: `.venv\Scripts\python.exe`. ffmpeg at `C:/ffmpeg/ffmpeg-8.0.1-full_build-shared/bin/ffmpeg.exe`.
 - 3 fish are **same size** → no geometric auto-ID; verify swaps **by eye at crossings**; `final_fish_id`
   are arbitrary ints (color by sorted index).

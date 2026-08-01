@@ -50,6 +50,6 @@ PNG previews: `slide_previews/` (EN), `slide_previews_ja/` (JA).
 - Two males: confirmed **not** separable by appearance (position-confound, masked test below chance) → resolve with 3D geometry + motion resolver.
 - Next: resolve-at-crossing fusion, verify 18 suspect swaps, round-6 close-contact train, extend sexing to K_1_1/K_1_3.
 
-Sources: `C:/udmt_validation/*` (segmentation, female-anchor, tracklet-bind, 3D composite),
+Sources: `Z:/StephensU/medaka/runs/udmt_validation/*` (segmentation, female-anchor, tracklet-bind, 3D composite),
 `Z:/.../sleap_models/eval_round4_vs_round5/`, `Z:/.../reconstruction_3d/round5_260611/`,
 `calibration_results/cali_20251217_manual/`.

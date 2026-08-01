@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path("C:/Users/machi/Documents/GitHub/medaka-mating-pipeline")
 OUT = ROOT / "report/20260630/k12_appearance/bakeoff"
 WL = ROOT / "report/20260630/k12_appearance/event_worklist.csv"
-NEW_P = "C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d_individual_id_interp_debounced.csv"
+NEW_P = "Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d_individual_id_interp_debounced.csv"
 OLD_P = ROOT / "runs/dual_line/lineB_fulltimeline/step2/round5_260611_3d_individual_id_interp_debounced.csv"
 
 PAD = 30

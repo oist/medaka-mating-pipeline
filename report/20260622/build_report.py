@@ -37,23 +37,23 @@ PLOT_SRC = {
     "calibration_reprojection_2d.png": CALQC / "beads_only_qc" / "cali_20251217_merged_point_mapping_reprojection_2d_views.png",
     "calibration_volume_error.png": CALQC / "qc" / "cali_20251217_merged_point_mapping_volume_error.png",
     "sleap_round4_vs_round5_eval.png": Path(r"Z:\StephensU\medaka\sleap_models\eval_round4_vs_round5\round4_vs_round5_eval.png"),
-    "detectron2_vs_sleap_top.png": Path(r"C:\udmt_validation\seg_qc\K_1_2\top_cam_detectron2_vs_sleap.png"),
-    "detectron2_vs_sleap_side1.png": Path(r"C:\udmt_validation\seg_qc\K_1_2\side1_cam_detectron2_vs_sleap.png"),
-    "segid_per_view_pca.png": Path(r"C:\udmt_validation\segid\K_1_2\eval_all\per_view_pca.png"),
-    "segid_fish_crops_top.png": Path(r"C:\udmt_validation\segid\K_1_2\eval_all\fish_identity_crops_top.png"),
-    "female_prob_by_tracklet.png": Path(r"C:\udmt_validation\segid\K_1_2\female_anchor\female_prob_by_tracklet.png"),
-    "tracklet_coverage_stifd.png": Path(r"C:\udmt_validation\tracklet_bind_stifd\coverage_stifd_vs_const.png"),
+    "detectron2_vs_sleap_top.png": Path(r"Z:\StephensU\medaka\runs\udmt_validation\seg_qc\K_1_2\top_cam_detectron2_vs_sleap.png"),
+    "detectron2_vs_sleap_side1.png": Path(r"Z:\StephensU\medaka\runs\udmt_validation\seg_qc\K_1_2\side1_cam_detectron2_vs_sleap.png"),
+    "segid_per_view_pca.png": Path(r"Z:\StephensU\medaka\runs\udmt_validation\segid\K_1_2\eval_all\per_view_pca.png"),
+    "segid_fish_crops_top.png": Path(r"Z:\StephensU\medaka\runs\udmt_validation\segid\K_1_2\eval_all\fish_identity_crops_top.png"),
+    "female_prob_by_tracklet.png": Path(r"Z:\StephensU\medaka\runs\udmt_validation\segid\K_1_2\female_anchor\female_prob_by_tracklet.png"),
+    "tracklet_coverage_stifd.png": Path(r"Z:\StephensU\medaka\runs\udmt_validation\tracklet_bind_stifd\coverage_stifd_vs_const.png"),
 }
 IMAGE_SRC = {
-    "3d_multiview_composite_still.png": Path(r"C:\udmt_validation\full_cosmetic_still.png"),
+    "3d_multiview_composite_still.png": Path(r"Z:\StephensU\medaka\runs\udmt_validation\full_cosmetic_still.png"),
     "calibration_cube_top.png": REPO / "calibration_results" / "cali_20251217_manual" / "way1" / "manual_marking" / "cali_251217_way1_cam0_top_frame100_manual_marking.png",
 }
 VIDEO_SRC = {
-    "3d_multiview_composite_clip.mp4": Path(r"C:\udmt_validation\3d_and_views_133798.mp4"),
+    "3d_multiview_composite_clip.mp4": Path(r"Z:\StephensU\medaka\runs\udmt_validation\3d_and_views_133798.mp4"),
     "K_1_1_crossing_montage.mp4": Path(r"Z:\StephensU\medaka\reconstruction_3d\round5_260611\20251225_K_1_1_FCMC\round5_260611_crossing_montage.mp4"),
     "K_1_2_crossing_montage.mp4": Path(r"Z:\StephensU\medaka\reconstruction_3d\round5_260611\20251225_K_1_2_FCMC\round5_260611_crossing_montage.mp4"),
     "K_1_3_crossing_montage.mp4": Path(r"Z:\StephensU\medaka\reconstruction_3d\round5_260611\20251225_K_1_3_FCMC\round5_260611_crossing_montage.mp4"),
-    "tracklet_suspect_swaps18.mp4": Path(r"C:\udmt_validation\tracklet_bind\suspect_swaps18.mp4"),
+    "tracklet_suspect_swaps18.mp4": Path(r"Z:\StephensU\medaka\runs\udmt_validation\tracklet_bind\suspect_swaps18.mp4"),
 }
 
 

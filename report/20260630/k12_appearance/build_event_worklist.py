@@ -10,8 +10,8 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
 from scripts.reconstruction_3d.calibration import Calibration  # noqa: E402
 
-BACKBONE = Path("C:/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv")
-SWAPS = Path("C:/udmt_validation/qc/_swaps.txt")
+BACKBONE = Path("Z:/StephensU/medaka/runs/udmt_validation/recon_nofill/20251225_K_1_2_FCMC/round5_260611_recovered_3d.csv")
+SWAPS = Path("Z:/StephensU/medaka/runs/udmt_validation/qc/_swaps.txt")
 CAL_DIR = REPO / "calibration_results/cali_20251217_manual/merged_rule_reassigned_beads_only/models"
 OUT = Path(__file__).resolve().parent / "event_worklist.csv"
 
