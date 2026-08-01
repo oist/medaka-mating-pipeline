@@ -68,7 +68,7 @@ in expected-payoff order:
 4. **A small human GT set** — label the female at ~20–40 crossings to *measure*
    female-anchor precision directly, instead of leaning on the 3D `global_id` proxy.
 
-Artifacts: `C:/udmt_validation/segid/K_1_2/` (crops, pooled_all, model_all, eval_all).
+Artifacts: `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/` (crops, pooled_all, model_all, eval_all).
 Pilot runner: `run_segid_chain.sh`.
 
 ---
@@ -119,7 +119,7 @@ position-controlled test. So:
 New code: `resnet_embedder.py`, `train_resnet.py`, `36_build_male_dataset.py`,
 `eval_male_separability.py`; runners `run_more_side_inference.sh`,
 `run_male_pipeline_chain.sh`, `rerun_male_train.sh`. Reports in
-`C:/udmt_validation/segid/K_1_2/eval_male/`.
+`Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/eval_male/`.
 
 ---
 
@@ -150,7 +150,7 @@ geometry `fish_id`, so mate-choice analysis can pull out the female (the chooser
 **Caveats / next:** the classifier is K_1_2-trained; for other experiments retrain
 (37) — or identify the female slot self-supervised as the cleanly-separable cluster
 (no labels needed). Per-tracklet tagging is ~0.76 held-out; trust the per-FISH call.
-Artifacts in `C:/udmt_validation/segid/K_1_2/female_anchor/`.
+Artifacts in `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/female_anchor/`.
 
 ---
 

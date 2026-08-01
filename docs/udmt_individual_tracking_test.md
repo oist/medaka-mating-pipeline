@@ -4,7 +4,7 @@ Experiment: `20251225_K_1_2_FCMC` round5, window 176300–181300 (5001 frames, ~
 all 3 views. Conclusions below are **adversarially verified** (8 skeptic agents +
 completeness critic + synthesis); corrections from that pass are folded in. Treat
 numbers as window/recording/parameter-specific until replicated. Artifacts in
-`C:/udmt_validation/udmt_track/K_1_2/`.
+`Z:/StephensU/medaka/runs/udmt_validation/udmt_track/K_1_2/`.
 
 ## Method (what "UDMT" means here)
 
@@ -114,4 +114,4 @@ with geometry + the female anchor at crossings — not a standalone identity sol
 
 Code: `UDMT/tracking.py` (+`python -m UDMT track`), `scripts/experiments/udmt_individual_tracking.py`,
 tests `tests/test_udmt_tracking.py` (7). Reports/CSVs/figure under
-`C:/udmt_validation/udmt_track/K_1_2/`.
+`Z:/StephensU/medaka/runs/udmt_validation/udmt_track/K_1_2/`.

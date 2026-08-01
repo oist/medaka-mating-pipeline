@@ -87,13 +87,13 @@ Committed in `ced9fbb` on `main`:
   clean model + `--female-embedder`; stage 4 → `44` (legacy `38` behind `--legacy-anchor`).
 
 Models / data (machine-local scratch, gitignored):
-- Clean female model: `C:/udmt_validation/segid/K_1_2/model_female_clean/model.pt` (0.994/1.000).
-- Self-supervised embedder (for alignment): `C:/udmt_validation/segid/K_1_2/model_resnet_full/model.pt`.
-- Corrected dataset: `C:/udmt_validation/segid/K_1_2/pooled_sides_corrected/`.
-- Raw pooled (side1+side2, 4 windows, K_1_2): `C:/udmt_validation/segid/K_1_2/pooled_sides_full/`
+- Clean female model: `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_female_clean/model.pt` (0.994/1.000).
+- Self-supervised embedder (for alignment): `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/model_resnet_full/model.pt`.
+- Corrected dataset: `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/pooled_sides_corrected/`.
+- Raw pooled (side1+side2, 4 windows, K_1_2): `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/pooled_sides_full/`
   (crop_metadata cols incl `frame, view, window, global_id, qc_status` where qc ∈
   {`clean_train`, `reject_area_spike`}).
-- Per-view existing tracklet/3D-bind: `C:/udmt_validation/tracklet_bind_extend_smooth/<view>.tracklet_bound.csv`
+- Per-view existing tracklet/3D-bind: `Z:/StephensU/medaka/runs/udmt_validation/tracklet_bind_extend_smooth/<view>.tracklet_bound.csv`
   + `hardcore_events.csv`; resolver output `.../tracklet_bind/hardcore_events_resolved.csv`.
 - Target pooled crops: `runs/female_anchor/<exp>/round5_260611/pooled/{crops.h5,crop_metadata.parquet}`.
 - 3D identified track: `Z:/StephensU/medaka/reconstruction_3d/round5_260611/<exp>/round5_260611_3d_identified.csv`

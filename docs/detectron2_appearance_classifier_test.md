@@ -2,7 +2,7 @@
 
 Experiment: `20251225_K_1_2_FCMC` (round5). Status: **female anchor achieved and wired
 into the pipeline; two-male discrimination not achievable with the current data.**
-All artifacts in `C:/udmt_validation/segid/K_1_2/`; code in `sam2_id_experiment/`.
+All artifacts in `Z:/StephensU/medaka/runs/udmt_validation/segid/K_1_2/`; code in `sam2_id_experiment/`.
 
 ---
 

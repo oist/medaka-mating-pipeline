@@ -5,7 +5,7 @@ seeding its initial + per-frame masks from our **Detectron2** instance masks ins
 UDMT's SAM/XMem/SEEM, on window **176300–181300** of `20251225_K_1_2_FCMC`, and compare to
 the motion-proxy result (`docs/udmt_individual_tracking_test.md`).
 
-Source-verified against the clone at `C:/udmt_analysis/UDMT` (2026-06-22): function names,
+Source-verified against the clone at `Z:/StephensU/medaka/udmt/UDMT` (2026-06-22): function names,
 line numbers, and on-disk contracts below were checked in code, not assumed.
 
 ## 0. Verdict + the key simplification
