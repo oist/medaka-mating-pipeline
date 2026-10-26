@@ -13,6 +13,9 @@ files; once all three views have the same number of chunks and the copy-back
 finished (slurm logs present), they are merged with
 ``scripts.tracking.main --merge-chunks`` first.
 
+An experiment counts as finished only when ``batch_3d.done`` exists next to
+the outputs; it is written after ``reconstruct_from_slp`` exits cleanly, so an
+interrupted run (possibly with a half-written CSV) is redone from scratch.
 Finished experiments are skipped. With ``--watch N`` the script re-checks
 every N minutes until every experiment is done or has failed, so 3D runs as
 soon as each experiment's inference lands (local queue or HPC).
@@ -29,6 +32,8 @@ from pathlib import Path
 from scripts.common.experiment_sets import resolve_experiments
 from scripts.common.local_paths import REPO_ROOT, load_local_paths
 from scripts.sleap.batch_bottomup_track import DEFAULT_ROUND_TAG, VIEWS, default_paths_config
+
+DONE_MARKER = "batch_3d.done"
 
 RECONSTRUCT_ARGS = [
     "--calibration-backend", "auto",
@@ -62,8 +67,8 @@ def run(cmd: list[str], log_path: Path, dry_run: bool) -> bool:
 def process(exp: str, paths, cfg: Path, tag: str, dry_run: bool) -> str:
     slp_dir = paths.sleap_output_dir / exp / tag
     out_dir = paths.reconstruction_output_dir / exp / tag
-    final_csv = out_dir / f"{tag}_3d_identified.csv"
-    if final_csv.exists():
+    done_marker = out_dir / DONE_MARKER
+    if done_marker.exists():
         return "done"
 
     py = [sys.executable, "-m"]
@@ -95,7 +100,10 @@ def process(exp: str, paths, cfg: Path, tag: str, dry_run: bool) -> str:
     ]
     if not run(recon, log_path, dry_run):
         return f"FAILED at reconstruct_from_slp (see {log_path})"
-    return "dry-run" if dry_run else "done (new)"
+    if dry_run:
+        return "dry-run"
+    done_marker.write_text(f"{time.ctime()}\n", encoding="utf-8")
+    return "done (new)"
 
 
 def main(argv: list[str] | None = None) -> int:

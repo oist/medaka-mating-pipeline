@@ -176,7 +176,11 @@ def merge_view_chunks(
         tracks=parts[0].tracks,
     )
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    sio.save_slp(merged, str(output_path))
+    # Save under a temp name and rename: a half-written merged file would be
+    # newer than every chunk and so pass _merged_is_fresh on the next run.
+    tmp_path = output_path.with_name(output_path.stem + ".merging.slp")
+    sio.save_slp(merged, str(tmp_path))
+    tmp_path.replace(output_path)
     return len(frames)
 
 

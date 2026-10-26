@@ -56,15 +56,37 @@ def resolve_model(value: str, models_root: Path) -> Path:
     return path
 
 
+def _process_started(pid: int) -> float | None:
+    import psutil
+
+    try:
+        return psutil.Process(pid).create_time()
+    except psutil.Error:
+        return None
+
+
+def write_lock(lock: Path) -> None:
+    pid = os.getpid()
+    lock.write_text(json.dumps({"pid": pid, "started": _process_started(pid)}))
+
+
 def lock_is_live(lock: Path) -> bool:
+    """True if the process that wrote ``lock`` is still running.
+
+    The PID alone is not enough: after a reboot Windows hands out the same
+    small PIDs again, so a stale lock would block its view forever. The lock
+    also records the process start time, and both must match.
+    """
     if not lock.exists():
         return False
     try:
-        import psutil
-
-        return psutil.pid_exists(json.loads(lock.read_text())["pid"])
+        info = json.loads(lock.read_text())
+        started = _process_started(info["pid"])
+        return started is not None and abs(started - info["started"]) < 5
+    except ImportError:
+        return True  # no psutil: be conservative, do not double-run
     except Exception:
-        return True  # unreadable lock: be conservative, do not double-run
+        return False  # unreadable or old-format lock: treat as stale
 
 
 def run_view(experiment: str, view: str, video: Path, model: Path, out_dir: Path, args) -> str:
@@ -94,7 +116,7 @@ def run_view(experiment: str, view: str, video: Path, model: Path, out_dir: Path
         return "dry-run"
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    lock.write_text(json.dumps({"pid": os.getpid(), "started": time.time()}))
+    write_lock(lock)
     started = time.time()
     try:
         with open(out_dir / f"{view}.inference.log", "w", encoding="utf-8") as log:
