@@ -3,7 +3,7 @@
 > Read this file at the start of every session (see [CLAUDE.md](CLAUDE.md) → *Session Start Rules*).
 > When project state, rules, or procedures change, update this file in the same turn.
 
-Last updated: 2026-06-06
+Last updated: 2026-10-26
 
 ---
 
@@ -11,8 +11,10 @@ Last updated: 2026-06-06
 
 - **Role**: Researcher (OIST-affiliated) studying medaka fish mating behavior.
 - **Goal**: Quantify female mate choice by measuring male aggression vs. courtship intensity in a 3-fish (1 female + 2 males) setup, using 3-camera 3D tracking at 166 fps.
-- **Tech stack**: Windows 11, Python 3.11 managed with `uv`, virtualenv at `.venv/`. CUDA GPU available for SLEAP / TensorRT. Working drives include local SSD, network share `Z:\StephensU\medaka\`, and Google Drive `G:\.shortcut-targets-by-id\...\OIST 1215-0122\`.
+- **Tech stack**: Windows 11, Python 3.11 managed with `uv`, virtualenv at `.venv/`. CUDA GPU available for SLEAP / TensorRT. Working drives include local SSD, network share `Z:\medaka\` (current machine; `configs/paths.local.toml` still lists the older `Z:\StephensU\medaka` layout), and Google Drive `G:\.shortcut-targets-by-id\...\OIST 1215-0122\`.
 - **Collaboration style**: User provides domain knowledge and validation; Claude implements. Commits are co-authored.
+- **Notebook rule (2026-10-26)**: From now on the user works in Jupyter notebooks under [notebook/](notebook/). Put new analysis/run notebooks there (date- and experiment-prefixed, e.g. `20260106_E_2_1_FCMC_<topic>.ipynb`), keep cell outputs saved in the `.ipynb`, and precede every code cell with a markdown cell explaining what that step does, its inputs/outputs, and its result. Reusable logic still goes in `scripts/`; notebooks call it.
+- **Language rule (2026-10-26)**: Everything outside `notebook/` (code, comments, docs, configs, commit messages, this file) must be written in English. Content inside `notebook/` may be in Chinese.
 
 ## Current Project Structure
 
@@ -88,6 +90,14 @@ Set these when invoking `scripts/hpc/` from the saion login node (see [scripts/h
 - HPC access (saion) uses the user's OIST SSH key — never commit private keys.
 
 ## Done / Remaining Tasks
+
+### Current 3D reconstruction procedure (this machine)
+
+- Data live at `Z:\medaka` (`medaka_202512`, `sleap_models`, `sleap_output`, `reconstruction_3d`).
+- Per-experiment runbook for `20260106_E_2_1_FCMC`: [archive/notebooks/20260106_E_2_1_FCMC_3d_reconstruction.ipynb](archive/notebooks/20260106_E_2_1_FCMC_3d_reconstruction.ipynb) (Jupyter) and [archive/notebooks/notebook](archive/notebooks/notebook) (plain-text copy).
+- Default model for new local inference: `Z:\medaka\sleap_models\retrain_20260722_round8` / tag `round8_260723_strictmouth` via `scripts.sleap.run_round_inference --mode track --max-instances 6`.
+- That experiment currently has raw videos plus incomplete round7 top-camera chunks only; side views and 3D outputs are missing.
+- August 3-node models exist under `sleap_models/retrain_20260810_3node_reviewed` but are not launchable by `run_round_inference.py`.
 
 ### Completed
 

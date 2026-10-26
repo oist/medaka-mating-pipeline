@@ -1,23 +1,413 @@
-sleap软件标记，训练，使用模型进行预测，导出csv文件
-异常值检测，ID追踪，空缺值填充
- 
- 基于距离的异常值检测
-  上一帧三个个体距离，下一帧三个个体驱离差距过大？多边形边长变化过大？
-
- 匈牙利算法
- flow算法
-
- 基于距离的异常值检测
-  一个个体ID上下两帧距离变化过大？
-
- 插值算法
+# 20260106_E_2_1_FCMC — 3D reconstruction workflow
+#
+# Jupyter version (open this instead if you want runnable cells):
+# archive/notebooks/20260106_E_2_1_FCMC_3d_reconstruction.ipynb
 
 
-2D轨迹可视化，视频
- 上层原始视频和轨迹叠加，中层纯轨迹（fish1，2，3），下层个体速度，加速度，角速度
+Runnable copy-paste recipe for this experiment using the current
+`.slp` / `reconstruct_from_slp` pipeline. Run from the repo root in
+PowerShell. Use the project venv, not the system Python.
 
+Experiment: `20260106_E_2_1_FCMC`
+Repo: `C:\Users\ReiterU\Documents\GitHub\medaka-mating-pipeline`
+Data root on this machine: `Z:\medaka`
 
-相机校准，可视化，校准评价
+---
 
+## 0. What is already on disk (2026-10-26)
 
-不同视频间个体组合，3D轨迹可视化
+Raw video (complete, 348600 frames, 166 fps, ~35 min):
+
+```
+Z:\medaka\medaka_202512\20260106_E_2_1_FCMC\
+  top_cam\cam0_top.mp4
+  side1_cam\cam1_side.mp4
+  side2_cam\cam2_side.mp4
+  experiment_metadata.json
+```
+
+SLEAP output (incomplete — cannot reconstruct 3D yet):
+
+```
+Z:\medaka\sleap_output\20260106_E_2_1_FCMC\round7_260704\
+  top_cam.frames_*.slp     # 8 chunks, frames 0-348599
+  (no side1_cam, no side2_cam, no merged <view>.slp)
+```
+
+3D output: none under `Z:\medaka\reconstruction_3d\`.
+
+SLEAP models under `Z:\medaka\sleap_models\`:
+
+| Folder | Usable with `run_round_inference.py`? | Round tag |
+|---|---|---|
+| `retrain_20260704` | yes (centroid + centered_instance) | `round7_260704` |
+| `retrain_20260722_round8` | yes (centroid + centered_instance) | `round8_260723_strictmouth` |
+| `retrain_20260804_3node` | no (different layout) | — |
+| `retrain_20260810_3node_reviewed` | no (bottomup/topdown, not this launcher) | — |
+
+**Default for this run: round8.** It is the newest top-down mouth+tail
+model that the current inference script can launch. Round7 is only a
+shortcut if you want to reuse the existing top-camera chunks.
+
+`configs/paths.local.toml` currently still points at
+`Z:\StephensU\medaka`. Commands below therefore pass `Z:\medaka` roots
+explicitly so they work on this machine without editing that file.
+
+Calibration: keep `--calibration-backend auto`. That resolves the
+checked-in refractive model
+`calibration_results/fixed_refractive_192x192x186`. Do not pass the
+legacy polynomial gate `--max-residual-per-fish 5000`.
+
+---
+
+## 1. Constants
+
+```powershell
+cd C:\Users\ReiterU\Documents\GitHub\medaka-mating-pipeline
+
+$PY          = ".\.venv\Scripts\python.exe"
+$EXP         = "20260106_E_2_1_FCMC"
+$DATA_ROOT   = "Z:\medaka\medaka_202512"
+$MODELS      = "Z:\medaka\sleap_models"
+$SLP_ROOT    = "Z:\medaka\sleap_output"
+$RECON_ROOT  = "Z:\medaka\reconstruction_3d"
+$ROUND_DIR   = "$MODELS\retrain_20260722_round8"
+$ROUND_TAG   = "round8_260723_strictmouth"
+$SLP_DIR     = "$SLP_ROOT\$EXP\$ROUND_TAG"
+$OUT_DIR     = "$RECON_ROOT\$EXP\$ROUND_TAG"
+```
+
+Expect ~3.2 h per camera at full length (~348k frames) with
+`--predict-batch-size 12` on the RTX 5070 Ti. Three views ≈ 10 h.
+`sleap-nn` buffers stdout, so `<view>.inference.log` stays header-only
+until that view finishes. Watch for `<view>.slp` to appear.
+
+Do **not** use `--mode predict` / TensorRT on this GPU.
+
+---
+
+## 2. Smoke test (optional, ~10 s of video)
+
+Confirms models, videos, and GPU path before the overnight run.
+
+```powershell
+& $PY -m scripts.sleap.run_round_inference `
+  --round-dir $ROUND_DIR `
+  --round-tag "${ROUND_TAG}_smoke" `
+  --experiment $EXP `
+  --data-root $DATA_ROOT `
+  --output-root $SLP_ROOT `
+  --predict-batch-size 12 `
+  --max-instances 6 `
+  --frames 0-1659 `
+  --continue-on-fail
+```
+
+Success = three small `.slp` files under
+`$SLP_ROOT\$EXP\${ROUND_TAG}_smoke\`.
+
+---
+
+## 3. Full-length SLEAP inference (all 3 views)
+
+`--max-instances 6` is required. Extra detections let the 3D stage
+recover fish displaced by reflections.
+
+```powershell
+& $PY -m scripts.sleap.run_round_inference `
+  --round-dir $ROUND_DIR `
+  --round-tag $ROUND_TAG `
+  --experiment $EXP `
+  --data-root $DATA_ROOT `
+  --output-root $SLP_ROOT `
+  --predict-batch-size 12 `
+  --max-instances 6 `
+  --continue-on-fail
+```
+
+Expected outputs (local torch path writes one merged `.slp` per view,
+so the chunk-merge step is **not** needed after this command):
+
+```
+Z:\medaka\sleap_output\20260106_E_2_1_FCMC\round8_260723_strictmouth\
+  top_cam.slp
+  side1_cam.slp
+  side2_cam.slp
+  *.inference.log
+```
+
+If a view already exists and you only need to finish the others:
+
+```powershell
+& $PY -m scripts.sleap.run_round_inference `
+  --round-dir $ROUND_DIR `
+  --round-tag $ROUND_TAG `
+  --experiment $EXP `
+  --data-root $DATA_ROOT `
+  --output-root $SLP_ROOT `
+  --views side1_cam side2_cam `
+  --predict-batch-size 12 `
+  --max-instances 6 `
+  --continue-on-fail
+```
+
+### Shortcut: finish existing round7 top chunks instead
+
+Only if you deliberately want round7, not round8. Side views are still
+missing; then merge the HPC-style chunks.
+
+```powershell
+$ROUND_DIR = "$MODELS\retrain_20260704"
+$ROUND_TAG = "round7_260704"
+$SLP_DIR   = "$SLP_ROOT\$EXP\$ROUND_TAG"
+$OUT_DIR   = "$RECON_ROOT\$EXP\$ROUND_TAG"
+
+& $PY -m scripts.sleap.run_round_inference `
+  --round-dir $ROUND_DIR `
+  --round-tag $ROUND_TAG `
+  --experiment $EXP `
+  --data-root $DATA_ROOT `
+  --output-root $SLP_ROOT `
+  --views side1_cam side2_cam `
+  --predict-batch-size 12 `
+  --max-instances 6 `
+  --continue-on-fail
+
+# Local inference writes merged side .slp files. Top is still chunks, so merge:
+& $PY -m scripts.tracking.main --merge-chunks $EXP `
+  --paths-config configs/paths.local.toml `
+  --sleap-output-dir $SLP_ROOT `
+  --medaka-data-dir $DATA_ROOT `
+  --sleap-subdir $ROUND_TAG
+```
+
+---
+
+## 4. Overlay QC (before spending time on 3D)
+
+`visualize_predictions` does not take `--sleap-subdir`; pass `--slp`
+explicitly.
+
+```powershell
+foreach ($view in @("top_cam","side1_cam","side2_cam")) {
+  & $PY -m scripts.sleap.visualize_predictions $EXP `
+    --paths-config configs/paths.local.toml `
+    --sleap-output-dir $SLP_ROOT `
+    --medaka-data-dir $DATA_ROOT `
+    --view $view `
+    --slp "$SLP_DIR\$view.slp" `
+    --seconds 5 `
+    --radius 10
+}
+```
+
+Look for: three fish detected most frames, few obvious reflections
+winning over real fish, mouth/tail on the animal.
+
+---
+
+## 5. Top-camera 2D identity track (bind anchor)
+
+Do **not** pass `--anchor-node`. Use the default visible-node centroid.
+
+```powershell
+& $PY -m scripts.tracking.track_simple_nn $EXP `
+  --paths-config configs/paths.local.toml `
+  --sleap-output-dir $SLP_ROOT `
+  --view top_cam `
+  --slp "$SLP_DIR\top_cam.slp" `
+  --output "$SLP_DIR\top_cam.tracks.csv" `
+  --max-distance 100 `
+  --max-tracks 3 `
+  --max-gap 500
+```
+
+Optional overlay:
+
+```powershell
+& $PY -m scripts.sleap.visualize_predictions $EXP `
+  --paths-config configs/paths.local.toml `
+  --sleap-output-dir $SLP_ROOT `
+  --medaka-data-dir $DATA_ROOT `
+  --view top_cam `
+  --slp "$SLP_DIR\top_cam.slp" `
+  --track-csv "$SLP_DIR\top_cam.tracks.csv" `
+  --seconds 5
+```
+
+---
+
+## 6. 3D reconstruction + top-ID bind
+
+**Always pass `--num-candidates 6`.** tqdm must say `3D best-assign`.
+If it says `3D candidates`, stop and re-run — that is the slow
+full-permutation path (~9.7 h) and a different algorithm.
+
+Smoke window first (~5000 frames):
+
+```powershell
+& $PY -m scripts.reconstruction_3d.reconstruct_from_slp $EXP `
+  --paths-config configs/paths.local.toml `
+  --sleap-output-dir $SLP_ROOT `
+  --sleap-subdir $ROUND_TAG `
+  --calibration-backend auto `
+  --num-candidates 6 `
+  --use-visible-node-centroid `
+  --xyz-bounds -20 220 --no-shift-to-positive `
+  --max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100 `
+  --num-individuals 3 `
+  --start-frame 0 --end-frame 4999 `
+  --bind-top-id `
+  --top-tracks-csv "$SLP_DIR\top_cam.tracks.csv" `
+  --output-dir "$OUT_DIR\smoke_0-4999" `
+  --output-tag "${ROUND_TAG}_smoke"
+```
+
+Full length (~10–15 min after `.slp` coordinates are loaded):
+
+```powershell
+New-Item -ItemType Directory -Force -Path $OUT_DIR | Out-Null
+
+& $PY -m scripts.reconstruction_3d.reconstruct_from_slp $EXP `
+  --paths-config configs/paths.local.toml `
+  --sleap-output-dir $SLP_ROOT `
+  --sleap-subdir $ROUND_TAG `
+  --calibration-backend auto `
+  --num-candidates 6 `
+  --use-visible-node-centroid `
+  --xyz-bounds -20 220 --no-shift-to-positive `
+  --max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100 `
+  --num-individuals 3 `
+  --bind-top-id `
+  --top-tracks-csv "$SLP_DIR\top_cam.tracks.csv" `
+  --output-dir $OUT_DIR `
+  --output-tag $ROUND_TAG
+```
+
+Expected files:
+
+```
+Z:\medaka\reconstruction_3d\20260106_E_2_1_FCMC\round8_260723_strictmouth\
+  round8_260723_strictmouth_3d.csv
+  round8_260723_strictmouth_3d_identified.csv
+  round8_260723_strictmouth_best.json
+  round8_260723_strictmouth_best_pre_link.json
+```
+
+---
+
+## 7. QC checklist
+
+From `*_best_pre_link.json` (pre-fill, not the spline-filled CSV):
+
+- calibration backend + score unit are recorded
+- all-3-fish-valid coverage (frames where all three groups are finite)
+- per-fish residual distribution (`errors`, in the saved unit)
+- `synthetic_views` missing-camera provenance
+
+From `*_3d.csv` / `*_3d_identified.csv`:
+
+- 3D speed-spike rate (large per-frame jumps ≈ residual ID swaps)
+- `bind_source` split: `top_cam_2d` vs `geometry_only`
+- `bind_score` distribution
+- `final_fish_id` is a stable 1-to-1 relabel of geometry IDs
+
+Interactive viewer (needs `uv sync --extra rerun` if not installed):
+
+```powershell
+& $PY -m scripts.visualization.rerun_viewer $EXP `
+  --paths-config configs/paths.local.toml `
+  --sleap-output-dir $SLP_ROOT `
+  --reconstruction-output-dir $RECON_ROOT `
+  --medaka-data-dir $DATA_ROOT `
+  --tag $ROUND_TAG `
+  --slp-dir $SLP_DIR `
+  --csv "$OUT_DIR\${ROUND_TAG}_3d_identified.csv" `
+  --pre-link-json "$OUT_DIR\${ROUND_TAG}_best_pre_link.json" `
+  --start-frame 0 --end-frame 4999
+```
+
+---
+
+## 8. Optional: segmentation-assisted ID (only if top NN swaps)
+
+Use this when `top_cam.tracks.csv` fragments through occlusions or
+crossings. Geometry still comes from Stage 6.
+
+```powershell
+$SEED = "Z:\medaka\runs\seg_id\$EXP\$ROUND_TAG\seed_from_3d"
+
+& $PY -m sam2_id_experiment.scripts.24_seed_prompts_from_3d `
+  --identified-3d-csv "$OUT_DIR\${ROUND_TAG}_3d_identified.csv" `
+  --best-pre-link-json "$OUT_DIR\${ROUND_TAG}_best_pre_link.json" `
+  --paths-config configs/paths.local.toml `
+  --output-dir $SEED
+```
+
+Then run the existing `sam2_id_experiment/scripts/01_*` … `23_*`
+workflow, export `top_cam.seg_identity_tracks.csv`, and re-bind:
+
+```powershell
+& $PY -m scripts.reconstruction_3d.reconstruct_from_slp $EXP `
+  --paths-config configs/paths.local.toml `
+  --sleap-output-dir $SLP_ROOT `
+  --sleap-subdir $ROUND_TAG `
+  --calibration-backend auto `
+  --num-candidates 6 `
+  --use-visible-node-centroid `
+  --xyz-bounds -20 220 --no-shift-to-positive `
+  --max-jump-mm 8 --max-jump-hard-cap-mm 80 --max-gap-frames 100 `
+  --num-individuals 3 `
+  --bind-top-id `
+  --top-tracks-csv "<path\to\top_cam.seg_identity_tracks.csv>" `
+  --output-dir $OUT_DIR `
+  --output-tag "${ROUND_TAG}_segid"
+```
+
+---
+
+## Pipeline diagram
+
+```
+raw videos (3 cams, 348600 frames)
+        │
+        ▼
+run_round_inference  --max-instances 6 --mode track
+        │
+        ▼
+<view>.slp  (round8_260723_strictmouth)
+        │
+        ├─► visualize_predictions          (2D overlay QC)
+        ├─► track_simple_nn top_cam        → top_cam.tracks.csv
+        │
+        └─► reconstruct_from_slp
+              --num-candidates 6           (must see "3D best-assign")
+              --use-visible-node-centroid
+              --bind-top-id
+                │
+                ▼
+              *_3d.csv
+              *_3d_identified.csv  (final_fish_id)
+              *_best_pre_link.json
+                │
+                ▼
+              rerun_viewer  /  optional SAM2 re-bind
+```
+
+---
+
+## Gotchas
+
+1. `--num-candidates 6` is not optional for `--max-instances 6` `.slp`.
+2. `--use-visible-node-centroid` is the production 3D point (mouth+tail
+   centroid). Mouth-only anchoring is for comparison experiments.
+3. `--max-jump-hard-cap-mm 80` stops a long NaN gap from adopting a
+   different fish. Effective gate at gap N = `min(8*N, 80)` mm.
+4. Refractive backend: `--calibration-backend auto`. Do not carry
+   `--max-residual-per-fish 5000` into this run.
+5. `visualize_predictions` needs `--slp` when files live in a round
+   subfolder.
+6. 3-node August models are on disk but cannot be launched by
+   `run_round_inference.py` (expects `<view>/runs/<tag>.centroid_n*`
+   and `.centered_instance_n*`).
+)
