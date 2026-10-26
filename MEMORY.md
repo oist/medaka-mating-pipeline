@@ -13,8 +13,8 @@ Last updated: 2026-10-26
 - **Goal**: Quantify female mate choice by measuring male aggression vs. courtship intensity in a 3-fish (1 female + 2 males) setup, using 3-camera 3D tracking at 166 fps.
 - **Tech stack**: Windows 11, Python 3.11 managed with `uv`, virtualenv at `.venv/`. CUDA GPU available for SLEAP / TensorRT. Working drives include local SSD, network share `Z:\medaka\` (current machine; `configs/paths.local.toml` still lists the older `Z:\StephensU\medaka` layout), and Google Drive `G:\.shortcut-targets-by-id\...\OIST 1215-0122\`.
 - **Collaboration style**: User provides domain knowledge and validation; Claude implements. Commits are co-authored.
-- **Notebook rule (2026-10-26)**: From now on the user works in Jupyter notebooks under [notebook/](notebook/). Put new analysis/run notebooks there (date- and experiment-prefixed, e.g. `20260106_E_2_1_FCMC_<topic>.ipynb`), keep cell outputs saved in the `.ipynb`, and precede every code cell with a markdown cell explaining what that step does, its inputs/outputs, and its result. Reusable logic still goes in `scripts/`; notebooks call it.
-- **Language rule (2026-10-26)**: Everything outside `notebook/` (code, comments, docs, configs, commit messages, this file) must be written in English. Content inside `notebook/` may be in Chinese.
+- **Notebook rule (2026-10-26)**: From now on the user works in Jupyter notebooks under [archive/notebooks/experiment_workflows/](archive/notebooks/experiment_workflows/) (moved from repo-root `notebook/` on 2026-10-26). Put new analysis/run notebooks there (date- and experiment-prefixed, e.g. `20260106_E_2_1_FCMC_<topic>.ipynb`), keep cell outputs saved in the `.ipynb`, and precede every code cell with a markdown cell explaining what that step does, its inputs/outputs, and its result. Reusable logic still goes in `scripts/`; notebooks call it. Notebooks must not hardcode the repo or data locations: the first code cell walks up from the cwd to find the repo root (`pyproject.toml`), and data roots come from `configs/paths.<USERNAME>.toml` (falls back to `configs/paths.local.toml`); on a new clone/machine only that TOML changes. Template: `20260106_E_2_1_FCMC_side1_sleap_inference.ipynb`.
+- **Language rule (2026-10-26)**: Everything outside `archive/notebooks/experiment_workflows/` (code, comments, docs, configs, commit messages, this file) must be written in English. Content inside `archive/notebooks/experiment_workflows/` may be in Chinese.
 
 ## Current Project Structure
 
@@ -94,10 +94,10 @@ Set these when invoking `scripts/hpc/` from the saion login node (see [scripts/h
 ### Current 3D reconstruction procedure (this machine)
 
 - Data live at `Z:\medaka` (`medaka_202512`, `sleap_models`, `sleap_output`, `reconstruction_3d`).
-- Per-experiment runbook for `20260106_E_2_1_FCMC`: [archive/notebooks/20260106_E_2_1_FCMC_3d_reconstruction.ipynb](archive/notebooks/20260106_E_2_1_FCMC_3d_reconstruction.ipynb) (Jupyter) and [archive/notebooks/notebook](archive/notebooks/notebook) (plain-text copy).
-- Default model for new local inference: `Z:\medaka\sleap_models\retrain_20260722_round8` / tag `round8_260723_strictmouth` via `scripts.sleap.run_round_inference --mode track --max-instances 6`.
-- That experiment currently has raw videos plus incomplete round7 top-camera chunks only; side views and 3D outputs are missing.
-- August 3-node models exist under `sleap_models/retrain_20260810_3node_reviewed` but are not launchable by `run_round_inference.py`.
+- Per-experiment runbook for `20260106_E_2_1_FCMC` (current): [archive/notebooks/experiment_workflows/20260106_E_2_1_FCMC_3d_reconstruction_workflow.md](archive/notebooks/experiment_workflows/20260106_E_2_1_FCMC_3d_reconstruction_workflow.md); side1 inference notebook: [archive/notebooks/experiment_workflows/20260106_E_2_1_FCMC_side1_sleap_inference.ipynb](archive/notebooks/experiment_workflows/20260106_E_2_1_FCMC_side1_sleap_inference.ipynb). Older round8 version: [archive/notebooks/notebook](archive/notebooks/notebook).
+- Current model (2026-10-26): `Z:\medaka\sleap_models\retrain_20260810_3node_reviewed` bottom-up `s14.bottomup_3node.reviewed_{top,side}_f24_ms64_paf8` (skeleton mouth/pectoral/tail). Not launchable by `run_round_inference.py`; run `.venv\Scripts\python.exe -m sleap_nn.cli track --model_paths <run_dir> --device cuda --batch_size 4 --max_instances 6`, one view at a time. Benchmarked 2026-10-26 on side1 (RTX 5070 Ti): batch 2/4/6/8 = 31/33/33/34 FPS (decode/PAF-grouping bound, ~2.9 h per full 348600-frame view); batch 8 peaks at 13.9 GB; batch 12 overflows VRAM into shared memory and drops to 1.35 FPS (~72 h) - never use it. Output tag/subdir `s14_bottomup_3node_reviewed` → `Z:\medaka\sleap_output\<exp>\<tag>\<view>.slp`; Stages 2–5 unchanged (visible-node centroid works for 3 nodes).
+- Fallback model: `retrain_20260722_round8` / tag `round8_260723_strictmouth` via `scripts.sleap.run_round_inference --mode track --max-instances 6`.
+- That experiment has raw videos plus incomplete round7 top-camera chunks only; 3-node side1 benchmark started 2026-10-26, no full-length 3-node outputs yet.
 
 ### Completed
 

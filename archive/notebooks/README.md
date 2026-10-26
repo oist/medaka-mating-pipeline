@@ -20,5 +20,6 @@
 
 ## 备注
 
+- `experiment_workflows/`: active per-experiment run notebooks and runbooks (moved from repo-root `notebook/` on 2026-10-26).
 - `notebook`：早期流水线笔记（纯文本），可作参考。
 - 部分 Notebook（如 05、06）可能仍为空或占位，待后续补充。

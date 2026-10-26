@@ -1,0 +1,19 @@
+[paths]
+# Per-user path config for the ReiterU account (Z: is mapped to
+# \\bucket.oist.jp\bucket\StephensU, so data live under Z:\medaka).
+# Notebooks pick configs/paths.<USERNAME>.toml automatically and fall back to
+# configs/paths.local.toml. On a new machine or mount layout, edit only this
+# file; repo-internal paths are resolved relative to the repo root.
+
+data_root                 = "Z:\\medaka"
+raw_data_dir              = "Z:\\medaka\\medaka_202512"
+medaka_data_dir           = "Z:\\medaka\\medaka_202512"
+sleap_output_dir          = "Z:\\medaka\\sleap_output"
+sleap_models_dir          = "Z:\\medaka\\sleap_models"
+processed_dir             = "Z:\\medaka\\processed"
+tracking_output_dir       = "Z:\\medaka\\processed"
+reconstruction_output_dir = "Z:\\medaka\\reconstruction_3d"
+runs_dir                  = "Z:\\medaka\\runs"
+
+# Checked into the repo; relative to the repo root.
+calibration_model_dir     = "calibration_results\\fixed_refractive_192x192x186"
