@@ -36,6 +36,9 @@ Usage::
         --best-json Z:/.../comparison/round4_260520_best.json \\
         --model-folder C:/Users/.../calibration_results/.../models \\
         --out Z:/.../comparison/round4_260520_skeleton_3d.mp4
+
+    # 3-node models: draw mouth -> pectoral -> tail (head node first, tail last)
+    ... --node-names mouth pectoral tail
 """
 
 import argparse
@@ -53,7 +56,7 @@ VIEW_TO_CAM = {"top_cam": "cam0", "side1_cam": "cam1", "side2_cam": "cam2"}
 VIEW_TO_BEST_KEY = {"top_cam": "cam0_to_id", "side1_cam": "cam1_to_id",
                     "side2_cam": "cam2_to_id"}
 FISH_COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
-TRIANGULATION_CACHE_SLOT_ORDER_VERSION = 2
+TRIANGULATION_CACHE_SLOT_ORDER_VERSION = 3  # 3: two-view node triangulation
 
 
 class SkeletonRenderer3D:
@@ -161,9 +164,10 @@ class SkeletonRenderer3D:
         ----------
         title_text : str
             Title to display (e.g. ``"frame 12345 (601/34826)"``).
-        arr_frame : np.ndarray, shape ``(n_fish, n_nodes=2, 3)``
-            ``arr_frame[k, 0]`` = mouth XYZ, ``arr_frame[k, 1]`` = tail XYZ.
-            NaN signals a missing detection.
+        arr_frame : np.ndarray, shape ``(n_fish, n_nodes, 3)``
+            Nodes in ``--node-names`` order, head first: ``arr_frame[k, 0]`` =
+            mouth XYZ, ``arr_frame[k, -1]`` = tail XYZ, any middle nodes
+            (e.g. pectoral) in between. NaN signals a missing detection.
 
         Returns
         -------
@@ -171,9 +175,12 @@ class SkeletonRenderer3D:
         """
         self.title.set_text(title_text)
         for k in range(self.n_fish):
-            m = arr_frame[k, 0]
-            t = arr_frame[k, 1]
-            valid = not (np.isnan(m).any() or np.isnan(t).any())
+            nodes = arr_frame[k]
+            m = nodes[0]
+            t = nodes[-1]
+            finite = np.isfinite(nodes).all(axis=1)
+            # Arrows need both ends; the polyline draws whatever nodes exist.
+            valid = bool(finite[0] and finite[-1]) if self.arrows else bool(finite.any())
             if self.arrows:
                 if valid:
                     self._body_lines[k].set_data_3d(
@@ -195,15 +202,16 @@ class SkeletonRenderer3D:
                     )
             else:
                 if valid:
-                    self._body_lines[k].set_data_3d(
-                        [m[0], t[0]], [m[1], t[1]], [m[2], t[2]]
-                    )
+                    # Polyline through every visible node (mouth -> ... -> tail);
+                    # a missing node is skipped rather than hiding the fish.
+                    pts = nodes[finite]
+                    self._body_lines[k].set_data_3d(pts[:, 0], pts[:, 1], pts[:, 2])
                 else:
                     self._body_lines[k].set_data_3d([], [], [])
             if self.trail_frames > 0:
                 buf = self._trail_buffers[k]
                 if valid:
-                    buf.append(((m + t) / 2.0).copy())
+                    buf.append(nodes[finite].mean(axis=0))
                 if len(buf) >= 2:
                     pts = np.asarray(buf)
                     segs = np.stack([pts[:-1], pts[1:]], axis=1)
@@ -334,31 +342,27 @@ def build_triangulation(
                         slot = idx
                         break
                 slot_per_view.append(slot)
-            if any(s is None for s in slot_per_view):
-                continue
-            # Triangulate each node independently: missing tail in one view
-            # should not also drop the mouth that view did see.
+            # Triangulate each node independently from every view that saw it
+            # (two views suffice). A fish occluded in one camera -- a
+            # two-view completion in best.json, with no raw slot there -- or a
+            # node missed in one view keeps its skeleton instead of vanishing.
             for n_i in range(n_nodes):
-                triplet = np.empty((3, 2), dtype=float)
-                ok = True
+                triplet = np.full((3, 2), np.nan)
                 for v_i, (view, slot) in enumerate(zip(view_order, slot_per_view)):
                     arr = slp_per_view[view].get(src)
-                    if arr is None or slot >= arr.shape[0]:
-                        ok = False
-                        break
+                    if slot is None or arr is None or slot >= arr.shape[0]:
+                        continue
                     triplet[v_i] = arr[slot, n_i]
-                if not ok or not np.isfinite(triplet).all():
+                if np.isfinite(triplet).all(axis=1).sum() < 2:
                     continue
                 try:
                     xyz = cal.compute_XYZ_from_imageCoord_triplet(triplet)
                 except Exception:
                     continue
-                out[fi_out, k, n_i] = xyz
-            # A calibrated two-view completion has valid biological 3D but no
-            # raw slot in its synthetic camera, so node-wise triangulation
-            # above correctly cannot build a skeleton.  Preserve the 3D point
-            # as a degenerate two-node marker so trajectory tails remain
-            # visible and the camera overlays can label it as synthetic.
+                if np.isfinite(xyz).all():
+                    out[fi_out, k, n_i] = xyz
+            # Fewer than two usable views for every node: keep the fish's
+            # reconstructed 3D point as a degenerate marker so it stays visible.
             if not np.isfinite(out[fi_out, k]).any():
                 point = np.asarray((info.get("groups") or {}).get(fid, []), dtype=float)
                 if point.shape == (3,) and np.isfinite(point).all():

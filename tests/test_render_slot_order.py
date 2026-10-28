@@ -4,6 +4,7 @@ import numpy as np
 
 from scripts.visualization.render_3d_skeleton_video import (
     _instances_in_reconstruction_slot_order,
+    build_triangulation,
 )
 
 
@@ -47,3 +48,37 @@ def test_renderer_skips_instance_without_finite_tracking_point():
     visible = FakeInst((10, 10), (30, 10), 0.50)
 
     assert _ordered([invisible, visible]) == [visible]
+
+
+class FakeCal:
+    """Two-or-three-view triangulator stand-in: mean of the finite rows, z=0."""
+
+    def compute_XYZ_from_imageCoord_triplet(self, triplet):
+        seen = triplet[np.isfinite(triplet).all(axis=1)]
+        if len(seen) < 2:
+            raise ValueError("need two views")
+        return np.array([*seen.mean(axis=0), 0.0])
+
+
+def test_fish_occluded_in_one_view_keeps_all_nodes():
+    # ID_1 is missing from side2 (two-view completion in best.json); its three
+    # nodes must still be triangulated from top + side1, not dropped.
+    two_nodes = np.array([[[0.0, 0.0], [2.0, 0.0], [4.0, 0.0]]])  # 1 instance, 3 nodes
+    slp = {"top_cam": {7: two_nodes}, "side1_cam": {7: two_nodes + 1}, "side2_cam": {7: np.empty((0, 3, 2))}}
+    best = {7: {"cam0_to_id": ["ID_1"], "cam1_to_id": ["ID_1"], "cam2_to_id": [],
+                "groups": {"ID_1": [9.0, 9.0, 9.0]}}}
+
+    out = build_triangulation(slp, best, FakeCal(), ["ID_1"], ("mouth", "pectoral", "tail"), [7])
+
+    assert np.allclose(out[0, 0, :, 0], [0.5, 2.5, 4.5])  # real skeleton, not the centroid fallback
+
+
+def test_single_view_falls_back_to_reconstructed_point():
+    one = np.array([[[0.0, 0.0], [2.0, 0.0], [4.0, 0.0]]])
+    slp = {"top_cam": {7: one}, "side1_cam": {7: np.empty((0, 3, 2))}, "side2_cam": {7: np.empty((0, 3, 2))}}
+    best = {7: {"cam0_to_id": ["ID_1"], "cam1_to_id": [], "cam2_to_id": [],
+                "groups": {"ID_1": [9.0, 8.0, 7.0]}}}
+
+    out = build_triangulation(slp, best, FakeCal(), ["ID_1"], ("mouth", "pectoral", "tail"), [7])
+
+    assert np.allclose(out[0, 0], [[9.0, 8.0, 7.0]] * 3)
