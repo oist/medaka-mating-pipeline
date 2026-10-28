@@ -1,0 +1,11 @@
+# Minimal environment for the human review GUI (scripts/review/review_gui.py).
+# No GPU, SLEAP, torch or calibration stack needed - suitable for a laptop.
+#
+#   py -3.11 -m venv .venv-review
+#   .venv-review\Scripts\python.exe -m pip install -r environment\requirements-review.txt
+#   .venv-review\Scripts\python.exe -m scripts.review.review_gui <review folder>
+numpy>=1.26
+pandas>=2.1
+opencv-python>=4.8
+PyQt5>=5.15
+PyQt5-Qt5==5.15.2; sys_platform == "win32"
