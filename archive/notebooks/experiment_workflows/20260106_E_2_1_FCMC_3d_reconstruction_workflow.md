@@ -153,7 +153,7 @@ foreach ($view in "side1_cam", "top_cam", "side2_cam") {
   batch 8 显存峰值 13.9 GB；**batch 12 显存溢出，只有 1.35 FPS（全长约 72 h）**。
   全长每视角约 2.9 h。
 - 也可以用 notebook 跑（路径自动解析、后台运行、可查进度）：
-  [20260106_E_2_1_FCMC_side1_sleap_inference.ipynb](20260106_E_2_1_FCMC_side1_sleap_inference.ipynb)
+  [batch_pipeline.ipynb](batch_pipeline.ipynb)
 - 任务管理器里会看到**两个** python 进程跑同一条命令（`.venv\Scripts\python.exe`
   和 uv 的 `cpython-3.13\python.exe`）——这是 Windows 上 venv 启动器的正常现象，
   **不是重复任务，不要杀掉其中一个**。
