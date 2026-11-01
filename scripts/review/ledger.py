@@ -78,12 +78,12 @@ TRACK_KINDS = ("flip",) + FLAG_KINDS
 VIEW_KINDS = ("view_flip", "view_drop", "view_swap")
 INTERVAL_KINDS = ("interval", "interval_del", "confirm")
 CORRECTION_KINDS = ("swap",) + TRACK_KINDS + VIEW_KINDS
-KINDS = ("label", "swap") + TRACK_KINDS + VIEW_KINDS + INTERVAL_KINDS + ("analysis_start",)
+KINDS = ("label", "swap") + TRACK_KINDS + VIEW_KINDS + INTERVAL_KINDS + ("analysis_start", "danger", "pose_bad")
 ALL_FISH = "*"
 PAIR_SEP = "|"
 DEFAULTS = {"label": "", "swap": "", "flip": "0", "uncertain": "0", "bad3d": "0", "nodes_bad": "0",
             "analysis_start": "", "view_flip": "", "view_drop": "", "view_swap": "", "interval": "",
-            "interval_del": "", "confirm": ""}
+            "interval_del": "", "confirm": "", "danger": "", "pose_bad": ""}
 LEDGER_FILES = ("human_events.csv", "coverage.csv", "session_log.csv")
 REMOVED_FILE = "human_events_removed.csv"
 WATCHED_MAX_SPEED: float | None = None   # None: every shown frame counts, whatever the speed

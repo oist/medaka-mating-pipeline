@@ -320,11 +320,23 @@ class ReviewPackage:
         return np.where(np.isfinite(c), c, self.proj2d[idx, :, v])
 
 
-class ProxyVideo:
-    """Frame-indexed reader with a small cache so backward stepping stays cheap."""
+def proxy_fps(manifest: dict, view: str, play: bool) -> float:
+    """True frame rate of a view's full (source rate) or playback proxy (source rate / play step)."""
+    meta = manifest["views"][view]
+    return float(meta["source_fps"]) / (int(meta["play_step"]) if play else 1)
 
-    def __init__(self, path: Path, cache: int = 36):
-        self.path, self.cache_size = path, cache
+
+class ProxyVideo:
+    """Frame-indexed reader with a small cache so backward stepping stays cheap.
+
+    ``fps``: the file's true frame rate. OpenCV seeks by turning a frame index into a time with the
+    container's rounded frame rate; for the playback proxy (166 / 6 = 27.666... fps, reported as 27.667144)
+    that lands one frame early from about frame 30000 on. With ``fps`` every seek is checked against the
+    timestamp of the frame it reached and corrected.
+    """
+
+    def __init__(self, path: Path, cache: int = 36, fps: float | None = None):
+        self.path, self.cache_size, self.fps = path, cache, fps
         self.cap: cv2.VideoCapture | None = None
         self.pos = 0  # index of the next frame cap.read() returns
         self.cache: OrderedDict[int, np.ndarray] = OrderedDict()
@@ -341,6 +353,29 @@ class ProxyVideo:
         while len(self.cache) > self.cache_size:
             self.cache.popitem(last=False)
 
+    def _seek(self, k: int) -> None:
+        """Position so that the next frame read is ``k`` or an earlier one (``self.pos`` = its true index)."""
+        if not self.fps:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, k)
+            self.pos = k
+            return
+        back = 2
+        while True:
+            target = max(0, k - back)
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, target)
+            if not self.cap.grab():
+                self.cap.set(cv2.CAP_PROP_POS_FRAMES, target)
+                self.pos = target
+                return
+            got = int(round(self.cap.get(cv2.CAP_PROP_POS_MSEC) / 1000.0 * self.fps))
+            if got < k or target == 0:
+                self.pos = got + 1          # the frame grabbed was ``got``
+                if got >= k:                # start of the file and still too far: begin again at 0
+                    self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    self.pos = 0
+                return
+            back *= 4
+
     def get(self, k: int) -> np.ndarray | None:
         if k in self.cache:
             self.cache.move_to_end(k)
@@ -348,12 +383,9 @@ class ProxyVideo:
         if self.cap is None:
             self._open()
         if k < self.pos:            # backwards: decode the block ending at k so the next steps back are cached
-            start = max(0, k - self.cache_size + 4)
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, start)
-            self.pos = start
+            self._seek(max(0, k - self.cache_size + 4))
         elif k - self.pos > 60:     # far ahead: seek instead of decoding everything in between
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, k)
-            self.pos = k
+            self._seek(k)
         img = None
         while self.pos <= k:
             if self.pos < k and k - self.pos >= self.cache_size:
@@ -835,8 +867,10 @@ def run_app(folder: Path, *, ledger_dir: Path | None, backup_dir: Path | None, s
             self.ledger = Ledger(self.ledger_folder, backup_dir=backup_dir)
             self.lock.acquire()
             pkg = self.pkg
-            self.play = [ProxyVideo(pkg.proxy_dir / pkg.proxy["views"][v]["play_file"]) for v in VIEWS]
-            self.full = [ProxyVideo(pkg.proxy_dir / pkg.proxy["views"][v]["full_file"]) for v in VIEWS]
+            self.play = [ProxyVideo(pkg.proxy_dir / pkg.proxy["views"][v]["play_file"], fps=proxy_fps(pkg.proxy, v, True))
+                         for v in VIEWS]
+            self.full = [ProxyVideo(pkg.proxy_dir / pkg.proxy["views"][v]["full_file"], fps=proxy_fps(pkg.proxy, v, False))
+                         for v in VIEWS]
             self.selected: int | None = None
             self.overlays = True
             self.auto_slow = True
