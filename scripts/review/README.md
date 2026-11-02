@@ -148,13 +148,256 @@ a folder is still open on another computer.
 
 ## 3. Export for analysis
 
+Driver notebook: [archive/notebooks/experiment_workflows/machine_correction.ipynb](../../archive/notebooks/experiment_workflows/machine_correction.ipynb).
+
 ```powershell
 .venv\Scripts\python.exe -m scripts.review.export_reviewed <review_root>\<exp>\<round_tag>
 ```
 
-writes `reviewed_3d.csv` (one row per frame and named fish: `label`,
-`source_track`, `X/Y/Z`, every node in 3D with flips applied and its `<node>_source`, `is_interpolated`,
-`uncertain`, `bad3d`, `nodes_bad`, `watched`, `analysed`) and
-`reviewed_summary.json` (`ready_for_analysis` = start marked, all three fish
-named, everything after the start watched; corrections vs. machine risk
-windows).
+applies the ledger (and recomputes the geometry edits; needs the calibration), then runs the machine
+post-pass and writes:
+
+* `reviewed_3d.csv` - one row per frame and named fish: `label`, `source_track`, the fish position
+  `X/Y/Z` (= the cleaned pectoral node; the 3D reconstruction's centroid is kept as
+  `centroid_X/Y/Z`), every node in 3D with flips applied and its `<node>_source` (0 triangulated,
+  1 one view, 2 body model, 3 despiked in the build, 4 re-estimated body (B), 5 bridged by the
+  post-pass, -1 missing), `is_interpolated`, `uncertain`, `bad3d`, `nodes_bad`, `watched`, `analysed`;
+* `postprocess_report.csv` - every run the post-pass replaced and every `jerk` it left;
+* `versions.npz` - the four versions below, for the comparison;
+* `reviewed_summary.json` - `ready_for_analysis` (start marked, all three fish named, everything
+  after the start watched - at any playback speed - and the geometry edits applied), corrections vs.
+  machine risk windows, node-source fractions and post-pass counts.
+
+`--no-postprocess` leaves the post-pass out (the position is still the pectoral node);
+`--no-versions` skips `versions.npz`. On 20260112_P_1_1_FCMC the export takes ~1 min (plus ~1 min
+once for `initial_tracks.npz`, cached next to the review data).
+
+### Machine post-pass (`postprocess.py`)
+
+Runs per corrected fish, i.e. after the reviewer's swaps, flips and body fixes: about 40% of the
+pectoral jumps left after review sit exactly on a reviewer swap (the two tracks were not at the same
+place), which only shows on the corrected fish's series.
+
+* Spikes: a run of <= 12 frames where a node leaves its path and returns. Candidates are frames with
+  acceleration > 3 mm/frame^2; the shortest run whose cubic Hermite bridge (end points and velocities
+  of the good frames either side) removes the acceleration is replaced, if the original deviates from
+  the bridge by >= 1.5 mm and the motion before and after the run agrees (end mismatch <= half the
+  deviation). Turns, tail beats and accelerations follow the bridge and stay untouched.
+* Jumps: a pectoral step > 6 mm/frame (~1 m/s) is spread over a few frames each side; the body
+  follows. Sustained runs of such steps (tracker interpolation across a gap) are reported, not fixed.
+* Pectoral first, in world coordinates; mouth and tail as offsets from the cleaned pectoral.
+
+The parameters are fixed for every experiment (`PostParams`), so group comparisons do not mix in a
+processing difference. On 20260112_P_1_1_FCMC (after the analysis start) it replaced 0.3-0.7% of
+node-frames; share of fish-frames off their 9-frame median by > 2 mm: pectoral 0.26 -> 0.08%,
+mouth 0.32 -> 0.17%, tail 0.86 -> 0.58%; largest pectoral step 27 -> 8 mm. Corrections concentrate
+where fish are close (11% of fish-frames < 10 mm apart vs 0.4% > 40 mm; there only 56% of
+fish-frames have all three nodes triangulated), so run analyses once on measured frames only
+(`<node>_source == 0`) as a sensitivity check. `postprocess_qc.py` makes these tables.
+
+## 4. Compare the versions (`compare_gui.py`)
+
+| Version | What |
+|---|---|
+| `initial` | plain triangulation, no machine fixes (`initial_tracks.npz`) |
+| `machine` | the review data (two-view re-triangulation + despiking): what the reviewer watched |
+| `manual` | + the reviewer's ledger |
+| `final` | + the machine post-pass = `reviewed_3d.csv` |
+
+```powershell
+.venv\Scripts\python.exe -m scripts.review.compare_gui <review_root>\<exp>\<round_tag>
+```
+
+Read-only. Version A dashed, B solid in the three views, a 3D view and traces (speed, |A - B|,
+acceleration, body length, X/Y/Z; wheel = span, click = go). Presets 1-4: machine step
+(initial -> machine), review (machine -> manual), post-pass (manual -> final), all
+(initial -> final). I = every version with the reviewed identity (geometry differences only; off,
+the review's swaps show too). The change list holds every build fix, reviewer edit and post-pass
+run, filtered by group / fish / kind / fast (> 200 mm/s) / size; N / P or double-click to go.
+E exports the traced span as an mp4 (three views + speed strip, zoomed onto the fish) into
+`compare_clips/`; without the GUI:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.review.compare_gui <folder> --clip 105000 105400 --a machine --b final --speed 0.25
+```
+
+## 5. Compare two 3D reconstructions (`compare_gui --mode recon`)
+
+The compare GUI has two modes; without `--mode` it asks when a folder has both. The second one
+compares **reconstructions** of the same recording and needs no finished review, so it works on any
+experiment with a review package.
+
+1. Make the second reconstruction in the layout `reconstruct_from_slp` writes. For the medaka-3d
+   per-frame correspondence, `scripts/reconstruction_3d/medaka3d_bridge.py` feeds its triples through
+   this repo's own `apply_cross_frame_tracking` (the batch `RECONSTRUCT_ARGS`, parsed by
+   `reconstruct_from_slp`'s parser), `_best.json` / `_3d.csv` writers and `bind_topcam_id`, so only the
+   per-frame step differs. Driver notebook:
+   `archive/notebooks/experiment_workflows/20260112_P_1_1_FCMC_medaka3d_refractive_3d.ipynb`.
+2. Build its review package with the same `build_review_data` (same head/tail fixes, node completion,
+   risk windows) into `<review_root>/<exp>/<tag>_medaka3d/`; the proxies are shared.
+3. Build the comparison (the first folder is the reference; `initial` = plain triangulation + head/tail
+   orientation for both, `machine` = the review data):
+
+```powershell
+.venv\Scripts\python.exe -m scripts.review.recon_compare <review_root>\<exp>\<tag> <review_root>\<exp>\<tag>_medaka3d `
+  --kinds initial initial --names old medaka3d
+.venv\Scripts\python.exe -m scripts.review.compare_gui <review_root>\<exp>\<tag> --mode recon `
+  --recon-dir <review_root>\<exp>\<tag>\recon_vs_<tag>_medaka3d
+```
+
+A **reviewed experiment** gets three versions, the reviewed result as the answer key:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.review.recon_compare <folder> <folder> <folder>_medaka3d `
+  --kinds final initial initial --names reviewed old medaka3d      # -> <folder>\recon_reviewed_old_medaka3d
+```
+
+Its names are fixed (correct for the whole recording); `old` and `medaka3d` take them near the
+analysis start and follow their own tracks, so every disagreement is that version's error, and
+`recon_compare.error_table` counts the analysed fish-frames each version gets wrong (only one / both).
+Identity errors are judged without bias; geometry is not fully: the review corrected `old`, so where
+the reviewer left it alone `final` equals `old`. Keys 7/8/9 (or buttons) show reviewed vs old,
+reviewed vs medaka3d, old vs medaka3d; going to an entry shows the version it is about.
+
+An **unreviewed experiment** gets two versions; identity is assigned as in the review GUI: name the
+reference's fish once (1/2/3 or click, then 4/5/6 = F/M1/M2); every other version takes the names of
+its tracks at the same place in that frame and then follows its own tracks, so an identity swap in
+either version is listed. I ("same identity") matches the versions frame by frame instead and leaves
+only geometry differences.
+
+Playback: Space or the Play button, Left/Right (Shift: 1 s) or the step buttons, Up/Down or the speed
+box, G / "go to frame". All keys are application-wide shortcuts; the window (not an input box) has the
+keyboard focus at start, and the "mm min" box hands it back on Enter. Drawing: A dashed, B solid in the
+fish's colour; where both put a node on the same spot (< 4 display px) that part is drawn once in green.
+Every entry of the list is one run of frames (gaps < 0.1 s merged), judged once; "after analysis
+start" (default on) hides entries that end before it.
+
+The disagreement list (per reference fish): `swap` (the same name on different fish, frames whose
+best and second-best matching differ by < 2 mm skipped, >= 8 frames), `position` (position node > 5 mm
+apart), `nodes` (head or tail > 5 mm, position agreeing), `only <name>` (one version has no 3D,
+>= 0.1 s). Judge each with A / B (that version is right), W (both wrong), O (both OK); Backspace
+clears; the GUI moves on to the next entry. Names go to `recon_labels.csv`, verdicts to
+`recon_verdicts.csv`, clips to `compare_clips/` - all inside the `recon_vs_*` folder; the reference's
+own ledger is never written. `recon_compare.summary(ReconState(...))` counts entries and verdicts per kind.
+
+## 6. Grade old vs new frame by frame (`recon_judge_gui.py`)
+
+For a three-version comparison folder (reviewed + old + new, e.g. `recon_reviewed_old_m3dfull`), a
+separate GUI grades **old and new directly, over the whole recording** - it plays straight through; the
+machine hints are only suggestions where to look, and the reviewed result is hidden by default (V).
+
+```powershell
+.venv\Scripts\python.exe -m scripts.review.recon_judge_gui <review_root>\<exp>\<tag> `
+    --recon-dir <review_root>\<exp>\<tag>
+econ_reviewed_old_m3dfull
+```
+
+What is graded is the **3D reconstruction**: the main panel is a 3D view (old dashed, new solid, green
+where they agree, floor shadows, 0.3 s trails, old-new distance per node in mm; left-drag rotates,
+right-drag moves, wheel zooms towards the mouse, double-click shows the whole tank, 7/8/9/0 top / front /
+side / oblique, K trails, X follow the selected fish; M cycles both versions / only old / only new, in the
+3D and the camera views). The camera views show the same 3D nodes projected
+into the video, as an aid, together with every raw SLEAP instance of that frame, unfiltered - two when
+SLEAP found two, six when it found six (magenta: SLEAP's skeleton edges as lines, triangle = mouth,
+square = pectoral, x = tail; "SLEAP raw: n" = instances in that view; B hides them). They come from
+`slp_raw.npz` in the package, built once from the package's `.slp` files with
+`python -m scripts.review.slp_raw <package folder>` (unlike `detections.npz`, nothing is dropped - no
+false-positive or duplicate filter). Every panel border is draggable.
+
+**Grades.** Each version is graded on its own - correct / small error / clear error / unsure - for its
+3D IDs and its 3D body parts; which one is better follows (old correct + new small error = "old better,
+a little"; correct vs clear error = "clearly"; the same grade = "same"). Keys: IDs old Q W E, new R T Y;
+body old A S D, new F G H (correct / small / clear); U / J IDs / body unsure; O everything correct;
+Backspace erase. A grade goes to the selected fish (1 / 2 / 3 only that fish, 4 all; a click on a fish or its button
+selects or deselects it) on the
+selected frames: drag on the timeline, or press [ and grade later - the range runs to the current frame
+and restarts there after each grade, so you can grade while watching; ] closes it, \ / Esc = current
+frame only. A later grade paints over an earlier one. Enter jumps to the next frame not fully graded.
+
+**Timeline** (bottom, resizable): the whole recording in three rows - ID hints (red), body hints (orange),
+frames graded for every fish (light green) - with the shown span in white; click to jump, a time ruler, the hints in the span, and per fish an ID row and a
+body row with old (upper half) over new (lower half). Wheel zooms (0.1 s to the whole recording), right-
+drag or Shift+wheel moves, click seeks, drag selects.
+
+Grades are appended to `recon_judgements.csv` (`fish, aspect, version, start, end, grade, event, note,
+judged_on = 3D`); `python -m scripts.review.recon_judge <folder> --recon-dir <dir>` prints, per aspect and
+fish, the frames of each grade and of each comparison (after the analysis start).
+
+## 7. Audit: numbers for SLEAP and old vs new (`audit.py`, `audit_gui.py`)
+
+Grading every frame is not feasible, and a plain random sample of frames is almost all correct. The
+audit asks a person only where the answer carries information:
+
+* **id** (old vs new, blind) - every place where old's and new's identities stop matching (one of them
+  swapped). All of them are judged (P_1_1: 30).
+* **geometry** (old vs new, blind) - old and new give the same 3D in ~98% of frames (same 2D points);
+  those frames cannot tell them apart. A random sample (150) of the stretches where they differ, each judged
+  at one key frame (a random frame where they differ; the frames around it are context).
+
+  Old-vs-new items are judged **one version at a time**: first only A is shown and judged, then only B
+  (id: does every colour stay on the same fish - right / wrong / wrong briefly = swaps and comes back;
+  geometry: right / small error / clear
+  error). Which version is better is worked out by `stats`.
+* **sleap** - every frame and view is screened from `slp_raw.npz` and `review_data.npz` into suspicious
+  groups: fewer / more than 3 instances, an instance missing a body part, an instance far longer than usual
+  (two fish joined), head-tail against the other views, a view left out of 3D as inconsistent. 30 random
+  frames per group are checked ("real error?"), giving each group's precision and so the estimated number
+  of real errors in the whole recording.
+* **clean** - 100 random unflagged frames: what the screening misses (0 errors -> < 3% upper bound).
+* **lost** (appended later: `python -m scripts.review.audit add-lost <reference> --recon-dir <dir>`) - in
+  close encounters (< 10 mm) a fish often keeps a detection in fewer than two views, and ID swaps cluster
+  there. Each (fish, view, frame) where that happens is sorted by the raw SLEAP output: A fewer than 3
+  instances, B1 a separate unassigned instance where the fish should be (3D projected), B2 one that
+  overlaps another fish's detection, C nothing there. Up to 30 per group (>= 20 frames apart) are judged by
+  eye, blind to the group: does every fish in the yellow ring have its own magenta instance (detected = the
+  tracker did not use it / not detected = SLEAP missed it / hidden)? `stats` weights the groups by size.
+  The earlier task list and summary are backed up as `*.before_lost_<time>.*`; answers are kept.
+
+A and B are old / new in random order per item, hidden until `stats`. Everywhere 1 = right, 2 / 3 = wrong, 0 = unsure. The task list is built once with a
+fixed seed (the GUI builds it on first start); answers are appended to `audit/audit_answers.csv`.
+
+```powershell
+.venv\Scripts\python.exe -m scripts.review.audit_gui <reference> --recon-dir <reference>\recon_reviewed_old_m3dfull
+.venv\Scripts\python.exe -m scripts.review.audit stats <reference> --recon-dir <reference>\recon_reviewed_old_m3dfull
+```
+
+`stats` prints per SLEAP group the precision with its 95% Wilson interval and the estimated real errors,
+the unflagged error rate, and the unblinded old / new counts with a sign test.
+
+## 8. One identity pass (`id_pass_gui.py`, first version)
+
+Watch a recording once, without pausing, and end with the frames whose identities can be used. Works on
+any review package, written for the `*_m3dfull` ones:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.review.id_pass_gui <review_root>\<exp>\<tag>
+```
+
+Without a folder it asks for the experiment (every `*_m3dfull` package whose experiment has proxies).
+`--safe-mm`, `--high-risk-mm` and `--min-safe-s` change the machine's danger runs (`id_segments.py`,
+defaults 15 mm, 8 mm, 1 s).
+
+Press S at the first usable frame and name each fish once (1/2/3 or click, then 4/5/6). Space then plays
+at 2x, and at 1x in danger runs (Up/Down, Shift+Up/Down change the two speeds). Left/Right move one frame, 10 at a time when held down, Shift+Left/Right 2 s; 1/2/3 or a click on the selected fish, or Esc, clears the selection. Nothing pressed = right.
+When a name is on the wrong fish, select it and press its true name: the names change from there on and
+stay until the next change. The change goes back to the closest approach of the two tracks in the latest
+danger run of the last 5 s, and that run becomes unusable. X ... X marks any other range as unusable.
+
+B ... B marks a wrong pose with the right identity (selected fish, else all): written as `pose_bad` in `human_events.csv` and shown on the `pose` row of the timelines, the frames stay usable for identity. X ... X is for frames where identity cannot be trusted; it shows on the `unusable` row of the timelines from the first press. On the status row a bright yellow line is an identity change. A range still open on closing ends at the current frame.
+Every fish has its whole skeleton in every view: solid where the view detected it, thin dashes and squares where a node is projected from 3D.
+Layout as in the review GUI: one large camera (double-click another to swap), two stacked beside it, the 3D view on the right, the widest panel (drag rotates, wheel zooms, click selects a fish, double-click resets).
+
+Timelines (whole recording, then around the frame): status, danger zone, BORIS lanes. The grey dividers resize the panels; the wheel on the lower one changes its span (+-5 to +-240 s).
+
+Frame status: watched safe, watched danger (nothing changed there), unusable, unwatched. `id_pass/` in
+the package holds the ledger (`human_events.csv`, `coverage.csv`, `session_log.csv`), `id_pass_clock.json`
+(playback and window-open time over all sessions) and, on closing or P, `id_segments.csv` (usable
+segments with the names on the tracks), `id_pass_summary.json` and `id_timeline.png`. The package's own
+ledger is not touched.
+
+`id_timeline.png` shows the safe and unsafe intervals over time, in 5 minute rows, with their percentages.
+It opens by itself on closing once 99% of the recording has been watched, and at any time with P.
+`python -m scripts.review.id_figure <folder> --open` makes it for any package: from the identity pass if
+one was watched, else from the package's own review, else the machine's danger runs alone; `--wait`
+first waits until the package has been built.
+

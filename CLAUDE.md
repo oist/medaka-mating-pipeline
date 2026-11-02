@@ -23,7 +23,8 @@ scripts/                # All active logic lives here (not src/)
   reconstruction_3d/    # Preferred 3D reconstruction (incl. 3D-first tracker)
   analysis/             # Behavioral metrics (placeholders) + render_*_video.py (working)
   visualization/        # rerun_viewer.py — interactive 3D + multiview Rerun viewer
-  review/               # Human ID/head-tail review: proxies, review data, ledger, laptop GUI (see its README)
+  review/               # Human ID/head-tail review: proxies, review data, ledger, laptop GUI, export +
+                        #   machine post-pass, compare GUI for initial/machine/manual/final (see its README)
   common/               # local_paths.py, experiment_metadata.py, build_catalog.py
 sam2_id_experiment/     # SAM2/Detectron2 segmentation-assisted identity tools
 configs/                # YAML/TOML config (acquisition, sleap, paths)

@@ -152,6 +152,22 @@ def state_intervals(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def timed_intervals(df: pd.DataFrame) -> pd.DataFrame:
+    """START/STOP pairs whose duration is the Time column, in seconds.
+
+    ``start_frame`` / ``stop_frame`` remain the exported Image index values.
+    Duration is ``stop_time_sec - start_time_sec``. A later START can repeat
+    the previous STOP's image index while its Time has moved on; subtracting
+    those image indexes then stretches the later bout across the gap.
+    """
+    intervals = state_intervals(df)
+    if intervals.empty:
+        return intervals.assign(duration_s=pd.Series(dtype=float))
+    out = intervals.copy()
+    out["duration_s"] = out["stop_time_sec"] - out["start_time_sec"]
+    return out
+
+
 def iter_event_frames(
     df: pd.DataFrame,
     behaviors: Iterable[str] | None = None,

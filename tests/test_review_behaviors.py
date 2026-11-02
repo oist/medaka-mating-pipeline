@@ -53,6 +53,23 @@ def test_find_boris_csv_searches_folders_recursively_newest_first(tmp_path):
     assert find_boris_csv("other", [tmp_path]) is None
 
 
+def test_repeated_image_index_does_not_stretch_the_next_bout(tmp_path):
+    """A START can keep the previous STOP's image index while Time has moved on."""
+    path = tmp_path / "exp.csv"
+    pd.DataFrame([
+        {"Observation id": "exp", "Subject": "m2tm1", "Behavior": "Dash", "Behavioral category": "aggressive",
+         "Behavior type": "START", "Time": 1552.476, "Image index": 257711, "Media file name": "top.mp4", "FPS": "166"},
+        {"Observation id": "exp", "Subject": "m2tm1", "Behavior": "Dash", "Behavioral category": "aggressive",
+         "Behavior type": "STOP", "Time": 1552.596, "Image index": 257731, "Media file name": "top.mp4", "FPS": "166"},
+        {"Observation id": "exp", "Subject": "m2tm1", "Behavior": "Dash", "Behavioral category": "aggressive",
+         "Behavior type": "START", "Time": 1568.693, "Image index": 257731, "Media file name": "top.mp4", "FPS": "166"},
+        {"Observation id": "exp", "Subject": "m2tm1", "Behavior": "Dash", "Behavioral category": "aggressive",
+         "Behavior type": "STOP", "Time": 1569.024, "Image index": 260458, "Media file name": "top.mp4", "FPS": "166"},
+    ]).to_csv(path, index=False)
+    b = load_bouts(path).sort_values("start")
+    assert list(zip(b["start"], b["end"])) == [(257711, 257731), (260403, 260458)]
+
+
 def test_overlapping_bouts_get_sub_rows(tmp_path):
     from scripts.review.behaviors import bout_rows
 

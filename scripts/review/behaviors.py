@@ -1,7 +1,9 @@
 """Manual BORIS behaviour annotations for the review GUI's behaviour row.
 
-BORIS was run on the raw top-camera video at the source frame rate, so its ``Image index`` is the
-review data's frame number. START/STOP pairs become bouts, POINT events one-frame bouts. Subjects
+BORIS was run on the raw top-camera video. A bout's frames are its Time column times the file
+FPS. Image index is only a fallback: a later START can repeat the previous STOP's image index
+while Time has already moved on, and using that index stretches the bout across the gap.
+START/STOP pairs become bouts, POINT events one-frame bouts. Subjects
 follow the annotation vocabulary of :mod:`scripts.common.boris_events` (``m1tf`` = M1 towards the
 female, ``m1tm2`` = M1 towards M2, ``m1m2`` = both males, ``f`` / ``m1`` / ``m2`` = one fish alone);
 they are shown as ``M1->F`` etc. and laid out in three lanes: towards the female, between the males,
@@ -48,17 +50,50 @@ def empty_bouts() -> pd.DataFrame:
     return pd.DataFrame(columns=BOUT_COLUMNS)
 
 
+def _recording_fps(path: Path) -> float:
+    """FPS declared in the BORIS export. The Time column is seconds on that clock."""
+    header = pd.read_csv(path, nrows=1, dtype=str)
+    raw = str(header["FPS"].iloc[0]) if "FPS" in header.columns and len(header) else ""
+    piece = raw.split("|")[0].strip()
+    try:
+        fps = float(piece)
+    except ValueError:
+        fps = 0.0
+    return fps if fps > 0 else 166.0
+
+
+def _frame_at(time_sec, frame_index, fps: float) -> int | None:
+    """Frame of one BORIS edge. Time wins: a later START often repeats the previous STOP's image index."""
+    if pd.notna(time_sec):
+        return int(round(float(time_sec) * fps))
+    if frame_index is not None and int(frame_index) >= 0:
+        return int(frame_index)
+    return None
+
+
 def load_bouts(path: str | Path) -> pd.DataFrame:
-    """Bouts of one BORIS CSV, sorted by start frame (columns ``BOUT_COLUMNS``)."""
+    """Bouts of one BORIS CSV, sorted by start frame (columns ``BOUT_COLUMNS``).
+
+    Start and stop frames come from the Time column times the file FPS. Image index is used
+    only when Time is missing. Pairing image indexes stretches a bout when its START repeats
+    the previous STOP's index while Time has moved on.
+    """
+    path = Path(path)
+    fps = _recording_fps(path)
     events = load_boris_csv(path)
     rows = []
     for r in state_intervals(events).itertuples(index=False):
-        if r.start_frame < 0 or r.stop_frame < 0:
+        start = _frame_at(r.start_time_sec, r.start_frame, fps)
+        end = _frame_at(r.stop_time_sec, r.stop_frame, fps)
+        if start is None or end is None:
             continue
-        rows.append((int(r.start_frame), int(r.stop_frame), r.subject, r.behavior, r.category, False))
-    points = events[(events["behavior_type"] == "POINT") & (events["frame_index"] >= 0)]
+        rows.append((start, end, r.subject, r.behavior, r.category, False))
+    points = events[events["behavior_type"] == "POINT"]
     for r in points.itertuples(index=False):
-        rows.append((int(r.frame_index), int(r.frame_index), r.subject, r.behavior, r.category, True))
+        frame = _frame_at(r.time_sec, r.frame_index, fps)
+        if frame is None:
+            continue
+        rows.append((frame, frame, r.subject, r.behavior, r.category, True))
     out = []
     for start, end, subject, behavior, category, point in rows:
         who, lane = subject_label(str(subject))
