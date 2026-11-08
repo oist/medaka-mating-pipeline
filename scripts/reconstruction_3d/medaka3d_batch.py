@@ -1,7 +1,8 @@
 """Run medaka-3d's full chain on several experiments and build a review package for each.
 
 One experiment goes through the steps of ``medaka3d_chain`` in order: detection cache, c27 -> c34, export
-at lambda 0.767, ``build_review_data`` into ``<review_packages>/<exp>/<tag>_m3dfull``. Every step is skipped
+at lambda 0.767, ``build_review_data`` into ``<review_packages>/<exp>/<tag>_m3dfull``, then ``trajectory_qc``
+(anomaly intervals from the trajectories and c30's joins / refusals) into the same folder. Every step is skipped
 when its result exists, so an interrupted batch is resumed by starting it again. A failing experiment
 does not stop the others.
 
@@ -13,6 +14,10 @@ result against the cache, so export and review data read exactly the detections 
 CLI::
 
     python -m scripts.reconstruction_3d.medaka3d_batch 20260109_K_2_1_FCMC 20251225_K_1_1_FCMC --jobs 3
+
+``--watch MIN`` re-checks every MIN minutes and starts an experiment only once its three
+merged ``<view>.slp`` files exist (or it is a K_1 experiment with s16 chunks). Finished
+experiments are skipped; a failure is not retried until the process is started again.
 """
 
 from __future__ import annotations
@@ -117,7 +122,40 @@ def run_one(experiment: str, *, round_tag: str = S14_TAG, lam: float = LAMBDA, m
         build_review_data(experiment, tag, src.slp_dir, out_dir, review_dir,
                           calibration_folder(out_dir, tag, paths.calibration_model_dir),
                           fps=source_fps(paths, experiment))
+    if (review_dir / "trajectory_qc_summary.json").is_file():
+        log(f"[batch] {experiment}: trajectory QC exists")
+    else:
+        from scripts.reconstruction_3d.trajectory_qc import run_qc
+
+        run_qc(review_dir, c30_summary=c30_summary_path(m3p.work_dir, experiment), lam=lam, log=log)
     log(f"[batch] {experiment}: done -> {review_dir}")
+
+
+def c30_summary_path(work_dir: Path, experiment: str) -> Path:
+    """medaka-3d's ``c30_summary.json`` (slot joins and refused boundaries) of the production chain."""
+    return Path(work_dir) / "c30_slot_stitch" / f"{experiment}__{M3C.C30_TAG}" / "c30_summary.json"
+
+
+def chain_readiness(experiment: str, *, sleap_output_dir: Path, reconstruction_output_dir: Path,
+                    data_root: Path, round_tag: str, s16_experiments) -> str:
+    """``done`` when the m3dfull CSV, review manifest and trajectory QC exist, ``ready`` when detections
+    do, else ``waiting``."""
+    slp_dir = Path(sleap_output_dir) / experiment / round_tag
+    if all((slp_dir / f"{view}.slp").is_file() for view in M3C.VIEWS):
+        tag = round_tag
+        ready = True
+    elif experiment in s16_experiments:
+        tag = S16_TAG
+        ready = True
+    else:
+        return "waiting"
+    out_tag = f"{tag}_m3dfull"
+    csv_ok = (Path(reconstruction_output_dir) / experiment / out_tag / f"{out_tag}_3d.csv").is_file()
+    review_dir = Path(data_root) / "review_packages" / experiment / out_tag
+    review_ok = all((review_dir / name).is_file() for name in ("review_manifest.json", "trajectory_qc_summary.json"))
+    if ready and csv_ok and review_ok:
+        return "done"
+    return "ready"
 
 
 def status_row(experiment: str, *, round_tag: str = S14_TAG, m3d=None) -> dict:
@@ -160,17 +198,63 @@ def run_batch(experiments: list[str], *, jobs: int, round_tag: str, log_dir: Pat
         return dict(zip(experiments, pool.map(one, experiments)))
 
 
+def watch_batch(experiments: list[str], *, jobs: int, round_tag: str, log_dir: Path, watch_min: float,
+                paths, s16_experiments) -> int:
+    """Start each experiment when its detections exist; re-check until none are still waiting."""
+    status: dict[str, str] = {}
+    while True:
+        ready: list[str] = []
+        for experiment in experiments:
+            if status.get(experiment) in ("done", "failed"):
+                continue
+            state = chain_readiness(
+                experiment, sleap_output_dir=paths.sleap_output_dir,
+                reconstruction_output_dir=paths.reconstruction_output_dir, data_root=paths.data_root,
+                round_tag=round_tag, s16_experiments=s16_experiments)
+            if state == "ready":
+                ready.append(experiment)
+            else:
+                status[experiment] = state
+                print(f"[batch] {experiment}: {state}", flush=True)
+        if ready:
+            codes = run_batch(ready, jobs=jobs, round_tag=round_tag, log_dir=log_dir)
+            for experiment, code in codes.items():
+                status[experiment] = "done" if code == 0 else "failed"
+        waiting = [experiment for experiment in experiments if status.get(experiment) == "waiting"]
+        if watch_min <= 0 or not waiting:
+            break
+        print(f"[{time.strftime('%m-%d %H:%M')}] {len(waiting)} waiting; next check in {watch_min:g} min", flush=True)
+        time.sleep(watch_min * 60)
+    failed = [experiment for experiment in experiments if status.get(experiment) == "failed"]
+    print(f"summary: {sum(status.get(e) == 'done' for e in experiments)} done, "
+          f"{len(failed)} failed, {sum(status.get(e) == 'waiting' for e in experiments)} waiting", flush=True)
+    return int(bool(failed))
+
+
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("experiments", nargs="+")
     p.add_argument("--jobs", type=int, default=3)
     p.add_argument("--round-tag", default=S14_TAG)
+    p.add_argument("--watch", type=float, default=0, metavar="MIN",
+                   help="Re-check every MIN minutes; start an experiment only once its detections exist.")
     p.add_argument("--one", action="store_true", help="run the first experiment in this process")
     args = p.parse_args(argv)
     if args.one:
         run_one(args.experiments[0], round_tag=args.round_tag)
         return 0
+    from scripts.common.local_paths import load_local_paths
+    from scripts.sleap.batch_bottomup_track import default_paths_config
+
+    paths = load_local_paths(default_paths_config())
+    if paths is None:
+        raise SystemExit(f"paths config not found: {default_paths_config()}")
     log_dir = M3C.m3d_paths(M3C.medaka3d_repo()).work_dir / "medaka3d_chain_logs"
+    if args.watch:
+        import c01_s16_predictions as c01
+
+        return watch_batch(args.experiments, jobs=args.jobs, round_tag=args.round_tag, log_dir=log_dir,
+                           watch_min=args.watch, paths=paths, s16_experiments=c01.EXPERIMENTS)
     codes = run_batch(args.experiments, jobs=args.jobs, round_tag=args.round_tag, log_dir=log_dir)
     print(json.dumps(codes, indent=1), flush=True)
     return int(any(codes.values()))

@@ -159,10 +159,24 @@ def velocity_bearing_deg(pos_self: np.ndarray, pos_other: np.ndarray) -> np.ndar
     """Angle between ``self``'s horizontal velocity and the line toward ``other``.
 
     0° is straight toward the other fish, 90° is sideways, 180° is straight away.
+    Vertical motion is ignored. Use :func:`velocity_bearing_3d_deg` when the path
+    may leave the horizontal plane.
     """
     vel = np.full_like(pos_self, np.nan)
     vel[1:] = pos_self[1:] - pos_self[:-1]
     return _angle_deg(vel[..., :2], (pos_other - pos_self)[..., :2])
+
+
+def velocity_bearing_3d_deg(pos_self: np.ndarray, pos_other: np.ndarray) -> np.ndarray:
+    """Angle between ``self``'s 3D velocity and the 3D line toward ``other``.
+
+    0° is straight toward the other fish, 90° is tangential, 180° is straight away.
+    A purely vertical step, which the horizontal bearing leaves missing, is 90°
+    when the other fish sits level with the step's start.
+    """
+    vel = np.full_like(pos_self, np.nan)
+    vel[1:] = pos_self[1:] - pos_self[:-1]
+    return _angle_deg(vel, pos_other - pos_self)
 
 
 def angle_swept_deg(orbit_deg_s: np.ndarray, fps: float, window_s: float = 1.0) -> np.ndarray:
@@ -204,6 +218,15 @@ def path_curvature_deg_per_mm(pos: np.ndarray, min_step_mm: float = 1.0, stride:
     keep = at < len(out)
     out[at[keep]] = np.abs(turn[good][keep]) / dist[1:][good][keep]
     return out
+
+
+def line_angular_velocity(pos_a: np.ndarray, pos_b: np.ndarray, fps: float) -> np.ndarray:
+    """Signed angular velocity of the horizontal line from ``a`` to ``b``, degrees per second.
+
+    Positive is counterclockwise in the horizontal plane. The line from ``b`` to ``a``
+    has the same rate, because its angle differs by 180°.
+    """
+    return orbit_rate(pos_a, pos_b, fps)
 
 
 def orbit_rate(pos_center: np.ndarray, pos_orbiter: np.ndarray, fps: float) -> np.ndarray:
@@ -265,6 +288,7 @@ def kinematic_table(nodes: np.ndarray, frames: np.ndarray, fps: float, mouth: in
         dist[~np.isfinite(pos[:, slot[a]]).all(1) | ~np.isfinite(pos[:, slot[b]]).all(1)] = np.nan
         cols[f"dist_{a}_{b}"] = dist
         cols[f"close_{a}_{b}"] = closing_speed(dist, fps)
+        cols[f"line_ang_{a}_{b}"] = line_angular_velocity(pos[:, slot[a]], pos[:, slot[b]], fps)
     for a, b in DIRECTED:
         direction = pos[:, slot[b]] - pos[:, slot[a]]
         cols[f"head_{a}_to_{b}"] = _angle_deg(head[:, slot[a]], direction)
@@ -630,4 +654,5 @@ TRACE_COLUMNS = ["dist_F_M1", "dist_F_M2", "dist_M1_M2", "speed_F", "speed_M1", 
                  "vel_angle_F_to_M1", "vel_angle_F_to_M2",
                  "sweep_M1_around_F", "sweep_M1_around_M2", "sweep_M2_around_F", "sweep_M2_around_M1",
                  "sweep_F_around_M1", "sweep_F_around_M2",
-                 "curve_F", "curve_M1", "curve_M2"]
+                 "curve_F", "curve_M1", "curve_M2",
+                 "line_ang_F_M1", "line_ang_F_M2", "line_ang_M1_M2"]

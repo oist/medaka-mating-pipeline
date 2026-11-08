@@ -10,16 +10,30 @@ From the top of each segment:
 * the review bar: kept, discarded, unwatched;
 * the behaviour lane: one row per behaviour, named at the left, every event tagged with who
   does it to whom (``M1→F``: male 1 to the female; ``M2→M1``: male 2 to male 1);
-* the female's rows (speed; distance to each male);
-* male 1's rows (speed; heading toward the female and toward male 2; orbit around the female;
-  direction of his velocity; angle swept around each other fish in the last 1 s; path curvature);
-* male 2's rows, the same;
-* the distance between the two males.
+* speed of each fish;
+* distance from each male to the female, with the 12 mm and 40 mm levels marked;
+* distance between the two males;
+* each male's height minus the female's (negative: he is below her);
+* how fast the female–male gap is shrinking;
+* each male's 3D swim direction toward the female, and toward the other male
+  (0° straight at that fish, 90° sideways);
+* each male's body heading toward the female, and toward the other male
+  (where the snout points, separate from where he is swimming);
+* net turn of each male around the female over the last 1 s;
+* net turn of the line between the two males over the last 1 s (one series:
+  the opposite direction is the same number);
+* the female's speed component away from each male;
+* each male's speed component away from the other male.
 
-The colour of a line is the fish it is about: speed and orbit are the fish itself; in the
-distance and heading rows the colour is the fish the measure points to. Tinted bands go over
-every row: a behaviour in its colour, red where the review discarded the frames, grey where
-nobody watched. Lines stop in discarded stretches.
+The colour of a line is the fish that series is about. Tinted bands go over every row:
+a behaviour in its colour, red where the review discarded the frames, grey where nobody
+watched. Lines stop in discarded stretches.
+
+Rows that repeat one geometric quantity are not drawn. The angular velocity of a male
+about the female is the angular velocity of the line that joins them, and the opposite
+ordering of the two males has that same rate; the 1 s net turn is that rate added up,
+so the figure keeps the sum and not the rate. Path curvature is omitted: its time index
+is wrong, and a bend in one fish's own path does not say which fish is at the centre.
 
 ::
 
@@ -44,42 +58,49 @@ from scripts.analysis.review_overview import _day
 from scripts.review.behaviors import default_search
 
 FEMALE, M1, M2, BOTH = "#c2185b", "#1b9e77", "#d95f02", "#555555"
-# (axis label, label colour, [(column, line colour), ...], clip);
-# clip: pos = from 0, sym = about 0, angle = 0-180.
+# (axis label, label colour, [(column, line colour), ...], clip, guide levels).
+# clip: pos = from 0, sym = about 0, angle = 0-180, sweep = -360..360.
+# A guide is a dashed horizontal line (the 12/40 mm band, the tangent angles, or zero).
 ROWS = (
-    ("Female\nspeed (mm/s)", FEMALE, (("speed_F", FEMALE),), "pos"),
-    ("Female\ndistance to Male 1 (green)\nand Male 2 (orange) (mm)", FEMALE,
-     (("dist_F_M1", M1), ("dist_F_M2", M2)), "pos"),
-    ("Male 1\nspeed (mm/s)", M1, (("speed_M1", M1),), "pos"),
-    ("Male 1\nheading toward Female (pink)\nand Male 2 (orange) (deg)", M1,
-     (("head_M1_to_F", FEMALE), ("head_M1_to_M2", M2)), "angle"),
-    ("Male 1\norbit around Female (deg/s)", M1, (("orbit_M1_around_F", M1),), "sym"),
-    ("Male 1\nvelocity direction to Female (pink)\nand Male 2 (orange) (deg)\n0 = toward, 90 = sideways", M1,
-     (("vel_angle_M1_to_F", FEMALE), ("vel_angle_M1_to_M2", M2)), "angle"),
-    ("Male 1\nangle swept in 1 s around\nFemale (pink) and Male 2 (orange) (deg)", M1,
-     (("sweep_M1_around_F", FEMALE), ("sweep_M1_around_M2", M2)), "sweep"),
-    ("Male 1\npath curvature (deg/mm)", M1, (("curve_M1", M1),), "curve"),
-    ("Male 2\nspeed (mm/s)", M2, (("speed_M2", M2),), "pos"),
-    ("Male 2\nheading toward Female (pink)\nand Male 1 (green) (deg)", M2,
-     (("head_M2_to_F", FEMALE), ("head_M2_to_M1", M1)), "angle"),
-    ("Male 2\norbit around Female (deg/s)", M2, (("orbit_M2_around_F", M2),), "sym"),
-    ("Male 2\nvelocity direction to Female (pink)\nand Male 1 (green) (deg)\n0 = toward, 90 = sideways", M2,
-     (("vel_angle_M2_to_F", FEMALE), ("vel_angle_M2_to_M1", M1)), "angle"),
-    ("Male 2\nangle swept in 1 s around\nFemale (pink) and Male 1 (green) (deg)", M2,
-     (("sweep_M2_around_F", FEMALE), ("sweep_M2_around_M1", M1)), "sweep"),
-    ("Male 2\npath curvature (deg/mm)", M2, (("curve_M2", M2),), "curve"),
-    ("Distance between\nMale 1 and Male 2 (mm)", BOTH, (("dist_M1_M2", BOTH),), "pos"),
+    ("Speed (mm/s)\nFemale (pink), Male 1 (green), Male 2 (orange)", BOTH,
+     (("speed_F", FEMALE), ("speed_M1", M1), ("speed_M2", M2)), "pos", ()),
+    ("Distance to the female (mm)\nMale 1 (green), Male 2 (orange)\ndashed lines at 12 and 40", FEMALE,
+     (("dist_F_M1", M1), ("dist_F_M2", M2)), "pos", (12.0, 40.0)),
+    ("Distance between\nthe two males (mm)", BOTH, (("dist_M1_M2", BOTH),), "pos", ()),
+    ("Male height minus female height (mm)\nnegative = that male is below her", BOTH,
+     (("zrel_M1_F", M1), ("zrel_M2_F", M2)), "sym", (0.0,)),
+    ("Closing speed of the female-male gap (mm/s)\npositive = the distance is shrinking", BOTH,
+     (("close_F_M1", M1), ("close_F_M2", M2)), "sym", (0.0,)),
+    ("Swim direction toward the female (deg)\n"
+     "0 = straight at her, 90 = sideways, 180 = away\n3D velocity; dashed lines at 60, 90, 120", BOTH,
+     (("bear3d_M1_to_F", M1), ("bear3d_M2_to_F", M2)), "angle", (60.0, 90.0, 120.0)),
+    ("Swim direction toward the other male (deg)\n0 = straight at him, 90 = sideways, 180 = away", BOTH,
+     (("bear3d_M1_to_M2", M1), ("bear3d_M2_to_M1", M2)), "angle", (90.0,)),
+    ("Body heading toward the female (deg)\nsnout axis; 0 = pointing at her", BOTH,
+     (("head_M1_to_F", M1), ("head_M2_to_F", M2)), "angle", ()),
+    ("Body heading toward the other male (deg)\nsnout axis; 0 = pointing at him", BOTH,
+     (("head_M1_to_M2", M1), ("head_M2_to_M1", M2)), "angle", ()),
+    ("Net turn around the female\nin the last 1 s (deg)\n"
+     "positive = counterclockwise; +360 or -360 = one full circle", BOTH,
+     (("sweep_M1_around_F", M1), ("sweep_M2_around_F", M2)), "sweep", (0.0,)),
+    ("Net turn between the two males\nin the last 1 s (deg)\n"
+     "Male 1 about Male 2; the reverse is the same number", BOTH,
+     (("sweep_M1_around_M2", BOTH),), "sweep", (0.0,)),
+    ("Female speed away from each male (mm/s)\npositive = she is moving away from that male", FEMALE,
+     (("away_F_from_M1", M1), ("away_F_from_M2", M2)), "sym", (0.0,)),
+    ("Male speed away from the other male (mm/s)\npositive = he is moving away", BOTH,
+     (("away_M1_from_M2", M1), ("away_M2_from_M1", M2)), "sym", (0.0,)),
 )
 LANE_ORDER = ("attack", "attempted att", "quick circle", "incomplete qc", "wrap", "spawn")
 SEGMENTS = 6
-ROW_INCH = 0.62
+ROW_INCH = 0.78
 LANE_RATIO = 4.5
 
 
 def _limits(trace) -> dict[str, tuple[float, float]]:
     """Axis limits per row from the whole recording, so every segment shares a scale."""
     out = {}
-    for label, _color_, series, clip in ROWS:
+    for label, _color_, series, clip, _guides in ROWS:
         values = np.concatenate([trace[c].to_numpy(float) for c, _ in series])
         values = values[np.isfinite(values)]
         if clip == "angle":
@@ -89,9 +110,7 @@ def _limits(trace) -> dict[str, tuple[float, float]]:
         elif clip == "pos":
             out[label] = (0.0, float(np.percentile(values, 99.5)) * 1.05)
         elif clip == "sweep":
-            out[label] = (-400.0, 400.0)
-        elif clip == "curve":
-            out[label] = (0.0, 4.0)
+            out[label] = (-360.0, 360.0)
         else:
             top = float(np.percentile(np.abs(values), 99.5))
             out[label] = (-top, top)
@@ -165,8 +184,10 @@ def draw_block(fig, trial: Trial, t0: float, t1: float, limits) -> None:
         lane.axhline(y + 0.5, color="#dddddd", lw=0.5)
     lane.set_ylabel("behaviour\n(tag: who → whom)", fontsize=8, rotation=0, ha="right", va="center")
 
-    for ax, (label, label_color, series, _clip) in zip(rows, ROWS):
+    for ax, (label, label_color, series, _clip, guides) in zip(rows, ROWS):
         _bands(ax, trial, t0, t1, minimum)
+        for level in guides:
+            ax.axhline(level, color="#4a4a4a", lw=0.6, ls=(0, (3, 2)), zorder=2)
         for column, color in series:
             ax.plot(minutes[keep], traces[column].to_numpy(float)[keep], color=color, lw=0.7, zorder=3)
         ax.set_ylim(*limits[label])
@@ -189,10 +210,8 @@ def _legend(fig, trial: Trial) -> None:
 
 def _title(trial: Trial) -> str:
     pct = trial.provenance.get("review_pct") or {}
-    return (f"{trial.experiment}: kept {pct.get('kept', 0):.1f}%, discarded {pct.get('discarded', 0):.1f}%, "
-            f"unwatched {pct.get('unwatched', 0):.1f}%\n"
-            "line colour = the fish the measure is about or points to; tint over every row = behaviour (its colour), "
-            "red = discarded, grey = unwatched; lines stop in discarded stretches")
+    return (f"{trial.experiment}: kept {pct.get('kept', 0):.1f}%, "
+            f"discarded {pct.get('discarded', 0):.1f}%, unwatched {pct.get('unwatched', 0):.1f}%")
 
 
 def _edges(trial: Trial) -> list[tuple[float, float]]:
@@ -215,34 +234,37 @@ def page_figure(trial: Trial, limits, t0: float, t1: float) -> Figure:
     fig = Figure(figsize=(22, 13), layout="constrained")
     draw_block(fig, trial, t0, t1, limits)
     _legend(fig, trial)
-    fig.suptitle(_title(trial) + f"\n{t0:.1f}-{t1:.1f} min", fontsize=11)
+    fig.suptitle(_title(trial) + f"    {t0:.1f}-{t1:.1f} min", fontsize=11)
     return fig
 
 
-def _bin_median(frames: np.ndarray, values: np.ndarray, step: int = 16) -> np.ndarray:
-    bin_id = np.asarray(frames) // step
-    n_bins = int(bin_id.max()) + 1
-    out = np.full(n_bins, np.nan)
-    order = np.argsort(bin_id, kind="mergesort")
-    bids, vals = bin_id[order], values[order]
-    cuts = np.flatnonzero(np.diff(bids)) + 1
-    starts, ends = np.r_[0, cuts], np.r_[cuts, len(bids)]
-    for s, e in zip(starts, ends):
-        part = vals[s:e]
+def _decimate_median(values: np.ndarray, step: int = 16) -> np.ndarray:
+    """Median of each contiguous block, the same blocks as ``behavior_features.decimate``."""
+    out = np.full(int(np.ceil(len(values) / step)), np.nan)
+    for i, a in enumerate(range(0, len(values), step)):
+        part = values[a:a + step]
         part = part[np.isfinite(part)]
         if len(part):
-            out[int(bids[s])] = float(np.median(part))
+            out[i] = float(np.median(part))
     return out
 
 
-def attach_circle_columns(trial: Trial) -> None:
-    """Add velocity direction, 1 s swept angle and path curvature onto ``trial.traces``.
+def _pair_distance(pos: np.ndarray, i: int, j: int) -> np.ndarray:
+    dist = np.linalg.norm(pos[:, i] - pos[:, j], axis=-1)
+    dist = np.asarray(dist, float)
+    missing = ~np.isfinite(pos[:, i]).all(1) | ~np.isfinite(pos[:, j]).all(1)
+    dist[missing] = np.nan
+    return dist
 
-    Saved traces predate these columns. They are the actor's own path, plus that
-    actor relative to the other fish: 0° velocity direction is straight toward
-    the other, and the swept angle keeps its sign.
+
+def attach_circle_columns(trial: Trial) -> None:
+    """Add the rows that are not in the saved trace table.
+
+    Saved traces already carry speed, distance, body heading and the 1 s net turn.
+    This fills height difference, gap closing, 3D swim direction and the away
+    component, and rebuilds the 1 s net turn when that column is absent.
     """
-    needed = [c for _label, _color, series, _clip in ROWS for c, _ in series]
+    needed = [c for _label, _color, series, _clip, _guides in ROWS for c, _ in series]
     if all(c in trial.traces.columns for c in needed):
         return
     import json
@@ -277,21 +299,29 @@ def attach_circle_columns(trial: Trial) -> None:
     pos = F.centroids(named)
     slot = {name: i for i, name in enumerate(F.NAMES)}
     full: dict[str, np.ndarray] = {}
-    for actor in F.NAMES:
-        full[f"curve_{actor}"] = F.path_curvature_deg_per_mm(
-            pos[:, slot[actor]], stride=max(1, int(round(0.1 * fps))))
-    for actor, target in F.DIRECTED:
+    female = slot["F"]
+    for actor in ("M1", "M2"):
+        height = np.asarray(pos[:, slot[actor], 2] - pos[:, female, 2], float)
+        missing = ~np.isfinite(pos[:, slot[actor], 2]) | ~np.isfinite(pos[:, female, 2])
+        height[missing] = np.nan
+        full[f"zrel_{actor}_F"] = height
+        full[f"close_F_{actor}"] = F.closing_speed(_pair_distance(pos, female, slot[actor]), fps)
+        full[f"away_F_from_{actor}"] = F.away_speed(pos[:, female], pos[:, slot[actor]], fps)
+        full[f"bear3d_{actor}_to_F"] = F.velocity_bearing_3d_deg(pos[:, slot[actor]], pos[:, female])
+    for actor, other in (("M1", "M2"), ("M2", "M1")):
+        full[f"bear3d_{actor}_to_{other}"] = F.velocity_bearing_3d_deg(pos[:, slot[actor]], pos[:, slot[other]])
+        full[f"away_{actor}_from_{other}"] = F.away_speed(pos[:, slot[actor]], pos[:, slot[other]], fps)
+    for actor, target in (("M1", "F"), ("M2", "F"), ("M1", "M2")):
         orbit = F.orbit_rate(pos[:, slot[target]], pos[:, slot[actor]], fps)
-        full[f"orbit_{actor}_around_{target}"] = orbit
-        full[f"vel_angle_{actor}_to_{target}"] = F.velocity_bearing_deg(pos[:, slot[actor]], pos[:, slot[target]])
         full[f"sweep_{actor}_around_{target}"] = F.angle_swept_deg(orbit, fps)
-    binned = {name: _bin_median(frames, values) for name, values in full.items()}
-    index = trial.traces["frame"].to_numpy(int) // 16
-    for name, values in binned.items():
-        out = np.full(len(index), np.nan)
-        ok = (index >= 0) & (index < len(values))
-        out[ok] = values[index[ok]]
-        trial.traces[name] = out
+    n_rows = len(trial.traces)
+    for name, values in full.items():
+        if name in trial.traces.columns:
+            continue
+        column = _decimate_median(values)
+        if len(column) != n_rows:
+            raise RuntimeError(f"{name}: {len(column)} bins, trace has {n_rows} rows")
+        trial.traces[name] = column
 
 
 def write_trial(trial: Trial, folder: Path) -> int:

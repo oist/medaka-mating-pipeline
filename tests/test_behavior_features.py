@@ -50,6 +50,27 @@ def test_orbit_rate_of_a_steady_circle():
     assert rate[1:] == pytest.approx(18.0, abs=1e-6)  # 360 degrees over 20 frames
 
 
+def test_velocity_bearing_3d_counts_a_vertical_step():
+    pos_self = np.array([[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]], float)
+    pos_other = np.array([[1.0, 0.0, 0.0], [1.0, 0.0, 1.0]], float)
+    assert np.isnan(F.velocity_bearing_deg(pos_self, pos_other)[1])
+    assert F.velocity_bearing_3d_deg(pos_self, pos_other)[1] == pytest.approx(90.0)
+    toward_self = np.array([[0.0, 0.0, 1.0], [1.0, 0.0, 0.5]], float)
+    toward_other = np.array([[2.0, 0.0, 0.0], [2.0, 0.0, 0.0]], float)
+    assert F.velocity_bearing_3d_deg(toward_self, toward_other)[1] == pytest.approx(0.0, abs=1e-4)
+
+
+def test_line_angular_velocity_matches_either_direction():
+    n = 20
+    theta = np.linspace(0, 2 * np.pi, n, endpoint=False)
+    a = np.zeros((n, 3))
+    b = np.c_[np.cos(theta), np.sin(theta), np.zeros(n)]
+    forward = F.line_angular_velocity(a, b, fps=1.0)
+    backward = F.line_angular_velocity(b, a, fps=1.0)
+    assert forward[1:] == pytest.approx(18.0, abs=1e-6)
+    assert backward[1:] == pytest.approx(forward[1:])
+
+
 def test_named_nodes_follow_a_swap():
     nodes = np.zeros((6, 3, 3, 3))
     nodes[:, 0, :, 0], nodes[:, 1, :, 0], nodes[:, 2, :, 0] = 0, 10, 20
@@ -115,11 +136,11 @@ def _package(root: Path, experiment: str, n: int = 30) -> Path:
 
 def _boris(path: Path, experiment: str) -> None:
     path.write_text(
-        "Observation id,Subject,Behavior,Behavioral category,Behavior type,Time,Image index,Media file name\n"
-        f"{experiment},m1tf,quick circle,courtship,START,1,5,x\n"
-        f"{experiment},m1tf,quick circle,courtship,STOP,2,15,x\n"
-        f"{experiment},m1tf,follow,courtship,START,0,0,x\n"
-        f"{experiment},m1tf,follow,courtship,STOP,0.5,4,x\n", encoding="utf-8")
+        "Observation id,Subject,Behavior,Behavioral category,Behavior type,Time,Image index,Media file name,FPS\n"
+        f"{experiment},m1tf,quick circle,courtship,START,0.5,5,x,10\n"
+        f"{experiment},m1tf,quick circle,courtship,STOP,1.5,15,x,10\n"
+        f"{experiment},m1tf,follow,courtship,START,0,0,x,10\n"
+        f"{experiment},m1tf,follow,courtship,STOP,0.4,4,x,10\n", encoding="utf-8")
 
 
 def test_build_trial_names_fish_and_skips_follow(tmp_path):
