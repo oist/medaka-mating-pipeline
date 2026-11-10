@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from scripts.analysis.microstate import align_pair, reconstruct_pose
+from scripts.analysis.microstate import align_pair, reconstruct_pose, recentre_pec_mid
 
 
 def _pair(yaw_deg=0.0, shift=(0.0, 0.0, 0.0)):
@@ -28,6 +28,38 @@ def test_alignment_removes_translation_and_yaw():
     assert abs(reference[1]) < 1e-8
     plain, _ = align_pair(_pair())
     assert np.allclose(feat, plain, atol=1e-8)
+
+
+def test_pec_mid_origin():
+    points = _pair(40.0, (100.0, -30.0, 5.0))
+    points[0, 4, 2] = points[0, 1, 2] + 6.0   # b's pectoral 6 mm above a's: dz = -6
+    feat, valid = align_pair(points, origin="pec_mid")
+    assert valid[0]
+    # pectoral_b sits at (D_xy / 2, 0, -dz / 2) with dz = z_a - z_b
+    d_xy = np.linalg.norm(points[0, 4, :2] - points[0, 1, :2])
+    assert np.isclose(feat[0, 12], d_xy / 2)
+    assert np.isclose(feat[0, 13], 3.0)
+    # mouth_a relative to the pectoral midpoint, before yaw: (10, 0, 1) - (20, 0, 3) -> x' = -10, z' = -2
+    assert np.allclose(feat[0, [0, 2]], [-10.0, -2.0])
+
+
+def test_recentre_pec_mid_matches_direct_alignment():
+    rng = np.random.default_rng(0)
+    points = rng.normal(scale=20.0, size=(50, 6, 3))
+    centroid, valid = align_pair(points)
+    direct, valid2 = align_pair(points, origin="pec_mid")
+    assert (valid == valid2).all()
+    assert np.allclose(recentre_pec_mid(centroid[valid]), direct[valid], atol=1e-9)
+
+
+def test_reconstruct_pec_mid_is_rigid_copy():
+    points = _pair(40.0, (100.0, -30.0, 5.0))
+    points[0, 4, 2] += 6.0
+    feat, _ = align_pair(points, origin="pec_mid")
+    pose = reconstruct_pose(feat, origin="pec_mid")[0]
+    assert np.allclose(pose[1] + pose[4], 0, atol=1e-9)   # pectoral midpoint at the origin
+    dist = lambda p: np.linalg.norm(p[:, None] - p[None], axis=-1)
+    assert np.allclose(dist(pose), dist(points[0]), atol=1e-9)   # only rotated and shifted
 
 
 def test_short_reference_is_invalid():

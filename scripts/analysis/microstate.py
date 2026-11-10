@@ -521,9 +521,27 @@ def _reconstruct_matrix() -> np.ndarray:
     return m
 
 
-def reconstruct_pose(feat: np.ndarray) -> np.ndarray:
-    """``(..., 14)`` -> ``(..., 6, 3)`` centred, yaw-aligned points."""
-    return (np.asarray(feat, float) @ _reconstruct_matrix().T).reshape(np.shape(feat)[:-1] + (6, 3))
+def reconstruct_pose(feat: np.ndarray, origin: str = "centroid") -> np.ndarray:
+    """``(..., 14)`` -> ``(..., 6, 3)`` centred, yaw-aligned points. ``origin`` as in ``align_pair``.
+
+    Linear in ``feat``, so it also maps a PCA eigenvector to the displacement of the six points.
+    """
+    f = np.asarray(feat, float)
+    if origin == "centroid":
+        return (f @ _reconstruct_matrix().T).reshape(f.shape[:-1] + (6, 3))
+    if origin != "pec_mid":
+        raise ValueError(f"unknown origin {origin!r}")
+    pb = np.stack([f[..., 12], np.zeros(f.shape[:-1]), f[..., 13]], axis=-1)   # both pectorals on the x' axis
+    return np.stack([f[..., 0:3], -pb, f[..., 3:6], f[..., 6:9], pb, f[..., 9:12]], axis=-2)
+
+
+def recentre_pec_mid(feat: np.ndarray) -> np.ndarray:
+    """Centroid-origin 14 coordinates (from ``align_pair``) -> the same 14 coordinates with the pectoral midpoint
+    as origin. The yaw is unchanged (it only depends on the pectoral-to-pectoral direction)."""
+    pose = reconstruct_pose(feat)
+    pose = pose - 0.5 * (pose[..., 1:2, :] + pose[..., 4:5, :])
+    ma, _pa, ta, mb, pb, tb = (pose[..., i, :] for i in range(6))
+    return np.concatenate([ma, ta, mb, tb, pb[..., :1], pb[..., 2:3]], axis=-1)
 
 
 def aligned_configuration(points: np.ndarray, min_xy: float = MIN_XY_MM) -> tuple[np.ndarray, np.ndarray]:
@@ -537,14 +555,22 @@ def aligned_configuration(points: np.ndarray, min_xy: float = MIN_XY_MM) -> tupl
     return flat, valid
 
 
-def align_pair(points: np.ndarray, min_xy: float = MIN_XY_MM) -> tuple[np.ndarray, np.ndarray]:
+def align_pair(points: np.ndarray, min_xy: float = MIN_XY_MM,
+               origin: str = "centroid") -> tuple[np.ndarray, np.ndarray]:
     """Centre a pair and yaw-align it. ``points`` is ``(T, 6, 3)`` in order mouth, pectoral, tail of fish a then b.
 
+    ``origin`` is ``"centroid"`` (mean of the six points) or ``"pec_mid"`` (midpoint of the two pectorals).
     The reference direction is the horizontal pectoral-to-pectoral vector, rotated onto +x.
     Returns ``(feat (T, 14), valid)``. Frames with a missing point or a horizontal separation below ``min_xy`` are invalid.
     """
     finite = np.isfinite(points).all(axis=(1, 2))
-    centre = np.nanmean(np.where(finite[:, None, None], points, np.nan), axis=1)
+    masked = np.where(finite[:, None, None], points, np.nan)
+    if origin == "centroid":
+        centre = np.nanmean(masked, axis=1)
+    elif origin == "pec_mid":
+        centre = 0.5 * (masked[:, 1] + masked[:, 4])
+    else:
+        raise ValueError(f"unknown origin {origin!r}")
     rel = points - centre[:, None, :]
     ref = rel[:, 4, :2] - rel[:, 1, :2]
     length = np.linalg.norm(ref, axis=1)
