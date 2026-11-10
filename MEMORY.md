@@ -158,3 +158,5 @@ Set these when invoking `scripts/hpc/` from the saion login node (see [scripts/h
 ---
 
 *Reference: longer-lived per-topic notes (user profile, data paths, SLEAP failure modes, retrain plan, 3D recovery design, etc.) are stored in the auto-memory index at `~/.claude/projects/c--Users-Makoto-Hiroi-Documents-GitHub-medaka-mating-pipeline/memory/MEMORY.md` and its linked files. This `MEMORY.md` is the short, regularly-updated handoff snapshot.*
+
+- Batch queue (2026-11-10): SLEAP tracking + new 3D (m3dfull) only, no old 3D, no proxies. List in configs/batch_queue.txt (O,I first, then H,M, then rest); start/stop/status with scripts/sleap/queue_ctl.ps1 (scheduled tasks, survive closing VSCode). Start only when the user says so.
