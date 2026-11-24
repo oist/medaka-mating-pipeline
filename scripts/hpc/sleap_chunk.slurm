@@ -20,8 +20,9 @@
 # Environment variables (set by the submitter):
 #   VIDEO_SRC      — source video on /bucket (read-only from compute node)
 #   VIDEO_STAGED   — staged video on /work (fast scratch)
-#   CENTROID_MODEL — SLEAP centroid model directory
-#   INSTANCE_MODEL — SLEAP centered-instance model directory
+#   CENTROID_MODEL — SLEAP centroid model directory, or the single bottom-up
+#                    model directory when INSTANCE_MODEL is empty
+#   INSTANCE_MODEL — SLEAP centered-instance model directory (empty = bottom-up)
 #   OUTPUT_DIR     — /work dir where chunk .slp files are written
 #   CHUNK_FILE     — text file: one "START END" pair per array task
 #   VIEW           — one of top_cam / side1_cam / side2_cam (used in output name)
@@ -41,7 +42,7 @@ set -euo pipefail
 : "${VIDEO_SRC:?VIDEO_SRC is required}"
 : "${VIDEO_STAGED:?VIDEO_STAGED is required}"
 : "${CENTROID_MODEL:?CENTROID_MODEL is required}"
-: "${INSTANCE_MODEL:?INSTANCE_MODEL is required}"
+INSTANCE_MODEL="${INSTANCE_MODEL:-}"
 : "${OUTPUT_DIR:?OUTPUT_DIR is required}"
 : "${CHUNK_FILE:?CHUNK_FILE is required}"
 : "${VIEW:?VIEW is required}"
@@ -150,14 +151,22 @@ if [ -s "$OUTPUT_SLP" ] && [ "${FORCE:-0}" != "1" ]; then
     exit 1
 fi
 
+# ── Model arguments: top-down = centroid + instance; bottom-up = one model ──
+NN_MODEL_ARGS=(--model_paths "$CENTROID_MODEL")
+SHORT_MODEL_ARGS=(-m "$CENTROID_MODEL")
+if [ -n "$INSTANCE_MODEL" ]; then
+    NN_MODEL_ARGS+=(--model_paths "$INSTANCE_MODEL")
+    SHORT_MODEL_ARGS+=(-m "$INSTANCE_MODEL")
+fi
+echo "Models: ${CENTROID_MODEL}${INSTANCE_MODEL:+ + $INSTANCE_MODEL}"
+
 # ── Explicit Python for reproducible installs; module fallbacks for back-compat ──
 if [ -n "$SLEAP_PYTHON" ]; then
     "$SLEAP_PYTHON" -m sleap_nn.cli track \
         --data_path "$VIDEO_STAGED" \
         --frames "$FRAME_RANGE" \
         --no_empty_frames \
-        --model_paths "$CENTROID_MODEL" \
-        --model_paths "$INSTANCE_MODEL" \
+        "${NN_MODEL_ARGS[@]}" \
         --max_instances "$MAX_INSTANCES" \
         --batch_size "$BATCH_SIZE" \
         --output_path "$OUTPUT_SLP" \
@@ -167,8 +176,7 @@ elif command -v sleap-nn >/dev/null 2>&1; then
         --data_path "$VIDEO_STAGED" \
         --frames "$FRAME_RANGE" \
         --no_empty_frames \
-        --model_paths "$CENTROID_MODEL" \
-        --model_paths "$INSTANCE_MODEL" \
+        "${NN_MODEL_ARGS[@]}" \
         --max_instances "$MAX_INSTANCES" \
         --batch_size "$BATCH_SIZE" \
         --output_path "$OUTPUT_SLP" \
@@ -178,8 +186,7 @@ elif command -v sleap-nn-track >/dev/null 2>&1; then
         -i "$VIDEO_STAGED" \
         --frames "$FRAME_RANGE" \
         --no_empty_frames \
-        -m "$CENTROID_MODEL" \
-        -m "$INSTANCE_MODEL" \
+        "${SHORT_MODEL_ARGS[@]}" \
         -n "$MAX_INSTANCES" \
         -b "$BATCH_SIZE" \
         -o "$OUTPUT_SLP"
@@ -188,8 +195,7 @@ else
         "$VIDEO_STAGED" \
         --frames "$FRAME_RANGE" \
         --no-empty-frames \
-        -m "$CENTROID_MODEL" \
-        -m "$INSTANCE_MODEL" \
+        "${SHORT_MODEL_ARGS[@]}" \
         --max_instances "$MAX_INSTANCES" \
         --batch_size "$BATCH_SIZE" \
         -o "$OUTPUT_SLP"

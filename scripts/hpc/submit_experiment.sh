@@ -27,6 +27,9 @@
 #   TOP_INSTANCE         /bucket/StephensU/medaka/medaka_202512/sleap_models/sleap_top_mouth/models/260313_175737.centered_instance.n=330
 #   SIDE_CENTROID        /bucket/StephensU/medaka/medaka_202512/sleap_models/sleap_side_mouth/models/260111_170857.centroid.n=593
 #   SIDE_INSTANCE        /bucket/StephensU/medaka/medaka_202512/sleap_models/sleap_side_mouth/models/260112_115936.centered_instance.n=593
+#   TOP_BOTTOMUP         optional single bottom-up model dir for top_cam; when set,
+#                        TOP_CENTROID/TOP_INSTANCE are ignored
+#   SIDE_BOTTOMUP        optional single bottom-up model dir for both side views
 #   NUM_CHUNKS           4     (array tasks per view; 1 = no chunking)
 #   MAX_INSTANCES        3     (1 female + 2 males)
 #   BATCH_SIZE           16
@@ -63,6 +66,11 @@ TOP_CENTROID="${TOP_CENTROID:-/bucket/StephensU/medaka/medaka_202512/sleap_model
 TOP_INSTANCE="${TOP_INSTANCE:-/bucket/StephensU/medaka/medaka_202512/sleap_models/sleap_top_mouth/models/260313_175737.centered_instance.n=330}"
 SIDE_CENTROID="${SIDE_CENTROID:-/bucket/StephensU/medaka/medaka_202512/sleap_models/sleap_side_mouth/models/260111_170857.centroid.n=593}"
 SIDE_INSTANCE="${SIDE_INSTANCE:-/bucket/StephensU/medaka/medaka_202512/sleap_models/sleap_side_mouth/models/260112_115936.centered_instance.n=593}"
+TOP_BOTTOMUP="${TOP_BOTTOMUP:-}"
+SIDE_BOTTOMUP="${SIDE_BOTTOMUP:-}"
+# Bottom-up: the single model travels in the CENTROID slot with an empty INSTANCE.
+if [ -n "$TOP_BOTTOMUP" ]; then TOP_CENTROID="$TOP_BOTTOMUP"; TOP_INSTANCE=""; fi
+if [ -n "$SIDE_BOTTOMUP" ]; then SIDE_CENTROID="$SIDE_BOTTOMUP"; SIDE_INSTANCE=""; fi
 
 NUM_CHUNKS="${NUM_CHUNKS:-4}"
 MAX_INSTANCES="${MAX_INSTANCES:-3}"
@@ -119,10 +127,10 @@ verify_model_dir() {
     }
 }
 
-verify_model_dir "top centroid" "$TOP_CENTROID"
-verify_model_dir "top instance" "$TOP_INSTANCE"
-verify_model_dir "side centroid" "$SIDE_CENTROID"
-verify_model_dir "side instance" "$SIDE_INSTANCE"
+verify_model_dir "top centroid/bottom-up" "$TOP_CENTROID"
+[ -z "$TOP_INSTANCE" ] || verify_model_dir "top instance" "$TOP_INSTANCE"
+verify_model_dir "side centroid/bottom-up" "$SIDE_CENTROID"
+[ -z "$SIDE_INSTANCE" ] || verify_model_dir "side instance" "$SIDE_INSTANCE"
 if [ -n "$SLEAP_PYTHON" ] && [ ! -x "$SLEAP_PYTHON" ]; then
     echo "ERROR: SLEAP_PYTHON is not executable: $SLEAP_PYTHON" >&2
     exit 1
@@ -150,9 +158,9 @@ echo "Partition     : $PARTITION    Time limit: $TIME_LIMIT"
 echo "Chunks/view   : $NUM_CHUNKS   Max instances: $MAX_INSTANCES"
 echo "SLEAP Python  : ${SLEAP_PYTHON:-<module mode>}"
 echo "Top models    : $TOP_CENTROID"
-echo "              : $TOP_INSTANCE"
+echo "              : ${TOP_INSTANCE:-<bottom-up, single model>}"
 echo "Side models   : $SIDE_CENTROID"
-echo "              : $SIDE_INSTANCE"
+echo "              : ${SIDE_INSTANCE:-<bottom-up, single model>}"
 echo ""
 
 probe_frames() {

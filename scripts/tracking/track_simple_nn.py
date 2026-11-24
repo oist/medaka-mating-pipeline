@@ -553,11 +553,15 @@ def write_csv(rows: list[dict], out_path: Path) -> None:
     fieldnames = list(BASE_FIELDS)
     if any(any(key in row for key in DIAGNOSTIC_FIELDS) for row in rows):
         fieldnames.extend(DIAGNOSTIC_FIELDS)
-    with out_path.open("w", encoding="utf-8", newline="") as fh:
+    # Write to a sibling temp file and rename, so an interrupted run never
+    # leaves a truncated CSV that later steps would treat as finished.
+    tmp_path = out_path.with_name(out_path.name + ".partial")
+    with tmp_path.open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=fieldnames, extrasaction="ignore")
         writer.writeheader()
         for r in rows:
             writer.writerow(r)
+    tmp_path.replace(out_path)
 
 
 def build_parser() -> argparse.ArgumentParser:
