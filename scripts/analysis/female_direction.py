@@ -53,7 +53,7 @@ EXPERIMENTS = [
     ("P_1_1", r"Z:\medaka\review_packages\20260112_P_1_1_FCMC\s14_bottomup_3node_reviewed_m3dfull",
      ROOT / "archive" / "boris" / "p2" / "20260112_P_1_1_FCMC.csv"),
     ("P_1_2", r"Z:\medaka\review_packages\20260113_P_1_2_FCMC\s14_bottomup_3node_reviewed_m3dfull",
-     ROOT / "archive" / "boris" / "p2" / "20260112_P_1_2_FCMC.csv"),
+     ROOT / "archive" / "boris" / "p2" / "20260113_P_1_2_FCMC.csv"),
     ("P_1_3", r"Z:\medaka\review_packages\20260112_P_1_3_FCMC\s14_bottomup_3node_reviewed_m3dfull",
      ROOT / "archive" / "boris" / "p2" / "20260112_P_1_3_FCMC.csv"),
 ]
