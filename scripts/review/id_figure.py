@@ -212,9 +212,9 @@ def human_subtitle(codes: np.ndarray, changes: int, manual: int, pose: int, star
 
 def machine_subtitle(dmap: dict, params: S.SegmentParams, a: dict | None) -> str:
     n_runs, n_high = (len(dmap["runs"]), int(dmap["high"].sum())) if a is None else (a["danger_runs"], a["high_runs"])
+    since = "" if a is None else f" (from frame {a['from_frame']}, like the reviewer figure)"
     text = (f"Machine only: danger = under {params.safe_mm:g} mm or unreliable 3D; high risk = under "
-            f"{params.high_risk_mm:g} mm. {n_runs} danger runs, {n_high} high risk"
-            f"{'' if a is None else f' (from frame {a['from_frame']}, like the reviewer figure)'}. ")
+            f"{params.high_risk_mm:g} mm. {n_runs} danger runs, {n_high} high risk{since}. ")
     if a is None:
         return text + "Whole recording; not reviewed, so no human marks to compare."
     n_c, n_x = a["id_changes"], a["unusable_ranges"]

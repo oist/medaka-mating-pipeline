@@ -117,14 +117,27 @@ def pick_folder(paths_config: Path | None, current: Path | None = None) -> Path 
     from scripts.common.local_paths import load_local_paths
     from scripts.sleap.batch_bottomup_track import default_paths_config
 
-    paths = load_local_paths(paths_config or default_paths_config())
-    root = paths.data_root / "review_packages"
-    found = sorted(p.parent for p in root.glob("*/*_m3dfull/review_manifest.json")
-                   if (p.parent.parent / "proxy" / "proxy_manifest.json").is_file())
-    if not found:
-        raise SystemExit(f"no *_m3dfull package with proxies under {root}")
-    names = [f"{p.parent.name}/{p.name}" for p in found]
+    # The open package's own review root first (e.g. an external SSD), then the configured one.
+    roots: list[Path] = []
+    if current is not None:
+        roots.append(Path(current).resolve().parent.parent)
+    try:
+        roots.append(load_local_paths(paths_config or default_paths_config()).data_root / "review_packages")
+    except Exception:                              # no paths config on this PC: the open package's root only
+        pass
+    found: list[Path] = []
+    for root in dict.fromkeys(roots):
+        for p in sorted(root.glob("*/*_m3dfull/review_manifest.json")):
+            if (p.parent.parent / "proxy" / "proxy_manifest.json").is_file() and p.parent not in found:
+                found.append(p.parent)
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv[:1])
+    if not found:
+        where = ", ".join(str(r) for r in roots) or "(no review root)"
+        if current is not None:                    # inside the GUI: say so and stay on this experiment
+            QtWidgets.QMessageBox.warning(None, "Identity pass", f"No *_m3dfull package with proxies under {where}")
+            return None
+        raise SystemExit(f"no *_m3dfull package with proxies under {where}")
+    names = [f"{p.parent.name}/{p.name}" for p in found]
     here = next((i for i, p in enumerate(found) if current is not None and p.resolve() == Path(current).resolve()), 0)
     choice, ok = QtWidgets.QInputDialog.getItem(None, "Identity pass", "Experiment:", names, here, False)
     del app
